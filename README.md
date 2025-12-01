@@ -1,5 +1,7 @@
 # Sueca Card Game - Web Application
 
+> **⚠️ ALPHA VERSION** - This is the initial release and starting point for future development. Features and gameplay may change in future versions.
+
 A web-based implementation of the traditional Portuguese card game Sueca, built with React and TypeScript.
 
 ## 🎮 Features
