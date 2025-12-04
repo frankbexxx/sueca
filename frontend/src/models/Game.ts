@@ -96,10 +96,6 @@ export class Game {
   ): string[] {
     // Force You and Partner to be on the same team (US)
     // The two AIs will be on the other team (THEM)
-    const youAndPartnerTeam = teams.team1.includes('You') || teams.team1.includes('Partner') 
-      ? teams.team1 
-      : teams.team2;
-    
     // Get the AI players (they will be on the opposite team)
     const aiPlayers = playerNames.filter(name => name !== 'You' && name !== 'Partner');
     
@@ -484,5 +480,4 @@ export class Game {
     // For now, this is a placeholder for future implementation
   }
 }
-
 
