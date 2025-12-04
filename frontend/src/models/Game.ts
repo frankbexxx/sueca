@@ -1,38 +1,227 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS } from '../types/game';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod } from '../types/game';
 import { Deck } from './Deck';
 
 export class Game {
   private state: GameState;
   private deck: Deck;
 
-  constructor(playerNames: string[] = ['You', 'AI 1', 'Partner', 'AI 2']) {
+  constructor(playerNames: string[] = ['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod: DealingMethod = 'A') {
     this.deck = new Deck();
-    this.state = this.initializeGame(playerNames);
+    this.state = this.initializeGame(playerNames, dealingMethod);
   }
 
-  private initializeGame(playerNames: string[]): GameState {
-    const players: Player[] = playerNames.map((name, index) => ({
-      id: `player_${index}`,
-      name,
-      hand: [],
-      team: (index % 2 === 0 ? 1 : 2) as 1 | 2
-    }));
-
-    // Deal 10 cards to each player
-    players.forEach(player => {
-      player.hand = this.deck.deal(10);
+  /**
+   * Choose teams: each player draws one card
+   * Highest card teams with lowest card
+   * Remaining two players form the second team
+   */
+  private chooseTeams(playerNames: string[]): { team1: string[], team2: string[] } {
+    const setupDeck = new Deck();
+    const drawnCards: Array<{ player: string, card: Card }> = [];
+    
+    // Each player draws one card
+    for (const name of playerNames) {
+      const card = setupDeck.deal(1)[0];
+      drawnCards.push({ player: name, card });
+    }
+    
+    // Sort by card hierarchy (lowest to highest)
+    drawnCards.sort((a, b) => {
+      const valueA = CARD_HIERARCHY[a.card.rank];
+      const valueB = CARD_HIERARCHY[b.card.rank];
+      if (valueA !== valueB) {
+        return valueA - valueB;
+      }
+      // If same rank, compare suits (arbitrary order for tie-breaking)
+      const suitOrder: Record<Suit, number> = { clubs: 0, diamonds: 1, hearts: 2, spades: 3 };
+      return suitOrder[a.card.suit] - suitOrder[b.card.suit];
     });
+    
+    // Highest (last) teams with lowest (first)
+    // Middle two form second team
+    return {
+      team1: [drawnCards[0].player, drawnCards[3].player],
+      team2: [drawnCards[1].player, drawnCards[2].player]
+    };
+  }
 
-    // Last card determines trump suit
-    const trumpCard = this.deck.peekLast();
-    const trumpSuit: Suit | null = trumpCard ? trumpCard.suit : null;
+  /**
+   * Choose dealer: each player draws a card
+   * Lowest card becomes dealer
+   * In case of tie, repeat with tied players only
+   */
+  private chooseDealer(playerNames: string[]): string {
+    const setupDeck = new Deck();
+    const drawnCards: Array<{ player: string, card: Card }> = [];
+    
+    // Each player draws one card
+    for (const name of playerNames) {
+      const card = setupDeck.deal(1)[0];
+      drawnCards.push({ player: name, card });
+    }
+    
+    // Sort by card hierarchy (lowest to highest)
+    drawnCards.sort((a, b) => {
+      const valueA = CARD_HIERARCHY[a.card.rank];
+      const valueB = CARD_HIERARCHY[b.card.rank];
+      if (valueA !== valueB) {
+        return valueA - valueB;
+      }
+      // If same rank, compare suits (arbitrary order for tie-breaking)
+      const suitOrder: Record<Suit, number> = { clubs: 0, diamonds: 1, hearts: 2, spades: 3 };
+      return suitOrder[a.card.suit] - suitOrder[b.card.suit];
+    });
+    
+    // Find lowest value
+    const lowestValue = CARD_HIERARCHY[drawnCards[0].card.rank];
+    const tiedPlayers = drawnCards.filter(d => CARD_HIERARCHY[d.card.rank] === lowestValue);
+    
+    if (tiedPlayers.length === 1) {
+      return tiedPlayers[0].player;
+    } else {
+      // Recursive call with only tied players
+      return this.chooseDealer(tiedPlayers.map(t => t.player));
+    }
+  }
+
+  /**
+   * Seat players: partners must sit opposite one another
+   * IMPORTANT: "You" must always be at index 0, "Partner" at index 2
+   * Order: [You, AI1, Partner, AI2] - ensuring You and Partner are opposite
+   * You and Partner are always on the same team (US), AIs on the other team (THEM)
+   */
+  private seatPlayers(
+    playerNames: string[],
+    teams: { team1: string[], team2: string[] }
+  ): string[] {
+    // Force You and Partner to be on the same team (US)
+    // The two AIs will be on the other team (THEM)
+    const youAndPartnerTeam = teams.team1.includes('You') || teams.team1.includes('Partner') 
+      ? teams.team1 
+      : teams.team2;
+    
+    // Get the AI players (they will be on the opposite team)
+    const aiPlayers = playerNames.filter(name => name !== 'You' && name !== 'Partner');
+    
+    // Always seat: You (0), AI1 (1), Partner (2), AI2 (3)
+    // This ensures You and Partner are opposite (0 ↔ 2) and on the same team
+    return ['You', aiPlayers[0] || 'AI 1', 'Partner', aiPlayers[1] || 'AI 2'];
+  }
+
+  /**
+   * Deal cards using Method A (standard) or Method B (dealer gets first card)
+   * Returns: { suit: Suit | null, card: Card | null }
+   */
+  private dealCards(players: Player[], dealerIndex: number, method: DealingMethod): { suit: Suit | null, card: Card | null } {
+    this.deck = new Deck();
+    
+    if (method === 'A') {
+      // Method A: Standard dealing - one card at a time, counterclockwise
+      // The last card dealt (40th card) determines trump suit
+      let lastCardDealt: Card | null = null;
+      
+      for (let round = 0; round < 10; round++) {
+        for (let i = 0; i < 4; i++) {
+          const playerIndex = (dealerIndex + 1 + i) % 4; // Start to the right of dealer, counterclockwise
+          const card = this.deck.deal(1)[0];
+          players[playerIndex].hand.push(card);
+          // Track the last card dealt (this will be the 40th card)
+          lastCardDealt = card;
+        }
+      }
+      
+      // Last card dealt determines trump suit
+      // Create a copy for display (since original is in a player's hand)
+      const trumpCard: Card | null = lastCardDealt ? {
+        suit: lastCardDealt.suit,
+        rank: lastCardDealt.rank,
+        id: `trump_${lastCardDealt.suit}_${lastCardDealt.rank}_${Date.now()}`
+      } : null;
+      
+      return {
+        suit: trumpCard ? trumpCard.suit : null,
+        card: trumpCard
+      };
+    } else {
+      // Method B: Dealer receives first card (trump), then 9 more, rest dealt clockwise
+      const dealer = players[dealerIndex];
+      
+      // Dealer gets first card (this becomes trump)
+      const trumpCard = this.deck.deal(1)[0];
+      dealer.hand.push(trumpCard);
+      const trumpSuit = trumpCard.suit;
+      
+      // Create a copy of the trump card for display (since original is in dealer's hand)
+      const trumpCardForDisplay: Card = {
+        suit: trumpCard.suit,
+        rank: trumpCard.rank,
+        id: `trump_${trumpCard.suit}_${trumpCard.rank}_${Date.now()}`
+      };
+      
+      // Dealer gets 9 more cards
+      for (let i = 0; i < 9; i++) {
+        const card = this.deck.deal(1)[0];
+        dealer.hand.push(card);
+      }
+      
+      // Rest of cards dealt clockwise (to the left) to remaining players
+      // Following the pseudocode pattern: distribute to players in order after dealer
+      // Clockwise order: dealer+1, dealer+2, dealer+3 (in sequence)
+      for (let round = 0; round < 10; round++) {
+        // Deal clockwise: go in order after dealer (dealer+1, dealer+2, dealer+3)
+        for (let i = 1; i <= 3; i++) {
+          const playerIndex = (dealerIndex + i) % 4;
+          const card = this.deck.deal(1)[0];
+          players[playerIndex].hand.push(card);
+        }
+      }
+      
+      return { suit: trumpSuit, card: trumpCardForDisplay };
+    }
+  }
+
+  private initializeGame(playerNames: string[], dealingMethod: DealingMethod = 'A'): GameState {
+    // Step 1: Choose teams
+    const teams = this.chooseTeams(playerNames);
+    
+    // Step 2: Choose dealer
+    const dealerName = this.chooseDealer(playerNames);
+    
+    // Step 3: Seat players (partners opposite)
+    const seatedOrder = this.seatPlayers(playerNames, teams);
+    
+    // Step 4: Create players with correct teams and seating
+    // IMPORTANT: You and Partner (indices 0 and 2) must be on the same team (US)
+    // AI 1 and AI 2 (indices 1 and 3) must be on the other team (THEM)
+    const players: Player[] = seatedOrder.map((name, index) => {
+      // You (index 0) and Partner (index 2) are always on team 1 (US)
+      // AI 1 (index 1) and AI 2 (index 3) are always on team 2 (THEM)
+      const isUS = (name === 'You' || name === 'Partner');
+      return {
+        id: `player_${index}`,
+        name,
+        hand: [],
+        team: (isUS ? 1 : 2) as 1 | 2
+      };
+    });
+    
+    // Find dealer index in seated order
+    const dealerIndex = seatedOrder.indexOf(dealerName);
+    
+    // Step 5: Deal 10 cards to each player using selected method
+    const trumpResult = this.dealCards(players, dealerIndex, dealingMethod);
+
+    // First trick: player to the right of dealer starts (counterclockwise)
+    const firstTrickStarter = (dealerIndex + 1) % 4;
 
     return {
       players,
-      currentPlayerIndex: 0, // Dealer plays first
-      trumpSuit,
+      currentPlayerIndex: firstTrickStarter, // Player to the right of dealer starts first trick
+      dealerIndex: dealerIndex,
+      trumpSuit: trumpResult.suit,
+      trumpCard: trumpResult.card, // The actual trump card for display
       currentTrick: [],
-      trickLeader: 0,
+      trickLeader: firstTrickStarter,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
       round: 1,
@@ -40,7 +229,11 @@ export class Game {
       winner: null,
       lastTrickWinner: null,
       waitingForTrickEnd: false,
-      nextTrickLeader: null
+      nextTrickLeader: null,
+      isFirstTrick: true,
+      dealingMethod: dealingMethod,
+      waitingForRoundStart: true, // Pause before starting (show trump card)
+      waitingForGameStart: false
     };
   }
 
@@ -73,8 +266,28 @@ export class Game {
     player.hand.splice(cardIndex, 1);
     this.state.currentTrick.push(card);
 
-    // Move to next player
-    this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % 4;
+    // Calculate next player
+    let nextPlayerIndex: number;
+    
+    if (this.state.isFirstTrick) {
+      // Special rule for first trick: dealer plays last
+      // Order: (dealer+1), (dealer+2), (dealer+3), dealer
+      const dealerIndex = this.state.dealerIndex;
+      const cardsPlayed = this.state.currentTrick.length;
+      
+      if (cardsPlayed < 3) {
+        // First three players: dealer+1, dealer+2, dealer+3
+        nextPlayerIndex = (dealerIndex + cardsPlayed + 1) % 4;
+      } else {
+        // Last player is always the dealer
+        nextPlayerIndex = dealerIndex;
+      }
+    } else {
+      // Standard counterclockwise rotation (to the right)
+      nextPlayerIndex = (this.state.currentPlayerIndex + 1) % 4;
+    }
+
+    this.state.currentPlayerIndex = nextPlayerIndex;
 
     // If trick is complete, evaluate it
     if (this.state.currentTrick.length === 4) {
@@ -180,6 +393,8 @@ export class Game {
     this.state.trickLeader = nextLeader;
     this.state.currentPlayerIndex = nextLeader;
     this.state.currentTrick = [];
+    // After first trick, all subsequent tricks follow standard rotation
+    this.state.isFirstTrick = false;
   }
 
   private endRound(): void {
@@ -215,31 +430,52 @@ export class Game {
     if (this.state.gameScore.team1 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 1;
+      this.state.waitingForGameStart = true; // Pause before allowing new game
     } else if (this.state.gameScore.team2 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 2;
+      this.state.waitingForGameStart = true; // Pause before allowing new game
     } else {
-      // Start new round
+      // Start new round (will pause to show trump)
       this.startNewRound(roundValue);
     }
   }
 
   private startNewRound(roundValue: number): void {
-    this.deck = new Deck();
     this.state.round++;
     this.state.scores = { team1: 0, team2: 0 };
     this.state.currentTrick = [];
     
-    // Deal new hands
-    this.state.players.forEach(player => {
-      player.hand = this.deck.deal(10);
-    });
-
-    const trumpCard = this.deck.peekLast();
-    this.state.trumpSuit = trumpCard ? trumpCard.suit : null;
-    this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % 4; // Rotate dealer
-    this.state.trickLeader = this.state.currentPlayerIndex;
+    // Rotate dealer counterclockwise (to the right)
+    this.state.dealerIndex = (this.state.dealerIndex + 1) % 4;
+    
+    // Deal new hands using the same method
+    const trumpResult = this.dealCards(this.state.players, this.state.dealerIndex, this.state.dealingMethod);
+    this.state.trumpSuit = trumpResult.suit;
+    this.state.trumpCard = trumpResult.card;
+    
+    // First trick: player to the right of dealer starts
+    const firstTrickStarter = (this.state.dealerIndex + 1) % 4;
+    this.state.currentPlayerIndex = firstTrickStarter;
+    this.state.trickLeader = firstTrickStarter;
     this.state.lastTrickWinner = null;
+    this.state.isFirstTrick = true;
+    // Only pause on first round of the game (round 1)
+    this.state.waitingForRoundStart = (this.state.round === 1);
+  }
+
+  // Called from UI when user is ready to start the round
+  startRound(): void {
+    if (this.state.waitingForRoundStart) {
+      this.state.waitingForRoundStart = false;
+    }
+  }
+
+  // Called from UI when user is ready to start a new game
+  startNewGame(): void {
+    if (this.state.waitingForGameStart) {
+      this.state.waitingForGameStart = false;
+    }
   }
 
   challengeBluff(challengerTeam: 1 | 2): void {

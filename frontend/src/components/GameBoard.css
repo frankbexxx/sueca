@@ -80,41 +80,145 @@
   font-weight: bold;
 }
 
-.players-area {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+/* Table Layout */
+.table-container {
+  position: relative;
+  width: 100%;
+  min-height: 800px;
+  margin: 30px 0;
+  padding: 20px;
 }
 
-.player-area {
-  border: 3px solid #ccc;
-  border-radius: 12px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.table-surface {
+  position: relative;
+  width: 100%;
+  min-height: 700px;
+  background: linear-gradient(135deg, #2d5016 0%, #3d6b1f 100%);
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 50px rgba(0, 0, 0, 0.2);
+  border: 8px solid #1a3310;
+  margin: 0 auto;
+  max-width: 900px;
+  max-height: 900px;
+  aspect-ratio: 1;
+}
+
+/* Player Seats */
+.player-seat {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   transition: all 0.3s ease;
 }
 
-.player-area.team1 {
-  border-color: #4facfe;
+/* For East and West, change layout to horizontal */
+.player-seat.player-east,
+.player-seat.player-west {
+  flex-direction: row;
+  align-items: center;
 }
 
-.player-area.team2 {
-  border-color: #fa709a;
+.player-seat.player-north {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.player-area.active {
-  border-color: #4caf50;
-  background: #e8f5e9;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-  transform: scale(1.02);
+.player-seat.player-east {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row-reverse; /* Cards to the left of name */
 }
 
-.player-area h3 {
-  margin: 0 0 15px 0;
+.player-seat.player-south {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-seat.player-west {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row; /* Cards to the right of name */
+}
+
+.player-info {
+  text-align: center;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap; /* Prevent name from wrapping */
+  z-index: 10; /* Ensure name is above cards */
+}
+
+/* Adjust margins for East and West */
+.player-seat.player-east .player-info {
+  margin-bottom: 0;
+  margin-left: 15px; /* Space between cards and name */
+}
+
+.player-seat.player-west .player-info {
+  margin-bottom: 0;
+  margin-right: 15px; /* Space between name and cards */
+}
+
+.player-name {
+  margin: 0;
+  font-size: 1.1em;
   color: #2c3e50;
-  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.team-badge {
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.player-seat.team-us .team-badge {
+  background: #4facfe;
+  color: white;
+}
+
+.player-seat.team-them .team-badge {
+  background: #fa709a;
+  color: white;
+}
+
+.dealer-badge {
+  font-size: 0.75em;
+  background: #ff9800;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.player-seat.active .player-info {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  animation: playerPulse 2s infinite;
+}
+
+@keyframes playerPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .turn-indicator {
@@ -132,51 +236,117 @@
   }
 }
 
-.hand {
+/* Fanned Hand - Compact Fan Style (Leque) */
+.hand-fanned {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
   justify-content: center;
-  min-height: 120px;
+  align-items: center;
+  min-width: 150px;
+  min-height: 90px;
 }
 
-.card {
-  width: 90px;
-  height: 126px;
+/* Player hand - compact fan */
+.hand-player {
+  min-width: 150px;
+  min-height: 90px;
+}
+
+/* Adjust hand position for East and West to avoid overlapping names */
+.player-seat.player-east .hand-fanned {
+  margin-right: 10px; /* Space between cards and name */
+}
+
+.player-seat.player-west .hand-fanned {
+  margin-left: 10px; /* Space between name and cards */
+}
+
+/* Base card styles - positioned at center, will be transformed */
+.card-fanned {
+  position: absolute;
+  width: 55px;
+  height: 77px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  left: 50%;
+  top: 50%;
+  margin-left: -27.5px;
+  margin-top: -38.5px;
+  transform-origin: center center;
+  pointer-events: auto; /* All cards are clickable */
 }
 
-.card:hover {
-  transform: translateY(-15px) scale(1.1);
-  z-index: 10;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+/* Player cards - use same positioning as other cards */
+
+/* Hovered card - brings it to front but DOES NOT move position */
+.card-fanned.hovered {
+  z-index: 1000 !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  /* NO transform changes - card stays in place */
 }
 
-.card.selected {
-  transform: translateY(-20px) scale(1.15);
-  border: 4px solid #4caf50;
-  z-index: 15;
-  box-shadow: 0 8px 16px rgba(76, 175, 80, 0.5);
+/* South (You) - cards face south, fan upward */
+.hand-south {
+  transform-origin: center bottom;
 }
 
-.card-back {
-  width: 90px;
-  height: 126px;
+.card-south {
+  transform-origin: center bottom;
+}
+
+.card-south.selected {
+  transform: translateY(-18px) scale(1.2) !important;
+  border: 3px solid #4caf50;
+  z-index: 1001 !important;
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.6);
+}
+
+/* North (Partner) - cards face north, fan downward */
+.hand-north {
+  transform-origin: center top;
+}
+
+.card-north {
+  transform-origin: center top;
+}
+
+/* East - cards face east, fan to the right */
+.hand-east {
+  transform-origin: right center;
+}
+
+.card-east {
+  transform-origin: right center;
+}
+
+/* West - cards face west, fan to the left */
+.hand-west {
+  transform-origin: left center;
+}
+
+.card-west {
+  transform-origin: left center;
+}
+
+/* Card Backs - Same base positioning */
+.card-back-fanned {
+  position: absolute;
+  width: 55px;
+  height: 77px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 6px;
   border: 3px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  left: 50%;
+  top: 50%;
+  margin-left: -27.5px;
+  margin-top: -38.5px;
+  transform-origin: center center;
 }
 
-.card-back::before {
+.card-back-fanned::before {
   content: '';
   position: absolute;
   width: 100%;
@@ -191,60 +361,92 @@
   border-radius: 6px;
 }
 
-.card-count {
-  position: relative;
-  z-index: 1;
+.card-count-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
   color: white;
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1.3em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
-.trick-area {
+/* Trick Area in Center */
+.trick-area-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  margin: 30px 0;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 200px;
 }
 
-.trick-area h3 {
-  margin: 0 0 20px 0;
-  color: #2c3e50;
-  font-size: 1.5em;
+.trick-area-center h3 {
+  margin: 0 0 15px 0;
+  color: white;
+  font-size: 1.2em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-.trick-cards {
+.trick-cards-center {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-top: 15px;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
+  min-height: 120px;
 }
 
-.trick-card-wrapper {
+.trick-card-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
-.trick-player-name {
-  font-size: 0.9em;
-  color: #666;
+.trick-from-north {
+  order: 1;
+}
+
+.trick-from-east {
+  order: 2;
+}
+
+.trick-from-south {
+  order: 3;
+}
+
+.trick-from-west {
+  order: 4;
+}
+
+.trick-player-name-small {
+  font-size: 0.75em;
+  color: white;
   font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-.trick-card {
-  width: 110px;
-  height: 154px;
+.trick-card-img {
+  width: 80px;
+  height: 112px;
   border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   transition: transform 0.3s ease;
 }
 
-.trick-card:hover {
-  transform: scale(1.1);
+.trick-card-img:hover {
+  transform: scale(1.15);
+  z-index: 20;
 }
 
 .no-trick {
@@ -254,8 +456,11 @@
 }
 
 .play-button {
-  display: block;
-  margin: 20px auto;
+  position: fixed;
+  bottom: 250px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
   padding: 15px 40px;
   font-size: 1.2em;
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
@@ -341,8 +546,9 @@
 }
 
 @media (max-width: 768px) {
-  .players-area {
-    grid-template-columns: 1fr;
+  .table-surface {
+    max-width: 100%;
+    min-height: 500px;
   }
   
   .scores {
@@ -350,14 +556,27 @@
     align-items: center;
   }
   
-  .card {
-    width: 70px;
-    height: 98px;
+  .card-fanned {
+    width: 50px;
+    height: 70px;
+    margin-left: -25px;
+    margin-top: -35px;
   }
   
-  .card-back {
-    width: 70px;
-    height: 98px;
+  .card-back-fanned {
+    width: 50px;
+    height: 70px;
+    margin-left: -25px;
+    margin-top: -35px;
+  }
+  
+  .trick-card-img {
+    width: 60px;
+    height: 84px;
+  }
+  
+  .player-seat {
+    font-size: 0.9em;
   }
 }
 
