@@ -196,6 +196,11 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - **Causa**: Estava dentro do game-header, podia ser escondido
 - **Solução**: Movido para fora do header, sempre visível
 
+### ✅ RESOLVIDO: Cartas acumulando entre rondas
+- **Causa**: `startNewRound()` não limpava as mãos dos jogadores antes de distribuir novas cartas
+- **Solução**: Adicionado código para limpar todas as mãos antes de distribuir cartas
+- **Impacto**: Rondas agora terminam corretamente após todas as vazas serem jogadas
+
 ---
 
 ## 📝 NOTAS IMPORTANTES
