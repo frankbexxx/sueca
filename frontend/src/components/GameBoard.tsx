@@ -1,15 +1,67 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Game } from '../models/Game';
-import { GameState, Card, DealingMethod } from '../types/game';
+import { GameState, Card, DealingMethod, AIDifficulty } from '../types/game';
+import { GameMenu } from './GameMenu';
+import { useSound } from '../hooks/useSound';
 import './GameBoard.css';
 
 export const GameBoard: React.FC = () => {
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>('A');
-  const [game, setGame] = useState(() => new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod));
-  const [gameState, setGameState] = useState<GameState>(game.getState());
+  const [playerName, setPlayerName] = useState<string>('You');
+  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>('medium');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('sueca-dark-mode');
+    return saved ? saved === 'true' : false;
+  });
+
+  // Initialize game safely
+  const [game, setGame] = useState(() => {
+    try {
+      return new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod, playerName, aiDifficulty);
+    } catch (error) {
+      console.error('Error initializing game:', error);
+      throw error;
+    }
+  });
+  
+  const [gameState, setGameState] = useState<GameState>(() => {
+    try {
+      return game.getState();
+    } catch (error) {
+      console.error('Error getting game state:', error);
+      // Return minimal valid state
+      return {
+        players: [],
+        currentPlayerIndex: 0,
+        dealerIndex: 0,
+        trumpSuit: null,
+        trumpCard: null,
+        currentTrick: [],
+        trickLeader: 0,
+        scores: { team1: 0, team2: 0 },
+        gameScore: { team1: 0, team2: 0 },
+        round: 1,
+        isGameOver: false,
+        winner: null,
+        lastTrickWinner: null,
+        waitingForTrickEnd: false,
+        nextTrickLeader: null,
+        isFirstTrick: true,
+        dealingMethod: 'A',
+        waitingForRoundStart: false,
+        waitingForRoundEnd: false,
+        waitingForGameStart: false,
+        playedCards: [],
+        isPaused: false,
+        playerName: 'You',
+        aiDifficulty: 'medium',
+        partnerSignals: []
+      };
+    }
+  });
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { playCardSound, playErrorSound } = useSound();
+  const [showGridOverlay, setShowGridOverlay] = useState(false);
 
   const playAICard = useCallback(() => {
     const playerIndex = gameState.currentPlayerIndex;
@@ -19,56 +71,70 @@ export const GameBoard: React.FC = () => {
       return;
     }
 
-    // Try to play the first valid card in the AI's hand
-    let played = false;
-    for (let i = 0; i < player.hand.length; i++) {
-      if (game.playCard(playerIndex, i)) {
-        played = true;
-        break;
-      }
-    }
-
-    // As a safeguard, if for some reason no card was considered valid,
-    // force play of the first card to avoid the game getting stuck.
-    if (!played) {
-      if (game.playCard(playerIndex, 0)) {
-        played = true;
-      }
-    }
-
-    if (played) {
+    // Use improved AI strategy to choose the best card
+    const cardIndex = game.chooseAICard(playerIndex);
+    
+    if (cardIndex >= 0 && game.playCard(playerIndex, cardIndex)) {
+      playCardSound();
       setGameState(game.getState());
+    } else {
+      // Fallback: try first valid card if AI strategy fails
+      for (let i = 0; i < player.hand.length; i++) {
+        if (game.playCard(playerIndex, i)) {
+          playCardSound();
+          setGameState(game.getState());
+          break;
+        }
+      }
     }
-  }, [game, gameState]);
+  }, [game, gameState, playCardSound]);
 
   useEffect(() => {
-    // Auto-play for AI players (only if not waiting for round/game start)
+    // Auto-play for AI players (only if not waiting for round/game start and not paused)
     if (
       !gameState.isGameOver &&
+      !gameState.isPaused &&
       !gameState.waitingForTrickEnd &&
       !gameState.waitingForRoundStart &&
+      !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart &&
       gameState.currentPlayerIndex !== 0 &&
-      gameState.players[gameState.currentPlayerIndex].name !== 'You'
+      gameState.players[gameState.currentPlayerIndex].name !== 'You' &&
+      gameState.players[gameState.currentPlayerIndex].name !== playerName
     ) {
       const timer = setTimeout(() => {
         playAICard();
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [gameState.currentPlayerIndex, gameState.isGameOver, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForGameStart, gameState.players, playAICard]);
+  }, [gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, playerName]);
 
   const handleCardClick = (cardIndex: number) => {
     // Only allow card selection if it's the human player's turn (index 0 = "You")
+    // Check by player name or index 0
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    const isHumanPlayer = (currentPlayer.name === 'You' || currentPlayer.name === playerName) && gameState.currentPlayerIndex === 0;
+    
     if (
-      gameState.players[gameState.currentPlayerIndex].name === 'You' &&
-      gameState.currentPlayerIndex === 0 &&
+      isHumanPlayer &&
       !gameState.isGameOver &&
+      !gameState.isPaused &&
       !gameState.waitingForTrickEnd &&
       !gameState.waitingForRoundStart &&
+      !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart
     ) {
-      setSelectedCard(cardIndex);
+      // Check if the card is playable before allowing selection
+      const player = gameState.players[0];
+      if (cardIndex >= 0 && cardIndex < player.hand.length) {
+        // Use the game's canPlayCard method to check if card can be played
+        const canPlay = game.canPlayCard(0, cardIndex);
+        if (canPlay) {
+          setSelectedCard(cardIndex);
+        } else {
+          playErrorSound();
+        }
+      }
     }
   };
 
@@ -76,11 +142,15 @@ export const GameBoard: React.FC = () => {
     if (
       selectedCard !== null &&
       gameState.currentPlayerIndex === 0 &&
-      !gameState.waitingForTrickEnd
+      !gameState.waitingForTrickEnd &&
+      !gameState.waitingForRoundEnd
     ) {
       if (game.playCard(0, selectedCard)) {
+        playCardSound();
         setGameState(game.getState());
         setSelectedCard(null);
+      } else {
+        playErrorSound();
       }
     }
   };
@@ -106,8 +176,12 @@ export const GameBoard: React.FC = () => {
     };
     const suit = suitMap[card.suit];
     const rank = rankMap[card.rank];
-    // Path assumes assets are copied to public/assets/cards1/
-    return `${process.env.PUBLIC_URL || ''}/assets/cards1/${rank}_of_${suit}.png`;
+    // Use relative path that works in both dev and production
+    // In production, PUBLIC_URL is empty string, so we use relative path
+    const publicUrl = process.env.PUBLIC_URL || '';
+    // Ensure we don't have double slashes
+    const basePath = publicUrl && !publicUrl.endsWith('/') ? publicUrl : (publicUrl || '');
+    return `${basePath}/assets/cards1/${rank}_of_${suit}.png`;
   };
 
   const getSuitEmoji = (suit: string): string => {
@@ -143,103 +217,177 @@ export const GameBoard: React.FC = () => {
     return team === usTeam ? 'US' : 'THEM';
   };
 
+  const handlePause = () => {
+    game.pauseGame();
+    setGameState(game.getState());
+  };
+
+  const handleResume = () => {
+    game.resumeGame();
+    setGameState(game.getState());
+  };
+
+  const handleQuit = () => {
+    if (window.confirm('Tem certeza que deseja sair do jogo atual?')) {
+      game.quitGame();
+      setGameState(game.getState());
+    }
+  };
+
+  const handleNewGame = () => {
+    const newGame = new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod, playerName, aiDifficulty);
+    setGame(newGame);
+    setGameState(newGame.getState());
+  };
+
+  const handleAIDifficultyChange = (difficulty: AIDifficulty) => {
+    setAIDifficulty(difficulty);
+    // Update current game's difficulty if game is active
+    const updatedState = game.getState();
+    updatedState.aiDifficulty = difficulty;
+    setGameState(updatedState);
+  };
+
+  const handlePlayerNameChange = (name: string) => {
+    setPlayerName(name);
+    // Update player name in current game state
+    const updatedState = game.getState();
+    updatedState.playerName = name;
+    // Also update the player's name in the players array if it's "You"
+    const youPlayer = updatedState.players.find(p => p.name === 'You' || p.name === playerName);
+    if (youPlayer && gameState.currentPlayerIndex === 0) {
+      youPlayer.name = name;
+    }
+    setGameState(updatedState);
+  };
+
+  const canPlay =
+    gameState.currentPlayerIndex === 0 &&
+    gameState.players[0]?.name &&
+    (gameState.players[0].name === 'You' || gameState.players[0].name === playerName) &&
+    selectedCard !== null &&
+    !gameState.isGameOver &&
+    !gameState.waitingForTrickEnd &&
+    !gameState.waitingForRoundStart &&
+    !gameState.waitingForGameStart;
+
   return (
-    <div className="game-board">
-      <div className="game-header">
-        <h1>🃏 Sueca Card Game</h1>
-        <div className="scores">
-          <div className={`team-score ${usTeam === 1 ? 'team1' : 'team2'}`}>
-            <h3>US</h3>
-            <p className="score-text">Round: <strong>{gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</strong></p>
-            <p className="score-text">Game: <strong>{gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</strong></p>
-          </div>
-          <div className={`team-score ${themTeam === 1 ? 'team1' : 'team2'}`}>
-            <h3>THEM</h3>
-            <p className="score-text">Round: <strong>{gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</strong></p>
-            <p className="score-text">Game: <strong>{gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</strong></p>
-          </div>
+    <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
+      <GameMenu
+        playerName={playerName}
+        onPlayerNameChange={handlePlayerNameChange}
+        aiDifficulty={gameState.aiDifficulty || aiDifficulty}
+        onAIDifficultyChange={handleAIDifficultyChange}
+        isPaused={gameState.isPaused}
+        onPause={handlePause}
+        onResume={handleResume}
+        onQuit={handleQuit}
+        onNewGame={handleNewGame}
+        isGameOver={gameState.isGameOver}
+        isGameActive={!gameState.waitingForGameStart}
+        darkMode={darkMode}
+        onDarkModeChange={(mode) => {
+          setDarkMode(mode);
+          localStorage.setItem('sueca-dark-mode', String(mode));
+        }}
+      />
+
+      <div className="top-strip">
+        <div className="score-block us">
+          <div className="label">US</div>
+          <div className="line">Round: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Game: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
-        <div className="game-info">
-          <div className="round-info">Round {gameState.round}</div>
-          <div className="dealer-info">
-            <strong>Dealer: {gameState.players[gameState.dealerIndex].name}</strong>
-          </div>
-          <div className="dealing-method-info">
-            <strong>Dealing Method: {gameState.dealingMethod === 'A' ? 'A (Standard)' : 'B (Dealer First)'}</strong>
-          </div>
-          <div className="teams-info">
-            <div className="team-setup">
-              <strong>US:</strong> {gameState.players.filter(p => p.team === usTeam).map(p => p.name).join(' & ')}
-            </div>
-            <div className="team-setup">
-              <strong>THEM:</strong> {gameState.players.filter(p => p.team === themTeam).map(p => p.name).join(' & ')}
-            </div>
-          </div>
+        <div className="round-block">
+          <div>Round {gameState.round}</div>
+          <div>Dealer: {gameState.players[gameState.dealerIndex]?.name}</div>
+          <div>Dealing: {gameState.dealingMethod === 'A' ? 'A' : 'B'}</div>
+        </div>
+        <div className="score-block them">
+          <div className="label">THEM</div>
+          <div className="line">Round: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Game: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
       </div>
 
-      {/* Trump Card Display - Always visible when set (outside game-header) */}
-      {gameState.trumpSuit && (
-        <div className="trump-card-display" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          margin: '20px auto',
-          padding: '15px',
-          backgroundColor: '#fff3e0',
-          borderRadius: '10px',
-          border: '3px solid #ff9800',
-          maxWidth: '400px',
-          boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#e65100', fontSize: '22px', fontWeight: 'bold' }}>🃏 TRUMP SUIT 🃏</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            {gameState.trumpCard ? (
-              <>
-                <img
-                  src={getCardImage(gameState.trumpCard)}
-                  alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
-                  style={{ width: '120px', height: 'auto', border: '3px solid #ff9800', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.3)' }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#e65100' }}>
+      <button className="debug-grid-toggle" onClick={() => setShowGridOverlay(!showGridOverlay)}>
+        {showGridOverlay ? 'Hide Grid' : 'Show Grid'}
+      </button>
+
+      <div className="table-layout">
+        <div className="ui-corner top-left" />
+
+        <div className="ui-corner top-right">
+          {gameState.trumpSuit && (
+            <div className="trump-card-display">
+              <div className="trump-title">Trump</div>
+              {gameState.trumpCard ? (
+                <>
+                  <img
+                    src={getCardImage(gameState.trumpCard)}
+                    alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <div className="trump-suit-text">
                     {getSuitEmoji(gameState.trumpSuit)} {gameState.trumpSuit.toUpperCase()}
                   </div>
-                  <div style={{ fontSize: '16px', color: '#666', marginTop: '8px', fontStyle: 'italic' }}>
-                    {gameState.trumpCard.rank} of {gameState.trumpCard.suit}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#e65100' }}>
+                </>
+              ) : (
+                <div className="trump-suit-text">
                   {getSuitEmoji(gameState.trumpSuit)} {gameState.trumpSuit.toUpperCase()}
                 </div>
-                <div style={{ fontSize: '14px', color: '#666', marginTop: '8px', fontStyle: 'italic' }}>
-                  Trump Suit
-                </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="ui-corner bottom-right">
+          <div className="action-buttons-group">
+            <button
+              className={`play-button ${canPlay ? 'enabled' : 'disabled'}`}
+              onClick={handlePlayCard}
+              disabled={!canPlay}
+            >
+              Play Selected Card
+            </button>
+            <button
+              className={`next-trick-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
+              onClick={() => {
+                if (gameState.waitingForTrickEnd) {
+                  game.finishTrick();
+                  setGameState(game.getState());
+                }
+              }}
+              disabled={!gameState.waitingForTrickEnd}
+            >
+              Next Trick
+            </button>
           </div>
         </div>
-      )}
 
-      <div className="table-container">
+        <div className="ui-corner bottom-left" />
+
         <div className="table-surface">
-          {/* Trick area in center */}
+          {showGridOverlay && <div className="grid-overlay" />}
+
           <div className="trick-area-center">
             <h3>Current Trick</h3>
             {gameState.currentTrick.length > 0 ? (
-              <div className="trick-cards-center">
+              <div className="trick-cards-cross">
                 {gameState.currentTrick.map((card: Card, index: number) => {
                   const playerIndex = (gameState.trickLeader + index) % 4;
                   const player = gameState.players[playerIndex];
                   const position = getTablePosition(playerIndex);
+                  const isWinning =
+                    gameState.lastTrickWinner === playerIndex &&
+                    index === gameState.currentTrick.length - 1;
                   return (
-                    <div key={index} className={`trick-card-center trick-from-${position}`}>
+                    <div
+                      key={index}
+                      className={`trick-card-cross trick-from-${position} ${isWinning ? 'winning' : ''}`}
+                    >
                       <div className="trick-player-name-small">{player.name}</div>
                       <img
                         src={getCardImage(card)}
@@ -256,95 +404,36 @@ export const GameBoard: React.FC = () => {
             ) : (
               <p className="no-trick">No cards played yet</p>
             )}
-            {gameState.waitingForTrickEnd && (
-              <button
-                className="next-trick-button"
-                onClick={() => {
-                  game.finishTrick();
-                  setGameState(game.getState());
-                }}
-              >
-                Next Trick
-              </button>
-            )}
           </div>
 
-          {/* Players positioned around table */}
-          {gameState.players.map((player, index) => {
-            const position = getTablePosition(index);
-            const isDealer = index === gameState.dealerIndex;
-            const isCurrentPlayer = index === gameState.currentPlayerIndex;
-            
-            return (
-              <div
-                key={player.id}
-                className={`player-seat player-${position} ${isCurrentPlayer ? 'active' : ''} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
-              >
-                <div className="player-info">
-                  <h3 className="player-name">
-                    {player.name}
-                    {isDealer && <span className="dealer-badge">🃏 Dealer</span>}
-                    {isCurrentPlayer && <span className="turn-indicator">← Turn</span>}
-                  </h3>
-                  <div className="team-badge">{getTeamName(player.team)}</div>
-                </div>
-                {index === 0 ? (
-                  <div className={`hand-fanned hand-${position} hand-player`}>
+          <div className="seats-layer">
+            {gameState.players.map((player, index) => {
+              const position = getTablePosition(index);
+              const isDealer = index === gameState.dealerIndex;
+              const isCurrentPlayer = index === gameState.currentPlayerIndex;
+              const isHuman = index === 0;
+              const CARD_SPACING = 24;
+              const MAX_CARDS = 10;
+              const CENTER_OFFSET = ((MAX_CARDS - 1) * CARD_SPACING) / 2;
+
+              const renderPlayerHand = () => {
+                if (!isHuman) return null;
+                return (
+                  <div className="hand-row">
                     {player.hand.map((card: Card, cardIndex: number) => {
-                      // For player: compact fan like before (more together)
-                      const totalCards = player.hand.length;
-                      const maxAngle = Math.min(45, totalCards * 1.2); // Fan angle
-                      const fanAngle = (cardIndex - (totalCards - 1) / 2) * (maxAngle / Math.max(1, totalCards - 1));
-                      const xOffset = (cardIndex - (totalCards - 1) / 2) * 18; // Horizontal spacing
-                      
-                      // Get base rotation for position
-                      let baseRotation = 0;
-                      if (position === 'north') baseRotation = 180;
-                      else if (position === 'east') baseRotation = 90;
-                      else if (position === 'west') baseRotation = -90;
-                      
-                      // Combine base rotation with fan angle
-                      const totalRotation = baseRotation + fanAngle;
-                      
-                      // Z-index: cards on the right side (visually on top) have higher z-index
-                      const zIndexValue = totalCards - cardIndex;
-                      
-                      // Check if this card is currently hovered
-                      const isHovered = hoveredCard === cardIndex;
-                      
+                      const cardPosition = cardIndex * CARD_SPACING;
+                      const translateX = cardPosition - CENTER_OFFSET;
+                      const fixedTransform = `translateX(${translateX}px)`;
+                      const isPlayable = game.canPlayCard(0, cardIndex);
+                      const isSelected = selectedCard === cardIndex;
                       return (
                         <img
                           key={card.id}
                           src={getCardImage(card)}
                           alt={`${card.rank} of ${card.suit}`}
-                          className={`card-fanned card-${position} ${selectedCard === cardIndex ? 'selected' : ''} ${isHovered ? 'hovered' : ''}`}
-                          style={{
-                            transform: `rotate(${totalRotation}deg) translateX(${xOffset}px)`,
-                            zIndex: isHovered ? 1000 : zIndexValue,
-                            pointerEvents: 'auto'
-                          }}
-                          onMouseEnter={() => {
-                            // Clear any pending timeout
-                            if (hoverTimeoutRef.current) {
-                              clearTimeout(hoverTimeoutRef.current);
-                              hoverTimeoutRef.current = null;
-                            }
-                            // Set this card as hovered immediately
-                            setHoveredCard(cardIndex);
-                          }}
-                          onMouseLeave={() => {
-                            // Clear hover with a small delay to prevent flickering when moving between overlapping cards
-                            if (hoverTimeoutRef.current) {
-                              clearTimeout(hoverTimeoutRef.current);
-                            }
-                            hoverTimeoutRef.current = setTimeout(() => {
-                              setHoveredCard(null);
-                              hoverTimeoutRef.current = null;
-                            }, 100);
-                          }}
-                          onClick={() => {
-                            handleCardClick(cardIndex);
-                          }}
+                          className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
+                          style={{ transform: fixedTransform, zIndex: isSelected ? 1000 : cardIndex + 1 }}
+                          onClick={() => handleCardClick(cardIndex)}
                           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                           }}
@@ -352,48 +441,116 @@ export const GameBoard: React.FC = () => {
                       );
                     })}
                   </div>
-                ) : (
-                  <div className={`hand-fanned hand-${position}`}>
-                    {player.hand.map((_: Card, cardIndex: number) => {
-                      // Calculate fan angle - compact fan like a leque
-                      const totalCards = player.hand.length;
-                      const maxAngle = Math.min(45, totalCards * 1.2); // Slightly reduced angle
-                      const fanAngle = (cardIndex - (totalCards - 1) / 2) * (maxAngle / Math.max(1, totalCards - 1));
-                      // Increased spacing to reduce overlap
-                      const xOffset = (cardIndex - (totalCards - 1) / 2) * 16;
-                      
-                      // Get base rotation for position
-                      let baseRotation = 0;
-                      if (position === 'north') baseRotation = 180;
-                      else if (position === 'east') baseRotation = 90;
-                      else if (position === 'west') baseRotation = -90;
-                      
-                      // Combine base rotation with fan angle
-                      const totalRotation = baseRotation + fanAngle;
-                      
-                      return (
-                        <div
-                          key={cardIndex}
-                          className={`card-back-fanned card-${position}`}
-                          style={{
-                            transform: `rotate(${totalRotation}deg) translateX(${xOffset}px)`,
-                            zIndex: cardIndex
-                          }}
-                        >
-                          {cardIndex === Math.floor(player.hand.length / 2) && (
-                            <span className="card-count-overlay">{player.hand.length}</span>
-                          )}
-                        </div>
-                      );
-                    })}
+                );
+              };
+
+              const renderAICards = () => {
+                if (isHuman) return null;
+                return (
+                  <div className="hand-back-stack">
+                    <div className="card-back-small" />
+                    <span className="card-count">{player.hand.length}</span>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              };
+
+              return (
+                <div
+                  key={player.id}
+                  className={`player-seat player-${position} ${isCurrentPlayer ? 'active' : ''} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
+                >
+                  <div className="player-info">
+                    <h3 className="player-name">
+                      {player.name}
+                      {isDealer && <span className="dealer-badge">🃏</span>}
+                      {isCurrentPlayer && <span className="turn-indicator">Turn</span>}
+                    </h3>
+                    <div className="team-badge">{getTeamName(player.team)}</div>
+                  </div>
+                  {position === 'south' ? renderPlayerHand() : renderAICards()}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
+      {/* Show round results when round ends */}
+      {gameState.waitingForRoundEnd && !gameState.isGameOver && (
+        <div className="pause-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '40px',
+            borderRadius: '15px',
+            textAlign: 'center',
+            maxWidth: '600px'
+          }}>
+            <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#2c3e50' }}>Round {gameState.round - 1} Complete!</h2>
+            
+            <div style={{ marginBottom: '30px' }}>
+              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Round Scores:</p>
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+                <div style={{ padding: '15px', backgroundColor: '#e3f2fd', borderRadius: '10px', minWidth: '150px' }}>
+                  <strong style={{ fontSize: '16px', color: '#1976d2' }}>US</strong>
+                  <p style={{ fontSize: '24px', margin: '10px 0', fontWeight: 'bold' }}>
+                    {gameState.scores[usTeam === 1 ? 'team1' : 'team2']} points
+                  </p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#fce4ec', borderRadius: '10px', minWidth: '150px' }}>
+                  <strong style={{ fontSize: '16px', color: '#c2185b' }}>THEM</strong>
+                  <p style={{ fontSize: '24px', margin: '10px 0', fontWeight: 'bold' }}>
+                    {gameState.scores[themTeam === 1 ? 'team1' : 'team2']} points
+                  </p>
+                </div>
+              </div>
+              
+              <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '10px' }}>
+                <p style={{ fontSize: '16px', marginBottom: '10px', fontWeight: 'bold' }}>Game Score:</p>
+                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                  <div>
+                    <strong>US:</strong> {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']} victories
+                  </div>
+                  <div>
+                    <strong>THEM:</strong> {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']} victories
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                game.continueToNextRound();
+                setGameState(game.getState());
+              }}
+              style={{
+                padding: '15px 40px',
+                fontSize: '18px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              Continue to Round {gameState.round}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Pause before starting first round only - show trump card */}
       {gameState.waitingForRoundStart && !gameState.isGameOver && gameState.round === 1 && (
@@ -462,17 +619,6 @@ export const GameBoard: React.FC = () => {
         </div>
       )}
 
-      {gameState.currentPlayerIndex === 0 &&
-        gameState.players[0].name === 'You' &&
-        selectedCard !== null &&
-        !gameState.isGameOver &&
-        !gameState.waitingForTrickEnd &&
-        !gameState.waitingForRoundStart &&
-        !gameState.waitingForGameStart && (
-        <button className="play-button" onClick={handlePlayCard}>
-          Play Selected Card
-        </button>
-      )}
 
       {gameState.isGameOver && (
         <div className="game-over" style={{
@@ -525,11 +671,7 @@ export const GameBoard: React.FC = () => {
             </div>
           <button
             className="new-game-button"
-            onClick={() => {
-                const newGame = new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod);
-                setGame(newGame);
-                setGameState(newGame.getState());
-              }}
+            onClick={handleNewGame}
               style={{
                 padding: '15px 40px',
                 fontSize: '20px',
