@@ -1,13 +1,19 @@
 .game-board {
+  --table-size: 900px;
+  --trick-size: 360px;
+  --card-w: 70px;
+  --card-h: 101px;
+  --hand-row-h: 108px;
+  --button-min-w: 180px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 35%),
-              radial-gradient(circle at 80% 0%, rgba(255,255,255,0.06), transparent 30%),
-              linear-gradient(135deg, #4f5bd5 0%, #764ba2 50%, #667eea 100%);
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 40%),
+              radial-gradient(circle at 80% 0%, rgba(255,255,255,0.04), transparent 32%),
+              linear-gradient(135deg, #5a6ba8 0%, #6f5f98 45%, #58679d 100%);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -20,43 +26,47 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 10px 14px;
   color: white;
 }
 
 .score-block {
-  padding: 10px 12px;
+  padding: 4px 6px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,0,0,0.05));
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .score-block.us {
-  background: linear-gradient(135deg, #0d47a1, #1565c0);
+  background: rgba(52, 132, 234, 0.12);
+  border-color: rgba(52, 132, 234, 0.28);
 }
 
 .score-block.them {
-  background: linear-gradient(135deg, #b71c1c, #d32f2f);
+  background: rgba(226, 92, 92, 0.14);
+  border-color: rgba(226, 92, 92, 0.28);
 }
 
 .score-block .label {
   font-weight: 700;
-  font-size: 1.05em;
-  margin-bottom: 4px;
+  font-size: 0.8em;
+  margin-bottom: 1px;
 }
 
 .score-block .line {
-  font-size: 0.95em;
+  font-size: 0.78em;
 }
 
 .round-block {
-  padding: 10px 14px;
+  padding: 5px 8px;
   border-radius: 10px;
-  background: rgba(0,0,0,0.2);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: center;
-  min-width: 200px;
+  min-width: 110px;
   color: white;
 }
 
@@ -87,13 +97,14 @@
 
 .table-surface {
   position: relative;
-  width: 900px;
-  height: 900px;
+  width: var(--table-size);
+  height: var(--table-size);
   background: radial-gradient(circle at 50% 40%, #2f6d2f, #1f4f1f 70%);
   border: 14px solid #7a5736;
   border-radius: 16px;
-  box-shadow: 0 14px 32px rgba(0,0,0,0.35), inset 0 0 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28), inset 0 0 22px rgba(0,0,0,0.2);
   overflow: visible;
+  padding: 14px;
 }
 
 .grid-overlay {
@@ -121,52 +132,67 @@
 .ui-corner.bottom-left { bottom: 12px; left: 12px; }
 
 .trump-card-display {
-  background: #fff3e0;
-  border: 3px solid #ff9800;
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-  min-width: 140px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 193, 7, 0.45);
+  border-radius: 12px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.15), 0 2px 5px rgba(0,0,0,0.12);
+  min-width: auto;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .trump-card-display img {
-  width: 80px;
+  width: 36px;
   height: auto;
-  border: 2px solid #ff9800;
+  border: 1px solid rgba(255, 193, 7, 0.7);
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
 }
 
 .trump-title {
   font-weight: 700;
-  color: #e65100;
-  margin-bottom: 8px;
+  color: #d17b00;
+  margin-bottom: 0;
+  font-size: 0.82em;
+  letter-spacing: 0.02em;
 }
 
 .trump-suit-text {
-  margin-top: 6px;
   font-weight: 600;
-  color: #d84315;
+  color: #b36200;
+  font-size: 0.9em;
+}
+
+.action-buttons-bar {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 12px 16px;
 }
 
 .action-buttons-group {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
 .play-button,
 .next-trick-button {
-  padding: 12px 26px;
-  font-size: 1.05em;
+  padding: 11px 22px;
+  font-size: 0.95em;
   border: none;
   border-radius: 10px;
   font-weight: bold;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
-  min-width: 180px;
+  min-width: var(--button-min-w);
   color: white;
+  font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
 }
 
 .play-button.enabled { background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); }
@@ -187,8 +213,8 @@
 
 .trick-cards-cross {
   position: relative;
-  width: 360px;
-  height: 360px;
+  width: var(--trick-size);
+  height: var(--trick-size);
 }
 
 .trick-card-cross {
@@ -206,10 +232,10 @@
 .trick-from-west  { left: 10px; top: 50%; transform: translateY(-50%); }
 
 .trick-card-img {
-  width: 78px;
-  height: 112px;
+  width: var(--card-w);
+  height: var(--card-h);
   border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 3px 7px rgba(0,0,0,0.38);
 }
 
 .trick-player-name-small {
@@ -251,8 +277,8 @@
 
 .player-seat.player-north { top: -40px; left: 50%; transform: translateX(-50%); }
 .player-seat.player-south { bottom: -40px; left: 50%; transform: translateX(-50%); }
-.player-seat.player-east  { right: -60px; top: 50%; transform: translateY(-50%); }
-.player-seat.player-west  { left: -60px; top: 50%; transform: translateY(-50%); }
+.player-seat.player-east  { right: -54px; top: 50%; transform: translateY(-50%); }
+.player-seat.player-west  { left: -54px; top: 50%; transform: translateY(-50%); }
 
 .player-info {
   text-align: center;
@@ -297,24 +323,37 @@
 
 .hand-row {
   position: relative;
-  height: 120px;
+  height: var(--hand-row-h);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.12);
 }
 
 .card-hand {
   position: absolute;
-  width: 72px;
-  height: 104px;
+  width: calc(var(--card-w) * 0.92);
+  height: calc(var(--card-h) * 0.93);
   border-radius: 6px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.32);
   transition: box-shadow 0.2s ease;
+}
+
+.player-hand-bar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -8px;
+  margin-bottom: 12px;
 }
 
 .card-hand.selected {
   outline: 3px solid #4caf50;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.48);
   z-index: 1000;
 }
 
@@ -347,5 +386,117 @@
 .card-count {
   font-weight: 700;
   font-size: 0.95em;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 1024px) {
+  .game-board {
+    --table-size: min(92vw, 760px);
+    --trick-size: 300px;
+    --card-w: 63px;
+    --card-h: 90px;
+    --hand-row-h: 99px;
+    --button-min-w: 150px;
+  }
+  .table-layout {
+    margin: 12px 0 28px;
+    padding: 10px;
+  }
+  .top-strip {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .player-seat.player-north { top: -24px; }
+  .player-seat.player-south { bottom: -24px; }
+  .player-seat.player-east { right: -40px; }
+  .player-seat.player-west { left: -40px; }
+  .round-block { min-width: 160px; }
+}
+
+@media (max-width: 768px) {
+  .game-board {
+    --table-size: min(94vw, 620px);
+    --trick-size: 260px;
+    --card-w: 58px;
+    --card-h: 83px;
+    --hand-row-h: 90px;
+    --button-min-w: 140px;
+  }
+  .top-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-items: stretch;
+    text-align: center;
+    gap: 8px;
+  }
+  .score-block { padding: 4px 6px; }
+  .round-block { padding: 5px 7px; min-width: 105px; }
+  .round-block { min-width: auto; }
+  .top-actions { padding: 6px 12px 0; justify-content: flex-end; }
+  .ui-corner { gap: 8px; }
+  .ui-corner.top-right,
+  .ui-corner.bottom-right { right: 8px; }
+  .ui-corner.top-left,
+  .ui-corner.bottom-left { left: 8px; }
+  .player-seat.player-north { top: -12px; }
+  .player-seat.player-south { bottom: -12px; }
+  .player-seat.player-east { right: -18px; }
+  .player-seat.player-west { left: -18px; }
+  .player-info { min-width: 120px; }
+  .hand-row { padding: 8px 10px; }
+  .trump-card-display { padding: 4px 6px; }
+  .trump-card-display img { width: 32px; }
+  .trick-card-cross { width: 240px; height: 240px; }
+  .action-buttons-group {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .play-button, .next-trick-button {
+    width: auto;
+    min-width: 140px;
+  }
+  .action-buttons-bar { padding: 8px 8px 14px; }
+}
+
+@media (max-width: 480px) {
+  .game-board {
+    --table-size: min(94vw, 500px);
+    --trick-size: 210px;
+    --card-w: 52px;
+    --card-h: 74px;
+    --hand-row-h: 83px;
+    --button-min-w: 130px;
+  }
+  .top-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .score-block { padding: 4px 6px; }
+  .round-block { padding: 4px 6px; min-width: 100px; }
+  .score-block .label { font-size: 0.95em; }
+  .score-block .line { font-size: 0.9em; }
+  .round-block { font-size: 0.95em; }
+  .top-actions { padding: 6px 10px 0; justify-content: center; }
+  .action-buttons-group {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .play-button, .next-trick-button {
+    width: calc(50% - 8px);
+    min-width: 0;
+  }
+  .action-buttons-bar { padding: 6px 6px 12px; }
+  .table-layout { margin: 8px 0 20px; padding: 6px; }
+  .player-seat.player-east { right: -6px; }
+  .player-seat.player-west { left: -6px; }
+  .player-seat.player-north { top: -4px; }
+  .player-seat.player-south { bottom: -4px; }
+  .hand-row { padding: 6px 8px; }
+  .trump-card-display { padding: 3px 5px; }
+  .trump-card-display img { width: 30px; }
+  .trump-title { font-size: 0.85em; }
+  .trump-suit-text { font-size: 0.86em; }
+  .trick-player-name-small { font-size: 0.72em; }
 }
 

@@ -1,13 +1,17 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod } from '../types/game';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, AIDifficulty } from '../types/game';
 import { Deck } from './Deck';
 
 export class Game {
   private state: GameState;
   private deck: Deck;
 
-  constructor(playerNames: string[] = ['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod: DealingMethod = 'A') {
+  constructor(
+    playerNames: string[] = ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+    dealingMethod: DealingMethod = 'A',
+    aiDifficulty: AIDifficulty = 'medium'
+  ) {
     this.deck = new Deck();
-    this.state = this.initializeGame(playerNames, dealingMethod);
+    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty);
   }
 
   /**
@@ -85,23 +89,13 @@ export class Game {
   }
 
   /**
-   * Seat players: partners must sit opposite one another
-   * IMPORTANT: "You" must always be at index 0, "Partner" at index 2
-   * Order: [You, AI1, Partner, AI2] - ensuring You and Partner are opposite
-   * You and Partner are always on the same team (US), AIs on the other team (THEM)
+   * Seat players in fixed positions:
+   * Index 0 = South (humano), 1 = East (AI), 2 = North (AI), 3 = West (AI)
+   * Teams: South+North (team 1), East+West (team 2)
    */
-  private seatPlayers(
-    playerNames: string[],
-    teams: { team1: string[], team2: string[] }
-  ): string[] {
-    // Force You and Partner to be on the same team (US)
-    // The two AIs will be on the other team (THEM)
-    // Get the AI players (they will be on the opposite team)
-    const aiPlayers = playerNames.filter(name => name !== 'You' && name !== 'Partner');
-    
-    // Always seat: You (0), AI1 (1), Partner (2), AI2 (3)
-    // This ensures You and Partner are opposite (0 ↔ 2) and on the same team
-    return ['You', aiPlayers[0] || 'AI 1', 'Partner', aiPlayers[1] || 'AI 2'];
+  private seatPlayers(playerNames: string[]): string[] {
+    const defaults = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+    return defaults.map((def, idx) => playerNames[idx] || def);
   }
 
   /**
@@ -110,6 +104,10 @@ export class Game {
    */
   private dealCards(players: Player[], dealerIndex: number, method: DealingMethod): { suit: Suit | null, card: Card | null } {
     this.deck = new Deck();
+    // According to Sueca rules: after shuffling, the deck is cut by the partner of the shuffler
+    // The shuffler is the player to the right of the dealer
+    // For simplicity, we apply a random cut before dealing
+    this.deck.cut();
     
     if (method === 'A') {
       // Method A: Standard dealing - one card at a time, counterclockwise
@@ -176,28 +174,25 @@ export class Game {
     }
   }
 
-  private initializeGame(playerNames: string[], dealingMethod: DealingMethod = 'A'): GameState {
-    // Step 1: Choose teams
-    const teams = this.chooseTeams(playerNames);
-    
-    // Step 2: Choose dealer
+  private initializeGame(
+    playerNames: string[],
+    dealingMethod: DealingMethod = 'A',
+    aiDifficulty: AIDifficulty = 'medium'
+  ): GameState {
+    // Choose dealer
     const dealerName = this.chooseDealer(playerNames);
     
-    // Step 3: Seat players (partners opposite)
-    const seatedOrder = this.seatPlayers(playerNames, teams);
+    // Seat players (fixed positions)
+    const seatedOrder = this.seatPlayers(playerNames);
     
-    // Step 4: Create players with correct teams and seating
-    // IMPORTANT: You and Partner (indices 0 and 2) must be on the same team (US)
-    // AI 1 and AI 2 (indices 1 and 3) must be on the other team (THEM)
+    // Create players with fixed teams: indices 0/2 = team1 (US), 1/3 = team2 (THEM)
     const players: Player[] = seatedOrder.map((name, index) => {
-      // You (index 0) and Partner (index 2) are always on team 1 (US)
-      // AI 1 (index 1) and AI 2 (index 3) are always on team 2 (THEM)
-      const isUS = (name === 'You' || name === 'Partner');
+      const isTeam1 = index === 0 || index === 2;
       return {
         id: `player_${index}`,
         name,
         hand: [],
-        team: (isUS ? 1 : 2) as 1 | 2
+        team: (isTeam1 ? 1 : 2) as 1 | 2
       };
     });
     
@@ -229,7 +224,13 @@ export class Game {
       isFirstTrick: true,
       dealingMethod: dealingMethod,
       waitingForRoundStart: true, // Pause before starting (show trump card)
-      waitingForGameStart: false
+      waitingForRoundEnd: false,
+      waitingForGameStart: false,
+      playedCards: [], // Initialize empty - will track cards as they're played
+      isPaused: false,
+      playerName: players[0]?.name || 'Player 1',
+      aiDifficulty: aiDifficulty,
+      partnerSignals: [] // Initialize empty - will track partner coordination signals
     };
   }
 
@@ -237,9 +238,24 @@ export class Game {
     return { ...this.state };
   }
 
+  /**
+   * Check if a card can be played (public method for UI)
+   */
+  canPlayCard(playerIndex: number, cardIndex: number): boolean {
+    if (playerIndex !== this.state.currentPlayerIndex) {
+      return false;
+    }
+    const player = this.state.players[playerIndex];
+    if (cardIndex < 0 || cardIndex >= player.hand.length) {
+      return false;
+    }
+    const card = player.hand[cardIndex];
+    return this.isValidCard(card, playerIndex);
+  }
+
   playCard(playerIndex: number, cardIndex: number): boolean {
-    // Do not allow any new cards while waiting for the user to close the trick
-    if (this.state.waitingForTrickEnd) {
+    // Do not allow any new cards while waiting for the user to close the trick or if paused
+    if (this.state.waitingForTrickEnd || this.state.isPaused) {
       return false;
     }
     if (playerIndex !== this.state.currentPlayerIndex) {
@@ -261,6 +277,8 @@ export class Game {
     // Remove card from hand and add to trick
     player.hand.splice(cardIndex, 1);
     this.state.currentTrick.push(card);
+    // Track this card as played
+    this.state.playedCards.push(card);
 
     // Calculate next player
     let nextPlayerIndex: number;
@@ -311,6 +329,281 @@ export class Game {
     }
 
     return true;
+  }
+
+  /**
+   * AI strategy: Choose the best card to play based on game state
+   * Uses card tracking to make smarter decisions
+   * Returns the index of the card to play, or -1 if no valid card
+   */
+  chooseAICard(playerIndex: number): number {
+    const player = this.state.players[playerIndex];
+    const trick = this.state.currentTrick;
+    const trumpSuit = this.state.trumpSuit!;
+    const difficulty = this.state.aiDifficulty;
+    
+    // Get valid cards (cards that can be played)
+    const validCards: Array<{ card: Card; index: number }> = [];
+    for (let i = 0; i < player.hand.length; i++) {
+      if (this.isValidCard(player.hand[i], playerIndex)) {
+        validCards.push({ card: player.hand[i], index: i });
+      }
+    }
+
+    if (validCards.length === 0) {
+      return -1; // No valid cards (shouldn't happen)
+    }
+
+    // Easy: Random with slight preference for lower cards
+    if (difficulty === 'easy') {
+      // 70% chance to play a random lower card, 30% random
+      if (Math.random() < 0.7) {
+        validCards.sort((a, b) => CARD_HIERARCHY[a.card.rank] - CARD_HIERARCHY[b.card.rank]);
+        return validCards[Math.floor(Math.random() * Math.min(3, validCards.length))].index;
+      } else {
+        return validCards[Math.floor(Math.random() * validCards.length)].index;
+      }
+    }
+
+    // Medium and Hard: Use strategic logic
+    // Helper: Check if a card is likely to win (considering played cards)
+    const isCardLikelyToWin = (card: Card, suit: Suit): boolean => {
+      if (difficulty === 'hard') {
+        // Use advanced probability calculation
+        return this.calculateWinProbability(card, suit, trumpSuit) > 0.5;
+      } else {
+        // Medium: Simple check
+        if (card.suit === trumpSuit) {
+          const higherTrumpsPlayed = this.state.playedCards.filter(c => 
+            c.suit === trumpSuit && CARD_HIERARCHY[c.rank] > CARD_HIERARCHY[card.rank]
+          ).length;
+          return higherTrumpsPlayed < 2;
+        } else {
+          const higherCardsPlayed = this.state.playedCards.filter(c => 
+            c.suit === suit && CARD_HIERARCHY[c.rank] > CARD_HIERARCHY[card.rank]
+          ).length;
+          return higherCardsPlayed < 2;
+        }
+      }
+    };
+
+    // If leading (first card of trick)
+    if (trick.length === 0) {
+      // Count remaining cards of each suit in hand
+      const suitCounts: Record<Suit, number> = {
+        clubs: 0, diamonds: 0, hearts: 0, spades: 0
+      };
+      player.hand.forEach(card => {
+        suitCounts[card.suit]++;
+      });
+
+      // Hard difficulty: Check partner signals for coordination
+      if (difficulty === 'hard') {
+        const partnerSignal = this.getPartnerSignal(playerIndex);
+        if (partnerSignal === 'need_trump' && validCards.some(v => v.card.suit === trumpSuit)) {
+          // Partner needs trumps, lead with a trump if possible
+          const trumpCards = validCards.filter(v => v.card.suit === trumpSuit);
+          if (trumpCards.length > 0) {
+            // Send signal that we're helping
+            this.sendPartnerSignal(playerIndex, 'helping_trump');
+            return trumpCards[0].index;
+          }
+        }
+      }
+
+      // Prefer leading with suit we have many cards of
+      // Also consider if we have high cards in that suit
+      let bestCard = validCards[0];
+      let bestScore = 0;
+
+      for (const valid of validCards) {
+        const suit = valid.card.suit;
+        const rankValue = CARD_HIERARCHY[valid.card.rank];
+        const suitCount = suitCounts[suit];
+        
+        // Score: higher rank + more cards of that suit
+        // Bonus for trumps if we have many
+        let score = rankValue * 2 + suitCount;
+        if (suit === trumpSuit && suitCount > 3) {
+          score += 5; // Bonus for leading with trumps when we have many
+        }
+        
+        // Hard: Bonus for leading with strong suit (signal to partner)
+        if (difficulty === 'hard' && suitCount >= 4 && rankValue >= CARD_HIERARCHY['K']) {
+          score += 3; // Signal we have strong suit
+        }
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestCard = valid;
+        }
+      }
+      
+      // Hard: Send signal about what we're leading
+      if (difficulty === 'hard' && bestCard.card.suit === trumpSuit && suitCounts[trumpSuit] > 3) {
+        this.sendPartnerSignal(playerIndex, 'leading_trumps');
+      }
+      
+      return bestCard.index;
+    }
+
+    // Following suit - need to determine best strategy
+    const leadSuit = trick[0].suit;
+    const leadCard = trick[0];
+    const leadValue = CARD_HIERARCHY[leadCard.rank];
+    const isLeadTrump = leadCard.suit === trumpSuit;
+    const trickLeader = this.state.trickLeader;
+    const partnerIndex = this.getPartnerIndex(playerIndex);
+    const isPartnerLeading = partnerIndex !== null && trickLeader === partnerIndex;
+
+    // Check if there are any trumps already played
+    const trumpsInTrick = trick.filter(c => c.suit === trumpSuit);
+    const highestTrumpInTrick = trumpsInTrick.length > 0
+      ? Math.max(...trumpsInTrick.map(c => CARD_HIERARCHY[c.rank]))
+      : 0;
+
+    // Separate cards by type
+    const cardsOfLeadSuit = validCards.filter(v => v.card.suit === leadSuit);
+    const trumpCards = validCards.filter(v => v.card.suit === trumpSuit);
+    const otherCards = validCards.filter(v => v.card.suit !== leadSuit && v.card.suit !== trumpSuit);
+
+    // Hard: Partner coordination - if partner is leading, try to support
+    if (difficulty === 'hard' && isPartnerLeading && cardsOfLeadSuit.length > 0) {
+      // Partner is leading, try to win if we can, or play high to support
+      const winningCards = cardsOfLeadSuit.filter(v => 
+        CARD_HIERARCHY[v.card.rank] > leadValue && !isLeadTrump
+      );
+      
+      if (winningCards.length > 0) {
+        // We can win - check if it's beneficial
+        const bestWinning = winningCards.reduce((best, current) => 
+          CARD_HIERARCHY[current.card.rank] < CARD_HIERARCHY[best.card.rank] ? current : best
+        );
+        
+        // If we have multiple winning cards, play the lowest to save higher ones
+        // But if partner needs help, play higher
+        const partnerSignal = this.getPartnerSignal(playerIndex);
+        if (partnerSignal === 'need_help') {
+          // Play highest winning card to help partner
+          const highestWinning = winningCards.reduce((best, current) => 
+            CARD_HIERARCHY[current.card.rank] > CARD_HIERARCHY[best.card.rank] ? current : best
+          );
+          return highestWinning.index;
+        }
+        
+        return bestWinning.index;
+      } else {
+        // Can't win, but can support partner by playing high card of lead suit
+        const highestSupport = cardsOfLeadSuit.reduce((best, current) => 
+          CARD_HIERARCHY[current.card.rank] > CARD_HIERARCHY[best.card.rank] ? current : best
+        );
+        // Only support if it's not too valuable
+        if (CARD_HIERARCHY[highestSupport.card.rank] < CARD_HIERARCHY['7']) {
+          return highestSupport.index;
+        }
+      }
+    }
+
+    // Strategy: Try to win if possible, otherwise play lowest
+    // If we have cards of lead suit
+    if (cardsOfLeadSuit.length > 0) {
+      // Check if we can win with lead suit
+      const winningLeadCards = cardsOfLeadSuit.filter(v => 
+        CARD_HIERARCHY[v.card.rank] > leadValue && !isLeadTrump
+      );
+      
+      if (winningLeadCards.length > 0) {
+        // Use card tracking: prefer cards that are likely to win
+        const likelyWinners = winningLeadCards.filter(v => 
+          isCardLikelyToWin(v.card, leadSuit)
+        );
+        
+        const cardsToChoose = likelyWinners.length > 0 ? likelyWinners : winningLeadCards;
+        
+        // Play lowest winning card to save higher cards
+        let best = cardsToChoose[0];
+        for (const card of cardsToChoose) {
+          if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[best.card.rank]) {
+            best = card;
+          }
+        }
+        return best.index;
+      } else {
+        // Can't win with lead suit, play lowest
+        let lowest = cardsOfLeadSuit[0];
+        for (const card of cardsOfLeadSuit) {
+          if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[lowest.card.rank]) {
+            lowest = card;
+          }
+        }
+        return lowest.index;
+      }
+    }
+
+    // Don't have lead suit - can play trump or other
+    // If there are trumps in trick, try to win with higher trump
+    if (trumpCards.length > 0 && highestTrumpInTrick > 0) {
+      const winningTrumps = trumpCards.filter(v => 
+        CARD_HIERARCHY[v.card.rank] > highestTrumpInTrick
+      );
+      
+      if (winningTrumps.length > 0) {
+        // Play lowest winning trump
+        let best = winningTrumps[0];
+        for (const card of winningTrumps) {
+          if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[best.card.rank]) {
+            best = card;
+          }
+        }
+        return best.index;
+      }
+    }
+
+    // If no trumps in trick yet, save high trumps for later
+    // Play low trumps or other cards
+    if (trumpCards.length > 0 && highestTrumpInTrick === 0) {
+      // Separate high trumps (A, 7, K) from low trumps
+      const lowTrumps = trumpCards.filter(v => 
+        CARD_HIERARCHY[v.card.rank] < CARD_HIERARCHY['K']
+      );
+
+      // If we have low trumps, play one of those (save high trumps)
+      if (lowTrumps.length > 0) {
+        // Play lowest low trump
+        let lowest = lowTrumps[0];
+        for (const card of lowTrumps) {
+          if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[lowest.card.rank]) {
+            lowest = card;
+          }
+        }
+        return lowest.index;
+      }
+
+      // Only high trumps left - play lowest if we have many trumps, otherwise save
+      if (trumpCards.length > 3) {
+        let lowest = trumpCards[0];
+        for (const card of trumpCards) {
+          if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[lowest.card.rank]) {
+            lowest = card;
+          }
+        }
+        return lowest.index;
+      }
+    }
+
+    // Play other cards (not lead suit, not trump) - play lowest
+    if (otherCards.length > 0) {
+      let lowest = otherCards[0];
+      for (const card of otherCards) {
+        if (CARD_HIERARCHY[card.card.rank] < CARD_HIERARCHY[lowest.card.rank]) {
+          lowest = card;
+        }
+      }
+      return lowest.index;
+    }
+
+    // Fallback: play first valid card
+    return validCards[0].index;
   }
 
   private evaluateTrick(): void {
@@ -427,12 +720,25 @@ export class Game {
       this.state.isGameOver = true;
       this.state.winner = 1;
       this.state.waitingForGameStart = true; // Pause before allowing new game
+      this.state.waitingForRoundEnd = false;
     } else if (this.state.gameScore.team2 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 2;
       this.state.waitingForGameStart = true; // Pause before allowing new game
+      this.state.waitingForRoundEnd = false;
     } else {
-      // Start new round (will pause to show trump)
+      // Show round results before starting new round
+      this.state.waitingForRoundEnd = true;
+      // Store round value for next round
+      (this.state as any).nextRoundValue = roundValue;
+    }
+  }
+
+  // Called from UI to continue after showing round results
+  continueToNextRound(): void {
+    if (this.state.waitingForRoundEnd) {
+      const roundValue = (this.state as any).nextRoundValue || 1;
+      this.state.waitingForRoundEnd = false;
       this.startNewRound(roundValue);
     }
   }
@@ -441,6 +747,7 @@ export class Game {
     this.state.round++;
     this.state.scores = { team1: 0, team2: 0 };
     this.state.currentTrick = [];
+    this.state.playedCards = []; // Reset played cards for new round
     
     // Rotate dealer counterclockwise (to the right)
     this.state.dealerIndex = (this.state.dealerIndex + 1) % 4;
@@ -456,6 +763,7 @@ export class Game {
     this.state.trickLeader = firstTrickStarter;
     this.state.lastTrickWinner = null;
     this.state.isFirstTrick = true;
+    this.state.waitingForRoundEnd = false;
     // Only pause on first round of the game (round 1)
     this.state.waitingForRoundStart = (this.state.round === 1);
   }
@@ -478,6 +786,148 @@ export class Game {
     // Implement bluff challenge logic
     // This would require tracking if a player could follow suit but didn't
     // For now, this is a placeholder for future implementation
+  }
+
+  pauseGame(): void {
+    this.state.isPaused = true;
+  }
+
+  resumeGame(): void {
+    this.state.isPaused = false;
+  }
+
+  quitGame(): void {
+    // Reset game state - can be used to start fresh
+    this.state.isGameOver = true;
+    this.state.isPaused = false;
+  }
+
+  /**
+   * Check if a specific card has been played in this round
+   */
+  hasCardBeenPlayed(card: Card): boolean {
+    return this.state.playedCards.some(c => 
+      c.suit === card.suit && c.rank === card.rank
+    );
+  }
+
+  /**
+   * Get count of cards of a specific suit that have been played
+   */
+  getPlayedCardsCount(suit: Suit): number {
+    return this.state.playedCards.filter(c => c.suit === suit).length;
+  }
+
+  /**
+   * Get count of trumps that have been played
+   */
+  getPlayedTrumpsCount(): number {
+    if (!this.state.trumpSuit) return 0;
+    return this.getPlayedCardsCount(this.state.trumpSuit);
+  }
+
+  /**
+   * Advanced card counting: Calculate probability that a card will win
+   * Returns a value between 0 and 1
+   */
+  private calculateWinProbability(card: Card, suit: Suit, trumpSuit: Suit): number {
+    const cardValue = CARD_HIERARCHY[card.rank];
+    const isTrump = card.suit === trumpSuit;
+    const totalCards = 40;
+    const cardsPlayed = this.state.playedCards.length;
+    const cardsRemaining = totalCards - cardsPlayed - this.state.currentTrick.length;
+    
+    if (cardsRemaining <= 0) return 0.5; // Fallback
+    
+    if (isTrump) {
+      // Count how many higher trumps have been played
+      const higherTrumpsPlayed = this.state.playedCards.filter(c => 
+        c.suit === trumpSuit && CARD_HIERARCHY[c.rank] > cardValue
+      ).length;
+      
+      // Count how many higher trumps are in current trick
+      const higherTrumpsInTrick = this.state.currentTrick.filter(c => 
+        c.suit === trumpSuit && CARD_HIERARCHY[c.rank] > cardValue
+      ).length;
+      
+      // Estimate remaining higher trumps (10 total trumps, 4 suits)
+      const totalTrumps = 10;
+      const trumpsPlayed = this.getPlayedTrumpsCount();
+      const trumpsInTrick = this.state.currentTrick.filter(c => c.suit === trumpSuit).length;
+      const trumpsRemaining = totalTrumps - trumpsPlayed - trumpsInTrick;
+      
+      // Probability that remaining trumps are lower
+      const higherTrumpsRemaining = Math.max(0, (totalTrumps - cardValue) - higherTrumpsPlayed - higherTrumpsInTrick);
+      const probability = 1 - (higherTrumpsRemaining / Math.max(1, trumpsRemaining));
+      
+      return Math.max(0, Math.min(1, probability));
+    } else {
+      // For non-trumps, check if trumps are in trick
+      const trumpsInTrick = this.state.currentTrick.filter(c => c.suit === trumpSuit).length;
+      if (trumpsInTrick > 0) {
+        return 0; // Can't win if trumps are in trick
+      }
+      
+      // Count higher cards of same suit
+      const higherCardsPlayed = this.state.playedCards.filter(c => 
+        c.suit === suit && CARD_HIERARCHY[c.rank] > cardValue
+      ).length;
+      
+      const higherCardsInTrick = this.state.currentTrick.filter(c => 
+        c.suit === suit && CARD_HIERARCHY[c.rank] > cardValue
+      ).length;
+      
+      // Estimate remaining higher cards (10 cards per suit)
+      const totalSuitCards = 10;
+      const suitCardsPlayed = this.getPlayedCardsCount(suit);
+      const suitCardsInTrick = this.state.currentTrick.filter(c => c.suit === suit).length;
+      const suitCardsRemaining = totalSuitCards - suitCardsPlayed - suitCardsInTrick;
+      
+      const higherCardsRemaining = Math.max(0, (totalSuitCards - cardValue) - higherCardsPlayed - higherCardsInTrick);
+      const probability = 1 - (higherCardsRemaining / Math.max(1, suitCardsRemaining));
+      
+      return Math.max(0, Math.min(1, probability));
+    }
+  }
+
+  /**
+   * Get partner index for a player
+   */
+  private getPartnerIndex(playerIndex: number): number | null {
+    const player = this.state.players[playerIndex];
+    const partner = this.state.players.find(p => p.team === player.team && p.id !== player.id);
+    if (!partner) return null;
+    return this.state.players.findIndex(p => p.id === partner.id);
+  }
+
+  /**
+   * Send a signal to partner (for coordination)
+   */
+  private sendPartnerSignal(playerIndex: number, signal: string): void {
+    const partnerIndex = this.getPartnerIndex(playerIndex);
+    if (partnerIndex === null) return;
+    
+    this.state.partnerSignals.push({
+      playerIndex: partnerIndex,
+      signal,
+      trick: this.state.round * 10 - (10 - this.state.players[0].hand.length) // Estimate trick number
+    });
+    
+    // Keep only last 5 signals
+    if (this.state.partnerSignals.length > 5) {
+      this.state.partnerSignals.shift();
+    }
+  }
+
+  /**
+   * Get latest signal from partner
+   */
+  private getPartnerSignal(playerIndex: number): string | null {
+    const partnerIndex = this.getPartnerIndex(playerIndex);
+    if (partnerIndex === null) return null;
+    
+    const signals = this.state.partnerSignals.filter(s => s.playerIndex === playerIndex);
+    return signals.length > 0 ? signals[signals.length - 1].signal : null;
   }
 }
 

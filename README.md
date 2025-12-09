@@ -1,17 +1,20 @@
-# Sueca Card Game - Web Application
+# 🃏 Sueca Card Game - Web Application
 
-> **⚠️ ALPHA VERSION** - This is the initial release and starting point for future development. Features and gameplay may change in future versions.
+> **✅ VERSION 1.0 (tag: v1.0)** - Fully functional game with AI, menus, and online deployment ready. **V2 em progresso na branch `v2-main`.**
 
-A web-based implementation of the traditional Portuguese card game Sueca, built with React and TypeScript.
+A web-based implementation of the traditional Portuguese card game Sueca, built with React and TypeScript. Play against AI opponents or share with friends online!
 
 ## 🎮 Features
 
-- **4-player game** (2 teams of 2 players)
+- **4-player game** (2 teams of 2 players) - You + Partner vs 2 AI opponents
 - **Full game logic implementation** following traditional Sueca rules
+- **Intelligent AI** with card tracking and strategic gameplay
 - **Modern React + TypeScript** frontend
 - **Responsive design** that works on desktop and mobile
-- **Card images support** using existing card assets
-- **AI opponents** for single-player experience
+- **Game controls**: Pause, Resume, Quit, Settings
+- **Player customization**: Set your name
+- **Online deployment** ready - Share with friends via URL
+- **Two dealing methods**: Standard (Method A) and Dealer First (Method B)
 
 ## 📋 Game Rules
 
@@ -67,89 +70,127 @@ npm run build
 
 This creates an optimized production build in the `build` folder.
 
-## 📦 Deployment
+## 📦 Deployment - Partilhar com Amigos
 
-### Vercel (Recommended)
+**Produção (V2)**  
+- Branch: `v2-main`  
+- URL: `https://frontend-mu-five-18.vercel.app`  
+- Comando: dentro de `frontend`, usar `vercel --prod`
 
-1. Install Vercel CLI:
+### 🌐 Opção 1: Deploy Online (RECOMENDADO)
+
+**Vercel (Mais Fácil):**
 ```bash
-npm i -g vercel
-```
-
-2. Deploy:
-```bash
+npm install -g vercel
 cd frontend
 vercel
+# Seguir instruções e obter URL
+# Partilhar URL com amigos!
 ```
 
-### Netlify
-
-1. Build the project:
+**Netlify (Alternativa):**
 ```bash
 cd frontend
 npm run build
+# Arrastar pasta 'build' para: https://app.netlify.com/drop
 ```
 
-2. Drag and drop the `build` folder to [Netlify Drop](https://app.netlify.com/drop)
+### 💾 Opção 2: Build Local
 
-### GitHub Pages
-
-1. Install gh-pages:
 ```bash
-npm install --save-dev gh-pages
+cd frontend
+npm run build
+# Comprimir pasta 'build' e enviar para amigo
+# Amigo abre 'index.html' no navegador
 ```
 
-2. Add to `package.json`:
-```json
-"homepage": "https://yourusername.github.io/sueca",
-"scripts": {
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d build"
-}
-```
+**📖 Guia Completo:** Ver `docs/DEPLOY_GUIDE.md` para instruções detalhadas.
 
-3. Deploy:
-```bash
-npm run deploy
-```
+**💡 Dica:** Toda documentação está organizada na pasta `docs/`. Ver `docs/INDEX.md` para índice completo.
+
+## 🌳 Branches e Releases
+- `v1.0` (tag) — versão estável congelada (V1)
+- `v1-maintenance` — hotfixes para V1, se necessário
+- `v2-main` — desenvolvimento ativo do SUECA 2.0
+- Deploy preview: `vercel` a partir de `frontend`
+- Deploy produção: `vercel --prod` (usa `frontend-mu-five-18.vercel.app`)
 
 ## 📁 Project Structure
 
 ```
-frontend/
-├── public/
-│   └── index.html
-├── src/
-│   ├── components/
-│   │   ├── GameBoard.tsx
-│   │   └── GameBoard.css
-│   ├── models/
-│   │   ├── Deck.ts
-│   │   └── Game.ts
-│   ├── types/
-│   │   └── game.ts
-│   ├── App.tsx
-│   ├── App.css
-│   ├── index.tsx
-│   └── index.css
-├── package.json
-└── tsconfig.json
+SUECA/
+├── README.md              # Este ficheiro (documentação principal)
+├── docs/                  # Toda documentação detalhada
+│   ├── PROJECT_STATUS.md  # Estado atual do projeto
+│   ├── DEVELOPMENT_PLAN.md # Plano de desenvolvimento
+│   ├── NEXT_STEPS.md      # Próximos passos sugeridos
+│   └── ...                # Outros guias
+├── frontend/              # Código fonte React/TypeScript
+│   ├── src/
+│   │   ├── components/    # Componentes React
+│   │   │   ├── GameBoard.tsx
+│   │   │   ├── GameMenu.tsx
+│   │   │   └── ...
+│   │   ├── models/        # Lógica do jogo
+│   │   │   ├── Game.ts
+│   │   │   └── Deck.ts
+│   │   └── types/        # TypeScript types
+│   ├── public/           # Assets públicos
+│   └── package.json
+├── assets/               # Imagens das cartas
+├── archive/             # Arquivos de referência
+└── rules.txt            # Regras do jogo
 ```
 
 ## 🎯 How to Play
 
-1. You are Player 1 (Team 1) with your Partner (Player 3)
-2. Click on a card from your hand to select it
-3. Click "Play Selected Card" to play it
-4. AI players will automatically play their cards
-5. The game continues until one team reaches 4 victories
+1. **Set your name** in Settings (optional)
+2. **Start the game** - Teams are chosen automatically
+3. **Select a card** from your hand by clicking on it
+4. **Click "Play Selected Card"** to play
+5. **AI players** automatically play their turns
+6. **Win tricks** by playing the highest card or trump
+7. **First team to 4 victories** wins the match!
+
+### Controls
+- **⏸️ Pause**: Pause the game anytime
+- **🚪 Quit**: Exit current game (with confirmation)
+- **⚙️ Settings**: Change your name and view options
 
 ## 🛠️ Technologies Used
 
 - **React 18** - UI library
 - **TypeScript** - Type safety
-- **CSS3** - Styling with modern features
+- **CSS3** - Modern styling with animations
 - **Create React App** - Build tooling
+- **Vercel** - Deployment platform
+
+## 📚 Documentation
+
+Toda a documentação detalhada está organizada na pasta `docs/`:
+
+### 🎯 Começar Aqui
+- **`docs/INDEX.md`** - Índice completo com descrições
+- **`docs/QUICKSTART.md`** - Início rápido (3 passos)
+- **`docs/COMO_PARTILHAR.md`** - Como partilhar o jogo
+
+### 📊 Estado e Planeamento
+- **`docs/PROJECT_STATUS.md`** - Estado atual e histórico completo
+- **`docs/NEXT_STEPS.md`** - Próximos passos sugeridos
+- **`docs/DEVELOPMENT_PLAN.md`** - Plano técnico detalhado
+
+### 🌐 Deploy
+- **`docs/DEPLOY_QUICK.md`** - Deploy rápido (5 minutos)
+- **`docs/DEPLOY_GUIDE.md`** - Guia completo de deploy
+
+**Ver `docs/INDEX.md` para navegação completa.**
+
+## 🚀 Current Status
+
+✅ **Fully Functional** - Game is complete and playable
+✅ **Deployed Online** - Accessible via URL
+✅ **AI Implemented** - Intelligent opponents with card tracking
+✅ **UI Complete** - Modern interface with menus and controls
 
 ## 📝 License
 
@@ -158,5 +199,9 @@ This project is open source and available for personal use.
 ## 🤝 Contributing
 
 Feel free to submit issues and enhancement requests!
+
+---
+
+**Enjoy playing Sueca! 🎮**
 
 

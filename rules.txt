@@ -1,0 +1,180 @@
+SUECA – GAME DESIGN DOCUMENT
+
+Target: Text-based Python application
+Objective: Accurately simulate real-life Sueca gameplay, including rotation, team formation, dealing methods, trick logic, scoring, and match rules.
+Note: No pseudo-code is included yet. This document exists to define all core game rules prior to implementation.
+
+
+1. Core Principle – Rotation
+
+Sueca always rotates counterclockwise (to the right) during gameplay.
+This applies to:
+• Playing cards
+• Turn order per trick
+• Dealer rotation per game
+• Shuffling responsibility.
+
+However — during game setup, Method B of dealing requires a temporary clockwise rotation. This single inversion is detailed later in a dedicated section.
+
+
+2. Game Setup (Real-Life Tournament Logic)
+
+2.1 Choosing Teams (Only if Teams Are Not Predefined)
+
+Shuffle the deck.
+
+Each player draws one card.
+
+Highest card teams with lowest card.
+
+Remaining two players form the second team.
+
+2.2 Choosing First Dealer
+
+Each player draws a card.
+
+Lowest card becomes dealer.
+
+In case of tie → repeat.
+
+2.3 Seating
+
+Once teams are formed, partners must sit opposite one another.
+
+
+3. Pre-Game Procedures
+
+3.1 Shuffling the Deck
+
+Performed by the player sitting immediately to the right of the dealer.
+
+3.2 Cutting the Deck
+
+Performed by the partner of the shuffler.
+This avoids any conflict of interest between shuffle, cut, and deal.
+
+3.3 Dealing Responsibility
+
+After the cut, the dealer manages the deal using one of the two legal methods described below.
+
+
+4. Dealing Methods – Two Legal Variants
+
+Method A – Standard Dealing (Most Common)
+
+• Deal one card at a time, counterclockwise (to the right)
+• Each player receives ten cards
+• Dealer receives the last ten cards
+• The final card in the deck defines the Trump Suit
+
+Gameplay starts counterclockwise.
+
+
+Method B – Dealer Receives First Card (Trump Revealed First)
+
+• The dealer takes the first card from the top → this card becomes the Trump Suit
+• Then the dealer takes 9 more cards
+• The rest of the cards are dealt in clockwise order (to the left)
+• All players still receive 10 cards total
+
+Important:
+After dealing is complete → all gameplay returns to standard counterclockwise rotation.
+This reversal applies only to the distribution of cards in this specific method.
+
+
+5. Trump Suit Handling
+
+• Immediately after dealing → Trump Suit must be officially announced
+• Must be stored in the game state
+• Used to determine trick winners
+
+
+6. Game Flow – Tricks & Rounds
+
+The game consists of ten tricks since each player holds 10 cards.
+
+6.1 First Trick Rule (Special Turn Order)
+
+• The player to the right of the dealer starts the first trick
+• Dealer is always the last to play in the first trick only
+
+6.2 Standard Trick Logic
+
+First card played defines the lead suit.
+
+Players must follow the lead suit if able.
+
+If unable, they may play any card.
+
+Trick winner is determined:
+ a) If any trump was played → highest trump wins
+ b) If no trumps → highest card of the lead suit wins.
+
+Trick winner leads the next trick.
+
+
+7. Card Values & Game Scoring
+
+Card Value
+
+A      = 11
+7      = 10
+K      =  4
+J      =  3
+Q      =  2
+Others =  0 (others = 6, 5, 4, 3, 2)
+
+7.1 Game Outcome
+
+• Score > 60 → WIN (1 point)
+• Score > 90 → 2× WIN
+• Score = 120 → FULL SWEEP → 4× WIN
+• Score = 60 → TIE → next game is worth double
+
+7.2 Match System – “Pente”
+
+• Each game victory = 1 match point
+• First team to earn 4 total match points achieves a Pente
+• A Pente ends the full session
+
+
+8. End of Game Sequence
+
+After all 10 tricks have been played:
+
+Count captured points
+
+Determine win, loss, tie, or sweep.
+
+Update match score (“pente” progress)
+
+Display results
+
+Ask whether to continue or quit.
+
+
+9. Suggested Class Structure (No Code Yet)
+
+Game – handles players, rotation, trump suit, current dealer, scoring, match tracking
+Player – name, team, current hand
+Card – suit, rank, value
+Trick – played cards, lead suit, starting player, winning player.
+
+
+10. Summary
+
+This document defines every functional rule needed to create a real, playable digital version of Sueca. The gameplay must preserve true table behavior, including:
+
+• Counterclockwise rotation
+• Two legal dealing methods
+• Dealer last on first trick
+• Full trick logic
+• Official scoring system
+• Match tracking leading to Pente
+
+Now this document is ready for development — pseudo-code and class architecture may be drafted next. Tradition is preserved; now logic can begin.
+
+
+When developers write code for Sueca, they will be programming a tradition — not just a game.
+
+Now it’s time to pseudo-code

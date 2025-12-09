@@ -9,6 +9,16 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - Localização: `frontend/src/`
 - Ficheiros principais: `Game.ts`, `GameBoard.tsx`, `Deck.ts`, `game.ts` (types)
 
+## 🚩 Estado Atual (Dez 2025)
+- V1 congelada em **tag `v1.0`** (branch de hotfix: `v1-maintenance`)
+- Desenvolvimento V2 ativo em **branch `v2-main`**
+- Produção: `https://frontend-mu-five-18.vercel.app` (deploy com `vercel --prod` a partir de `frontend`)
+- Preview manual: `vercel` (gera URL temporária)
+- Problema conhecido: **UI desalinhada em Android** (prioridade alta no início da V2)
+- Limpezas: assets consolidados em `frontend/public/assets/cards1`; removidos duplicados (`cards2`, `assets/` raiz), `frontend/build` (artefacto), `archive/` e `vercel.json` na raiz (usar apenas `frontend/vercel.json`)
+- Roadmap curto da V2: ver `docs/V2_ROADMAP.md`
+- UI mobile: cabeçalho e painéis suavizados, Show Grid reduzido (debug), trunfo minimalista (título + mini-carta), botões Play/Next abaixo da mesa.
+
 ---
 
 ## ✅ FASE 1 - CONCLUÍDA: Rotação Anti-horária
@@ -312,7 +322,7 @@ Se precisar de continuar o desenvolvimento:
 - ✅ **Tratamento de Erros**: Melhor handling para produção
 
 ### URL de Produção:
-- `https://frontend-8hbr7gwl8-francisco-bexigas-projects.vercel.app`
+- `https://frontend-mu-five-18.vercel.app`
 
 ---
 

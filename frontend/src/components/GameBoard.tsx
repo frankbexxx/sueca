@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Game } from '../models/Game';
 import { GameState, Card, DealingMethod, AIDifficulty } from '../types/game';
 import { GameMenu } from './GameMenu';
@@ -7,7 +7,7 @@ import './GameBoard.css';
 
 export const GameBoard: React.FC = () => {
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>('A');
-  const [playerName, setPlayerName] = useState<string>('You');
+  const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2', 'Player 3', 'Player 4']);
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>('medium');
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('sueca-dark-mode');
@@ -17,7 +17,7 @@ export const GameBoard: React.FC = () => {
   // Initialize game safely
   const [game, setGame] = useState(() => {
     try {
-      return new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod, playerName, aiDifficulty);
+      return new Game(playerNames, dealingMethod, aiDifficulty);
     } catch (error) {
       console.error('Error initializing game:', error);
       throw error;
@@ -53,7 +53,7 @@ export const GameBoard: React.FC = () => {
         waitingForGameStart: false,
         playedCards: [],
         isPaused: false,
-        playerName: 'You',
+        playerName: 'Player 1',
         aiDifficulty: 'medium',
         partnerSignals: []
       };
@@ -98,22 +98,18 @@ export const GameBoard: React.FC = () => {
       !gameState.waitingForRoundStart &&
       !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart &&
-      gameState.currentPlayerIndex !== 0 &&
-      gameState.players[gameState.currentPlayerIndex].name !== 'You' &&
-      gameState.players[gameState.currentPlayerIndex].name !== playerName
+      gameState.currentPlayerIndex !== 0
     ) {
       const timer = setTimeout(() => {
         playAICard();
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, playerName]);
+  }, [gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard]);
 
   const handleCardClick = (cardIndex: number) => {
     // Only allow card selection if it's the human player's turn (index 0 = "You")
-    // Check by player name or index 0
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const isHumanPlayer = (currentPlayer.name === 'You' || currentPlayer.name === playerName) && gameState.currentPlayerIndex === 0;
+    const isHumanPlayer = gameState.currentPlayerIndex === 0;
     
     if (
       isHumanPlayer &&
@@ -207,10 +203,9 @@ export const GameBoard: React.FC = () => {
     return positionMap[playerIndex] || 'south';
   };
 
-  // Determine which team is "US" (the team with "You")
-  const youTeam = gameState.players.find(p => p.name === 'You')?.team || 1;
-  const usTeam = youTeam;
-  const themTeam = youTeam === 1 ? 2 : 1;
+  // Determine which team is "US" (the team with index 0)
+  const usTeam = gameState.players[0]?.team || 1;
+  const themTeam = usTeam === 1 ? 2 : 1;
 
   // Get team name
   const getTeamName = (team: 1 | 2): string => {
@@ -235,9 +230,10 @@ export const GameBoard: React.FC = () => {
   };
 
   const handleNewGame = () => {
-    const newGame = new Game(['You', 'AI 1', 'Partner', 'AI 2'], dealingMethod, playerName, aiDifficulty);
+    const newGame = new Game(playerNames, dealingMethod, aiDifficulty);
     setGame(newGame);
     setGameState(newGame.getState());
+    setSelectedCard(null);
   };
 
   const handleAIDifficultyChange = (difficulty: AIDifficulty) => {
@@ -248,23 +244,16 @@ export const GameBoard: React.FC = () => {
     setGameState(updatedState);
   };
 
-  const handlePlayerNameChange = (name: string) => {
-    setPlayerName(name);
-    // Update player name in current game state
-    const updatedState = game.getState();
-    updatedState.playerName = name;
-    // Also update the player's name in the players array if it's "You"
-    const youPlayer = updatedState.players.find(p => p.name === 'You' || p.name === playerName);
-    if (youPlayer && gameState.currentPlayerIndex === 0) {
-      youPlayer.name = name;
-    }
-    setGameState(updatedState);
+  const handlePlayerNamesChange = (names: string[]) => {
+    setPlayerNames(names);
+    const newGame = new Game(names, dealingMethod, aiDifficulty);
+    setGame(newGame);
+    setGameState(newGame.getState());
+    setSelectedCard(null);
   };
 
   const canPlay =
     gameState.currentPlayerIndex === 0 &&
-    gameState.players[0]?.name &&
-    (gameState.players[0].name === 'You' || gameState.players[0].name === playerName) &&
     selectedCard !== null &&
     !gameState.isGameOver &&
     !gameState.waitingForTrickEnd &&
@@ -274,8 +263,8 @@ export const GameBoard: React.FC = () => {
   return (
     <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
       <GameMenu
-        playerName={playerName}
-        onPlayerNameChange={handlePlayerNameChange}
+        playerNames={playerNames}
+        onPlayerNamesChange={handlePlayerNamesChange}
         aiDifficulty={gameState.aiDifficulty || aiDifficulty}
         onAIDifficultyChange={handleAIDifficultyChange}
         isPaused={gameState.isPaused}
@@ -290,6 +279,8 @@ export const GameBoard: React.FC = () => {
           setDarkMode(mode);
           localStorage.setItem('sueca-dark-mode', String(mode));
         }}
+        showGrid={showGridOverlay}
+        onToggleGrid={() => setShowGridOverlay(!showGridOverlay)}
       />
 
       <div className="top-strip">
@@ -310,10 +301,6 @@ export const GameBoard: React.FC = () => {
         </div>
       </div>
 
-      <button className="debug-grid-toggle" onClick={() => setShowGridOverlay(!showGridOverlay)}>
-        {showGridOverlay ? 'Hide Grid' : 'Show Grid'}
-      </button>
-
       <div className="table-layout">
         <div className="ui-corner top-left" />
 
@@ -321,50 +308,17 @@ export const GameBoard: React.FC = () => {
           {gameState.trumpSuit && (
             <div className="trump-card-display">
               <div className="trump-title">Trump</div>
-              {gameState.trumpCard ? (
-                <>
-                  <img
-                    src={getCardImage(gameState.trumpCard)}
-                    alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="trump-suit-text">
-                    {getSuitEmoji(gameState.trumpSuit)} {gameState.trumpSuit.toUpperCase()}
-                  </div>
-                </>
-              ) : (
-                <div className="trump-suit-text">
-                  {getSuitEmoji(gameState.trumpSuit)} {gameState.trumpSuit.toUpperCase()}
-                </div>
+              {gameState.trumpCard && (
+                <img
+                  src={getCardImage(gameState.trumpCard)}
+                  alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
               )}
             </div>
           )}
-        </div>
-
-        <div className="ui-corner bottom-right">
-          <div className="action-buttons-group">
-            <button
-              className={`play-button ${canPlay ? 'enabled' : 'disabled'}`}
-              onClick={handlePlayCard}
-              disabled={!canPlay}
-            >
-              Play Selected Card
-            </button>
-            <button
-              className={`next-trick-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-              onClick={() => {
-                if (gameState.waitingForTrickEnd) {
-                  game.finishTrick();
-                  setGameState(game.getState());
-                }
-              }}
-              disabled={!gameState.waitingForTrickEnd}
-            >
-              Next Trick
-            </button>
-          </div>
         </div>
 
         <div className="ui-corner bottom-left" />
@@ -412,37 +366,6 @@ export const GameBoard: React.FC = () => {
               const isDealer = index === gameState.dealerIndex;
               const isCurrentPlayer = index === gameState.currentPlayerIndex;
               const isHuman = index === 0;
-              const CARD_SPACING = 24;
-              const MAX_CARDS = 10;
-              const CENTER_OFFSET = ((MAX_CARDS - 1) * CARD_SPACING) / 2;
-
-              const renderPlayerHand = () => {
-                if (!isHuman) return null;
-                return (
-                  <div className="hand-row">
-                    {player.hand.map((card: Card, cardIndex: number) => {
-                      const cardPosition = cardIndex * CARD_SPACING;
-                      const translateX = cardPosition - CENTER_OFFSET;
-                      const fixedTransform = `translateX(${translateX}px)`;
-                      const isPlayable = game.canPlayCard(0, cardIndex);
-                      const isSelected = selectedCard === cardIndex;
-                      return (
-                        <img
-                          key={card.id}
-                          src={getCardImage(card)}
-                          alt={`${card.rank} of ${card.suit}`}
-                          className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
-                          style={{ transform: fixedTransform, zIndex: isSelected ? 1000 : cardIndex + 1 }}
-                          onClick={() => handleCardClick(cardIndex)}
-                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                );
-              };
 
               const renderAICards = () => {
                 if (isHuman) return null;
@@ -467,11 +390,66 @@ export const GameBoard: React.FC = () => {
                     </h3>
                     <div className="team-badge">{getTeamName(player.team)}</div>
                   </div>
-                  {position === 'south' ? renderPlayerHand() : renderAICards()}
+                  {position === 'south' ? null : renderAICards()}
                 </div>
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Human hand (South) positioned outside the table */}
+      {gameState.players[0] && (
+        <div className="player-hand-bar">
+          <div className="hand-row">
+            {gameState.players[0].hand.map((card: Card, cardIndex: number) => {
+              const CARD_SPACING = 26;
+              const MAX_CARDS = 10;
+              const CENTER_OFFSET = ((MAX_CARDS - 1) * CARD_SPACING) / 2;
+              const cardPosition = cardIndex * CARD_SPACING;
+              const translateX = cardPosition - CENTER_OFFSET;
+              const fixedTransform = `translateX(${translateX}px)`;
+              const isPlayable = game.canPlayCard(0, cardIndex);
+              const isSelected = selectedCard === cardIndex;
+              return (
+                <img
+                  key={card.id}
+                  src={getCardImage(card)}
+                  alt={`${card.rank} of ${card.suit}`}
+                  className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
+                  style={{ transform: fixedTransform, zIndex: isSelected ? 1000 : cardIndex + 1 }}
+                  onClick={() => handleCardClick(cardIndex)}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="action-buttons-bar">
+        <div className="action-buttons-group">
+          <button
+            className={`play-button ${canPlay ? 'enabled' : 'disabled'}`}
+            onClick={handlePlayCard}
+            disabled={!canPlay}
+          >
+            Play Card
+          </button>
+          <button
+            className={`next-trick-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
+            onClick={() => {
+              if (gameState.waitingForTrickEnd) {
+                game.finishTrick();
+                setGameState(game.getState());
+              }
+            }}
+            disabled={!gameState.waitingForTrickEnd}
+          >
+            Next Trick
+          </button>
         </div>
       </div>
 

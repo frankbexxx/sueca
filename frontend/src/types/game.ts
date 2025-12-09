@@ -14,10 +14,15 @@ export interface Player {
   team: 1 | 2;
 }
 
+export type DealingMethod = 'A' | 'B';
+export type AIDifficulty = 'easy' | 'medium' | 'hard';
+
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
+  dealerIndex: number; // Track current dealer
   trumpSuit: Suit | null;
+  trumpCard: Card | null; // The actual trump card (for display)
   currentTrick: Card[];
   trickLeader: number;
   scores: { team1: number; team2: number };
@@ -28,6 +33,16 @@ export interface GameState {
   lastTrickWinner: number | null;
   waitingForTrickEnd: boolean;
   nextTrickLeader: number | null;
+  isFirstTrick: boolean; // Track if this is the first trick of the round
+  dealingMethod: DealingMethod; // Current dealing method
+  waitingForRoundStart: boolean; // Pause before starting new round
+  waitingForRoundEnd: boolean; // Pause to show round results
+  waitingForGameStart: boolean; // Pause before starting new game
+  playedCards: Card[]; // Track all cards that have been played in this round
+  isPaused: boolean; // Track if game is paused
+  playerName: string; // Player's name
+  aiDifficulty: AIDifficulty; // AI difficulty level
+  partnerSignals: Array<{ playerIndex: number; signal: string; trick: number }>; // Partner coordination signals
 }
 
 export const CARD_HIERARCHY: Record<Rank, number> = {
