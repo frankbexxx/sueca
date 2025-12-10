@@ -59,6 +59,10 @@
   font-size: 0.78em;
 }
 
+.score-block.has-trump {
+  min-height: auto;
+}
+
 .round-block {
   padding: 5px 8px;
   border-radius: 10px;
@@ -68,6 +72,53 @@
   text-align: center;
   min-width: 110px;
   color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trump-info-in-team {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85em;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dealer-name {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9em;
+}
+
+.trump-minimal {
+  font-weight: 700;
+  font-size: 1.05em;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.trump-minimal.trump-red {
+  color: #dc3545;
+  text-shadow: 0 0 6px rgba(220, 53, 69, 0.5);
+  background: rgba(220, 53, 69, 0.15);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.trump-minimal.trump-black {
+  color: #1a1a1a;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.6), 0 0 3px rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.dealing-method {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
 }
 
 .debug-grid-toggle {
@@ -131,40 +182,7 @@
 .ui-corner.bottom-right { bottom: 12px; right: 12px; align-items: flex-end; }
 .ui-corner.bottom-left { bottom: 12px; left: 12px; }
 
-.trump-card-display {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 193, 7, 0.45);
-  border-radius: 12px;
-  padding: 4px 6px;
-  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.15), 0 2px 5px rgba(0,0,0,0.12);
-  min-width: auto;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.trump-card-display img {
-  width: 36px;
-  height: auto;
-  border: 1px solid rgba(255, 193, 7, 0.7);
-  border-radius: 6px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-}
-
-.trump-title {
-  font-weight: 700;
-  color: #d17b00;
-  margin-bottom: 0;
-  font-size: 0.82em;
-  letter-spacing: 0.02em;
-}
-
-.trump-suit-text {
-  font-weight: 600;
-  color: #b36200;
-  font-size: 0.9em;
-}
+/* Trump card display removed - now shown minimalistically in round-block */
 
 .action-buttons-bar {
   display: flex;
@@ -317,8 +335,23 @@
 }
 
 .turn-indicator {
-  font-size: 0.8em;
-  color: #ffe082;
+  font-size: 1em;
+  color: #ffd700;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+  margin-left: 4px;
+  display: inline-block;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.15);
+  }
 }
 
 .hand-row {
@@ -411,6 +444,8 @@
   .player-seat.player-east { right: -40px; }
   .player-seat.player-west { left: -40px; }
   .round-block { min-width: 160px; }
+  .trump-info-in-team { font-size: 0.8em; gap: 5px; }
+  .trump-minimal { font-size: 0.95em; }
 }
 
 @media (max-width: 768px) {
@@ -443,8 +478,9 @@
   .player-seat.player-west { left: -18px; }
   .player-info { min-width: 120px; }
   .hand-row { padding: 8px 10px; }
-  .trump-card-display { padding: 4px 6px; }
-  .trump-card-display img { width: 32px; }
+  .trump-info-in-team { font-size: 0.75em; gap: 4px; }
+  .trump-minimal { font-size: 0.9em; padding: 1px 5px; }
+  .dealer-name { font-size: 0.85em; }
   .trick-card-cross { width: 240px; height: 240px; }
   .action-buttons-group {
     flex-wrap: nowrap;
@@ -493,10 +529,9 @@
   .player-seat.player-north { top: -4px; }
   .player-seat.player-south { bottom: -4px; }
   .hand-row { padding: 6px 8px; }
-  .trump-card-display { padding: 3px 5px; }
-  .trump-card-display img { width: 30px; }
-  .trump-title { font-size: 0.85em; }
-  .trump-suit-text { font-size: 0.86em; }
+  .trump-info-in-team { font-size: 0.7em; gap: 3px; flex-wrap: wrap; }
+  .trump-minimal { font-size: 0.85em; padding: 1px 4px; }
+  .dealer-name { font-size: 0.8em; }
   .trick-player-name-small { font-size: 0.72em; }
 }
 

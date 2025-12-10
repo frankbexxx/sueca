@@ -222,6 +222,16 @@ export const GameBoard: React.FC = () => {
     return emojiMap[suit] || suit;
   };
 
+  const getTrumpColorClass = (suit: Suit | null): string => {
+    if (!suit) return '';
+    // Red suits: diamonds, hearts
+    if (suit === 'diamonds' || suit === 'hearts') {
+      return 'trump-red';
+    }
+    // Black suits: clubs, spades
+    return 'trump-black';
+  };
+
   // Map player index to table position
   // You (index 0) is always South, Partner (index 2) is always North
   // Index 1 = East, Index 3 = West
@@ -316,42 +326,41 @@ export const GameBoard: React.FC = () => {
       />
 
       <div className="top-strip">
-        <div className="score-block us">
+        <div className={`score-block us ${gameState.players[gameState.dealerIndex]?.team === usTeam ? 'has-trump' : ''}`}>
           <div className="label">US</div>
           <div className="line">Round: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
           <div className="line">Game: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
+          {gameState.trumpSuit && gameState.trumpCard && gameState.players[gameState.dealerIndex]?.team === usTeam && (
+            <div className="trump-info-in-team">
+              <span className="dealer-name">{gameState.players[gameState.dealerIndex]?.name}</span>
+              <span className={`trump-minimal ${getTrumpColorClass(gameState.trumpSuit)}`}>
+                {gameState.trumpCard.rank}{getSuitEmoji(gameState.trumpSuit)}
+              </span>
+            </div>
+          )}
         </div>
         <div className="round-block">
           <div>Round {gameState.round}</div>
-          <div>Dealer: {gameState.players[gameState.dealerIndex]?.name}</div>
-          <div>Dealing: {gameState.dealingMethod === 'A' ? 'A' : 'B'}</div>
+          <div className="dealing-method">Dealing: {gameState.dealingMethod === 'A' ? 'A' : 'B'}</div>
         </div>
-        <div className="score-block them">
+        <div className={`score-block them ${gameState.players[gameState.dealerIndex]?.team === themTeam ? 'has-trump' : ''}`}>
           <div className="label">THEM</div>
           <div className="line">Round: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
           <div className="line">Game: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          {gameState.trumpSuit && gameState.trumpCard && gameState.players[gameState.dealerIndex]?.team === themTeam && (
+            <div className="trump-info-in-team">
+              <span className="dealer-name">{gameState.players[gameState.dealerIndex]?.name}</span>
+              <span className={`trump-minimal ${getTrumpColorClass(gameState.trumpSuit)}`}>
+                {gameState.trumpCard.rank}{getSuitEmoji(gameState.trumpSuit)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="table-layout">
         <div className="ui-corner top-left" />
 
-        <div className="ui-corner top-right">
-          {gameState.trumpSuit && (
-            <div className="trump-card-display">
-              <div className="trump-title">Trump</div>
-              {gameState.trumpCard && (
-                <img
-                  src={getCardImage(gameState.trumpCard)}
-                  alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
-          )}
-        </div>
 
         <div className="ui-corner bottom-left" />
 
@@ -412,13 +421,13 @@ export const GameBoard: React.FC = () => {
               return (
                 <div
                   key={player.id}
-                  className={`player-seat player-${position} ${isCurrentPlayer ? 'active' : ''} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
+                  className={`player-seat player-${position} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
                 >
                   <div className="player-info">
                     <h3 className="player-name">
                       {player.name}
                       {isDealer && <span className="dealer-badge">🃏</span>}
-                      {isCurrentPlayer && <span className="turn-indicator">Turn</span>}
+                      {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                     </h3>
                     <div className="team-badge">{getTeamName(player.team)}</div>
                   </div>
