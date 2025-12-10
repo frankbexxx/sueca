@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Game } from '../models/Game';
-import { GameState, Card, DealingMethod, AIDifficulty } from '../types/game';
+import { GameState, Card, DealingMethod, AIDifficulty, Suit } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { useSound } from '../hooks/useSound';
 import './GameBoard.css';
+import { requestAiPlay } from '../services/aiClient';
 
 export const GameBoard: React.FC = () => {
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>('A');
@@ -63,6 +64,11 @@ export const GameBoard: React.FC = () => {
   const { playCardSound, playErrorSound } = useSound();
   const [showGridOverlay, setShowGridOverlay] = useState(false);
 
+  const cardToCode = (card: Card): string => {
+    const suitMap: Record<string, string> = { clubs: 'C', diamonds: 'D', hearts: 'H', spades: 'S' };
+    return `${card.rank}${suitMap[card.suit] || ''}`;
+  };
+
   const playAICard = useCallback(() => {
     const playerIndex = gameState.currentPlayerIndex;
     const player = gameState.players[playerIndex];
@@ -71,23 +77,49 @@ export const GameBoard: React.FC = () => {
       return;
     }
 
-    // Use improved AI strategy to choose the best card
-    const cardIndex = game.chooseAICard(playerIndex);
-    
-    if (cardIndex >= 0 && game.playCard(playerIndex, cardIndex)) {
-      playCardSound();
-      setGameState(game.getState());
-    } else {
-      // Fallback: try first valid card if AI strategy fails
-      for (let i = 0; i < player.hand.length; i++) {
-        if (game.playCard(playerIndex, i)) {
-          playCardSound();
-          setGameState(game.getState());
-          break;
+    const tryExternal = async (): Promise<number> => {
+      try {
+        const allPlayed = [
+          ...gameState.currentTrick,
+          ...(gameState.playedCards || []),
+        ].map(cardToCode);
+        const payload = {
+          hand: player.hand.map(cardToCode),
+          trick: gameState.currentTrick.map(cardToCode),
+          trump: gameState.trumpSuit ? cardToCode({ rank: 'A', suit: gameState.trumpSuit as Suit, id: 'tmp' }).slice(-1) : '',
+          played: allPlayed,
+        };
+        const play = await requestAiPlay(payload);
+        const idx = player.hand.findIndex((c) => cardToCode(c) === play);
+        return idx;
+      } catch (err) {
+        return -1;
+      }
+    };
+
+    const chooseAndPlay = async () => {
+      let cardIndex = await tryExternal();
+      if (cardIndex < 0) {
+        cardIndex = game.chooseAICard(playerIndex);
+      }
+
+      if (cardIndex >= 0 && game.playCard(playerIndex, cardIndex)) {
+        playCardSound();
+        setGameState(game.getState());
+      } else {
+        // Fallback: try first valid card if AI strategy fails
+        for (let i = 0; i < player.hand.length; i++) {
+          if (game.playCard(playerIndex, i)) {
+            playCardSound();
+            setGameState(game.getState());
+            break;
+          }
         }
       }
-    }
-  }, [game, gameState, playCardSound]);
+    };
+
+    chooseAndPlay();
+  }, [game, gameState, playCardSound, setGameState]);
 
   useEffect(() => {
     // Auto-play for AI players (only if not waiting for round/game start and not paused)
