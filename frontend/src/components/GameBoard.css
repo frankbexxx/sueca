@@ -249,6 +249,17 @@
 .trick-from-east  { right: 10px; top: 50%; transform: translateY(-50%); }
 .trick-from-west  { left: 10px; top: 50%; transform: translateY(-50%); }
 
+/* ============================================
+   MOBILE FIX: Inverter posições das cartas jogadas
+   TODO: Testar e reverter se não funcionar
+   ============================================ */
+@media (max-width: 768px) {
+  .trick-from-north { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  .trick-from-south { top: 10px; left: 50%; transform: translateX(-50%); }
+  .trick-from-east { left: 10px; top: 50%; transform: translateY(-50%); }
+  .trick-from-west { right: 10px; top: 50%; transform: translateY(-50%); }
+}
+
 .trick-card-img {
   width: var(--card-w);
   height: var(--card-h);
