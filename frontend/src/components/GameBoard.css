@@ -1,10 +1,10 @@
 .game-board {
-  --table-size: 900px;
-  --trick-size: 360px;
-  --card-w: 70px;
-  --card-h: 101px;
-  --hand-row-h: 108px;
-  --button-min-w: 180px;
+  --table-size: 630px; /* 70% of 900px */
+  --trick-size: 252px; /* 70% of 360px */
+  --card-w: 49px; /* 70% of 70px */
+  --card-h: 71px; /* 70% of 101px */
+  --hand-row-h: 76px; /* 70% of 108px */
+  --button-min-w: 126px; /* 70% of 180px */
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
@@ -140,8 +140,8 @@
 .table-layout {
   position: relative;
   width: 100%;
-  margin: 20px 0 40px;
-  padding: 16px;
+  margin: 14px 0 28px; /* 70% of 20px/40px */
+  padding: 11px; /* 70% of 16px */
   display: flex;
   justify-content: center;
 }
@@ -151,11 +151,11 @@
   width: var(--table-size);
   height: var(--table-size);
   background: radial-gradient(circle at 50% 40%, #2f6d2f, #1f4f1f 70%);
-  border: 14px solid #7a5736;
-  border-radius: 16px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.28), inset 0 0 22px rgba(0,0,0,0.2);
+  border: 10px solid #7a5736; /* 70% of 14px */
+  border-radius: 11px; /* 70% of 16px */
+  box-shadow: 0 7px 17px rgba(0,0,0,0.28), inset 0 0 15px rgba(0,0,0,0.2); /* 70% scaling */
   overflow: visible;
-  padding: 14px;
+  padding: 10px; /* 70% of 14px */
 }
 
 .grid-overlay {
@@ -221,43 +221,48 @@
 .trick-area-center {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   pointer-events: none;
   z-index: 60;
 }
 
 .trick-cards-cross {
-  position: relative;
-  width: var(--trick-size);
-  height: var(--trick-size);
+  position: absolute;
+  width: var(--trick-size); /* 252px */
+  height: var(--trick-size); /* 252px */
+  /* Centered on table: positioned at table center minus half container size */
+  left: calc(var(--table-size) / 2 - var(--trick-size) / 2);
+  top: calc(var(--table-size) / 2 - var(--trick-size) / 2);
 }
 
 .trick-card-cross {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
   pointer-events: auto;
 }
 
-.trick-from-north { top: 10px; left: 50%; transform: translateX(-50%); }
-.trick-from-south { bottom: 10px; left: 50%; transform: translateX(-50%); }
-.trick-from-east  { right: 10px; top: 50%; transform: translateY(-50%); }
-.trick-from-west  { left: 10px; top: 50%; transform: translateY(-50%); }
-
-/* ============================================
-   MOBILE FIX: Inverter posições das cartas jogadas
-   TODO: Testar e reverter se não funcionar
-   ============================================ */
-@media (max-width: 768px) {
-  .trick-from-north { bottom: 10px; left: 50%; transform: translateX(-50%); }
-  .trick-from-south { top: 10px; left: 50%; transform: translateX(-50%); }
-  .trick-from-east { left: 10px; top: 50%; transform: translateY(-50%); }
-  .trick-from-west { right: 10px; top: 50%; transform: translateY(-50%); }
+/* Trick cards positioned absolutely with literal (x, y) coordinates relative to origin (0, 0) */
+.trick-from-north { 
+  position: absolute;
+  top: 0px;
+  left: 101.5px;
+  z-index: 100;
+}
+.trick-from-south { 
+  position: absolute;
+  top: 181px;
+  left: 101.5px;
+  z-index: 100;
+}
+.trick-from-east { 
+  position: absolute;
+  top: 90.5px;
+  left: 203px;
+  z-index: 100;
+}
+.trick-from-west { 
+  position: absolute;
+  top: 90.5px;
+  left: 0px;
+  z-index: 100;
 }
 
 .trick-card-img {
@@ -304,10 +309,10 @@
   pointer-events: auto;
 }
 
-.player-seat.player-north { top: -40px; left: 50%; transform: translateX(-50%); }
-.player-seat.player-south { bottom: -40px; left: 50%; transform: translateX(-50%); }
-.player-seat.player-east  { right: -54px; top: 50%; transform: translateY(-50%); }
-.player-seat.player-west  { left: -54px; top: 50%; transform: translateY(-50%); }
+.player-seat.player-north { top: -28px; left: 50%; transform: translateX(-50%); } /* 70% of -40px */
+.player-seat.player-south { bottom: -28px; left: 50%; transform: translateX(-50%); } /* 70% of -40px */
+.player-seat.player-east  { right: -38px; top: 50%; transform: translateY(-50%); } /* 70% of -54px */
+.player-seat.player-west  { left: -38px; top: 50%; transform: translateY(-50%); } /* 70% of -54px */
 
 .player-info {
   text-align: center;
@@ -317,6 +322,56 @@
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   min-width: 140px;
+}
+
+/* Mobile layout for player info boxes - fixed size, 2 lines */
+.player-info.mobile-layout {
+  min-width: 90px;
+  max-width: 90px;
+  width: 90px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-name-line-1 {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.player-name-line-2 {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 1);
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.player-info.mobile-layout .dealer-badge {
+  font-size: 0.7em;
+  margin-left: 2px;
+}
+
+.player-info.mobile-layout .turn-indicator {
+  font-size: 0.9em;
+  margin-left: 3px;
 }
 
 .player-name {
@@ -376,6 +431,14 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   box-shadow: inset 0 1px 4px rgba(0,0,0,0.12);
+  /* Width calculation: covers all 10 cards with spacing
+   * CENTER_OFFSET = (10-1) * 18 / 2 = 81px
+   * Card width = 49px * 0.92 = 45px
+   * Total width = 81px + 45px + 81px + padding(24px) = 231px
+   * Using 250px to ensure full coverage with margin
+   */
+  min-width: 250px;
+  overflow: visible;
 }
 
 .card-hand {
@@ -419,12 +482,12 @@
 }
 
 .card-back-small {
-  width: 36px;
-  height: 52px;
-  border-radius: 4px;
+  width: 25px; /* 70% of 36px */
+  height: 36px; /* 70% of 52px */
+  border-radius: 3px; /* 70% of 4px */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid #fff; /* 70% of 2px */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 70% scaling */
 }
 
 .card-count {
@@ -459,6 +522,16 @@
   .trump-minimal { font-size: 0.95em; }
 }
 
+/* Mobile: East and West info boxes positioned closer to table edge */
+@media (max-width: 768px) {
+  .player-seat.player-east {
+    right: -10px !important; /* Encostado à lateral, pode sobrepor borda */
+  }
+  .player-seat.player-west {
+    left: -10px !important; /* Encostado à lateral, pode sobrepor borda */
+  }
+}
+
 @media (max-width: 768px) {
   .game-board {
     --table-size: min(94vw, 620px);
@@ -485,14 +558,19 @@
   .ui-corner.bottom-left { left: 8px; }
   .player-seat.player-north { top: -12px; }
   .player-seat.player-south { bottom: -12px; }
-  .player-seat.player-east { right: -18px; }
-  .player-seat.player-west { left: -18px; }
+  .player-seat.player-east { right: -10px !important; } /* Mobile: Encostado à lateral, pode sobrepor borda */
+  .player-seat.player-west { left: -10px !important; } /* Mobile: Encostado à lateral, pode sobrepor borda */
   .player-info { min-width: 120px; }
   .hand-row { padding: 8px 10px; }
   .trump-info-in-team { font-size: 0.75em; gap: 4px; }
   .trump-minimal { font-size: 0.9em; padding: 1px 5px; }
   .dealer-name { font-size: 0.85em; }
-  .trick-card-cross { width: 240px; height: 240px; }
+  .trick-cards-cross { width: 240px; height: 240px; }
+  /* Trick cards absolutely positioned with literal (x, y) coordinates */
+  .trick-from-north { top: 1px !important; left: 46px !important; }
+  .trick-from-south { top: 140px !important; left: 46px !important; z-index: 100; }
+  .trick-from-east { top: 70px !important; left: 98px !important; }
+  .trick-from-west { top: 70px !important; left: 1px !important; }
   .action-buttons-group {
     flex-wrap: nowrap;
     gap: 8px;
@@ -535,10 +613,16 @@
   }
   .action-buttons-bar { padding: 6px 6px 12px; }
   .table-layout { margin: 8px 0 20px; padding: 6px; }
-  .player-seat.player-east { right: -6px; }
-  .player-seat.player-west { left: -6px; }
+  .player-seat.player-east { right: -10px !important; } /* Encostado à lateral */
+  .player-seat.player-west { left: -10px !important; } /* Encostado à lateral */
   .player-seat.player-north { top: -4px; }
   .player-seat.player-south { bottom: -4px; }
+  .trick-cards-cross { width: 210px; height: 210px; }
+  /* Trick cards absolutely positioned with literal (x, y) coordinates */
+  .trick-from-north { top: 0px; left: 79px; }
+  .trick-from-south { top: 136px; left: 79px; z-index: 100; }
+  .trick-from-east { top: 68px; left: 158px; }
+  .trick-from-west { top: 68px; left: 0px; }
   .hand-row { padding: 6px 8px; }
   .trump-info-in-team { font-size: 0.7em; gap: 3px; flex-wrap: wrap; }
   .trump-minimal { font-size: 0.85em; padding: 1px 4px; }
