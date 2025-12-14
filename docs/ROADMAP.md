@@ -55,6 +55,8 @@ Este documento consolida o planeamento e próximos passos do projeto.
 
 ## 📋 Próximos Passos Detalhados
 
+> **📖 Plano Detalhado de IA:** Ver `docs/AI_INTEGRATION_PLAN.md` para plano completo de integração, melhorias e machine learning da IA.
+
 ### Prioridade Alta ⭐⭐⭐
 
 #### 1. IA Externa / Produção
