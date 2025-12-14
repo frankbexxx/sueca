@@ -272,20 +272,7 @@
   box-shadow: 0 3px 7px rgba(0,0,0,0.38);
 }
 
-.trick-player-name-small {
-  font-size: 0.78em;
-  color: white;
-  font-weight: 700;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  background: rgba(0,0,0,0.4);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
 
-.no-trick {
-  color: #e5e5e5;
-  font-style: italic;
-}
 
 .seats-layer {
   position: absolute;
@@ -567,10 +554,10 @@
   .dealer-name { font-size: 0.85em; }
   .trick-cards-cross { width: 240px; height: 240px; }
   /* Trick cards absolutely positioned with literal (x, y) coordinates */
-  .trick-from-north { top: 1px !important; left: 46px !important; }
-  .trick-from-south { top: 140px !important; left: 46px !important; z-index: 100; }
-  .trick-from-east { top: 70px !important; left: 98px !important; }
-  .trick-from-west { top: 70px !important; left: 1px !important; }
+  .trick-from-north { top: 25px !important; left: 49px !important; }
+  .trick-from-south { top: 135px !important; left: 49px !important; z-index: 100; }
+  .trick-from-east { top: 80px !important; left: 98px !important; }
+  .trick-from-west { top: 80px !important; left: 5px !important; }
   .action-buttons-group {
     flex-wrap: nowrap;
     gap: 8px;
@@ -627,6 +614,5 @@
   .trump-info-in-team { font-size: 0.7em; gap: 3px; flex-wrap: wrap; }
   .trump-minimal { font-size: 0.85em; padding: 1px 4px; }
   .dealer-name { font-size: 0.8em; }
-  .trick-player-name-small { font-size: 0.72em; }
 }
 

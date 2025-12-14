@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './GameMenu.css';
 import { AIDifficulty } from '../types/game';
 
+/**
+ * Props interface for GameMenu component
+ * Handles all game configuration and control actions
+ */
 interface GameMenuProps {
   playerNames: string[];
   onPlayerNamesChange: (names: string[]) => void;
@@ -20,6 +24,10 @@ interface GameMenuProps {
   onToggleGrid: () => void;
 }
 
+/**
+ * Game menu component - top bar with game title, player name, and control buttons
+ * Manages settings panel, pause/resume, quit, and dark mode toggle
+ */
 export const GameMenu: React.FC<GameMenuProps> = ({
   playerNames,
   onPlayerNamesChange,
@@ -37,14 +45,25 @@ export const GameMenu: React.FC<GameMenuProps> = ({
   showGrid,
   onToggleGrid
 }) => {
+  // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
+  // Temporary state for settings form (not applied until "Save" clicked)
   const [tempNames, setTempNames] = useState<string[]>(playerNames);
   const [tempDifficulty, setTempDifficulty] = useState<AIDifficulty>(aiDifficulty);
 
+  /**
+   * Sync temporary names with prop changes
+   * Updates temp state when playerNames prop changes externally
+   */
   useEffect(() => {
     setTempNames(playerNames);
   }, [playerNames]);
 
+  /**
+   * Saves settings changes
+   * Cleans player names (trims whitespace, provides defaults)
+   * Applies changes to parent component and closes settings panel
+   */
   const handleSaveSettings = () => {
     const cleaned = tempNames.map((n, idx) => (n.trim() || `Player ${idx + 1}`));
     onPlayerNamesChange(cleaned);
@@ -52,6 +71,10 @@ export const GameMenu: React.FC<GameMenuProps> = ({
     setShowSettings(false);
   };
 
+  /**
+   * Toggles dark mode and persists to localStorage
+   * Updates both parent state and browser storage
+   */
   const handleDarkModeToggle = () => {
     const newDarkMode = !darkMode;
     onDarkModeChange(newDarkMode);
@@ -79,40 +102,6 @@ export const GameMenu: React.FC<GameMenuProps> = ({
             ⚙️
           </button>
         </div>
-      </div>
-
-      <div className="menu-buttons">
-        {!isGameOver && isGameActive && (
-          <>
-            {isPaused ? (
-              <button 
-                className="menu-btn pause-btn"
-                onClick={onResume}
-                title="Retomar jogo"
-              >
-                ▶️ Retomar
-              </button>
-            ) : (
-              <button 
-                className="menu-btn pause-btn"
-                onClick={onPause}
-                title="Pausar jogo"
-              >
-                ⏸️ Pausar
-              </button>
-            )}
-          </>
-        )}
-        
-        {isGameActive && (
-          <button 
-            className="menu-btn quit-btn"
-            onClick={onQuit}
-            title="Sair do jogo atual"
-          >
-            🚪 Sair
-          </button>
-        )}
       </div>
 
       {showSettings && (
@@ -144,20 +133,40 @@ export const GameMenu: React.FC<GameMenuProps> = ({
             </div>
             <div className="setting-item">
               <label htmlFor="ai-difficulty">Dificuldade da AI:</label>
-              <select
-                id="ai-difficulty"
-                value={tempDifficulty}
-                onChange={(e) => setTempDifficulty(e.target.value as AIDifficulty)}
-              >
-                <option value="easy">Fácil</option>
-                <option value="medium">Médio</option>
-                <option value="hard">Difícil</option>
-              </select>
-              <div className="difficulty-description">
-                {tempDifficulty === 'easy' && <span>AI joga mais aleatoriamente</span>}
-                {tempDifficulty === 'medium' && <span>AI usa estratégia básica</span>}
-                {tempDifficulty === 'hard' && <span>AI usa estratégia avançada com coordenação</span>}
-              </div>
+              {isGameActive && !isGameOver ? (
+                <>
+                  <select
+                    id="ai-difficulty"
+                    value={tempDifficulty}
+                    disabled
+                    style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                  >
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                  </select>
+                  <div className="difficulty-description" style={{ fontSize: '0.85em', color: '#ff9800', marginTop: '4px' }}>
+                    ⚠️ Alterar dificuldade apenas no menu inicial
+                  </div>
+                </>
+              ) : (
+                <>
+                  <select
+                    id="ai-difficulty"
+                    value={tempDifficulty}
+                    onChange={(e) => setTempDifficulty(e.target.value as AIDifficulty)}
+                  >
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                  </select>
+                  <div className="difficulty-description">
+                    {tempDifficulty === 'easy' && <span>AI joga mais aleatoriamente</span>}
+                    {tempDifficulty === 'medium' && <span>AI usa estratégia básica</span>}
+                    {tempDifficulty === 'hard' && <span>AI usa estratégia avançada com coordenação</span>}
+                  </div>
+                </>
+              )}
             </div>
             <div className="setting-item setting-inline">
               <label htmlFor="show-grid">Mostrar grelha (debug)</label>
@@ -183,6 +192,57 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                 <span>Modo Escuro</span>
               </label>
             </div>
+            
+            {/* Game control buttons moved to settings panel */}
+            <div className="setting-item" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', marginTop: '8px' }}>
+              <label style={{ marginBottom: '8px', display: 'block' }}>Controles do Jogo:</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {!isGameOver && isGameActive && (
+                  <>
+                    {isPaused ? (
+                      <button 
+                        className="menu-btn pause-btn"
+                        onClick={() => {
+                          onResume();
+                          setShowSettings(false);
+                        }}
+                        title="Retomar jogo"
+                        style={{ flex: '1', minWidth: '120px' }}
+                      >
+                        ▶️ Retomar
+                      </button>
+                    ) : (
+                      <button 
+                        className="menu-btn pause-btn"
+                        onClick={() => {
+                          onPause();
+                          setShowSettings(false);
+                        }}
+                        title="Pausar jogo"
+                        style={{ flex: '1', minWidth: '120px' }}
+                      >
+                        ⏸️ Pausar
+                      </button>
+                    )}
+                  </>
+                )}
+                
+                {isGameActive && (
+                  <button 
+                    className="menu-btn quit-btn"
+                    onClick={() => {
+                      onQuit();
+                      setShowSettings(false);
+                    }}
+                    title="Sair do jogo atual"
+                    style={{ flex: '1', minWidth: '120px' }}
+                  >
+                    🚪 Sair
+                  </button>
+                )}
+              </div>
+            </div>
+            
             <div className="setting-buttons">
               <button className="save-btn" onClick={handleSaveSettings}>
                 Guardar

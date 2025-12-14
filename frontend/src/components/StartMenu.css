@@ -1,0 +1,384 @@
+/* Start Menu Overlay - full screen backdrop */
+.start-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.start-menu-overlay.dark-mode {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Start Menu Card - centered modal */
+.start-menu-card {
+  background: #2a3a52;
+  color: #e9eef7;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+.start-menu-overlay.dark-mode .start-menu-card {
+  background: #1a2332;
+  color: #e9eef7;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Title */
+.start-menu-title {
+  font-size: 2.5em;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 30px 0;
+  color: #e9eef7;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.start-menu-overlay.dark-mode .start-menu-title {
+  color: #cfdffc;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Form Container */
+.start-menu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Form Section */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 1em;
+  color: #cfdffc;
+  margin-bottom: 4px;
+}
+
+.start-menu-overlay.dark-mode .form-label {
+  color: #b8c9f0;
+}
+
+/* Form Inputs */
+.form-input {
+  padding: 12px 16px;
+  border: 2px solid #3a4a5f;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.2s;
+  background: #1d2939;
+  color: #e9eef7;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+}
+
+.form-input.required {
+  border-color: #6c5ce7;
+}
+
+.form-input::placeholder {
+  color: #7a8a9f;
+}
+
+.start-menu-overlay.dark-mode .form-input {
+  background: #151b26;
+  border-color: #2d3a4f;
+  color: #e9eef7;
+}
+
+.start-menu-overlay.dark-mode .form-input:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+}
+
+.start-menu-overlay.dark-mode .form-input::placeholder {
+  color: #5a6a7f;
+}
+
+/* Form Select */
+.form-select {
+  padding: 12px 16px;
+  border: 2px solid #3a4a5f;
+  border-radius: 8px;
+  font-size: 1em;
+  background: #1d2939;
+  color: #e9eef7;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+}
+
+.start-menu-overlay.dark-mode .form-select {
+  background: #151b26;
+  border-color: #2d3a4f;
+  color: #e9eef7;
+}
+
+.start-menu-overlay.dark-mode .form-select:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+}
+
+/* Difficulty Description */
+.difficulty-description {
+  font-size: 0.85em;
+  color: #9aa5b5;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.start-menu-overlay.dark-mode .difficulty-description {
+  color: #8a95a5;
+}
+
+/* Radio Group */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 2px solid #3a4a5f;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #1d2939;
+  color: #e9eef7;
+}
+
+.radio-option:hover {
+  border-color: #6c5ce7;
+  background: #252f42;
+}
+
+.radio-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #6c5ce7;
+}
+
+.radio-option input[type="radio"]:checked + span {
+  font-weight: 600;
+  color: #6c5ce7;
+}
+
+.start-menu-overlay.dark-mode .radio-option {
+  background: #151b26;
+  border-color: #2d3a4f;
+  color: #e9eef7;
+}
+
+.start-menu-overlay.dark-mode .radio-option:hover {
+  border-color: #6c5ce7;
+  background: #1a2332;
+}
+
+.start-menu-overlay.dark-mode .radio-option input[type="radio"]:checked + span {
+  color: #6c5ce7;
+}
+
+/* Error Message */
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ef5350;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.start-menu-overlay.dark-mode .error-message {
+  background: #3d1f1f;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+/* Start Game Button */
+.start-game-button {
+  padding: 16px 32px;
+  font-size: 1.2em;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6c5ce7 0%, #5a4fd6 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+  margin-top: 10px;
+}
+
+.start-game-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.5);
+  background: linear-gradient(135deg, #5a4fd6 0%, #6c5ce7 100%);
+}
+
+.start-game-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
+}
+
+/* Advanced Toggle */
+.advanced-toggle {
+  background: none;
+  border: none;
+  color: #9aa5b5;
+  cursor: pointer;
+  padding: 10px;
+  font-size: 0.9em;
+  text-align: left;
+  transition: color 0.2s;
+  margin-top: 10px;
+}
+
+.advanced-toggle:hover {
+  color: #6c5ce7;
+}
+
+.start-menu-overlay.dark-mode .advanced-toggle {
+  color: #8a95a5;
+}
+
+.start-menu-overlay.dark-mode .advanced-toggle:hover {
+  color: #6c5ce7;
+}
+
+/* Advanced Settings */
+.advanced-settings {
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #3a4a5f;
+  animation: slideDown 0.2s ease-out;
+}
+
+.start-menu-overlay.dark-mode .advanced-settings {
+  border-top-color: #2d3a4f;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .start-menu-card {
+    padding: 30px 20px;
+    width: 95%;
+    max-width: none;
+  }
+
+  .start-menu-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+
+  .form-input,
+  .form-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .start-game-button {
+    padding: 14px 24px;
+    font-size: 1.1em;
+  }
+
+  .radio-group {
+    gap: 8px;
+  }
+}
+
+/* Scrollbar styling */
+.start-menu-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.start-menu-card::-webkit-scrollbar-track {
+  background: #1d2939;
+}
+
+.start-menu-card::-webkit-scrollbar-thumb {
+  background: #3a4a5f;
+  border-radius: 4px;
+}
+
+.start-menu-card::-webkit-scrollbar-thumb:hover {
+  background: #4a5a6f;
+}
+
+.start-menu-overlay.dark-mode .start-menu-card::-webkit-scrollbar-track {
+  background: #151b26;
+}
+
+.start-menu-overlay.dark-mode .start-menu-card::-webkit-scrollbar-thumb {
+  background: #2d3a4f;
+}
+
+.start-menu-overlay.dark-mode .start-menu-card::-webkit-scrollbar-thumb:hover {
+  background: #3d4a5f;
+}
+
