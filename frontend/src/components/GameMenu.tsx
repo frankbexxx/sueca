@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './GameMenu.css';
 import { AIDifficulty } from '../types/game';
+import { CreditsModal } from './CreditsModal';
 
 /**
  * Props interface for GameMenu component
@@ -47,6 +48,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
 }) => {
   // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
   // Temporary state for settings form (not applied until "Save" clicked)
   const [tempNames, setTempNames] = useState<string[]>(playerNames);
   const [tempDifficulty, setTempDifficulty] = useState<AIDifficulty>(aiDifficulty);
@@ -193,6 +195,36 @@ export const GameMenu: React.FC<GameMenuProps> = ({
               </label>
             </div>
             
+            <div className="setting-item" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', marginTop: '8px' }}>
+              <button
+                className="credits-btn"
+                onClick={() => {
+                  setShowCredits(true);
+                  setShowSettings(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  fontSize: '0.95em',
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                  color: '#e9eef7',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.15) 100%)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%)';
+                }}
+              >
+                🙏 Agradecimentos
+              </button>
+            </div>
+            
             {/* Game control buttons moved to settings panel */}
             <div className="setting-item" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', marginTop: '8px' }}>
               <label style={{ marginBottom: '8px', display: 'block' }}>Controles do Jogo:</label>
@@ -269,6 +301,13 @@ export const GameMenu: React.FC<GameMenuProps> = ({
             Novo Jogo
           </button>
         </div>
+      )}
+
+      {showCredits && (
+        <CreditsModal
+          onClose={() => setShowCredits(false)}
+          darkMode={darkMode}
+        />
       )}
     </div>
   );

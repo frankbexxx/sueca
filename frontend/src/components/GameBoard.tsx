@@ -3,6 +3,7 @@ import { Game } from '../models/Game';
 import { GameState, Card, DealingMethod, AIDifficulty, Suit } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
+import { PenteVisualization } from './PenteVisualization';
 import { useSound } from '../hooks/useSound';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
@@ -592,11 +593,11 @@ export const GameBoard: React.FC = () => {
       <div className="top-strip">
         <div className="score-block us">
           <div className="label">US</div>
-          <div className="line">Round: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Game: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Pontos: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Pente: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
         <div className="round-block">
-          <div>Round {gameState.round}</div>
+          <div>Jogo {gameState.round}</div>
           <div className="dealing-method">Dealing: {gameState.dealingMethod === 'A' ? 'A' : 'B'}</div>
           {/* Trump information moved here from score blocks */}
           {gameState.trumpSuit && gameState.trumpCard && (
@@ -610,8 +611,8 @@ export const GameBoard: React.FC = () => {
         </div>
         <div className="score-block them">
           <div className="label">THEM</div>
-          <div className="line">Round: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Game: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Pontos: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Pente: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
       </div>
 
@@ -631,7 +632,6 @@ export const GameBoard: React.FC = () => {
                 {gameState.currentTrick.map((card: Card, index: number) => {
                   // Calculate which player played this card (based on trick leader + order)
                   const playerIndex = (gameState.trickLeader + index) % 4;
-                  const player = gameState.players[playerIndex];
                   const position = getTablePosition(playerIndex);
                   // Highlight winning card if this is the last card and player won
                   const isWinning =
@@ -782,7 +782,7 @@ export const GameBoard: React.FC = () => {
         </div>
       </div>
 
-      {/* Round end modal - displays round scores and game progress */}
+      {/* Game end modal - displays game scores and pente progress */}
       {gameState.waitingForRoundEnd && !gameState.isGameOver && (
         <div className="pause-overlay" style={{
           position: 'fixed',
@@ -804,10 +804,10 @@ export const GameBoard: React.FC = () => {
             textAlign: 'center',
             maxWidth: '600px'
           }}>
-            <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#2c3e50' }}>Round {gameState.round - 1} Complete!</h2>
+            <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#2c3e50' }}>Jogo {gameState.round - 1} Completo!</h2>
             
             <div style={{ marginBottom: '30px' }}>
-              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Round Scores:</p>
+              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Pontos do Jogo:</p>
               <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
                 <div style={{ padding: '15px', backgroundColor: '#e3f2fd', borderRadius: '10px', minWidth: '150px' }}>
                   <strong style={{ fontSize: '16px', color: '#1976d2' }}>US</strong>
@@ -824,14 +824,14 @@ export const GameBoard: React.FC = () => {
               </div>
               
               <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '10px' }}>
-                <p style={{ fontSize: '16px', marginBottom: '10px', fontWeight: 'bold' }}>Game Score:</p>
-                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                  <div>
-                    <strong>US:</strong> {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']} victories
-                  </div>
-                  <div>
-                    <strong>THEM:</strong> {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']} victories
-                  </div>
+                <p style={{ fontSize: '16px', marginBottom: '10px', fontWeight: 'bold' }}>Pente:</p>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                  <PenteVisualization
+                    team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
+                    team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
+                    team1Name="US"
+                    team2Name="THEM"
+                  />
                 </div>
               </div>
             </div>
@@ -855,13 +855,13 @@ export const GameBoard: React.FC = () => {
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
               }}
             >
-              Continue to Round {gameState.round}
+              Continuar para Jogo {gameState.round}
             </button>
           </div>
         </div>
       )}
 
-      {/* Round start modal - shown only for first round, displays trump card */}
+      {/* Game start modal - shown only for first game, displays trump card */}
       {gameState.waitingForRoundStart && !gameState.isGameOver && gameState.round === 1 && (
         <div className="pause-overlay" style={{
           position: 'fixed',
@@ -885,7 +885,7 @@ export const GameBoard: React.FC = () => {
             maxWidth: '500px',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
           }}>
-            <h2 style={{ color: '#e9eef7', marginBottom: '20px' }}>Round {gameState.round} Ready!</h2>
+            <h2 style={{ color: '#e9eef7', marginBottom: '20px' }}>Jogo {gameState.round} Pronto!</h2>
             {gameState.trumpCard && (
               <div style={{ margin: '20px 0' }}>
                 <p style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px', color: '#cfdffc' }}>Trump Suit:</p>
@@ -936,7 +936,7 @@ export const GameBoard: React.FC = () => {
                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 92, 231, 0.4)';
               }}
             >
-              Start Round
+              Iniciar Jogo
             </button>
           </div>
         </div>
@@ -965,19 +965,19 @@ export const GameBoard: React.FC = () => {
             textAlign: 'center',
             maxWidth: '600px'
           }}>
-            <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>🎉 Game Over! 🎉</h2>
+            <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>🎉 Pente Completo! 🎉</h2>
             <p className="winner-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '30px' }}>
-              {getTeamName(gameState.winner!)} Wins!
+              {getTeamName(gameState.winner!)} Venceu!
             </p>
             <div style={{ marginBottom: '30px' }}>
-              <p style={{ fontSize: '18px', marginBottom: '15px' }}>Final Scores:</p>
-              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-                <div>
-                  <strong>US:</strong> {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']} points
-                </div>
-                <div>
-                  <strong>THEM:</strong> {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']} points
-                </div>
+              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Pente Final:</p>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                <PenteVisualization
+                  team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
+                  team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
+                  team1Name="US"
+                  team2Name="THEM"
+                />
               </div>
             </div>
             <div className="new-game-options" style={{ marginBottom: '20px' }}>
@@ -1015,4 +1015,3 @@ export const GameBoard: React.FC = () => {
     </div>
   );
 };
-

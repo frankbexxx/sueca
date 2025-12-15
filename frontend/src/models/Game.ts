@@ -239,6 +239,17 @@ export class Game {
   }
 
   /**
+   * Updates player names in the current game state without restarting
+   * Useful for changing names during an active game
+   */
+  updatePlayerNames(playerNames: string[]): void {
+    this.state.players = this.state.players.map((player, index) => ({
+      ...player,
+      name: playerNames[index] || `Player ${index + 1}`
+    }));
+  }
+
+  /**
    * Check if a card can be played (public method for UI)
    */
   canPlayCard(playerIndex: number, cardIndex: number): boolean {

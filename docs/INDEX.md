@@ -12,25 +12,27 @@
 
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
-| **[DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)** | Guia completo de deploy | Deploy detalhado (Vercel, Netlify) |
-| **[DEPLOY_QUICK.md](DEPLOY_QUICK.md)** | Deploy rápido (5 min) | Deploy urgente |
-| **[CORRIGIR_DEPLOY.md](CORRIGIR_DEPLOY.md)** | Troubleshooting | Problemas com deploy |
+| **[DEPLOY.md](DEPLOY.md)** | Guia completo de deploy | Deploy rápido e detalhado (Vercel, Netlify) |
 
 ## 📊 Estado e Planeamento
 
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
 | **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Estado atual do projeto | Ver o que está implementado |
-| **[DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)** | Plano de desenvolvimento | Planeamento técnico |
-| **[NEXT_STEPS.md](NEXT_STEPS.md)** | Próximos passos sugeridos | Continuar desenvolvimento |
-| **[V2_ROADMAP.md](V2_ROADMAP.md)** | Roadmap curto do SUECA 2.0 | Planear milestones da V2 |
+| **[ROADMAP.md](ROADMAP.md)** | Roadmap e próximos passos | Planeamento e continuar desenvolvimento |
+| **[TODO_NEXT_SESSION.md](TODO_NEXT_SESSION.md)** | Tarefas para próxima sessão | Começar nova sessão de trabalho |
 
 ## 🧪 Testes
 
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
-| **[TESTING_PHASE1.md](TESTING_PHASE1.md)** | Testes da Fase 1 | Verificar rotação |
-| **[TESTING_NOTES.md](TESTING_NOTES.md)** | Notas de testes gerais | Testes e validação |
+| **[TESTING.md](TESTING.md)** | Guia completo de testes | Testes e validação |
+
+## 📁 Estrutura do Projeto
+
+| Documento | Descrição | Quando Usar |
+|-----------|-----------|-------------|
+| **[ESTRUTURA_PROJETO.md](ESTRUTURA_PROJETO.md)** | Estrutura do código | Entender organização do projeto |
 
 ---
 
@@ -39,18 +41,28 @@
 ### Para Novos Desenvolvedores:
 1. Ler `QUICKSTART.md`
 2. Ler `PROJECT_STATUS.md` para entender estado atual
-3. Ler `NEXT_STEPS.md` para ver próximas melhorias
+3. Ler `ROADMAP.md` para ver próximas melhorias
 
 ### Para Fazer Deploy:
-1. Ler `COMO_PARTILHAR.md` (rápido)
-2. Se precisar de mais detalhes: `DEPLOY_GUIDE.md`
+1. Ler `DEPLOY.md` (guia rápido e completo)
 
 ### Para Continuar Desenvolvimento:
 1. Ler `PROJECT_STATUS.md` (estado atual)
-2. Ler `NEXT_STEPS.md` (próximos passos)
-3. Ler `DEVELOPMENT_PLAN.md` (detalhes técnicos)
+2. Ler `ROADMAP.md` (próximos passos e milestones)
+3. Implementar features seguindo o roadmap
+
+### Para Testar:
+1. Ler `TESTING.md` (checklists e guias de teste)
+
+---
+
+## 📦 Documentação Arquivada
+
+Documentação histórica e versões antigas estão em `archive/`:
+- `CHAT_SUMMARY.md` - Resumo histórico de sessões
+- `DEVELOPMENT_PLAN.md` - Plano técnico antigo
+- `CORRIGIR_DEPLOY.md` - Troubleshooting histórico
 
 ---
 
 **Última atualização:** Dezembro 2025
-

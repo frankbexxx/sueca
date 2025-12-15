@@ -1,0 +1,77 @@
+.pente-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 200px;
+}
+
+.pente-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #e9eef7;
+  min-width: 60px;
+  text-align: left;
+  margin-bottom: 2px;
+}
+
+.pente-line {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  line-height: 1.4;
+  margin-left: 60px;
+  white-space: pre;
+}
+
+.pente-bar {
+  display: inline-block;
+  width: 28px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.pente-separator {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  font-weight: normal;
+  width: 1px;
+}
+
+.pente-top .pente-bar {
+  color: #4caf50;
+}
+
+.pente-top .pente-bar:empty::before {
+  content: '__';
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.pente-bottom .pente-bar {
+  color: #ff9800;
+  width: 28px;
+}
+
+.pente-bottom {
+  margin-left: 60px;
+}
+
+/* Dark mode support */
+.dark-mode .pente-container {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-mode .pente-label {
+  color: #cfdffc;
+}
+
