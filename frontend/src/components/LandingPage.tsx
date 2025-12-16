@@ -81,7 +81,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   <div className="landing-meta-item">4 JOGADORES</div>
                   <div className="landing-meta-item">2 equipas</div>
                   <div className="landing-meta-item">40 cartas</div>
-                  <div className="landing-meta-item">4 pentes</div>
+                  <div className="landing-meta-item">4 jogos</div>
                 </div>
               </div>
             </div>

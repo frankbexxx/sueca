@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './GameMenu.css';
-import { AIDifficulty } from '../types/game';
+import { AIDifficulty, DealingMethod } from '../types/game';
 import { CreditsModal } from './CreditsModal';
 
 /**
@@ -12,6 +12,8 @@ interface GameMenuProps {
   onPlayerNamesChange: (names: string[]) => void;
   aiDifficulty: AIDifficulty;
   onAIDifficultyChange: (difficulty: AIDifficulty) => void;
+  dealingMethod: DealingMethod;
+  onDealingMethodChange: (method: DealingMethod) => void;
   isPaused: boolean;
   onPause: () => void;
   onResume: () => void;
@@ -34,6 +36,8 @@ export const GameMenu: React.FC<GameMenuProps> = ({
   onPlayerNamesChange,
   aiDifficulty,
   onAIDifficultyChange,
+  dealingMethod,
+  onDealingMethodChange,
   isPaused,
   onPause,
   onResume,
@@ -52,6 +56,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
   // Temporary state for settings form (not applied until "Save" clicked)
   const [tempNames, setTempNames] = useState<string[]>(playerNames);
   const [tempDifficulty, setTempDifficulty] = useState<AIDifficulty>(aiDifficulty);
+  const [tempDealingMethod, setTempDealingMethod] = useState<DealingMethod>(dealingMethod);
 
   /**
    * Sync temporary names with prop changes
@@ -62,6 +67,13 @@ export const GameMenu: React.FC<GameMenuProps> = ({
   }, [playerNames]);
 
   /**
+   * Sync temporary dealing method with prop changes
+   */
+  useEffect(() => {
+    setTempDealingMethod(dealingMethod);
+  }, [dealingMethod]);
+
+  /**
    * Saves settings changes
    * Cleans player names (trims whitespace, provides defaults)
    * Applies changes to parent component and closes settings panel
@@ -70,6 +82,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
     const cleaned = tempNames.map((n, idx) => (n.trim() || `Player ${idx + 1}`));
     onPlayerNamesChange(cleaned);
     onAIDifficultyChange(tempDifficulty);
+    onDealingMethodChange(tempDealingMethod);
     setShowSettings(false);
   };
 
@@ -148,7 +161,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     <option value="hard">Difícil</option>
                   </select>
                   <div className="difficulty-description" style={{ fontSize: '0.85em', color: '#ff9800', marginTop: '4px' }}>
-                    ⚠️ Alterar dificuldade apenas no menu inicial
+                    ⚠️ Alterar dificuldade e método apenas no menu inicial
                   </div>
                 </>
               ) : (
@@ -166,6 +179,88 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     {tempDifficulty === 'easy' && <span>AI joga mais aleatoriamente</span>}
                     {tempDifficulty === 'medium' && <span>AI usa estratégia básica</span>}
                     {tempDifficulty === 'hard' && <span>AI usa estratégia avançada com coordenação</span>}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="setting-item">
+              <label>Método de Distribuição:</label>
+              {isGameActive && !isGameOver ? (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', opacity: 0.6, cursor: 'not-allowed' }}>
+                      <input
+                        type="radio"
+                        name="dealing-method-disabled"
+                        value="A"
+                        checked={tempDealingMethod === 'A'}
+                        disabled
+                        style={{ cursor: 'not-allowed' }}
+                      />
+                      <span>Método A (Standard)</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', opacity: 0.6, cursor: 'not-allowed' }}>
+                      <input
+                        type="radio"
+                        name="dealing-method-disabled"
+                        value="B"
+                        checked={tempDealingMethod === 'B'}
+                        disabled
+                        style={{ cursor: 'not-allowed' }}
+                      />
+                      <span>Método B (Dealer First)</span>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => {
+                        if (!isGameActive || isGameOver) {
+                          e.currentTarget.style.borderColor = 'rgba(108, 92, 231, 0.5)';
+                          e.currentTarget.style.background = 'rgba(108, 92, 231, 0.1)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isGameActive || isGameOver) {
+                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="dealing-method"
+                        value="A"
+                        checked={tempDealingMethod === 'A'}
+                        onChange={(e) => setTempDealingMethod(e.target.value as DealingMethod)}
+                      />
+                      <span>Método A (Standard)</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => {
+                        if (!isGameActive || isGameOver) {
+                          e.currentTarget.style.borderColor = 'rgba(108, 92, 231, 0.5)';
+                          e.currentTarget.style.background = 'rgba(108, 92, 231, 0.1)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isGameActive || isGameOver) {
+                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="dealing-method"
+                        value="B"
+                        checked={tempDealingMethod === 'B'}
+                        onChange={(e) => setTempDealingMethod(e.target.value as DealingMethod)}
+                      />
+                      <span>Método B (Dealer First)</span>
+                    </label>
                   </div>
                 </>
               )}
@@ -228,7 +323,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
             {/* Game control buttons moved to settings panel */}
             <div className="setting-item" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', marginTop: '8px' }}>
               <label style={{ marginBottom: '8px', display: 'block' }}>Controles do Jogo:</label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {!isGameOver && isGameActive && (
                   <>
                     {isPaused ? (
@@ -239,7 +334,6 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                           setShowSettings(false);
                         }}
                         title="Retomar jogo"
-                        style={{ flex: '1', minWidth: '120px' }}
                       >
                         ▶️ Retomar
                       </button>
@@ -251,7 +345,6 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                           setShowSettings(false);
                         }}
                         title="Pausar jogo"
-                        style={{ flex: '1', minWidth: '120px' }}
                       >
                         ⏸️ Pausar
                       </button>
@@ -267,28 +360,26 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                       setShowSettings(false);
                     }}
                     title="Sair do jogo atual"
-                    style={{ flex: '1', minWidth: '120px' }}
                   >
                     🚪 Sair
                   </button>
                 )}
+                
+                <button className="menu-btn save-btn" onClick={handleSaveSettings}>
+                  Guardar
+                </button>
+                <button 
+                  className="menu-btn cancel-btn" 
+                  onClick={() => {
+                    setTempNames(playerNames);
+                    setTempDifficulty(aiDifficulty);
+                    setTempDealingMethod(dealingMethod);
+                    setShowSettings(false);
+                  }}
+                >
+                  Cancelar
+                </button>
               </div>
-            </div>
-            
-            <div className="setting-buttons">
-              <button className="save-btn" onClick={handleSaveSettings}>
-                Guardar
-              </button>
-              <button 
-                className="cancel-btn" 
-                onClick={() => {
-                  setTempNames(playerNames);
-                  setTempDifficulty(aiDifficulty);
-                  setShowSettings(false);
-                }}
-              >
-                Cancelar
-              </button>
             </div>
           </div>
         </div>

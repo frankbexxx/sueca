@@ -3,11 +3,24 @@ import { Game } from '../models/Game';
 import { GameState, Card, DealingMethod, AIDifficulty, Suit } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
-import { PenteVisualization } from './PenteVisualization';
+import { RoundEndModal } from './RoundEndModal';
+import { GameStartModal } from './GameStartModal';
+import { GameOverModal } from './GameOverModal';
 import { useSound } from '../hooks/useSound';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '../utils/cardMappings';
+import {
+  AI_PLAY_DELAY_MS,
+  CARD_SPACING,
+  MAX_CARDS_IN_HAND,
+  SELECTED_CARD_Z_INDEX,
+  GAME_OVER_DELAY_MS,
+  STORAGE_KEYS,
+  DEFAULT_PLAYER_NAMES,
+  DEFAULT_DEALING_METHOD,
+  DEFAULT_AI_DIFFICULTY
+} from '../constants/gameConstants';
 
 /**
  * Main game board component - renders the entire Sueca game interface
@@ -20,11 +33,11 @@ export const GameBoard: React.FC = () => {
   
   // Game configuration state - loaded from localStorage or defaults
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>(() => {
-    const saved = localStorage.getItem('sueca-dealing-method');
-    return (saved === 'A' || saved === 'B') ? saved : 'A';
+    const saved = localStorage.getItem(STORAGE_KEYS.DEALING_METHOD);
+    return (saved === 'A' || saved === 'B') ? saved : DEFAULT_DEALING_METHOD;
   });
   const [playerNames, setPlayerNames] = useState<string[]>(() => {
-    const saved = localStorage.getItem('sueca-player-names');
+    const saved = localStorage.getItem(STORAGE_KEYS.PLAYER_NAMES);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -35,16 +48,16 @@ export const GameBoard: React.FC = () => {
         console.error('Error parsing saved player names:', e);
       }
     }
-    return ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+    return DEFAULT_PLAYER_NAMES;
   });
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(() => {
-    const saved = localStorage.getItem('sueca-ai-difficulty');
-    return (saved === 'easy' || saved === 'medium' || saved === 'hard') ? saved : 'medium';
+    const saved = localStorage.getItem(STORAGE_KEYS.AI_DIFFICULTY);
+    return (saved === 'easy' || saved === 'medium' || saved === 'hard') ? saved : DEFAULT_AI_DIFFICULTY;
   });
   
   // UI preferences - dark mode persisted in localStorage
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('sueca-dark-mode');
+    const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
     return saved ? saved === 'true' : false;
   });
 
@@ -70,6 +83,7 @@ export const GameBoard: React.FC = () => {
       trickLeader: 0,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
+      completedPentes: [],
       round: 1,
       isGameOver: false,
       winner: null,
@@ -85,7 +99,8 @@ export const GameBoard: React.FC = () => {
       isPaused: false,
       playerName: 'Player 1',
       aiDifficulty: 'medium',
-      partnerSignals: []
+      partnerSignals: [],
+      nextRoundValue: undefined
     };
   });
   // UI state
@@ -230,7 +245,7 @@ export const GameBoard: React.FC = () => {
     ) {
       const timer = setTimeout(() => {
         playAICard();
-      }, 1500); // 1.5s delay for visual feedback
+      }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [game, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard]);
@@ -265,34 +280,22 @@ export const GameBoard: React.FC = () => {
         // Use the game's canPlayCard method to check if card can be played
         const canPlay = game.canPlayCard(0, cardIndex);
         if (canPlay) {
-          setSelectedCard(cardIndex);
+          // If clicking the same card that's already selected, play it
+          if (selectedCard === cardIndex) {
+            if (game.playCard(0, cardIndex)) {
+              playCardSound();
+              setGameState(game.getState());
+              setSelectedCard(null); // Clear selection after successful play
+            } else {
+              playErrorSound();
+            }
+          } else {
+            // Otherwise, just select the card
+            setSelectedCard(cardIndex);
+          }
         } else {
           playErrorSound(); // Visual/audio feedback for invalid play
         }
-      }
-    }
-  };
-
-  /**
-   * Executes the play of the selected card
-   * Called when "Play Card" button is clicked
-   * Validates state and attempts to play the card through game logic
-   */
-  const handlePlayCard = () => {
-    if (!game) return;
-    
-    if (
-      selectedCard !== null &&
-      gameState.currentPlayerIndex === 0 &&
-      !gameState.waitingForTrickEnd &&
-      !gameState.waitingForRoundEnd
-    ) {
-      if (game.playCard(0, selectedCard)) {
-        playCardSound();
-        setGameState(game.getState());
-        setSelectedCard(null); // Clear selection after successful play
-      } else {
-        playErrorSound(); // Play failed (shouldn't happen if validation is correct)
       }
     }
   };
@@ -360,7 +363,7 @@ export const GameBoard: React.FC = () => {
       const timer = setTimeout(() => {
         setShowStartMenu(true);
         setGameStarted(false);
-      }, 3000); // 3 seconds delay
+      }, GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [game, gameState.isGameOver]);
@@ -476,7 +479,7 @@ export const GameBoard: React.FC = () => {
    */
   const handleAIDifficultyChange = (difficulty: AIDifficulty) => {
     setAIDifficulty(difficulty);
-    localStorage.setItem('sueca-ai-difficulty', difficulty);
+    localStorage.setItem(STORAGE_KEYS.AI_DIFFICULTY, difficulty);
     
     // Only allow changing difficulty if game hasn't started or is over
     if (!game || gameState.waitingForGameStart || gameState.isGameOver) {
@@ -490,12 +493,45 @@ export const GameBoard: React.FC = () => {
     
     // During active game, update state immutably (without mutation)
     // Note: This shouldn't normally happen as the setting should be disabled
-    const currentState = game.getState();
-    const updatedState: GameState = {
-      ...currentState,
-      aiDifficulty: difficulty
-    };
-    setGameState(updatedState);
+    if (game && gameState.aiDifficulty !== difficulty) {
+      const currentState = game.getState();
+      const updatedState: GameState = {
+        ...currentState,
+        aiDifficulty: difficulty
+      };
+      setGameState(updatedState);
+    }
+  };
+
+  /**
+   * Updates dealing method setting
+   * During active game, only updates state (not allowed to change method)
+   * If game is waiting to start or is over, recreates the game with new method
+   */
+  const handleDealingMethodChange = (method: DealingMethod) => {
+    setDealingMethod(method);
+    localStorage.setItem(STORAGE_KEYS.DEALING_METHOD, method);
+    
+    // Only allow changing method if game hasn't started or is over
+    if (!game || gameState.waitingForGameStart || gameState.isGameOver) {
+      if (game) {
+        const newGame = new Game(playerNames, method, aiDifficulty);
+        setGame(newGame);
+        setGameState(newGame.getState());
+      }
+      return;
+    }
+    
+    // During active game, update state immutably (without mutation)
+    // Note: This shouldn't normally happen as the setting should be disabled
+    if (game && gameState.dealingMethod !== method) {
+      const currentState = game.getState();
+      const updatedState: GameState = {
+        ...currentState,
+        dealingMethod: method
+      };
+      setGameState(updatedState);
+    }
   };
 
   /**
@@ -534,22 +570,6 @@ export const GameBoard: React.FC = () => {
     setSelectedCard(null);
   };
 
-  /**
-   * Determines if "Play Card" button should be enabled
-   * Checks all conditions for a valid play:
-   * - Must be human player's turn
-   * - Must have a card selected
-   * - Game must be in playable state
-   */
-  const canPlay =
-    game !== null &&
-    gameState.currentPlayerIndex === 0 &&
-    selectedCard !== null &&
-    !gameState.isGameOver &&
-    !gameState.waitingForTrickEnd &&
-    !gameState.waitingForRoundStart &&
-    !gameState.waitingForGameStart;
-
   // Show StartMenu if it should be visible
   if (showStartMenu) {
     return (
@@ -559,7 +579,7 @@ export const GameBoard: React.FC = () => {
           darkMode={darkMode}
           onDarkModeChange={(mode) => {
             setDarkMode(mode);
-            localStorage.setItem('sueca-dark-mode', String(mode));
+            localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(mode));
           }}
         />
       </div>
@@ -574,6 +594,8 @@ export const GameBoard: React.FC = () => {
         onPlayerNamesChange={handlePlayerNamesChange}
         aiDifficulty={gameState.aiDifficulty || aiDifficulty}
         onAIDifficultyChange={handleAIDifficultyChange}
+        dealingMethod={gameState.dealingMethod || dealingMethod}
+        onDealingMethodChange={handleDealingMethodChange}
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}
@@ -594,7 +616,7 @@ export const GameBoard: React.FC = () => {
         <div className="score-block us">
           <div className="label">US</div>
           <div className="line">Pontos: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Pente: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Jogos: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
         <div className="round-block">
           <div>Jogo {gameState.round}</div>
@@ -612,7 +634,7 @@ export const GameBoard: React.FC = () => {
         <div className="score-block them">
           <div className="label">THEM</div>
           <div className="line">Pontos: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Pente: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Jogos: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
       </div>
 
@@ -727,9 +749,7 @@ export const GameBoard: React.FC = () => {
             {/* Render each card in player's hand with proper spacing and positioning */}
             {gameState.players[0].hand.map((card: Card, cardIndex: number) => {
               // Card spacing calculation - centers hand with proper overlap
-              const CARD_SPACING = 18; /* 70% of 26px - reduced for smaller table */
-              const MAX_CARDS = 10;
-              const CENTER_OFFSET = ((MAX_CARDS - 1) * CARD_SPACING) / 2;
+              const CENTER_OFFSET = ((MAX_CARDS_IN_HAND - 1) * CARD_SPACING) / 2;
               const cardPosition = cardIndex * CARD_SPACING;
               const translateX = cardPosition - CENTER_OFFSET;
               const fixedTransform = `translateX(${translateX}px)`;
@@ -743,7 +763,7 @@ export const GameBoard: React.FC = () => {
                   src={getCardImage(card)}
                   alt={`${card.rank} of ${card.suit}`}
                   className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
-                  style={{ transform: fixedTransform, zIndex: isSelected ? 1000 : cardIndex + 1 }}
+                  style={{ transform: fixedTransform, zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1 }}
                   onClick={() => handleCardClick(cardIndex)}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -755,20 +775,12 @@ export const GameBoard: React.FC = () => {
         </div>
       )}
 
-      {/* Action buttons - play card and advance to next trick */}
+      {/* Action button - continue to next trick */}
       <div className="action-buttons-bar">
         <div className="action-buttons-group">
-          {/* Play selected card button - enabled when card is selected and playable */}
+          {/* Continue button - only enabled when trick is complete */}
           <button
-            className={`play-button ${canPlay ? 'enabled' : 'disabled'}`}
-            onClick={handlePlayCard}
-            disabled={!canPlay}
-          >
-            Play Card
-          </button>
-          {/* Advance to next trick button - only enabled when trick is complete */}
-          <button
-            className={`next-trick-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
+            className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
             onClick={() => {
               if (game && gameState.waitingForTrickEnd) {
                 game.finishTrick();
@@ -777,240 +789,53 @@ export const GameBoard: React.FC = () => {
             }}
             disabled={!gameState.waitingForTrickEnd || !game}
           >
-            Next Trick
+            Continuar
           </button>
         </div>
       </div>
 
-      {/* Game end modal - displays game scores and pente progress */}
+      {/* Game end modal - displays game scores and games progress */}
       {gameState.waitingForRoundEnd && !gameState.isGameOver && (
-        <div className="pause-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 2000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '40px',
-            borderRadius: '15px',
-            textAlign: 'center',
-            maxWidth: '600px'
-          }}>
-            <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#2c3e50' }}>Jogo {gameState.round - 1} Completo!</h2>
-            
-            <div style={{ marginBottom: '30px' }}>
-              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Pontos do Jogo:</p>
-              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-                <div style={{ padding: '15px', backgroundColor: '#e3f2fd', borderRadius: '10px', minWidth: '150px' }}>
-                  <strong style={{ fontSize: '16px', color: '#1976d2' }}>US</strong>
-                  <p style={{ fontSize: '24px', margin: '10px 0', fontWeight: 'bold' }}>
-                    {gameState.scores[usTeam === 1 ? 'team1' : 'team2']} points
-                  </p>
-                </div>
-                <div style={{ padding: '15px', backgroundColor: '#fce4ec', borderRadius: '10px', minWidth: '150px' }}>
-                  <strong style={{ fontSize: '16px', color: '#c2185b' }}>THEM</strong>
-                  <p style={{ fontSize: '24px', margin: '10px 0', fontWeight: 'bold' }}>
-                    {gameState.scores[themTeam === 1 ? 'team1' : 'team2']} points
-                  </p>
-                </div>
-              </div>
-              
-              <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '10px' }}>
-                <p style={{ fontSize: '16px', marginBottom: '10px', fontWeight: 'bold' }}>Pente:</p>
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-                  <PenteVisualization
-                    team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
-                    team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
-                    team1Name="US"
-                    team2Name="THEM"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => {
-                if (game) {
-                  game.continueToNextRound();
-                  setGameState(game.getState());
-                }
-              }}
-              style={{
-                padding: '15px 40px',
-                fontSize: '18px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
-              }}
-            >
-              Continuar para Jogo {gameState.round}
-            </button>
-          </div>
-        </div>
+        <RoundEndModal
+          gameState={gameState}
+          usTeam={usTeam}
+          themTeam={themTeam}
+          onContinue={() => {
+            if (game) {
+              game.continueToNextRound();
+              setGameState(game.getState());
+            }
+          }}
+        />
       )}
 
       {/* Game start modal - shown only for first game, displays trump card */}
       {gameState.waitingForRoundStart && !gameState.isGameOver && gameState.round === 1 && (
-        <div className="pause-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: '#2a3a52',
-            color: '#e9eef7',
-            padding: '30px',
-            borderRadius: '15px',
-            textAlign: 'center',
-            maxWidth: '500px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
-          }}>
-            <h2 style={{ color: '#e9eef7', marginBottom: '20px' }}>Jogo {gameState.round} Pronto!</h2>
-            {gameState.trumpCard && (
-              <div style={{ margin: '20px 0' }}>
-                <p style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px', color: '#cfdffc' }}>Trump Suit:</p>
-                <img
-                  src={getCardImage(gameState.trumpCard)}
-                  alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
-                  style={{ width: '150px', height: 'auto', border: '3px solid #6c5ce7', borderRadius: '10px', boxShadow: '0 4px 12px rgba(108, 92, 231, 0.4)' }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <p style={{ marginTop: '10px', fontSize: '16px', color: '#e9eef7' }}>
-                  {getSuitEmoji(gameState.trumpSuit!)} {gameState.trumpSuit!.toUpperCase()}
-                </p>
-                <p style={{ marginTop: '10px', fontSize: '14px', color: '#9aa5b5', fontStyle: 'italic' }}>
-                  This trump suit will remain visible throughout the game
-                </p>
-              </div>
-            )}
-            <p style={{ margin: '20px 0', color: '#cfdffc' }}>
-              Dealer: <strong style={{ color: '#e9eef7' }}>{gameState.players[gameState.dealerIndex].name}</strong>
-            </p>
-            <button
-              onClick={() => {
-                if (game) {
-                  game.startRound();
-                  setGameState(game.getState());
-                }
-              }}
-              style={{
-                padding: '15px 30px',
-                fontSize: '18px',
-                background: 'linear-gradient(135deg, #6c5ce7 0%, #5a4fd6 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(108, 92, 231, 0.4)',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(108, 92, 231, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 92, 231, 0.4)';
-              }}
-            >
-              Iniciar Jogo
-            </button>
-          </div>
-        </div>
+        <GameStartModal
+          gameState={gameState}
+          getCardImage={getCardImage}
+          getSuitEmoji={getSuitEmoji}
+          onStart={() => {
+            if (game) {
+              game.startRound();
+              setGameState(game.getState());
+            }
+          }}
+        />
       )}
 
 
       {/* Game over modal - displays final scores and new game options */}
       {gameState.isGameOver && (
-        <div className="game-over" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '40px',
-            borderRadius: '15px',
-            textAlign: 'center',
-            maxWidth: '600px'
-          }}>
-            <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>🎉 Pente Completo! 🎉</h2>
-            <p className="winner-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '30px' }}>
-              {getTeamName(gameState.winner!)} Venceu!
-            </p>
-            <div style={{ marginBottom: '30px' }}>
-              <p style={{ fontSize: '18px', marginBottom: '15px', fontWeight: 'bold' }}>Pente Final:</p>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                <PenteVisualization
-                  team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
-                  team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
-                  team1Name="US"
-                  team2Name="THEM"
-                />
-              </div>
-            </div>
-            <div className="new-game-options" style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '16px' }}>
-                <strong>Dealing Method for Next Game:</strong>
-                <select
-                  value={dealingMethod}
-                  onChange={(e) => setDealingMethod(e.target.value as DealingMethod)}
-                  style={{ marginLeft: '10px', padding: '8px', fontSize: '16px', borderRadius: '5px' }}
-                >
-                  <option value="A">Method A (Standard)</option>
-                  <option value="B">Method B (Dealer First)</option>
-                </select>
-              </label>
-            </div>
-          <button
-            className="new-game-button"
-            onClick={handleNewGame}
-              style={{
-                padding: '15px 40px',
-                fontSize: '20px',
-                backgroundColor: '#2196F3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-            }}
-          >
-              Start New Game
-          </button>
-          </div>
-        </div>
+        <GameOverModal
+          gameState={gameState}
+          usTeam={usTeam}
+          themTeam={themTeam}
+          dealingMethod={dealingMethod}
+          getTeamName={getTeamName}
+          onDealingMethodChange={setDealingMethod}
+          onNewGame={handleNewGame}
+        />
       )}
     </div>
   );

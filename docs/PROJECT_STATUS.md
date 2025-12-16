@@ -10,13 +10,15 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - Ficheiros principais: `Game.ts`, `GameBoard.tsx`, `Deck.ts`, `game.ts` (types)
 
 ## 🚩 Estado Atual (Dez 2025)
+- ✅ **Alpha v0.1.0-alpha COMPLETA** - Tag: `v0.1.0-alpha`
+- 🚀 **Beta v0.1.0-beta INICIADA** - Foco em testes, estabilidade e melhorias de UX
 - V1 congelada em **tag `v1.0`** (branch de hotfix: `v1-maintenance`)
 - Desenvolvimento V2 ativo em **branch `v2-main`**
 - Produção: `https://frontend-mu-five-18.vercel.app` (deploy com `vercel --prod` a partir de `frontend`)
 - Preview manual: `vercel` (gera URL temporária)
-- Problema conhecido: **UI desalinhada em Android** (prioridade alta no início da V2)
+- Problema conhecido: **UI desalinhada em Android** (prioridade alta na Beta)
 - Limpezas: assets consolidados em `frontend/public/assets/cards1`; removidos duplicados (`cards2`, `assets/` raiz), `frontend/build` (artefacto), `archive/` e `vercel.json` na raiz (usar apenas `frontend/vercel.json`)
-- Roadmap curto da V2: ver `docs/V2_ROADMAP.md`
+- Roadmap da Beta: ver `docs/BETA_ROADMAP.md`
 - UI mobile: cabeçalho e painéis suavizados, Show Grid reduzido (debug), trunfo minimalista (título + mini-carta), botões Play/Next abaixo da mesa.
 
 ---
@@ -326,6 +328,6 @@ Se precisar de continuar o desenvolvimento:
 
 ---
 
-**Última atualização**: Dezembro 2025 - Após implementação das Fases 1-7
-**Estado**: ✅ **FUNCIONAL E ONLINE** - Jogo completo, deployado e acessível para partilhar
+**Última atualização**: Dezembro 2025 - Alpha v0.1.0-alpha completa, Beta iniciada
+**Estado**: ✅ **ALPHA COMPLETA** - Jogo completo, código limpo e refatorado, pronto para Beta
 

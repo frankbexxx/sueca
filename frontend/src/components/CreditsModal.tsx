@@ -73,7 +73,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
                   <div className="credits-meta-item">4 JOGADORES</div>
                   <div className="credits-meta-item">2 equipas</div>
                   <div className="credits-meta-item">40 cartas</div>
-                  <div className="credits-meta-item">4 pentes</div>
+                  <div className="credits-meta-item">4 jogos</div>
                 </div>
               </div>
             </div>

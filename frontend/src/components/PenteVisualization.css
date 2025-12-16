@@ -1,77 +1,113 @@
-.pente-container {
+/* Simple pente visualization - text-based, mobile-friendly */
+.pente-container-simple {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  min-width: 250px;
+  max-width: 100%;
+}
+
+.pente-score-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pente-score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 200px;
 }
 
-.pente-label {
+.pente-team-label {
   font-weight: 600;
-  font-size: 0.85rem;
-  color: #e9eef7;
-  min-width: 60px;
-  text-align: left;
-  margin-bottom: 2px;
+  font-size: 1rem;
 }
 
-.pente-line {
+.pente-score-value {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.pente-total-section {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pente-total-label {
+  font-size: 0.9rem;
+  color: #cfdffc;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.pente-total-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pente-total-item {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0;
-  line-height: 1.4;
-  margin-left: 60px;
-  white-space: pre;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
 }
 
-.pente-bar {
-  display: inline-block;
-  width: 28px;
+.pente-total-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.pente-completed-info {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  margin-top: 4px;
   text-align: center;
-  font-weight: bold;
-  letter-spacing: 0.05em;
-}
-
-.pente-separator {
-  display: inline-block;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 0;
-  font-weight: normal;
-  width: 1px;
-}
-
-.pente-top .pente-bar {
-  color: #4caf50;
-}
-
-.pente-top .pente-bar:empty::before {
-  content: '__';
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.pente-bottom .pente-bar {
-  color: #ff9800;
-  width: 28px;
-}
-
-.pente-bottom {
-  margin-left: 60px;
 }
 
 /* Dark mode support */
-.dark-mode .pente-container {
+.dark-mode .pente-container-simple {
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
-.dark-mode .pente-label {
-  color: #cfdffc;
+.dark-mode .pente-score-item,
+.dark-mode .pente-total-item {
+  background: rgba(0, 0, 0, 0.25);
 }
 
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .pente-container-simple {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .pente-score-item {
+    padding: 8px 12px;
+  }
+
+  .pente-score-value {
+    font-size: 1.1rem;
+  }
+
+  .pente-total-value {
+    font-size: 1rem;
+  }
+}

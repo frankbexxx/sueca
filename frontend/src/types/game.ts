@@ -27,6 +27,7 @@ export interface GameState {
   trickLeader: number;
   scores: { team1: number; team2: number };
   gameScore: { team1: number; team2: number };
+  completedPentes: Array<{ team1: number; team2: number }>; // Array of completed pentes (stand alone pentes from 120 points)
   round: number;
   isGameOver: boolean;
   winner: 1 | 2 | null;
@@ -43,6 +44,7 @@ export interface GameState {
   playerName: string; // Player's name
   aiDifficulty: AIDifficulty; // AI difficulty level
   partnerSignals: Array<{ playerIndex: number; signal: string; trick: number }>; // Partner coordination signals
+  nextRoundValue?: number; // Internal: value for next round (used when continuing after round end)
 }
 
 export const CARD_HIERARCHY: Record<Rank, number> = {

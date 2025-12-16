@@ -215,6 +215,7 @@ export class Game {
       trickLeader: firstTrickStarter,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
+      completedPentes: [], // Array of completed pentes (stand alone pentes from 120 points)
       round: 1,
       isGameOver: false,
       winner: null,
@@ -230,7 +231,8 @@ export class Game {
       isPaused: false,
       playerName: players[0]?.name || 'Player 1',
       aiDifficulty: aiDifficulty,
-      partnerSignals: [] // Initialize empty - will track partner coordination signals
+      partnerSignals: [], // Initialize empty - will track partner coordination signals
+      nextRoundValue: undefined
     };
   }
 
@@ -700,6 +702,7 @@ export class Game {
   private endRound(): void {
     const { team1, team2 } = this.state.scores;
     let roundValue = 1;
+    let isStandAlonePente = false; // Track if this is a 120-point stand alone pente
 
     // Check for tie (60-60)
     if (team1 === 60 && team2 === 60) {
@@ -708,25 +711,39 @@ export class Game {
     } else {
       // Determine winner
       if (team1 >= 61) {
-        if (team1 >= 91) {
-          roundValue = 2; // 91+ = 2 victories
-        }
         if (team1 === 120) {
-          roundValue = 4; // All tricks = 4 victories
+          // 120 points = stand alone pente (4-0)
+          // Create a new completed pente and add to completedPentes
+          // Do NOT add to gameScore (it's a separate pente)
+          this.state.completedPentes.push({ team1: 4, team2: 0 });
+          isStandAlonePente = true;
+          roundValue = 0; // Don't add to current gameScore
+        } else if (team1 >= 91) {
+          roundValue = 2; // 91+ = 2 victories
+          this.state.gameScore.team1 += roundValue;
+        } else {
+          roundValue = 1; // Normal victory
+          this.state.gameScore.team1 += roundValue;
         }
-        this.state.gameScore.team1 += roundValue;
       } else if (team2 >= 61) {
-        if (team2 >= 91) {
-          roundValue = 2;
-        }
         if (team2 === 120) {
-          roundValue = 4;
+          // 120 points = stand alone pente (0-4)
+          // Create a new completed pente and add to completedPentes
+          // Do NOT add to gameScore (it's a separate pente)
+          this.state.completedPentes.push({ team1: 0, team2: 4 });
+          isStandAlonePente = true;
+          roundValue = 0; // Don't add to current gameScore
+        } else if (team2 >= 91) {
+          roundValue = 2; // 91+ = 2 victories
+          this.state.gameScore.team2 += roundValue;
+        } else {
+          roundValue = 1; // Normal victory
+          this.state.gameScore.team2 += roundValue;
         }
-        this.state.gameScore.team2 += roundValue;
       }
     }
 
-    // Check if game is over
+    // Check if game is over (current pente completed)
     if (this.state.gameScore.team1 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 1;
@@ -740,15 +757,20 @@ export class Game {
     } else {
       // Show round results before starting new round
       this.state.waitingForRoundEnd = true;
-      // Store round value for next round
-      (this.state as any).nextRoundValue = roundValue;
+      // Store round value for next round (only if not stand alone pente)
+      if (!isStandAlonePente) {
+        this.state.nextRoundValue = roundValue;
+      } else {
+        // For stand alone pente, next round is worth 1 (normal)
+        this.state.nextRoundValue = 1;
+      }
     }
   }
 
   // Called from UI to continue after showing round results
   continueToNextRound(): void {
     if (this.state.waitingForRoundEnd) {
-      const roundValue = (this.state as any).nextRoundValue || 1;
+      const roundValue = this.state.nextRoundValue || 1;
       this.state.waitingForRoundEnd = false;
       this.startNewRound(roundValue);
     }
