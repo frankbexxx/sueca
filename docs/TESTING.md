@@ -21,6 +21,31 @@ Resultado esperado:
 
 ---
 
+## 📱 Checklist Mobile/Responsividade (Beta)
+
+Objetivo: validar UI em ecrãs móveis (Android) e anotar issues.
+
+Viewports mínimos (DevTools):
+- 360×800
+- 414×896
+
+Passos:
+1. Abrir produção (Vercel) em cada viewport (DevTools → Responsive).
+2. Verificar header/placar: sem corte, textos legíveis.
+3. Verificar trunfo e dealer: visíveis, sem overlap.
+4. Verificar mão do Sul: cartas visíveis, sem scroll horizontal forçado.
+5. Verificar botões (Continue, etc.): clicáveis, não tap-target minúsculo.
+6. Abrir menu/overlay (se existir) e fechar: sem prender UI.
+7. Jogar 1–2 vazas (ou 1 ronda) sem erros/colisões.
+8. Se possível, testar num Android real e anotar device/resultado.
+
+Notas a registar:
+- Device/viewport
+- Pass/fail e o quê falhou (cortes, overlaps, tap-targets)
+- Erros no console, se houver
+
+---
+
 ## 📋 Testes da Fase 1 - Rotação Anti-horária
 
 ### Alterações Implementadas
