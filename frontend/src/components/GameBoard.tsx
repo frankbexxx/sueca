@@ -313,16 +313,12 @@ export const GameBoard: React.FC = () => {
     const suit = SUIT_TO_NAME[card.suit];
     const rank = RANK_TO_IMAGE_NAME[card.rank];
     
-    // Para jack, queen e king, usar versão "2" (specific asset naming convention)
-    const isFigure = card.rank === 'J' || card.rank === 'Q' || card.rank === 'K';
-    const suffix = isFigure ? '2' : '';
-    
     // Use relative path that works in both dev and production
     // In production, PUBLIC_URL is empty string, so we use relative path
     const publicUrl = process.env.PUBLIC_URL || '';
     // Ensure we don't have double slashes
     const basePath = publicUrl && !publicUrl.endsWith('/') ? publicUrl : (publicUrl || '');
-    return `${basePath}/assets/cards1/${rank}_of_${suit}${suffix}.png`;
+    return `${basePath}/assets/cards2/${rank}_of_${suit}.png`;
   };
 
   /**

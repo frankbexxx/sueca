@@ -17,10 +17,10 @@ export const SUIT_TO_CODE: Record<string, string> = {
  * Maps suit names to full names (for image paths)
  */
 export const SUIT_TO_NAME: Record<string, string> = {
-  clubs: 'clubs',
-  diamonds: 'diamonds',
-  hearts: 'hearts',
-  spades: 'spades'
+  clubs: 'Clubs',
+  diamonds: 'Diamonds',
+  hearts: 'Hearts',
+  spades: 'Spades'
 };
 
 /**
@@ -32,11 +32,11 @@ export const RANK_TO_IMAGE_NAME: Record<string, string> = {
   '4': '4',
   '5': '5',
   '6': '6',
-  'Q': 'queen',
-  'J': 'jack',
-  'K': 'king',
   '7': '7',
-  'A': 'ace'
+  'Q': 'Queen',
+  'J': 'Jack',
+  'K': 'King',
+  'A': 'Ace'
 };
 
 /**
