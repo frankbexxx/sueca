@@ -3,13 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.schemas import PlayRequest, PlayResponse
 from engine.movegen import legal_moves
 from engine.heuristics import choose_card_simple
+import os
 
 app = FastAPI(title="Sueca AI Service", version="0.1.0")
 
-# CORS para dev (ajustar para produção com origem específica)
+# CORS - Permitir apenas origens permitidas (produção) ou todas (dev)
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"  # Dev defaults
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

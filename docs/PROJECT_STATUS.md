@@ -10,8 +10,8 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - Ficheiros principais: `Game.ts`, `GameBoard.tsx`, `Deck.ts`, `game.ts` (types)
 
 ## 🚩 Estado Atual (Dez 2025)
-- ✅ **Alpha v0.1.0-alpha COMPLETA** - Tag: `v0.1.0-alpha`
-- 🚀 **Beta v0.1.0-beta INICIADA** - Foco em testes, estabilidade e melhorias de UX
+- ✅ **Alpha v0.1.0-alpha COMPLETA** - Tag: `v0.1.0-alpha` (documentos arquivados)
+- 🚀 **Beta v0.1.0-beta ATIVA** - Foco em testes, estabilidade e melhorias de UX
 - V1 congelada em **tag `v1.0`** (branch de hotfix: `v1-maintenance`)
 - Desenvolvimento V2 ativo em **branch `v2-main`**
 - Produção: `https://frontend-mu-five-18.vercel.app` (deploy com `vercel --prod` a partir de `frontend`)

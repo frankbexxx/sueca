@@ -1,6 +1,6 @@
 {
   "name": "sueca-frontend",
-  "version": "0.1.0-alpha",
+  "version": "0.1.0-beta",
   "private": true,
   "homepage": ".",
   "dependencies": {
