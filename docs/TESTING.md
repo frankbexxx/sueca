@@ -4,6 +4,23 @@ Este documento consolida todas as informações sobre testes do projeto SUECA.
 
 ---
 
+## ⚡ Sanity Test - Beta (UI + AI externa)
+Objetivo: validar rapidamente que a app abre, joga 1 ronda e a IA externa responde.
+
+Passos:
+1. Abrir produção (Vercel) com DevTools → Network (Fetch/XHR).
+2. Iniciar jogo (usar nomes default).
+3. Deixar a IA jogar uma carta.
+4. Verificar requests a `https://sueca-swuo.onrender.com/play` (200 OK).
+5. Jogar 1-2 vazas (ou 1 ronda) sem erros no console.
+
+Resultado esperado:
+- Requests /play com 200.
+- Jogo sem erros ou bloqueios.
+- Se serviço cair, fallback local mantém jogo funcional.
+
+---
+
 ## 📋 Testes da Fase 1 - Rotação Anti-horária
 
 ### Alterações Implementadas
