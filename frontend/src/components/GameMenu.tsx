@@ -124,11 +124,15 @@ export const GameMenu: React.FC<GameMenuProps> = ({
           <div className="settings-content">
             <h3>Configurações</h3>
             <div className="setting-item">
-              <label>Nome dos Jogadores:</label>
-              {[0,1,2,3].map(idx => (
+              <label htmlFor="settings-player-0">Nome dos Jogadores:</label>
+              {[0,1,2,3].map(idx => {
+                const inputId = `settings-player-${idx}`;
+                return (
                 <input
+                  id={inputId}
                   key={idx}
                   type="text"
+                  name={inputId}
                   value={tempNames[idx] || ''}
                   onChange={(e) => {
                     const copy = [...tempNames];
@@ -143,8 +147,10 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     }
                   }}
                   style={{ marginBottom: '6px' }}
+                  aria-label={`Nome do jogador ${idx + 1}`}
                 />
-              ))}
+                );
+              })}
             </div>
             <div className="setting-item">
               <label htmlFor="ai-difficulty">Dificuldade da AI:</label>
@@ -281,6 +287,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
               <label htmlFor="dark-mode" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                 <input
                   id="dark-mode"
+                  name="dark-mode"
                   type="checkbox"
                   checked={darkMode}
                   onChange={handleDarkModeToggle}

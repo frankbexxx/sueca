@@ -127,29 +127,35 @@ export const StartMenu: React.FC<StartMenuProps> = ({
         <div className="start-menu-form">
           {/* Player Names */}
           <div className="form-section">
-            <label className="form-label">Nomes dos Jogadores:</label>
-            {[0, 1, 2, 3].map((index) => (
-              <input
-                key={index}
-                type="text"
-                className={`form-input ${index === 0 ? 'required' : ''}`}
-                value={playerNames[index] || ''}
-                onChange={(e) => {
-                  const copy = [...playerNames];
-                  copy[index] = e.target.value;
-                  setPlayerNames(copy);
-                  setError(null);
-                }}
-                placeholder={`Player ${index + 1}${index === 0 ? ' *' : ''}`}
-                maxLength={20}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && index === 3) {
-                    handleStart();
-                  }
-                }}
-                autoFocus={index === 0}
-              />
-            ))}
+            <label className="form-label" htmlFor="player-name-0">Nomes dos Jogadores:</label>
+            {[0, 1, 2, 3].map((index) => {
+              const inputId = `player-name-${index}`;
+              return (
+                <input
+                  key={index}
+                  id={inputId}
+                  name={inputId}
+                  type="text"
+                  className={`form-input ${index === 0 ? 'required' : ''}`}
+                  value={playerNames[index] || ''}
+                  onChange={(e) => {
+                    const copy = [...playerNames];
+                    copy[index] = e.target.value;
+                    setPlayerNames(copy);
+                    setError(null);
+                  }}
+                  placeholder={`Player ${index + 1}${index === 0 ? ' *' : ''}`}
+                  maxLength={20}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && index === 3) {
+                      handleStart();
+                    }
+                  }}
+                  autoFocus={index === 0}
+                  aria-label={`Nome do jogador ${index + 1}`}
+                />
+              );
+            })}
           </div>
 
           {/* AI Difficulty */}
@@ -234,8 +240,10 @@ export const StartMenu: React.FC<StartMenuProps> = ({
           {showAdvanced && (
             <div className="advanced-settings">
               <div className="form-section">
-                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} htmlFor="advanced-dark-mode">
                   <input
+                    id="advanced-dark-mode"
+                    name="advanced-dark-mode"
                     type="checkbox"
                     checked={darkMode}
                     onChange={handleDarkModeToggle}
