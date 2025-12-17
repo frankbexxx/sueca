@@ -30,6 +30,7 @@ export const GameBoard: React.FC = () => {
   // Start menu and game state
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [aiSource, setAiSource] = useState<'external' | 'local'>('local'); // Observabilidade da AI
   
   // Game configuration state - loaded from localStorage or defaults
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>(() => {
@@ -184,8 +185,10 @@ export const GameBoard: React.FC = () => {
         };
         const play = await requestAiPlay(payload);
         const idx = player.hand.findIndex((c) => cardToCode(c) === play);
+        setAiSource('external');
         return idx;
       } catch (err) {
+        setAiSource('local');
         return -1;
       }
     };
@@ -636,6 +639,10 @@ export const GameBoard: React.FC = () => {
           <div className="line">Pontos: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
           <div className="line">Jogos: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
+      </div>
+      {/* Indicador de fonte da AI */}
+      <div className="ai-source-banner">
+        {aiSource === 'external' ? 'AI Externa (Render)' : 'AI Local (fallback)'}
       </div>
 
       {/* Main game table container */}
