@@ -24,18 +24,6 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
         </button>
 
         <div className="credits-modal-card">
-          <header className="credits-header">
-            <div className="credits-publisher">
-              <div className="credits-publisher-logo placeholder-logo">
-                OXS
-              </div>
-              <div className="credits-publisher-text">
-                <span className="credits-publisher-label">editora</span>
-                <span className="credits-publisher-name">OXS · Oeiras Xtreme Software</span>
-              </div>
-            </div>
-          </header>
-
           <main className="credits-main">
             <div className="credits-title-block">
               <h1 className="credits-title">SUECÃO</h1>
@@ -85,6 +73,9 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
               <p className="credits-ack-text">
                 Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.
               </p>
+            </div>
+            <div className="credits-copyright">
+              © 2025 Todos os direitos reservados.
             </div>
           </footer>
         </div>

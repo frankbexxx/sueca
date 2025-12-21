@@ -51,53 +51,7 @@
   cursor: pointer;
 }
 
-.landing-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.landing-publisher {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.landing-publisher-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: 0.06em;
-}
-
-.placeholder-logo {
-  background: radial-gradient(circle at 30% 0, #ffe082, #ffb300);
-  color: #1b130a;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4), 0 10px 18px rgba(0, 0, 0, 0.5);
-}
-
-.landing-publisher-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.landing-publisher-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  opacity: 0.7;
-}
-
-.landing-publisher-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-}
+/* Header removido - título já está no topo */
 
 .landing-main {
   display: flex;
@@ -114,10 +68,10 @@
   font-size: clamp(2.4rem, 5vw, 3.1rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #ffecb3;
+  color: #d4a574; /* Cor cobre mais vibrante */
   text-shadow:
     0 0 20px rgba(0, 0, 0, 0.8),
-    0 0 40px rgba(255, 235, 59, 0.6);
+    0 2px 4px rgba(212, 165, 116, 0.4);
 }
 
 .landing-subtitle {
@@ -201,7 +155,7 @@
 .landing-intro {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #ffecb3;
+  color: #d4a574; /* Cor cobre mais vibrante */
   margin-bottom: 4px !important;
 }
 
@@ -257,6 +211,13 @@
   font-size: 0.75rem;
   opacity: 0.65;
   text-align: center;
+}
+
+.landing-copyright {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  text-align: center;
+  margin-top: 4px;
 }
 
 @keyframes tap-pulse {
