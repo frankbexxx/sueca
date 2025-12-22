@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../i18n/useLanguage';
 import './LandingPage.css';
 
 interface LandingPageProps {
@@ -6,6 +7,7 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+  const { t } = useLanguage();
   const handleStart = () => {
     onStart();
   };
@@ -26,22 +28,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
         }}
       >
         <div className="landing-card">
-          <header className="landing-header">
-            <div className="landing-publisher">
-              <div className="landing-publisher-logo placeholder-logo">
-                OXS
-              </div>
-              <div className="landing-publisher-text">
-                <span className="landing-publisher-label">editora</span>
-                <span className="landing-publisher-name">OXS · Oeiras Xtreme Software</span>
-              </div>
-            </div>
-          </header>
-
           <main className="landing-main">
             <div className="landing-title-block">
               <h1 className="landing-title">
-                SUECÃO
+                {t.landing.title}
               </h1>
             </div>
 
@@ -72,16 +62,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               </div>
 
               <div className="landing-description">
-                <p className="landing-intro">Um jogo de Sueca</p>
+                <p className="landing-intro">{t.landing.subtitle}</p>
                 <p className="landing-description-text">
-                  Versão digital do clássico jogo de cartas português, pensada para jogar a solo contra a IA
-                  ou em modo cooperativo com amigos ao redor da mesa.
+                  {t.landing.description}
                 </p>
                 <div className="landing-meta-list">
-                  <div className="landing-meta-item">4 JOGADORES</div>
-                  <div className="landing-meta-item">2 equipas</div>
-                  <div className="landing-meta-item">40 cartas</div>
-                  <div className="landing-meta-item">4 jogos</div>
+                  <div className="landing-meta-item">{t.landing.metaPlayers}</div>
+                  <div className="landing-meta-item">{t.landing.metaTeams}</div>
+                  <div className="landing-meta-item">{t.landing.metaCards}</div>
+                  <div className="landing-meta-item">{t.landing.metaGames}</div>
                 </div>
               </div>
             </div>
@@ -90,10 +79,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           <footer className="landing-footer">
             <div className="landing-tap-hint">
               <span className="tap-icon">▶</span>
-              <span className="tap-text">toque ou clique para começar a jogar</span>
+              <span className="tap-text">{t.landing.tapHint}</span>
             </div>
             <div className="landing-small-print">
-              Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.
+              {t.landing.credits}
+            </div>
+            <div className="landing-copyright">
+              {t.landing.copyright}
             </div>
           </footer>
         </div>

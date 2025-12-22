@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod } from '../types/game';
+import { useLanguage } from '../i18n/useLanguage';
 import './StartMenu.css';
 
 /**
@@ -29,6 +30,9 @@ export const StartMenu: React.FC<StartMenuProps> = ({
   darkMode,
   onDarkModeChange
 }) => {
+  const { language, setLanguage, t } = useLanguage();
+  const [editingPlayerIndex, setEditingPlayerIndex] = useState<number | null>(null);
+  
   // Load saved values from localStorage or use defaults
   const [playerNames, setPlayerNames] = useState<string[]>(() => {
     const saved = localStorage.getItem('sueca-player-names');
@@ -86,7 +90,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
     
     // Validate Player 1 name
     if (!playerNames[0]?.trim()) {
-      setError('Por favor, insira um nome para o Player 1');
+      setError(t.startMenu.errorPlayer1Required);
       return;
     }
 
@@ -122,46 +126,84 @@ export const StartMenu: React.FC<StartMenuProps> = ({
   return (
     <div className={`start-menu-overlay ${darkMode ? 'dark-mode' : ''}`}>
       <div className="start-menu-card">
-        <h1 className="start-menu-title">🃏 Sueca</h1>
+        <div className="start-menu-header">
+          <h1 className="start-menu-title">{t.startMenu.title}</h1>
+          {/* Language Selector */}
+          <div className="language-selector">
+            <button
+              className={`lang-btn ${language === 'pt' ? 'active' : ''}`}
+              onClick={() => setLanguage('pt')}
+              title="Português"
+            >
+              PT
+            </button>
+            <button
+              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+              onClick={() => setLanguage('en')}
+              title="English"
+            >
+              EN
+            </button>
+          </div>
+        </div>
         
         <div className="start-menu-form">
-          {/* Player Names */}
+          {/* Player Names - Botões que abrem input */}
           <div className="form-section">
-            <label className="form-label" htmlFor="player-name-0">Nomes dos Jogadores:</label>
-            {[0, 1, 2, 3].map((index) => {
-              const inputId = `player-name-${index}`;
-              return (
-                <input
-                  key={index}
-                  id={inputId}
-                  name={inputId}
-                  type="text"
-                  className={`form-input ${index === 0 ? 'required' : ''}`}
-                  value={playerNames[index] || ''}
-                  onChange={(e) => {
-                    const copy = [...playerNames];
-                    copy[index] = e.target.value;
-                    setPlayerNames(copy);
-                    setError(null);
-                  }}
-                  placeholder={`Player ${index + 1}${index === 0 ? ' *' : ''}`}
-                  maxLength={20}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && index === 3) {
-                      handleStart();
-                    }
-                  }}
-                  autoFocus={index === 0}
-                  aria-label={`Nome do jogador ${index + 1}`}
-                />
-              );
-            })}
+            <div className="form-label">{t.startMenu.playerNames}</div>
+            <div className="player-buttons-row">
+              {[0, 1, 2, 3].map((index) => {
+                const inputId = `player-name-${index}`;
+                const isEditing = editingPlayerIndex === index;
+                return (
+                  <div key={index} className="player-name-item">
+                    {!isEditing ? (
+                      <button
+                        type="button"
+                        className="player-name-button"
+                        onClick={() => setEditingPlayerIndex(index)}
+                        aria-label={`${t.startMenu.playerNames} ${index + 1}`}
+                      >
+                        {playerNames[index] || t.startMenu.playerPlaceholder(index)}
+                      </button>
+                    ) : (
+                      <input
+                        id={inputId}
+                        name={inputId}
+                        type="text"
+                        className={`form-input player-name-input ${index === 0 ? 'required' : ''}`}
+                        value={playerNames[index] || ''}
+                        onChange={(e) => {
+                          const copy = [...playerNames];
+                          copy[index] = e.target.value;
+                          setPlayerNames(copy);
+                          setError(null);
+                        }}
+                        placeholder={t.startMenu.playerPlaceholder(index)}
+                        maxLength={20}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingPlayerIndex(null);
+                            if (index === 3) {
+                              handleStart();
+                            }
+                          }
+                        }}
+                        onBlur={() => setEditingPlayerIndex(null)}
+                        autoFocus
+                        aria-label={t.aria.playerNameInput(index)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* AI Difficulty */}
           <div className="form-section">
             <label className="form-label" htmlFor="ai-difficulty">
-              Dificuldade da IA:
+              {t.startMenu.aiDifficulty}
             </label>
             <select
               id="ai-difficulty"
@@ -169,26 +211,26 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               value={aiDifficulty}
               onChange={(e) => setAIDifficulty(e.target.value as AIDifficulty)}
             >
-              <option value="easy">Fácil</option>
-              <option value="medium">Médio</option>
-              <option value="hard">Difícil</option>
+              <option value="easy">{t.startMenu.difficultyEasy}</option>
+              <option value="medium">{t.startMenu.difficultyMedium}</option>
+              <option value="hard">{t.startMenu.difficultyHard}</option>
             </select>
             <div className="difficulty-description">
               {aiDifficulty === 'easy' && (
-                <span>AI joga mais aleatoriamente</span>
+                <span>{t.startMenu.difficultyDescEasy}</span>
               )}
               {aiDifficulty === 'medium' && (
-                <span>AI usa estratégia básica</span>
+                <span>{t.startMenu.difficultyDescMedium}</span>
               )}
               {aiDifficulty === 'hard' && (
-                <span>AI usa estratégia avançada com coordenação</span>
+                <span>{t.startMenu.difficultyDescHard}</span>
               )}
             </div>
           </div>
 
           {/* Dealing Method */}
           <div className="form-section">
-            <label className="form-label">Método de Distribuição:</label>
+            <div className="form-label">{t.startMenu.dealingMethod}</div>
             <div className="radio-group">
               <label className="radio-option">
                 <input
@@ -198,7 +240,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                   checked={dealingMethod === 'A'}
                   onChange={(e) => setDealingMethod(e.target.value as DealingMethod)}
                 />
-                <span>Método A (Standard)</span>
+                <span>{t.startMenu.methodA}</span>
               </label>
               <label className="radio-option">
                 <input
@@ -208,7 +250,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                   checked={dealingMethod === 'B'}
                   onChange={(e) => setDealingMethod(e.target.value as DealingMethod)}
                 />
-                <span>Método B (Dealer First)</span>
+                <span>{t.startMenu.methodB}</span>
               </label>
             </div>
           </div>
@@ -225,7 +267,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             className="start-game-button"
             onClick={handleStart}
           >
-            Iniciar Jogo
+            {t.startMenu.startGame}
           </button>
 
           {/* Advanced Settings Toggle */}
@@ -233,7 +275,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             className="advanced-toggle"
             onClick={() => setShowAdvanced(!showAdvanced)}
           >
-            {showAdvanced ? '▼' : '▶'} Configurações Avançadas
+            {showAdvanced ? '▼' : '▶'} {t.startMenu.advancedSettings}
           </button>
 
           {/* Advanced Settings */}
@@ -249,7 +291,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                     onChange={handleDarkModeToggle}
                     style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                   />
-                  <span>Modo Escuro</span>
+                  <span>{t.startMenu.darkMode}</span>
                 </label>
               </div>
             </div>

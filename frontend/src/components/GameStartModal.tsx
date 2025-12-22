@@ -1,5 +1,6 @@
 import React from 'react';
 import { GameState, Card } from '../types/game';
+import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 
 interface GameStartModalProps {
@@ -19,14 +20,15 @@ export const GameStartModal: React.FC<GameStartModalProps> = ({
   getSuitEmoji,
   onStart
 }) => {
+  const { t, tReplace } = useLanguage();
   return (
     <div className="modal-overlay modal-overlay-game-start">
       <div className="modal-container modal-container-medium">
-        <h2 className="modal-title">Jogo {gameState.round} Pronto!</h2>
+        <h2 className="modal-title">{tReplace('modals.gameReady', { round: gameState.round })}</h2>
         
         {gameState.trumpCard && (
           <div className="modal-trump-section">
-            <p className="modal-section-title">Trump Suit:</p>
+            <p className="modal-section-title">{t.modals.trumpSuit}:</p>
             <img
               src={getCardImage(gameState.trumpCard)}
               alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
@@ -39,20 +41,20 @@ export const GameStartModal: React.FC<GameStartModalProps> = ({
               {getSuitEmoji(gameState.trumpSuit!)} {gameState.trumpSuit!.toUpperCase()}
             </p>
             <p className="modal-trump-note">
-              This trump suit will remain visible throughout the game
+              {t.modals.trumpNote}
             </p>
           </div>
         )}
         
         <p className="modal-dealer-info">
-          Dealer: <strong>{gameState.players[gameState.dealerIndex].name}</strong>
+          {t.modals.dealer}: <strong>{gameState.players[gameState.dealerIndex].name}</strong>
         </p>
         
         <button
           onClick={onStart}
           className="modal-button modal-button-primary modal-button-hover"
         >
-          Iniciar Jogo
+          {t.modals.startGame}
         </button>
       </div>
     </div>

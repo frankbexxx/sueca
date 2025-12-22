@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './GameMenu.css';
 import { AIDifficulty, DealingMethod } from '../types/game';
 import { CreditsModal } from './CreditsModal';
+import { useLanguage } from '../i18n/useLanguage';
 
 /**
  * Props interface for GameMenu component
@@ -50,6 +51,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
   showGrid,
   onToggleGrid
 }) => {
+  const { t } = useLanguage();
   // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
@@ -100,10 +102,10 @@ export const GameMenu: React.FC<GameMenuProps> = ({
     <div className="game-menu">
       <div className="menu-header">
         <div className="menu-left">
-          <h1 className="game-title">🃏 Sueca</h1>
+          <h1 className="game-title">{t.gameMenu.title}</h1>
           {playerNames[0] && (
             <div className="player-name-display">
-              <span className="player-label">Jogador:</span>
+              <span className="player-label">{t.gameMenu.player}</span>
               <span className="player-name-value">{playerNames[0]}</span>
             </div>
           )}
@@ -112,7 +114,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
           <button 
             className="icon-btn settings-icon-btn"
             onClick={() => setShowSettings(!showSettings)}
-            title="Configurações"
+            title={t.gameMenu.settings}
           >
             ⚙️
           </button>
@@ -122,38 +124,39 @@ export const GameMenu: React.FC<GameMenuProps> = ({
       {showSettings && (
         <div className="settings-panel">
           <div className="settings-content">
-            <h3>Configurações</h3>
+            <h3>{t.gameMenu.settings}</h3>
             <div className="setting-item">
-              <label htmlFor="settings-player-0">Nome dos Jogadores:</label>
+              <div style={{ fontWeight: 600, fontSize: '1em', color: '#cfdffc', marginBottom: '4px' }}>{t.gameMenu.playerNames}</div>
               {[0,1,2,3].map(idx => {
                 const inputId = `settings-player-${idx}`;
                 return (
-                <input
-                  id={inputId}
-                  key={idx}
-                  type="text"
-                  name={inputId}
-                  value={tempNames[idx] || ''}
-                  onChange={(e) => {
-                    const copy = [...tempNames];
-                    copy[idx] = e.target.value;
-                    setTempNames(copy);
-                  }}
-                  placeholder={`Player ${idx + 1}`}
-                  maxLength={20}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveSettings();
-                    }
-                  }}
-                  style={{ marginBottom: '6px' }}
-                  aria-label={`Nome do jogador ${idx + 1}`}
-                />
+                <label key={idx} htmlFor={inputId} style={{ display: 'block', marginBottom: '6px' }}>
+                  <input
+                    id={inputId}
+                    type="text"
+                    name={inputId}
+                    value={tempNames[idx] || ''}
+                    onChange={(e) => {
+                      const copy = [...tempNames];
+                      copy[idx] = e.target.value;
+                      setTempNames(copy);
+                    }}
+                    placeholder={`Player ${idx + 1}`}
+                    maxLength={20}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveSettings();
+                      }
+                    }}
+                    aria-label={t.aria.playerNameInput(idx)}
+                    style={{ width: '100%' }}
+                  />
+                </label>
                 );
               })}
             </div>
             <div className="setting-item">
-              <label htmlFor="ai-difficulty">Dificuldade da AI:</label>
+              <label htmlFor="ai-difficulty">{t.gameMenu.aiDifficulty}</label>
               {isGameActive && !isGameOver ? (
                 <>
                   <select
@@ -162,12 +165,12 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     disabled
                     style={{ opacity: 0.6, cursor: 'not-allowed' }}
                   >
-                    <option value="easy">Fácil</option>
-                    <option value="medium">Médio</option>
-                    <option value="hard">Difícil</option>
+                    <option value="easy">{t.startMenu.difficultyEasy}</option>
+                    <option value="medium">{t.startMenu.difficultyMedium}</option>
+                    <option value="hard">{t.startMenu.difficultyHard}</option>
                   </select>
                   <div className="difficulty-description" style={{ fontSize: '0.85em', color: '#ff9800', marginTop: '4px' }}>
-                    ⚠️ Alterar dificuldade e método apenas no menu inicial
+                    {t.gameMenu.difficultyChangeNote}
                   </div>
                 </>
               ) : (
@@ -177,20 +180,20 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     value={tempDifficulty}
                     onChange={(e) => setTempDifficulty(e.target.value as AIDifficulty)}
                   >
-                    <option value="easy">Fácil</option>
-                    <option value="medium">Médio</option>
-                    <option value="hard">Difícil</option>
+                    <option value="easy">{t.startMenu.difficultyEasy}</option>
+                    <option value="medium">{t.startMenu.difficultyMedium}</option>
+                    <option value="hard">{t.startMenu.difficultyHard}</option>
                   </select>
                   <div className="difficulty-description">
-                    {tempDifficulty === 'easy' && <span>AI joga mais aleatoriamente</span>}
-                    {tempDifficulty === 'medium' && <span>AI usa estratégia básica</span>}
-                    {tempDifficulty === 'hard' && <span>AI usa estratégia avançada com coordenação</span>}
+                    {tempDifficulty === 'easy' && <span>{t.startMenu.difficultyDescEasy}</span>}
+                    {tempDifficulty === 'medium' && <span>{t.startMenu.difficultyDescMedium}</span>}
+                    {tempDifficulty === 'hard' && <span>{t.startMenu.difficultyDescHard}</span>}
                   </div>
                 </>
               )}
             </div>
             <div className="setting-item">
-              <label>Método de Distribuição:</label>
+              <div style={{ fontWeight: 600, fontSize: '1em', color: '#cfdffc', marginBottom: '8px' }}>{t.gameMenu.dealingMethod}</div>
               {isGameActive && !isGameOver ? (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -203,7 +206,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                         disabled
                         style={{ cursor: 'not-allowed' }}
                       />
-                      <span>Método A (Standard)</span>
+                      <span>{t.startMenu.methodA}</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', opacity: 0.6, cursor: 'not-allowed' }}>
                       <input
@@ -214,7 +217,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                         disabled
                         style={{ cursor: 'not-allowed' }}
                       />
-                      <span>Método B (Dealer First)</span>
+                      <span>{t.startMenu.methodB}</span>
                     </label>
                   </div>
                 </>
@@ -242,7 +245,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                         checked={tempDealingMethod === 'A'}
                         onChange={(e) => setTempDealingMethod(e.target.value as DealingMethod)}
                       />
-                      <span>Método A (Standard)</span>
+                      <span>{t.startMenu.methodA}</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseEnter={(e) => {
@@ -265,14 +268,14 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                         checked={tempDealingMethod === 'B'}
                         onChange={(e) => setTempDealingMethod(e.target.value as DealingMethod)}
                       />
-                      <span>Método B (Dealer First)</span>
+                      <span>{t.startMenu.methodB}</span>
                     </label>
                   </div>
                 </>
               )}
             </div>
             <div className="setting-item setting-inline">
-              <label htmlFor="show-grid">Mostrar grelha (debug)</label>
+              <label htmlFor="show-grid">{t.gameMenu.showGrid}</label>
               <div className="setting-toggle">
                 <input
                   id="show-grid"
@@ -280,7 +283,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                   checked={showGrid}
                   onChange={onToggleGrid}
                 />
-                <span>{showGrid ? 'Ativo' : 'Inativo'}</span>
+                <span>{showGrid ? t.gameMenu.active : t.gameMenu.inactive}</span>
               </div>
             </div>
             <div className="setting-item">
@@ -293,7 +296,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                   onChange={handleDarkModeToggle}
                   style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                 />
-                <span>Modo Escuro</span>
+                <span>{t.gameMenu.darkMode}</span>
               </label>
             </div>
             
@@ -323,13 +326,13 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                   e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%)';
                 }}
               >
-                🙏 Agradecimentos
+                {t.gameMenu.thanks}
               </button>
             </div>
             
             {/* Game control buttons moved to settings panel */}
             <div className="setting-item" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', marginTop: '8px' }}>
-              <label style={{ marginBottom: '8px', display: 'block' }}>Controles do Jogo:</label>
+              <div style={{ marginBottom: '8px', display: 'block', fontWeight: 600, fontSize: '1em', color: '#cfdffc' }}>{t.gameMenu.gameControls}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {!isGameOver && isGameActive && (
                   <>
@@ -340,9 +343,9 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                           onResume();
                           setShowSettings(false);
                         }}
-                        title="Retomar jogo"
+                        title={t.gameMenu.resume}
                       >
-                        ▶️ Retomar
+                        ▶️ {t.gameMenu.resume}
                       </button>
                     ) : (
                       <button 
@@ -351,9 +354,9 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                           onPause();
                           setShowSettings(false);
                         }}
-                        title="Pausar jogo"
+                        title={t.gameMenu.pause}
                       >
-                        ⏸️ Pausar
+                        ⏸️ {t.gameMenu.pause}
                       </button>
                     )}
                   </>
@@ -363,17 +366,19 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                   <button 
                     className="menu-btn quit-btn"
                     onClick={() => {
-                      onQuit();
-                      setShowSettings(false);
+                      if (window.confirm(t.gameMenu.quitConfirm)) {
+                        onQuit();
+                        setShowSettings(false);
+                      }
                     }}
-                    title="Sair do jogo atual"
+                    title={t.gameMenu.quit}
                   >
-                    🚪 Sair
+                    🚪 {t.gameMenu.quit}
                   </button>
                 )}
                 
                 <button className="menu-btn save-btn" onClick={handleSaveSettings}>
-                  Guardar
+                  {t.gameMenu.save}
                 </button>
                 <button 
                   className="menu-btn cancel-btn" 
@@ -384,7 +389,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
                     setShowSettings(false);
                   }}
                 >
-                  Cancelar
+                  {t.gameMenu.cancel}
                 </button>
               </div>
             </div>
@@ -394,9 +399,9 @@ export const GameMenu: React.FC<GameMenuProps> = ({
 
       {isGameOver && (
         <div className="game-over-banner">
-          <span>Jogo Terminado</span>
+          <span>{t.gameMenu.gameOver}</span>
           <button className="new-game-btn" onClick={onNewGame}>
-            Novo Jogo
+            {t.gameMenu.newGame}
           </button>
         </div>
       )}

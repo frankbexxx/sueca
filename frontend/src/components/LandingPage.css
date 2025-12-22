@@ -165,8 +165,9 @@
 
 .landing-meta-list {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 4px;
 }
 

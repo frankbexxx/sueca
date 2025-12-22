@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../i18n/useLanguage';
 import './CreditsModal.css';
 
 interface CreditsModalProps {
@@ -7,6 +8,8 @@ interface CreditsModalProps {
 }
 
 export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode }) => {
+  const { t } = useLanguage();
+  
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -19,14 +22,14 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
       onClick={handleBackdropClick}
     >
       <div className="credits-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="credits-modal-close" onClick={onClose} aria-label="Fechar">
+        <button className="credits-modal-close" onClick={onClose} aria-label={t.aria.closeButton}>
           ×
         </button>
 
         <div className="credits-modal-card">
           <main className="credits-main">
             <div className="credits-title-block">
-              <h1 className="credits-title">SUECÃO</h1>
+              <h1 className="credits-title">{t.credits.title}</h1>
             </div>
 
             <div className="credits-media-and-text">
@@ -34,7 +37,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
                 <div className="credits-media-frame">
                   <img 
                     src={`${process.env.PUBLIC_URL || ''}/image/Buga Bark Sueca 2.gif`}
-                    alt="SUECÃO - Capa do Jogo"
+                    alt={t.credits.imageAlt}
                     className="credits-cover-image"
                     onError={(e) => {
                       // Fallback se o GIF não carregar
@@ -45,23 +48,22 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
                     }}
                   />
                   <div className="credits-media-placeholder" style={{ display: 'none' }}>
-                    <span className="credits-media-label">capa / animação</span>
-                    <span className="credits-media-format">jpg · png · gif</span>
+                    <span className="credits-media-label">{t.credits.imagePlaceholderLabel}</span>
+                    <span className="credits-media-format">{t.credits.imagePlaceholderFormat}</span>
                   </div>
                 </div>
               </div>
 
               <div className="credits-description">
-                <p className="credits-intro">Um jogo de Sueca</p>
+                <p className="credits-intro">{t.credits.subtitle}</p>
                 <p className="credits-description-text">
-                  Versão digital do clássico jogo de cartas português, pensada para jogar a solo contra a IA
-                  ou em modo cooperativo com amigos ao redor da mesa.
+                  {t.credits.description}
                 </p>
                 <div className="credits-meta-list">
-                  <div className="credits-meta-item">4 JOGADORES</div>
-                  <div className="credits-meta-item">2 equipas</div>
-                  <div className="credits-meta-item">40 cartas</div>
-                  <div className="credits-meta-item">4 jogos</div>
+                  <div className="credits-meta-item">{t.credits.metaPlayers}</div>
+                  <div className="credits-meta-item">{t.credits.metaTeams}</div>
+                  <div className="credits-meta-item">{t.credits.metaCards}</div>
+                  <div className="credits-meta-item">{t.credits.metaGames}</div>
                 </div>
               </div>
             </div>
@@ -69,13 +71,13 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
 
           <footer className="credits-footer">
             <div className="credits-acknowledgments">
-              <h3 className="credits-ack-title">Agradecimentos</h3>
+              <h3 className="credits-ack-title">{t.credits.acknowledgmentsTitle}</h3>
               <p className="credits-ack-text">
-                Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.
+                {t.credits.acknowledgmentsText}
               </p>
             </div>
             <div className="credits-copyright">
-              © 2025 Todos os direitos reservados.
+              {t.credits.copyright}
             </div>
           </footer>
         </div>

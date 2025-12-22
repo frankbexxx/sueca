@@ -9,5 +9,6 @@ dist/
 
 # Archive folder - reference files not needed in version control
 archive/
+arquivo/
 .vercel
 .env*.local

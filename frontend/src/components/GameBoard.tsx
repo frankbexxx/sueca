@@ -7,6 +7,7 @@ import { RoundEndModal } from './RoundEndModal';
 import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
 import { useSound } from '../hooks/useSound';
+import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '../utils/cardMappings';
@@ -27,6 +28,7 @@ import {
  * Manages game state, player interactions, AI moves, and UI rendering
  */
 export const GameBoard: React.FC = () => {
+  const { t } = useLanguage();
   // Start menu and game state
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -423,7 +425,7 @@ export const GameBoard: React.FC = () => {
    * Used throughout UI to show team labels
    */
   const getTeamName = (team: 1 | 2): string => {
-    return team === usTeam ? 'US' : 'THEM';
+    return team === usTeam ? t.gameBoard.us : t.gameBoard.them;
   };
 
   /**
@@ -451,7 +453,7 @@ export const GameBoard: React.FC = () => {
    * Shows confirmation dialog before quitting
    */
   const handleQuit = () => {
-    if (window.confirm('Tem certeza que deseja sair do jogo atual?')) {
+    if (window.confirm(t.gameMenu.quitConfirm)) {
       setShowStartMenu(true);
       setGameStarted(false);
       // Optionally quit the game (but keep it for potential resume)
@@ -613,13 +615,12 @@ export const GameBoard: React.FC = () => {
 
       <div className="top-strip">
         <div className="score-block us">
-          <div className="label">US</div>
-          <div className="line">Pontos: {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Jogos: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="label">{t.gameBoard.us}</div>
+          <div className="line">{t.gameBoard.points} {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">{t.gameBoard.games} {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
         <div className="round-block">
-          <div>Jogo {gameState.round}</div>
-          <div className="dealing-method">Dealing: {gameState.dealingMethod === 'A' ? 'A' : 'B'}</div>
+          <div>{t.gameBoard.game} {gameState.round}</div>
           {/* Trump information moved here from score blocks */}
           {gameState.trumpSuit && gameState.trumpCard && (
             <div className="trump-info-in-team">
@@ -631,14 +632,14 @@ export const GameBoard: React.FC = () => {
           )}
         </div>
         <div className="score-block them">
-          <div className="label">THEM</div>
-          <div className="line">Pontos: {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">Jogos: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="label">{t.gameBoard.them}</div>
+          <div className="line">{t.gameBoard.points} {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">{t.gameBoard.games} {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
         </div>
       </div>
       {/* Indicador de fonte da AI */}
       <div className="ai-source-banner">
-        {aiSource === 'external' ? 'AI Externa (Render)' : 'AI Local (fallback)'}
+        {aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
       </div>
 
       {/* Main game table container */}
@@ -792,7 +793,7 @@ export const GameBoard: React.FC = () => {
             }}
             disabled={!gameState.waitingForTrickEnd || !game}
           >
-            Continuar
+            {t.gameBoard.continue}
           </button>
         </div>
       </div>

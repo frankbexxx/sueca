@@ -64,6 +64,14 @@
   margin-bottom: 1px;
 }
 
+.score-block.us .label {
+  color: #b3d9ff; /* Pale blue for US/NÓS */
+}
+
+.score-block.them .label {
+  color: #ffcccc; /* Pale pink/red for THEM/ELES */
+}
+
 .score-block .line {
   font-size: 0.78em;
 }
@@ -90,23 +98,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 0.85em;
-  margin-top: 4px;
-  padding-top: 4px;
+  gap: 8px;
+  font-size: 1em;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .dealer-name {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 .trump-minimal {
   font-weight: 700;
-  font-size: 1.05em;
-  padding: 2px 6px;
+  font-size: 1.3em;
+  padding: 4px 8px;
   border-radius: 6px;
   /* Fundo branco semi-transparente para melhor contraste */
   background: rgba(255, 255, 255, 0.9);
@@ -116,32 +124,22 @@
 
 .trump-minimal.trump-red {
   color: #c41e3a;
-  text-shadow: 
-    0 0 4px rgba(196, 30, 58, 0.8),
-    0 1px 2px rgba(0, 0, 0, 0.5),
-    0 0 8px rgba(196, 30, 58, 0.4);
+  /* Removido brilho - apenas sombra básica */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   /* Fundo branco com leve tom rosado para trunfo vermelho */
   background: rgba(255, 245, 245, 0.95);
   border: 1.5px solid rgba(196, 30, 58, 0.6);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.3), 
-    inset 0 1px 2px rgba(255, 255, 255, 0.6),
-    0 0 6px rgba(196, 30, 58, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .trump-minimal.trump-black {
   color: #000000;
-  text-shadow: 
-    0 0 4px rgba(255, 255, 255, 0.8),
-    0 1px 2px rgba(0, 0, 0, 0.7),
-    0 0 6px rgba(0, 0, 0, 0.5);
+  /* Removido brilho - apenas sombra básica */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   /* Fundo branco puro para trunfo preto */
   background: rgba(255, 255, 255, 0.95);
   border: 1.5px solid rgba(0, 0, 0, 0.7);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.3), 
-    inset 0 1px 2px rgba(255, 255, 255, 0.6),
-    0 0 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dealing-method {
@@ -383,6 +381,14 @@
   width: 100%;
 }
 
+.player-seat.team-us .player-name-line-2 {
+  color: #b3d9ff; /* Pale blue for US/NÓS */
+}
+
+.player-seat.team-them .player-name-line-2 {
+  color: #ffcccc; /* Pale pink/red for THEM/ELES */
+}
+
 .player-info.mobile-layout .dealer-badge {
   font-size: 0.7em;
   margin-left: 2px;
@@ -412,8 +418,17 @@
   font-size: 0.85em;
 }
 
-.player-seat.team-us .team-badge { background: #1565c0; color: white; }
-.player-seat.team-them .team-badge { background: #c62828; color: white; }
+.player-seat.team-us .team-badge { 
+  background: rgba(52, 132, 234, 0.25); 
+  color: #b3d9ff; /* Pale blue text */
+  border: 1px solid rgba(52, 132, 234, 0.4);
+}
+
+.player-seat.team-them .team-badge { 
+  background: rgba(226, 92, 92, 0.25); 
+  color: #ffcccc; /* Pale pink/red text */
+  border: 1px solid rgba(226, 92, 92, 0.4);
+}
 
 .dealer-badge {
   font-size: 0.8em;
@@ -537,8 +552,9 @@
   .player-seat.player-east { right: -40px; }
   .player-seat.player-west { left: -40px; }
   .round-block { min-width: 160px; }
-  .trump-info-in-team { font-size: 0.8em; gap: 5px; }
-  .trump-minimal { font-size: 0.95em; }
+  .trump-info-in-team { font-size: 0.95em; gap: 6px; }
+  .trump-minimal { font-size: 1.15em; padding: 3px 7px; }
+  .dealer-name { font-size: 0.95em; }
 }
 
 /* Mobile: East and West info boxes positioned closer to table edge */
@@ -581,9 +597,9 @@
   .player-seat.player-west { left: -10px !important; } /* Mobile: Encostado à lateral, pode sobrepor borda */
   .player-info { min-width: 120px; }
   .hand-row { padding: 8px 10px; }
-  .trump-info-in-team { font-size: 0.75em; gap: 4px; }
-  .trump-minimal { font-size: 0.9em; padding: 1px 5px; }
-  .dealer-name { font-size: 0.85em; }
+  .trump-info-in-team { font-size: 0.9em; gap: 5px; }
+  .trump-minimal { font-size: 1.1em; padding: 3px 6px; }
+  .dealer-name { font-size: 0.9em; }
   .trick-cards-cross { width: 240px; height: 240px; }
   /* Trick cards absolutely positioned with literal (x, y) coordinates */
   .trick-from-north { top: 25px !important; left: 49px !important; }
@@ -643,9 +659,9 @@
   .trick-from-east { top: 68px; left: 158px; }
   .trick-from-west { top: 68px; left: 0px; }
   .hand-row { padding: 6px 8px; }
-  .trump-info-in-team { font-size: 0.7em; gap: 3px; flex-wrap: wrap; }
-  .trump-minimal { font-size: 0.85em; padding: 1px 4px; }
-  .dealer-name { font-size: 0.8em; }
+  .trump-info-in-team { font-size: 0.85em; gap: 4px; flex-wrap: wrap; }
+  .trump-minimal { font-size: 1em; padding: 2px 5px; }
+  .dealer-name { font-size: 0.85em; }
 }
 
 /* ============================================

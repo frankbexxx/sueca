@@ -60,14 +60,65 @@
   }
 }
 
+/* Header with title and language selector */
+.start-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
 /* Title */
 .start-menu-title {
   font-size: 2.5em;
   font-weight: 700;
-  text-align: center;
-  margin: 0 0 30px 0;
+  margin: 0;
   color: #e9eef7;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Language Selector */
+.language-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.lang-btn {
+  padding: 6px 12px;
+  border: 2px solid #3a4a5f;
+  border-radius: 6px;
+  background: #1d2939;
+  color: #e9eef7;
+  font-weight: 600;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn:hover {
+  border-color: #6c5ce7;
+  background: #252f42;
+}
+
+.lang-btn.active {
+  background: #6c5ce7;
+  border-color: #6c5ce7;
+  color: white;
+}
+
+.start-menu-overlay.dark-mode .lang-btn {
+  background: #151b26;
+  border-color: #2d3a4f;
+}
+
+.start-menu-overlay.dark-mode .lang-btn:hover {
+  border-color: #6c5ce7;
+  background: #1a2332;
+}
+
+.start-menu-overlay.dark-mode .lang-btn.active {
+  background: #6c5ce7;
+  border-color: #6c5ce7;
 }
 
 .start-menu-overlay.dark-mode .start-menu-title {
@@ -98,6 +149,50 @@
 
 .start-menu-overlay.dark-mode .form-label {
   color: #b8c9f0;
+}
+
+/* Player Names - Botões em grid 2x2 */
+.player-buttons-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.player-name-item {
+  min-width: 0;
+}
+
+.player-name-button {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #3a4a5f;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.2s;
+  background: #1d2939;
+  color: #e9eef7;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.player-name-button:hover {
+  border-color: #6c5ce7;
+  background: #252f42;
+}
+
+.start-menu-overlay.dark-mode .player-name-button {
+  background: #151b26;
+  border-color: #2d3a4f;
+}
+
+.start-menu-overlay.dark-mode .player-name-button:hover {
+  border-color: #6c5ce7;
+  background: #1a2332;
+}
+
+.player-name-input {
+  width: 100%;
 }
 
 /* Form Inputs */

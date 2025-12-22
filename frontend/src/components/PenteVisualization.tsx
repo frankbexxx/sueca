@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../i18n/useLanguage';
 import './PenteVisualization.css';
 
 interface PenteVisualizationProps {
@@ -22,6 +23,8 @@ export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
   team2Name,
   pentes = []
 }) => {
+  const { t } = useLanguage();
+  
   // Calculate total victories including completed pentes
   const totalTeam1Victories = pentes.reduce((sum, p) => sum + p.team1, 0) + team1Score;
   const totalTeam2Victories = pentes.reduce((sum, p) => sum + p.team2, 0) + team2Score;
@@ -47,7 +50,7 @@ export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
       {/* Total Victories (if there are completed pentes) */}
       {pentes.length > 0 && (
         <div className="pente-total-section">
-          <div className="pente-total-label">Total de Vitórias:</div>
+          <div className="pente-total-label">{t.pente.totalVictories}</div>
           <div className="pente-total-scores">
             <div className="pente-total-item">
               <span className="pente-team-label" style={{ color: '#6c5ce7' }}>{team1Name}:</span>
@@ -64,7 +67,7 @@ export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
           </div>
           {pentes.length > 0 && (
             <div className="pente-completed-info">
-              {pentes.length} jogo{pentes.length > 1 ? 's' : ''} completo{pentes.length > 1 ? 's' : ''}
+              {t.pente.gamesComplete(pentes.length)}
             </div>
           )}
         </div>
