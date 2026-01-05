@@ -38,6 +38,7 @@ export interface Translations {
     advancedSettings: string;
     darkMode: string;
     errorPlayer1Required: string;
+    errorStartingGame: string;
   };
   
   // Game Board
@@ -160,7 +161,8 @@ export const translations: Record<Language, Translations> = {
       startGame: 'Iniciar Jogo',
       advancedSettings: 'Configurações Avançadas',
       darkMode: 'Modo Escuro',
-      errorPlayer1Required: 'Por favor, insira um nome para o Player 1'
+      errorPlayer1Required: 'Por favor, insira um nome para o Player 1',
+      errorStartingGame: 'Erro ao iniciar o jogo. Por favor, tente novamente.'
     },
     gameBoard: {
       us: 'NÓS',
@@ -269,7 +271,8 @@ export const translations: Record<Language, Translations> = {
       startGame: 'Start Game',
       advancedSettings: 'Advanced Settings',
       darkMode: 'Dark Mode',
-      errorPlayer1Required: 'Please enter a name for Player 1'
+      errorPlayer1Required: 'Please enter a name for Player 1',
+      errorStartingGame: 'Error starting game. Please try again.'
     },
     gameBoard: {
       us: 'US',

@@ -1,180 +1,136 @@
-SUECA – GAME DESIGN DOCUMENT
+SUECA – REGRAS DO JOGO
 
-Target: Text-based Python application
-Objective: Accurately simulate real-life Sueca gameplay, including rotation, team formation, dealing methods, trick logic, scoring, and match rules.
-Note: No pseudo-code is included yet. This document exists to define all core game rules prior to implementation.
+1. PRINCÍPIO FUNDAMENTAL – ROTAÇÃO
 
+Sueca sempre roda no sentido anti-horário (para a direita) durante o jogo.
+Isto aplica-se a:
+• Jogar cartas
+• Ordem de jogada em cada vaza
+• Rotação do dealer por jogo
+• Responsabilidade de embaralhar
 
-1. Core Principle – Rotation
+Exceção: durante o setup, o Método B de distribuição requer uma rotação temporária no sentido horário. Esta inversão única é detalhada mais abaixo.
 
-Sueca always rotates counterclockwise (to the right) during gameplay.
-This applies to:
-• Playing cards
-• Turn order per trick
-• Dealer rotation per game
-• Shuffling responsibility.
 
-However — during game setup, Method B of dealing requires a temporary clockwise rotation. This single inversion is detailed later in a dedicated section.
+2. CONFIGURAÇÃO DO JOGO
 
+2.1 Escolha de Equipas (Apenas se as equipas não estiverem pré-definidas)
 
-2. Game Setup (Real-Life Tournament Logic)
+Embaralhar o baralho.
+Cada jogador tira uma carta.
+A carta mais alta faz equipa com a carta mais baixa.
+Os dois jogadores restantes formam a segunda equipa.
 
-2.1 Choosing Teams (Only if Teams Are Not Predefined)
+2.2 Escolha do Primeiro Dealer
 
-Shuffle the deck.
+Cada jogador tira uma carta.
+A carta mais baixa torna-se dealer.
+Em caso de empate → repetir.
 
-Each player draws one card.
+2.3 Posicionamento
 
-Highest card teams with lowest card.
+Uma vez formadas as equipas, os parceiros devem sentar-se em frente um do outro.
 
-Remaining two players form the second team.
 
-2.2 Choosing First Dealer
+3. PROCEDIMENTOS PRÉ-JOGO
 
-Each player draws a card.
+3.1 Embaralhar o Baralho
 
-Lowest card becomes dealer.
+Realizado pelo jogador sentado imediatamente à direita do dealer.
 
-In case of tie → repeat.
+3.2 Cortar o Baralho
 
-2.3 Seating
+Realizado pelo parceiro do embaralhador.
+Isto evita qualquer conflito de interesse entre embaralhar, cortar e distribuir.
 
-Once teams are formed, partners must sit opposite one another.
+3.3 Responsabilidade de Distribuição
 
+Após o corte, o dealer gere a distribuição usando um dos dois métodos legais descritos abaixo.
 
-3. Pre-Game Procedures
 
-3.1 Shuffling the Deck
+4. MÉTODOS DE DISTRIBUIÇÃO – DUAS VARIANTES LEGAIS
 
-Performed by the player sitting immediately to the right of the dealer.
+Método A – Distribuição Padrão (Mais Comum)
 
-3.2 Cutting the Deck
+• Distribuir uma carta de cada vez, no sentido anti-horário (para a direita)
+• Cada jogador recebe dez cartas
+• O dealer recebe as últimas dez cartas
+• A última carta do baralho define o Naipe de Trunfo
 
-Performed by the partner of the shuffler.
-This avoids any conflict of interest between shuffle, cut, and deal.
+O jogo começa no sentido anti-horário.
 
-3.3 Dealing Responsibility
 
-After the cut, the dealer manages the deal using one of the two legal methods described below.
+Método B – Dealer Recebe a Primeira Carta (Trunfo Revelado Primeiro)
 
+• O dealer tira a primeira carta do topo → esta carta torna-se o Naipe de Trunfo
+• Depois o dealer tira mais 9 cartas
+• O resto das cartas são distribuídas no sentido horário (para a esquerda)
+• Todos os jogadores ainda recebem 10 cartas no total
 
-4. Dealing Methods – Two Legal Variants
+Importante:
+Após a distribuição estar completa → todo o jogo retorna à rotação padrão anti-horária.
+Esta inversão aplica-se apenas à distribuição de cartas neste método específico.
 
-Method A – Standard Dealing (Most Common)
 
-• Deal one card at a time, counterclockwise (to the right)
-• Each player receives ten cards
-• Dealer receives the last ten cards
-• The final card in the deck defines the Trump Suit
+5. TRATAMENTO DO NAIPE DE TRUNFO
 
-Gameplay starts counterclockwise.
+• Imediatamente após a distribuição → o Naipe de Trunfo deve ser oficialmente anunciado
+• Usado para determinar o vencedor das vazas
 
 
-Method B – Dealer Receives First Card (Trump Revealed First)
+6. FLUXO DO JOGO – VAZAS E RONDAS
 
-• The dealer takes the first card from the top → this card becomes the Trump Suit
-• Then the dealer takes 9 more cards
-• The rest of the cards are dealt in clockwise order (to the left)
-• All players still receive 10 cards total
+O jogo consiste em dez vazas, já que cada jogador tem 10 cartas.
 
-Important:
-After dealing is complete → all gameplay returns to standard counterclockwise rotation.
-This reversal applies only to the distribution of cards in this specific method.
+6.1 Regra da Primeira Vaza (Ordem de Jogada Especial)
 
+• O jogador à direita do dealer começa a primeira vaza
+• O dealer é sempre o último a jogar na primeira vaza apenas
 
-5. Trump Suit Handling
+6.2 Lógica Padrão das Vazas
 
-• Immediately after dealing → Trump Suit must be officially announced
-• Must be stored in the game state
-• Used to determine trick winners
+A primeira carta jogada define o naipe de saída.
 
+Os jogadores devem seguir o naipe de saída se possível.
 
-6. Game Flow – Tricks & Rounds
+Se não for possível, podem jogar qualquer carta.
 
-The game consists of ten tricks since each player holds 10 cards.
+O vencedor da vaza é determinado:
+  a) Se alguma trunfo foi jogada → a trunfo mais alta vence
+  b) Se não houver trunfos → a carta mais alta do naipe de saída vence
 
-6.1 First Trick Rule (Special Turn Order)
+O vencedor da vaza inicia a próxima vaza.
 
-• The player to the right of the dealer starts the first trick
-• Dealer is always the last to play in the first trick only
 
-6.2 Standard Trick Logic
+7. VALORES DAS CARTAS E PONTUAÇÃO DO JOGO
 
-First card played defines the lead suit.
+Valor das Cartas
 
-Players must follow the lead suit if able.
+A      = 11 pontos
+7      = 10 pontos
+K      =  4 pontos
+J      =  3 pontos
+Q      =  2 pontos
+Outras =  0 pontos (outras = 6, 5, 4, 3, 2)
 
-If unable, they may play any card.
+7.1 Resultado do Jogo
 
-Trick winner is determined:
- a) If any trump was played → highest trump wins
- b) If no trumps → highest card of the lead suit wins.
+• Pontuação > 60 → VITÓRIA (1 ponto)
+• Pontuação > 90 → VITÓRIA DUPLA (2 pontos)
+• Pontuação = 120 → VARREDURA COMPLETA → VITÓRIA QUÁDRUPLA (4 pontos)
+• Pontuação = 60 → EMPATE → o próximo jogo vale o dobro
 
-Trick winner leads the next trick.
+7.2 Sistema de Partida – "Pente"
 
+• Cada vitória no jogo = 1 ponto de partida
+• A primeira equipa a alcançar 4 pontos de partida totais alcança um Pente
+• Um Pente termina a sessão completa
 
-7. Card Values & Game Scoring
 
-Card Value
+8. FIM DO JOGO
 
-A      = 11
-7      = 10
-K      =  4
-J      =  3
-Q      =  2
-Others =  0 (others = 6, 5, 4, 3, 2)
+Após todas as 10 vazas terem sido jogadas:
 
-7.1 Game Outcome
-
-• Score > 60 → WIN (1 point)
-• Score > 90 → 2× WIN
-• Score = 120 → FULL SWEEP → 4× WIN
-• Score = 60 → TIE → next game is worth double
-
-7.2 Match System – “Pente”
-
-• Each game victory = 1 match point
-• First team to earn 4 total match points achieves a Pente
-• A Pente ends the full session
-
-
-8. End of Game Sequence
-
-After all 10 tricks have been played:
-
-Count captured points
-
-Determine win, loss, tie, or sweep.
-
-Update match score (“pente” progress)
-
-Display results
-
-Ask whether to continue or quit.
-
-
-9. Suggested Class Structure (No Code Yet)
-
-Game – handles players, rotation, trump suit, current dealer, scoring, match tracking
-Player – name, team, current hand
-Card – suit, rank, value
-Trick – played cards, lead suit, starting player, winning player.
-
-
-10. Summary
-
-This document defines every functional rule needed to create a real, playable digital version of Sueca. The gameplay must preserve true table behavior, including:
-
-• Counterclockwise rotation
-• Two legal dealing methods
-• Dealer last on first trick
-• Full trick logic
-• Official scoring system
-• Match tracking leading to Pente
-
-Now this document is ready for development — pseudo-code and class architecture may be drafted next. Tradition is preserved; now logic can begin.
-
-
-When developers write code for Sueca, they will be programming a tradition — not just a game.
-
-Now it’s time to pseudo-code
+Contar os pontos capturados
+Determinar vitória, derrota, empate ou varredura
+Atualizar pontuação da partida (progresso do "pente")

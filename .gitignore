@@ -7,6 +7,13 @@ dist/
 .DS_Store
 .env
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
 # Archive folder - reference files not needed in version control
 archive/
 arquivo/

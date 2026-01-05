@@ -129,7 +129,7 @@ export const GameBoard: React.FC = () => {
       setSelectedCard(null);
     } catch (error) {
       console.error('Error starting game:', error);
-      alert('Erro ao iniciar o jogo. Por favor, tente novamente.');
+      alert(t.startMenu.errorStartingGame);
     }
   };
 

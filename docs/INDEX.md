@@ -13,6 +13,11 @@
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
 | **[DEPLOY.md](DEPLOY.md)** | Guia completo de deploy | Deploy rápido e detalhado (Vercel, Netlify) |
+| **[ANDROID_PUBLICATION_REQUIREMENTS.md](ANDROID_PUBLICATION_REQUIREMENTS.md)** | Requisitos para publicação no Google Play | Publicar na Play Store |
+| **[GOOGLE_PLAY_STORE_LISTING.md](GOOGLE_PLAY_STORE_LISTING.md)** | Descrição e classificação para Play Store | Criar listagem na Play Store |
+| **[ADDING_FEEDBACK_EMAIL.md](ADDING_FEEDBACK_EMAIL.md)** | Como adicionar email de feedback | Adicionar contacto no jogo |
+| **[PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md)** | Template de Política de Privacidade | Criar política de privacidade |
+| **[TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md)** | Template de Termos de Serviço | Criar termos de serviço |
 
 ## 📊 Estado e Planeamento
 
