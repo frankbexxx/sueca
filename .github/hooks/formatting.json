@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "node -e \"console.log('✓ Code quality hooks initialized for SUECA project')\"",
+        "timeout": 5
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "powershell -Command \"if ($env:VSCODE_WORKSPACE_FOLDER) { $files = @(Get-ChildItem -Recurse -Include '*.ts', '*.tsx' | Where-Object { $_.FullName -like '*frontend*' }); if ($files.Count -gt 0) { Write-Host '💡 Tip: Run `yarn format` in frontend/ to format TypeScript files'; exit 0 } }\"",
+        "windows": true,
+        "cwd": ".",
+        "timeout": 5
+      }
+    ]
+  }
+}
