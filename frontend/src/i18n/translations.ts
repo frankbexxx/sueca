@@ -43,6 +43,10 @@ export interface Translations {
     joinSession: string;
     sessionId: string;
     sessionIdPlaceholder: string;
+    errorPlayer1Required: string;
+    errorStartingGame: string;
+  };
+
   // Modals (strings with {placeholder} format)
   modals: {
     roundComplete: string; // Use {round}
@@ -60,6 +64,22 @@ export interface Translations {
     finalGames: string;
     dealingMethodNext: string;
     newGame: string;
+  };
+
+  gameBoard: {
+    us: string;
+    them: string;
+    points: string;
+    games: string;
+    game: string;
+    dealing: string;
+    continue: string;
+    aiExternal: string;
+    aiLocal: string;
+  };
+
+  menu: {
+    selectGame: string;
   };
   
   // Game Menu
@@ -132,6 +152,9 @@ export const translations: Record<Language, Translations> = {
       tapHint: 'toque ou clique para começar a jogar',
       credits: 'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
       copyright: '© 2025 Todos os direitos reservados.'
+    },
+    menu: {
+      selectGame: 'Selecionar Jogo'
     },
     startMenu: {
       title: '🃏 Sueca',
@@ -248,6 +271,9 @@ export const translations: Record<Language, Translations> = {
       tapHint: 'tap or click to start playing',
       credits: 'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
       copyright: '© 2025 All rights reserved.'
+    },
+    menu: {
+      selectGame: 'Select Game'
     },
     startMenu: {
       title: '🃏 Sueca',

@@ -1,4 +1,4 @@
-export { GameAdapter, BaseGameAdapter } from './GameAdapter';
+export type { GameAdapter, BaseGameAdapter } from './GameAdapter';
 export { SuecaGame } from './SuecaGame';
 export { SpadesGame } from './SpadesGame';
 export { HeartsGame } from './HeartsGame';

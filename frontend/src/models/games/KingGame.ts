@@ -1,5 +1,5 @@
 import { BaseGameAdapter } from './GameAdapter';
-import { GameState, Card, Player } from '../../types/game';
+import { GameState, Player } from '../../types/game';
 import { Deck } from '../Deck';
 
 export class KingGame extends BaseGameAdapter {

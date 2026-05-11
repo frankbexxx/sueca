@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GameVariant } from '../types/game';
 import { getAvailableGames, GameMetadata } from '../constants/gameMetadata';
 import { useLanguage } from '../i18n/useLanguage';

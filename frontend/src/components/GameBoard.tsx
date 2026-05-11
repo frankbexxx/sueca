@@ -3,7 +3,7 @@ import { Game } from '../models/Game';
 import { GameState, Card, DealingMethod, AIDifficulty, Suit, GameVariant } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
-import { MultiplayerClient, MultiplayerPlayerInfo } from '../services/multiplayerClient';
+import { MultiplayerClient } from '../services/multiplayerClient';
 import { RoundEndModal } from './RoundEndModal';
 import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
@@ -14,9 +14,6 @@ import { requestAiPlay } from '../services/aiClient';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '../utils/cardMappings';
 import {
   AI_PLAY_DELAY_MS,
-  CARD_SPACING,
-  MAX_CARDS_IN_HAND,
-  SELECTED_CARD_Z_INDEX,
   GAME_OVER_DELAY_MS,
   STORAGE_KEYS,
   DEFAULT_PLAYER_NAMES,
@@ -81,11 +78,9 @@ export const GameBoard: React.FC = () => {
   const [gameAdapter, setGameAdapter] = useState<BaseGameAdapter | null>(null);
   const [isMultiplayer, setIsMultiplayer] = useState(false);
   const [multiplayerSessionId, setMultiplayerSessionId] = useState<string | null>(null);
-  const [multiplayerJoinMode, setMultiplayerJoinMode] = useState(false);
   const [multiplayerStatus, setMultiplayerStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const [multiplayerError, setMultiplayerError] = useState<string | null>(null);
   const [multiplayerPlayerIndex, setMultiplayerPlayerIndex] = useState<number>(0);
-  const [multiplayerPlayers, setMultiplayerPlayers] = useState<MultiplayerPlayerInfo[]>([]);
   const [multiplayerClient, setMultiplayerClient] = useState<MultiplayerClient | null>(null);
   
   /**
@@ -140,7 +135,6 @@ export const GameBoard: React.FC = () => {
     setDealingMethod(config.dealingMethod);
     setGameVariant(config.gameVariant);
     setIsMultiplayer(Boolean(config.multiplayerEnabled));
-    setMultiplayerJoinMode(Boolean(config.multiplayerJoinMode));
     setMultiplayerSessionId(config.multiplayerSessionId || null);
     setMultiplayerError(null);
     setMultiplayerStatus(config.multiplayerEnabled ? 'connecting' : 'disconnected');
@@ -156,7 +150,6 @@ export const GameBoard: React.FC = () => {
       
       // Create game adapter based on variant
       const adapter = GameFactory.getAdapter(config.gameVariant);
-      adapter.initialize(newGame);
       setGameAdapter(adapter);
       
       const initialState = newGame.getState();
@@ -181,7 +174,6 @@ export const GameBoard: React.FC = () => {
           },
           onSessionInfo: (sessionId, players, localPlayerIndex) => {
             setMultiplayerSessionId(sessionId);
-            setMultiplayerPlayers(players);
             if (typeof localPlayerIndex === 'number') {
               setMultiplayerPlayerIndex(localPlayerIndex);
               if (game) {
@@ -191,15 +183,12 @@ export const GameBoard: React.FC = () => {
             }
           },
           onPlayerListUpdate: (players) => {
-            setMultiplayerPlayers(players);
+            // Player list update - could be used for UI updates if needed
           },
           onStateUpdate: (update) => {
             const updatedState = update.gameState as GameState;
             if (updatedState) {
               setGameState(updatedState);
-            }
-            if (update.players) {
-              setMultiplayerPlayers(update.players);
             }
             if (update.sessionId) {
               setMultiplayerSessionId(update.sessionId);
@@ -370,7 +359,7 @@ export const GameBoard: React.FC = () => {
       }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [game, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard]);
+  }, [game, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, isMultiplayer, multiplayerPlayerIndex]);
 
   /**
    * Handles card click from human player
@@ -451,6 +440,14 @@ export const GameBoard: React.FC = () => {
     // Ensure we don't have double slashes
     const basePath = publicUrl && !publicUrl.endsWith('/') ? publicUrl : (publicUrl || '');
     return `${basePath}/assets/cards2/${rank}_of_${suit}.png`;
+  };
+
+  /**
+   * Returns emoji representation of a suit
+   * Used for display in UI (trump indicators, etc.)
+   */
+  const getSuitEmoji = (suit: string): string => {
+    return SUIT_TO_EMOJI[suit] || suit;
   };
 
   /**

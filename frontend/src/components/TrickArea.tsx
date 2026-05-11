@@ -1,6 +1,5 @@
 import React from 'react';
 import { GameState, Card, GameVariant } from '../types/game';
-import { SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 
 interface TrickAreaProps {
   gameState: GameState;

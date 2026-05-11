@@ -6,11 +6,11 @@ import { HeartsGame } from './HeartsGame';
 import { KingGame } from './KingGame';
 
 export class GameFactory {
-  private static adapters: Map<GameVariant, GameAdapter> = new Map([
-    ['sueca', new SuecaGame()],
-    ['spades', new SpadesGame()],
-    ['hearts', new HeartsGame()],
-    ['king', new KingGame()]
+  private static adapters: Map<GameVariant, GameAdapter> = new Map<GameVariant, GameAdapter>([
+    ['sueca', new SuecaGame()] as [GameVariant, GameAdapter],
+    ['spades', new SpadesGame()] as [GameVariant, GameAdapter],
+    ['hearts', new HeartsGame()] as [GameVariant, GameAdapter],
+    ['king', new KingGame()] as [GameVariant, GameAdapter]
   ]);
 
   static getAdapter(variant: GameVariant): GameAdapter {

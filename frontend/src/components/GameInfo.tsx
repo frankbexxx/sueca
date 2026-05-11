@@ -1,6 +1,5 @@
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
-import { useLanguage } from '../i18n/useLanguage';
 import { SUIT_TO_EMOJI } from '../utils/cardMappings';
 
 interface GameInfoProps {
@@ -13,8 +12,6 @@ interface GameInfoProps {
  * Adapts display based on the current game variant
  */
 export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant }) => {
-  const { t } = useLanguage();
-
   const getTrumpColorClass = (suit: string): string => {
     switch (suit.toLowerCase()) {
       case 'hearts': return 'hearts';
