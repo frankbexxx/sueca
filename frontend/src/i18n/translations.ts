@@ -37,23 +37,12 @@ export interface Translations {
     startGame: string;
     advancedSettings: string;
     darkMode: string;
-    errorPlayer1Required: string;
-    errorStartingGame: string;
-  };
-  
-  // Game Board
-  gameBoard: {
-    us: string;
-    them: string;
-    points: string;
-    games: string;
-    game: string;
-    dealing: string;
-    continue: string;
-    aiExternal: string;
-    aiLocal: string;
-  };
-  
+    multiplayerMode: string;
+    enableMultiplayer: string;
+    createSession: string;
+    joinSession: string;
+    sessionId: string;
+    sessionIdPlaceholder: string;
   // Modals (strings with {placeholder} format)
   modals: {
     roundComplete: string; // Use {round}
@@ -161,6 +150,12 @@ export const translations: Record<Language, Translations> = {
       startGame: 'Iniciar Jogo',
       advancedSettings: 'Configurações Avançadas',
       darkMode: 'Modo Escuro',
+      multiplayerMode: 'Multiplayer',
+      enableMultiplayer: 'Ativar multiplayer',
+      createSession: 'Criar nova sessão',
+      joinSession: 'Entrar em sessão existente',
+      sessionId: 'ID da Sessão',
+      sessionIdPlaceholder: 'Digite ou cole o ID da sessão',
       errorPlayer1Required: 'Por favor, insira um nome para o Player 1',
       errorStartingGame: 'Erro ao iniciar o jogo. Por favor, tente novamente.'
     },
@@ -271,6 +266,12 @@ export const translations: Record<Language, Translations> = {
       startGame: 'Start Game',
       advancedSettings: 'Advanced Settings',
       darkMode: 'Dark Mode',
+      multiplayerMode: 'Multiplayer',
+      enableMultiplayer: 'Enable multiplayer',
+      createSession: 'Create new session',
+      joinSession: 'Join existing session',
+      sessionId: 'Session ID',
+      sessionIdPlaceholder: 'Paste or enter the session ID',
       errorPlayer1Required: 'Please enter a name for Player 1',
       errorStartingGame: 'Error starting game. Please try again.'
     },

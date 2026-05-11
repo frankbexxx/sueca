@@ -8,10 +8,11 @@ export class Game {
   constructor(
     playerNames: string[] = ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
     dealingMethod: DealingMethod = 'A',
-    aiDifficulty: AIDifficulty = 'medium'
+    aiDifficulty: AIDifficulty = 'medium',
+    localPlayerIndex?: number
   ) {
     this.deck = new Deck();
-    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty);
+    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty, localPlayerIndex);
   }
 
   /**
@@ -177,7 +178,8 @@ export class Game {
   private initializeGame(
     playerNames: string[],
     dealingMethod: DealingMethod = 'A',
-    aiDifficulty: AIDifficulty = 'medium'
+    aiDifficulty: AIDifficulty = 'medium',
+    localPlayerIndex?: number
   ): GameState {
     // Choose dealer
     const dealerName = this.chooseDealer(playerNames);
@@ -188,11 +190,16 @@ export class Game {
     // Create players with fixed teams: indices 0/2 = team1 (US), 1/3 = team2 (THEM)
     const players: Player[] = seatedOrder.map((name, index) => {
       const isTeam1 = index === 0 || index === 2;
+      const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
+      const playerType = localPlayerIndex !== undefined
+        ? (isLocalHuman ? 'human' : 'remote')
+        : (isLocalHuman ? 'human' : 'ai');
       return {
         id: `player_${index}`,
         name,
         hand: [],
-        team: (isTeam1 ? 1 : 2) as 1 | 2
+        team: (isTeam1 ? 1 : 2) as 1 | 2,
+        type: playerType
       };
     });
     
@@ -238,6 +245,13 @@ export class Game {
 
   getState(): GameState {
     return { ...this.state };
+  }
+
+  setLocalPlayerIndex(localPlayerIndex: number): void {
+    this.state.players = this.state.players.map((player, index) => ({
+      ...player,
+      type: index === localPlayerIndex ? 'human' : 'remote'
+    }));
   }
 
   /**

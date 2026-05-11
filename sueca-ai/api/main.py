@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api.schemas import PlayRequest, PlayResponse
+from api.realtime import register_realtime_routes
 from engine.movegen import legal_moves
 from engine.heuristics import choose_card_simple
 import os
@@ -29,6 +30,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+register_realtime_routes(app)
 
 
 @app.get("/health")

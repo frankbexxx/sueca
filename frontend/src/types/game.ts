@@ -1,5 +1,5 @@
 export type Suit = 'clubs' | 'diamonds' | 'hearts' | 'spades';
-export type Rank = '2' | '3' | '4' | '5' | '6' | 'Q' | 'J' | 'K' | '7' | 'A';
+export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'Q' | 'J' | 'K' | 'A';
 
 export interface Card {
   suit: Suit;
@@ -7,11 +7,16 @@ export interface Card {
   id: string;
 }
 
+export type GameVariant = 'sueca' | 'spades' | 'hearts' | 'king';
+export type PlayerType = 'human' | 'ai' | 'remote';
+
 export interface Player {
   id: string;
   name: string;
   hand: Card[];
   team: 1 | 2;
+  type?: PlayerType;
+  status?: 'connected' | 'disconnected' | 'waiting';
 }
 
 export type DealingMethod = 'A' | 'B';
@@ -45,7 +50,9 @@ export interface GameState {
   aiDifficulty: AIDifficulty; // AI difficulty level
   partnerSignals: Array<{ playerIndex: number; signal: string; trick: number }>; // Partner coordination signals
   nextRoundValue?: number; // Internal: value for next round (used when continuing after round end)
-}
+  isMultiplayer?: boolean;
+  sessionId?: string;
+  localPlayerIndex?: number;  variant?: GameVariant;}
 
 export const CARD_HIERARCHY: Record<Rank, number> = {
   '2': 1,
@@ -53,11 +60,14 @@ export const CARD_HIERARCHY: Record<Rank, number> = {
   '4': 3,
   '5': 4,
   '6': 5,
-  'Q': 6,
-  'J': 7,
-  'K': 8,
-  '7': 9,
-  'A': 10
+  '7': 6,
+  '8': 7,
+  '9': 8,
+  '10': 9,
+  'Q': 10,
+  'J': 11,
+  'K': 12,
+  'A': 13
 };
 
 export const CARD_POINTS: Record<Rank, number> = {
@@ -66,10 +76,13 @@ export const CARD_POINTS: Record<Rank, number> = {
   '4': 0,
   '5': 0,
   '6': 0,
+  '7': 0,
+  '8': 0,
+  '9': 0,
+  '10': 0,
   'Q': 2,
   'J': 3,
   'K': 4,
-  '7': 10,
   'A': 11
 };
 

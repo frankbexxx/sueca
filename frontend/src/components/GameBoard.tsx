@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Game } from '../models/Game';
-import { GameState, Card, DealingMethod, AIDifficulty, Suit } from '../types/game';
+import { GameState, Card, DealingMethod, AIDifficulty, Suit, GameVariant } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
+import { MultiplayerClient, MultiplayerPlayerInfo } from '../services/multiplayerClient';
 import { RoundEndModal } from './RoundEndModal';
 import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
@@ -22,6 +23,13 @@ import {
   DEFAULT_DEALING_METHOD,
   DEFAULT_AI_DIFFICULTY
 } from '../constants/gameConstants';
+import { GameFactory } from '../models/games/GameFactory';
+import { BaseGameAdapter } from '../models/games/GameAdapter';
+import { GameInfo } from './GameInfo';
+import { TrickArea } from './TrickArea';
+import { PlayerHand } from './PlayerHand';
+import { GameScores } from './GameScores';
+import { GameActions } from './GameActions';
 
 /**
  * Main game board component - renders the entire Sueca game interface
@@ -69,6 +77,16 @@ export const GameBoard: React.FC = () => {
    * Only created when game starts (not on initial render)
    */
   const [game, setGame] = useState<Game | null>(null);
+  const [gameVariant, setGameVariant] = useState<GameVariant>('sueca');
+  const [gameAdapter, setGameAdapter] = useState<BaseGameAdapter | null>(null);
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  const [multiplayerSessionId, setMultiplayerSessionId] = useState<string | null>(null);
+  const [multiplayerJoinMode, setMultiplayerJoinMode] = useState(false);
+  const [multiplayerStatus, setMultiplayerStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [multiplayerError, setMultiplayerError] = useState<string | null>(null);
+  const [multiplayerPlayerIndex, setMultiplayerPlayerIndex] = useState<number>(0);
+  const [multiplayerPlayers, setMultiplayerPlayers] = useState<MultiplayerPlayerInfo[]>([]);
+  const [multiplayerClient, setMultiplayerClient] = useState<MultiplayerClient | null>(null);
   
   /**
    * Game state snapshot - reactive state for UI updates
@@ -103,7 +121,8 @@ export const GameBoard: React.FC = () => {
       playerName: 'Player 1',
       aiDifficulty: 'medium',
       partnerSignals: [],
-      nextRoundValue: undefined
+      nextRoundValue: undefined,
+      variant: 'sueca'
     };
   });
   // UI state
@@ -119,14 +138,105 @@ export const GameBoard: React.FC = () => {
     setPlayerNames(config.playerNames);
     setAIDifficulty(config.aiDifficulty);
     setDealingMethod(config.dealingMethod);
-    
+    setGameVariant(config.gameVariant);
+    setIsMultiplayer(Boolean(config.multiplayerEnabled));
+    setMultiplayerJoinMode(Boolean(config.multiplayerJoinMode));
+    setMultiplayerSessionId(config.multiplayerSessionId || null);
+    setMultiplayerError(null);
+    setMultiplayerStatus(config.multiplayerEnabled ? 'connecting' : 'disconnected');
+
     try {
-      const newGame = new Game(config.playerNames, config.dealingMethod, config.aiDifficulty);
+      const newGame = new Game(
+        config.playerNames,
+        config.dealingMethod,
+        config.aiDifficulty,
+        config.multiplayerEnabled ? 0 : undefined
+      );
       setGame(newGame);
-      setGameState(newGame.getState());
+      
+      // Create game adapter based on variant
+      const adapter = GameFactory.getAdapter(config.gameVariant);
+      adapter.initialize(newGame);
+      setGameAdapter(adapter);
+      
+      const initialState = newGame.getState();
+      initialState.variant = config.gameVariant;
+      setGameState(initialState);
       setShowStartMenu(false);
       setGameStarted(true);
       setSelectedCard(null);
+
+      if (config.multiplayerEnabled) {
+        const client = new MultiplayerClient(config.playerNames[0], 0, {
+          onOpen: () => {
+            setMultiplayerStatus('connected');
+            setMultiplayerError(null);
+          },
+          onClose: () => {
+            setMultiplayerStatus('disconnected');
+          },
+          onError: (message) => {
+            setMultiplayerError(message);
+            setMultiplayerStatus('disconnected');
+          },
+          onSessionInfo: (sessionId, players, localPlayerIndex) => {
+            setMultiplayerSessionId(sessionId);
+            setMultiplayerPlayers(players);
+            if (typeof localPlayerIndex === 'number') {
+              setMultiplayerPlayerIndex(localPlayerIndex);
+              if (game) {
+                game.setLocalPlayerIndex(localPlayerIndex);
+                setGameState(game.getState());
+              }
+            }
+          },
+          onPlayerListUpdate: (players) => {
+            setMultiplayerPlayers(players);
+          },
+          onStateUpdate: (update) => {
+            const updatedState = update.gameState as GameState;
+            if (updatedState) {
+              setGameState(updatedState);
+            }
+            if (update.players) {
+              setMultiplayerPlayers(update.players);
+            }
+            if (update.sessionId) {
+              setMultiplayerSessionId(update.sessionId);
+            }
+          },
+          onPlayerAction: (payload) => {
+            if (!game || !gameAdapter) {
+              return;
+            }
+            const { playerIndex, card } = payload;
+            const currentState = game.getState();
+            const targetPlayer = currentState.players[playerIndex];
+            if (!targetPlayer) {
+              return;
+            }
+            const cardIndex = targetPlayer.hand.findIndex((c) => cardToCode(c) === card);
+            if (cardIndex === -1) {
+              return;
+            }
+            gameAdapter.playCard(currentState, playerIndex, cardIndex);
+            setGameState(game.getState());
+          }
+        });
+        client.connect();
+        if (config.multiplayerJoinMode && config.multiplayerSessionId) {
+          client.joinSession(config.multiplayerSessionId);
+        } else {
+          client.createSession();
+        }
+        client.syncState(newGame.getState());
+        setMultiplayerClient(client);
+      } else {
+        if (multiplayerClient) {
+          multiplayerClient.close();
+          setMultiplayerClient(null);
+        }
+      }
     } catch (error) {
       console.error('Error starting game:', error);
       alert(t.startMenu.errorStartingGame);
@@ -239,6 +349,12 @@ export const GameBoard: React.FC = () => {
     if (!game || !gameStarted) return;
     
     // Auto-play for AI players (only if not waiting for round/game start and not paused)
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    const isRemoteTurn = isMultiplayer && currentPlayer?.type === 'remote';
+    const isLocalHumanTurn = isMultiplayer
+      ? gameState.currentPlayerIndex === multiplayerPlayerIndex
+      : gameState.currentPlayerIndex === 0;
+
     if (
       !gameState.isGameOver &&
       !gameState.isPaused &&
@@ -246,7 +362,8 @@ export const GameBoard: React.FC = () => {
       !gameState.waitingForRoundStart &&
       !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart &&
-      gameState.currentPlayerIndex !== 0 // Only for AI players (0 is human)
+      !isRemoteTurn &&
+      !isLocalHumanTurn
     ) {
       const timer = setTimeout(() => {
         playAICard();
@@ -266,12 +383,14 @@ export const GameBoard: React.FC = () => {
   const handleCardClick = (cardIndex: number) => {
     // Only allow if game exists
     if (!game) return;
-    
-    // Only allow card selection if it's the human player's turn (index 0 = "You")
-    const isHumanPlayer = gameState.currentPlayerIndex === 0;
-    
+
+    // Determine whether the current turn belongs to the local human player
+    const isLocalTurn = isMultiplayer
+      ? gameState.currentPlayerIndex === multiplayerPlayerIndex
+      : gameState.currentPlayerIndex === 0;
+
     if (
-      isHumanPlayer &&
+      isLocalTurn &&
       !gameState.isGameOver &&
       !gameState.isPaused &&
       !gameState.waitingForTrickEnd &&
@@ -279,28 +398,39 @@ export const GameBoard: React.FC = () => {
       !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart
     ) {
-      // Check if the card is playable before allowing selection
-      const player = gameState.players[0];
-      if (cardIndex >= 0 && cardIndex < player.hand.length) {
-        // Use the game's canPlayCard method to check if card can be played
-        const canPlay = game.canPlayCard(0, cardIndex);
-        if (canPlay) {
-          // If clicking the same card that's already selected, play it
-          if (selectedCard === cardIndex) {
-            if (game.playCard(0, cardIndex)) {
-              playCardSound();
-              setGameState(game.getState());
-              setSelectedCard(null); // Clear selection after successful play
-            } else {
-              playErrorSound();
-            }
-          } else {
-            // Otherwise, just select the card
-            setSelectedCard(cardIndex);
-          }
+      const playerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
+      const player = gameState.players[playerIndex];
+      if (!player || cardIndex < 0 || cardIndex >= player.hand.length) {
+        return;
+      }
+
+      const canPlay = gameAdapter ? gameAdapter.canPlayCard(gameState, playerIndex, cardIndex) : game.canPlayCard(playerIndex, cardIndex);
+      if (!canPlay) {
+        playErrorSound();
+        return;
+      }
+
+      if (isMultiplayer && multiplayerClient && multiplayerStatus === 'connected') {
+        const card = player.hand[cardIndex];
+        multiplayerClient.sendPlayerAction('play_card', {
+          playerIndex,
+          card: cardToCode(card)
+        });
+        setSelectedCard(null);
+        return;
+      }
+
+      if (selectedCard === cardIndex) {
+        const success = gameAdapter ? gameAdapter.playCard(gameState, playerIndex, cardIndex) : game.playCard(playerIndex, cardIndex);
+        if (success) {
+          playCardSound();
+          setGameState(game.getState());
+          setSelectedCard(null);
         } else {
-          playErrorSound(); // Visual/audio feedback for invalid play
+          playErrorSound();
         }
+      } else {
+        setSelectedCard(cardIndex);
       }
     }
   };
@@ -324,35 +454,12 @@ export const GameBoard: React.FC = () => {
   };
 
   /**
-   * Returns emoji representation of a suit
-   * Used for display in UI (trump indicators, etc.)
-   */
-  const getSuitEmoji = (suit: string): string => {
-    return SUIT_TO_EMOJI[suit] || suit;
-  };
-
-  /**
    * Truncates player name to maximum 8 characters for mobile info boxes
    * Adds "..." if truncated
    */
   const truncatePlayerName = (name: string, maxLength: number = 8): string => {
     if (name.length <= maxLength) return name;
     return name.substring(0, maxLength - 3) + '...';
-  };
-
-  /**
-   * Returns CSS class for trump suit color styling
-   * Red suits (diamonds, hearts) get 'trump-red' class
-   * Black suits (clubs, spades) get 'trump-black' class
-   */
-  const getTrumpColorClass = (suit: Suit | null): string => {
-    if (!suit) return '';
-    // Red suits: diamonds, hearts
-    if (suit === 'diamonds' || suit === 'hearts') {
-      return 'trump-red';
-    }
-    // Black suits: clubs, spades
-    return 'trump-black';
   };
 
   /**
@@ -417,7 +524,8 @@ export const GameBoard: React.FC = () => {
    * "US" = the team containing the human player (index 0)
    * "THEM" = the opposing team
    */
-  const usTeam = gameState.players[0]?.team || 1;
+  const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
+  const usTeam = gameState.players[localPlayerIndex]?.team || 1;
   const themTeam = usTeam === 1 ? 2 : 1;
 
   /**
@@ -614,33 +722,28 @@ export const GameBoard: React.FC = () => {
       />
 
       <div className="top-strip">
-        <div className="score-block us">
-          <div className="label">{t.gameBoard.us}</div>
-          <div className="line">{t.gameBoard.points} {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">{t.gameBoard.games} {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
-        </div>
+        <GameScores
+          gameState={gameState}
+          variant={gameVariant}
+          usTeam={usTeam}
+          themTeam={themTeam}
+        />
         <div className="round-block">
           <div>{t.gameBoard.game} {gameState.round}</div>
-          {/* Trump information moved here from score blocks */}
-          {gameState.trumpSuit && gameState.trumpCard && (
-            <div className="trump-info-in-team">
-              <span className="dealer-name">{gameState.players[gameState.dealerIndex]?.name}</span>
-              <span className={`trump-minimal ${getTrumpColorClass(gameState.trumpSuit)}`}>
-                {gameState.trumpCard.rank}{getSuitEmoji(gameState.trumpSuit)}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="score-block them">
-          <div className="label">{t.gameBoard.them}</div>
-          <div className="line">{t.gameBoard.points} {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}</div>
-          <div className="line">{t.gameBoard.games} {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <GameInfo gameState={gameState} variant={gameVariant} />
         </div>
       </div>
       {/* Indicador de fonte da AI */}
       <div className="ai-source-banner">
         {aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
       </div>
+      {isMultiplayer && (
+        <div className={`multiplayer-banner multiplayer-${multiplayerStatus}`}>
+          <span>{`Multiplayer: ${multiplayerStatus}`}</span>
+          {multiplayerSessionId && <span>{`Session: ${multiplayerSessionId}`}</span>}
+          {multiplayerError && <span className="error-label">{multiplayerError}</span>}
+        </div>
+      )}
 
       {/* Main game table container */}
       <div className="table-layout">
@@ -651,37 +754,12 @@ export const GameBoard: React.FC = () => {
           {showGridOverlay && <div className="grid-overlay" />}
 
           {/* Center area - displays current trick cards in cross formation */}
-          <div className="trick-area-center">
-            {gameState.currentTrick.length > 0 ? (
-              <div className="trick-cards-cross">
-                {/* Render each card in the current trick with player info */}
-                {gameState.currentTrick.map((card: Card, index: number) => {
-                  // Calculate which player played this card (based on trick leader + order)
-                  const playerIndex = (gameState.trickLeader + index) % 4;
-                  const position = getTablePosition(playerIndex);
-                  // Highlight winning card if this is the last card and player won
-                  const isWinning =
-                    gameState.lastTrickWinner === playerIndex &&
-                    index === gameState.currentTrick.length - 1;
-                  return (
-                    <div
-                      key={index}
-                      className={`trick-card-cross trick-from-${position} ${isWinning ? 'winning' : ''}`}
-                    >
-                      <img
-                        src={getCardImage(card)}
-                        alt={`${card.rank} of ${card.suit}`}
-                        className="trick-card-img"
-                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
+          <TrickArea
+            gameState={gameState}
+            variant={gameVariant}
+            getCardImage={getCardImage}
+            getTablePosition={getTablePosition}
+          />
 
           {/* Player seats layer - displays player info and card counts around table */}
           <div className="seats-layer">
@@ -689,7 +767,7 @@ export const GameBoard: React.FC = () => {
               const position = getTablePosition(index);
               const isDealer = index === gameState.dealerIndex;
               const isCurrentPlayer = index === gameState.currentPlayerIndex;
-              const isHuman = index === 0;
+              const isHuman = index === localPlayerIndex;
 
               /**
                * Renders AI player's card count (back of cards + number)
@@ -747,56 +825,29 @@ export const GameBoard: React.FC = () => {
       </div>
 
       {/* Human player's hand (South position) - displayed below table */}
-      {game && gameState.players[0] && (
-        <div className="player-hand-bar">
-          <div className="hand-row">
-            {/* Render each card in player's hand with proper spacing and positioning */}
-            {gameState.players[0].hand.map((card: Card, cardIndex: number) => {
-              // Card spacing calculation - centers hand with proper overlap
-              const CENTER_OFFSET = ((MAX_CARDS_IN_HAND - 1) * CARD_SPACING) / 2;
-              const cardPosition = cardIndex * CARD_SPACING;
-              const translateX = cardPosition - CENTER_OFFSET;
-              const fixedTransform = `translateX(${translateX}px)`;
-              
-              // Card state for UI feedback
-              const isPlayable = game ? game.canPlayCard(0, cardIndex) : false;
-              const isSelected = selectedCard === cardIndex;
-              return (
-                <img
-                  key={card.id}
-                  src={getCardImage(card)}
-                  alt={`${card.rank} of ${card.suit}`}
-                  className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
-                  style={{ transform: fixedTransform, zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1 }}
-                  onClick={() => handleCardClick(cardIndex)}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
+      {game && gameState.players[localPlayerIndex] && (
+        <PlayerHand
+          gameState={gameState}
+          variant={gameVariant}
+          localPlayerIndex={localPlayerIndex}
+          selectedCard={selectedCard}
+          canPlayCard={(cardIndex: number) => gameAdapter ? gameAdapter.canPlayCard(gameState, localPlayerIndex, cardIndex) : false}
+          onCardClick={handleCardClick}
+          getCardImage={getCardImage}
+        />
       )}
 
       {/* Action button - continue to next trick */}
-      <div className="action-buttons-bar">
-        <div className="action-buttons-group">
-          {/* Continue button - only enabled when trick is complete */}
-          <button
-            className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-            onClick={() => {
-              if (game && gameState.waitingForTrickEnd) {
-                game.finishTrick();
-                setGameState(game.getState());
-              }
-            }}
-            disabled={!gameState.waitingForTrickEnd || !game}
-          >
-            {t.gameBoard.continue}
-          </button>
-        </div>
-      </div>
+      <GameActions
+        gameState={gameState}
+        variant={gameVariant}
+        onContinueTrick={() => {
+          if (game && gameState.waitingForTrickEnd) {
+            game.finishTrick();
+            setGameState(game.getState());
+          }
+        }}
+      />
 
       {/* Game end modal - displays game scores and games progress */}
       {gameState.waitingForRoundEnd && !gameState.isGameOver && (

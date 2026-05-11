@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AIDifficulty, DealingMethod } from '../types/game';
+import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
+import { GameSelector } from './GameSelector';
 import { useLanguage } from '../i18n/useLanguage';
 import './StartMenu.css';
 
@@ -10,6 +11,10 @@ export interface GameConfig {
   playerNames: string[];
   aiDifficulty: AIDifficulty;
   dealingMethod: DealingMethod;
+  multiplayerEnabled: boolean;
+  multiplayerSessionId?: string;
+  multiplayerJoinMode?: boolean;
+  gameVariant: GameVariant;
 }
 
 /**
@@ -65,6 +70,28 @@ export const StartMenu: React.FC<StartMenuProps> = ({
     return 'A';
   });
 
+  const [multiplayerEnabled, setMultiplayerEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sueca-multiplayer-enabled');
+    return saved === 'true';
+  });
+
+  const [multiplayerJoinMode, setMultiplayerJoinMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sueca-multiplayer-join-mode');
+    return saved === 'true';
+  });
+
+  const [multiplayerSessionId, setMultiplayerSessionId] = useState<string>(() => {
+    return localStorage.getItem('sueca-multiplayer-session-id') || '';
+  });
+
+  const [gameVariant, setGameVariant] = useState<GameVariant>(() => {
+    const saved = localStorage.getItem('sueca-game-variant');
+    if (saved === 'sueca' || saved === 'spades' || saved === 'hearts' || saved === 'king') {
+      return saved;
+    }
+    return 'sueca';
+  });
+
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +107,22 @@ export const StartMenu: React.FC<StartMenuProps> = ({
   useEffect(() => {
     localStorage.setItem('sueca-dealing-method', dealingMethod);
   }, [dealingMethod]);
+
+  useEffect(() => {
+    localStorage.setItem('sueca-multiplayer-enabled', String(multiplayerEnabled));
+  }, [multiplayerEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('sueca-multiplayer-join-mode', String(multiplayerJoinMode));
+  }, [multiplayerJoinMode]);
+
+  useEffect(() => {
+    localStorage.setItem('sueca-multiplayer-session-id', multiplayerSessionId);
+  }, [multiplayerSessionId]);
+
+  useEffect(() => {
+    localStorage.setItem('sueca-game-variant', gameVariant);
+  }, [gameVariant]);
 
   /**
    * Handles form submission and starts the game
@@ -103,13 +146,21 @@ export const StartMenu: React.FC<StartMenuProps> = ({
     const config: GameConfig = {
       playerNames: cleanedNames,
       aiDifficulty,
-      dealingMethod
+      dealingMethod,
+      multiplayerEnabled,
+      multiplayerSessionId: multiplayerSessionId.trim() || undefined,
+      multiplayerJoinMode,
+      gameVariant
     };
 
     // Save final config to localStorage
     localStorage.setItem('sueca-player-names', JSON.stringify(cleanedNames));
     localStorage.setItem('sueca-ai-difficulty', aiDifficulty);
     localStorage.setItem('sueca-dealing-method', dealingMethod);
+    localStorage.setItem('sueca-multiplayer-enabled', String(multiplayerEnabled));
+    localStorage.setItem('sueca-multiplayer-join-mode', String(multiplayerJoinMode));
+    localStorage.setItem('sueca-multiplayer-session-id', multiplayerSessionId);
+    localStorage.setItem('sueca-game-variant', gameVariant);
 
     onStartGame(config);
   };
@@ -146,6 +197,9 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             </button>
           </div>
         </div>
+        
+        {/* Game Selector */}
+        <GameSelector selectedGame={gameVariant} onSelectGame={setGameVariant} />
         
         <div className="start-menu-form">
           {/* Player Names - Botões que abrem input */}
@@ -253,6 +307,60 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                 <span>{t.startMenu.methodB}</span>
               </label>
             </div>
+          </div>
+
+          {/* Multiplayer configuration */}
+          <div className="form-section">
+            <div className="form-label">{t.startMenu.multiplayerMode || 'Modo Multiplayer'}</div>
+            <label className="checkbox-option">
+              <input
+                type="checkbox"
+                checked={multiplayerEnabled}
+                onChange={(e) => setMultiplayerEnabled(e.target.checked)}
+              />
+              <span>{t.startMenu.enableMultiplayer || 'Ativar multiplayer'}</span>
+            </label>
+
+            {multiplayerEnabled && (
+              <div className="radio-group">
+                <label className="radio-option">
+                  <input
+                    type="radio"
+                    name="multiplayer-action"
+                    value="create"
+                    checked={!multiplayerJoinMode}
+                    onChange={() => setMultiplayerJoinMode(false)}
+                  />
+                  <span>{t.startMenu.createSession || 'Criar nova sessão'}</span>
+                </label>
+                <label className="radio-option">
+                  <input
+                    type="radio"
+                    name="multiplayer-action"
+                    value="join"
+                    checked={multiplayerJoinMode}
+                    onChange={() => setMultiplayerJoinMode(true)}
+                  />
+                  <span>{t.startMenu.joinSession || 'Juntar-se a uma sessão'}</span>
+                </label>
+              </div>
+            )}
+
+            {multiplayerEnabled && multiplayerJoinMode && (
+              <div className="form-section">
+                <label className="form-label" htmlFor="session-id-input">
+                  {t.startMenu.sessionId || 'ID da Sessão'}
+                </label>
+                <input
+                  id="session-id-input"
+                  type="text"
+                  className="form-input"
+                  value={multiplayerSessionId}
+                  onChange={(e) => setMultiplayerSessionId(e.target.value)}
+                  placeholder={t.startMenu.sessionIdPlaceholder || 'Cole o ID da sessão'}
+                />
+              </div>
+            )}
           </div>
 
           {/* Error message */}

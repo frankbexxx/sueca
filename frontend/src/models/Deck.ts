@@ -2,15 +2,19 @@ import { Card, Suit, Rank } from '../types/game';
 
 export class Deck {
   private cards: Card[] = [];
+  private variant: 'sueca40' | 'standard52';
 
-  constructor() {
+  constructor(variant: 'sueca40' | 'standard52' = 'sueca40') {
+    this.variant = variant;
     this.initializeDeck();
     this.shuffle();
   }
 
   private initializeDeck(): void {
     const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
-    const ranks: Rank[] = ['2', '3', '4', '5', '6', 'Q', 'J', 'K', '7', 'A'];
+    const ranks: Rank[] = this.variant === 'standard52'
+      ? ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+      : ['2', '3', '4', '5', '6', 'Q', 'J', 'K', '7', 'A'];
 
     for (const suit of suits) {
       for (const rank of ranks) {
