@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
 import { getAvailableGames } from '../constants/gameMetadata';
 import { GameSelector } from './GameSelector';
+import { RulesSheet } from './RulesSheet';
 import { useLanguage } from '../i18n/useLanguage';
+import { MULTIPLAYER_ENABLED } from '../config/features';
 import './StartMenu.css';
 
 /**
@@ -103,6 +105,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
   }, [gameVariant]);
 
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Save to localStorage whenever values change
@@ -210,7 +213,11 @@ export const StartMenu: React.FC<StartMenuProps> = ({
         
         {/* Game Selector */}
         <GameSelector selectedGame={gameVariant} onSelectGame={setGameVariant} />
-        
+        <button type="button" className="start-menu-rules-btn" onClick={() => setShowRules(true)}>
+          Rules — {gameVariant}
+        </button>
+        {showRules && <RulesSheet variant={gameVariant} onClose={() => setShowRules(false)} />}
+
         <div className="start-menu-form">
           {/* Player Names - Botões que abrem input */}
           <div className="form-section">
@@ -319,7 +326,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
             </div>
           </div>
 
-          {/* Multiplayer configuration */}
+          {MULTIPLAYER_ENABLED && (
           <div className="form-section">
             <div className="form-label">{t.startMenu.multiplayerMode || 'Modo Multiplayer'}</div>
             <label className="checkbox-option">
@@ -372,6 +379,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               </div>
             )}
           </div>
+          )}
 
           {/* Error message */}
           {error && (

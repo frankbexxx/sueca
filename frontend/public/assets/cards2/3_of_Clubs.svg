@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="200" viewBox="0 0 140 200">
+  <rect width="140" height="200" rx="8" fill="#faf8f5" stroke="#333" stroke-width="2"/>
+  <text x="70" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" fill="#1a1a1a">3</text>
+  <text x="70" y="130" text-anchor="middle" font-size="14" fill="#666">Clubs</text>
+</svg>

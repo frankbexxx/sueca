@@ -1,0 +1,90 @@
+.variant-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+.variant-modal {
+  background: var(--color-surface, #1a2e24);
+  color: var(--color-text, #f5f5f5);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.variant-modal-wide {
+  max-width: 420px;
+}
+
+.variant-modal h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.variant-modal-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.variant-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.variant-modal input {
+  min-height: 48px;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.variant-modal-primary {
+  min-height: 48px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary, #2d6a4f);
+  color: #fff;
+  cursor: pointer;
+}
+
+.variant-modal-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pass-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pass-card-btn {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+
+.pass-card-btn.selected {
+  border-color: #6fcf97;
+  background: rgba(111, 207, 151, 0.25);
+}

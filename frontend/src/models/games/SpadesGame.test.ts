@@ -15,6 +15,8 @@ describe('SpadesGame', () => {
     ];
     state.currentTrick = [{ id: '3', rank: 'A', suit: 'clubs' }];
     state.currentPlayerIndex = 0;
+    state.waitingForRoundStart = false;
+    (state.variantState as { spades: { waitingForBids: boolean } }).spades.waitingForBids = false;
     (game as unknown as { state: typeof state }).state = state;
 
     expect(game.canPlayCard(state, 0, 0)).toBe(false);

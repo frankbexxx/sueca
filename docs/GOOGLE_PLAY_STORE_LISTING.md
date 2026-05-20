@@ -42,17 +42,14 @@ Sueca é um dos jogos de cartas mais populares em Portugal, jogado por milhões 
 • Sistema de pontuação tradicional
 • Dois métodos de distribuição de cartas
 
-🤖 IA Inteligente
-• Oponentes de IA com estratégia avançada
-• Rastreamento de cartas jogadas
+🤖 Oponentes IA (no dispositivo)
+• IA local — não requer servidor
 • Dificuldade ajustável
-• Jogadas realistas e desafiadoras
+• Quatro jogos: Sueca, Spades, Hearts, King
 
-👥 Modo Multijogador
-• Jogue com amigos online
-• Partilhe o jogo via URL
-• Sessões de jogo em tempo real
-• Sistema de equipas automático
+👥 Multijogador (quando ativado)
+• Salas por código
+• Requer backend SUECÂO v1 (ver docs)
 
 🎯 EXPERIÊNCIA DE JOGO
 

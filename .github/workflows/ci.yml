@@ -6,11 +6,15 @@ on:
     branches: [main, v2-main]
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "tools/**"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [main, v2-main]
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "tools/**"
       - ".github/workflows/ci.yml"
 
 concurrency:
@@ -49,4 +53,22 @@ jobs:
       - name: Build
         env:
           CI: true
+          REACT_APP_USE_LOCAL_AI_ONLY: "true"
         run: npm run build
+
+      - name: Verify card assets
+        run: test "$(ls -1 public/assets/cards2/*_of_*.svg 2>/dev/null | wc -l)" -ge 52
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: node --check src/server.js

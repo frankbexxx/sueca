@@ -1,0 +1,13 @@
+# Maestro smoke — run after Capacitor build on device/emulator
+# appId: com.suecao.cardgames
+appId: com.suecao.cardgames
+---
+- launchApp
+- assertVisible: "SUECÂO|Sueca|Start"
+- tapOn:
+    text: "Start"
+    optional: true
+- tapOn:
+    text: "Rules"
+    optional: true
+- back

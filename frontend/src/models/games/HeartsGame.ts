@@ -5,14 +5,34 @@ import { trickWinnerIndex } from './trickUtils';
 
 const TARGET_SCORE = 100;
 
+type PassDirection = 'left' | 'right' | 'across';
+
 interface HeartsVariantState {
   heartsBroken: boolean;
   playerScores: number[];
+  roundPoints: number[];
+  waitingForPass: boolean;
+  passDirection: PassDirection;
+  humanPassIndices: number[];
 }
 
 function getHeartsState(state: GameState): HeartsVariantState {
   const vs = state.variantState?.hearts as HeartsVariantState | undefined;
-  return vs ?? { heartsBroken: false, playerScores: [0, 0, 0, 0] };
+  return (
+    vs ?? {
+      heartsBroken: false,
+      playerScores: [0, 0, 0, 0],
+      roundPoints: [0, 0, 0, 0],
+      waitingForPass: true,
+      passDirection: 'left',
+      humanPassIndices: []
+    }
+  );
+}
+
+function passDirectionForRound(round: number): PassDirection {
+  const cycle: PassDirection[] = ['left', 'right', 'across'];
+  return cycle[(round - 1) % 3];
 }
 
 function trickPoints(trick: Card[]): number {
@@ -37,12 +57,75 @@ export class HeartsGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
-  private autoPass(players: Player[]): void {
-    for (let i = 0; i < 4; i++) {
-      const to = (i + 1) % 4;
-      const pass = players[i].hand.splice(0, 3);
-      players[to].hand.push(...pass);
+  /** Human selects up to 3 cards to pass (toggle indices). */
+  togglePassCard(cardIndex: number, localPlayerIndex = 0): void {
+    if (!this.state) return;
+    const hearts = getHeartsState(this.state);
+    if (!hearts.waitingForPass) return;
+    const idx = hearts.humanPassIndices.indexOf(cardIndex);
+    if (idx >= 0) {
+      hearts.humanPassIndices.splice(idx, 1);
+    } else if (hearts.humanPassIndices.length < 3) {
+      hearts.humanPassIndices.push(cardIndex);
     }
+    this.state.variantState = { ...this.state.variantState, hearts };
+  }
+
+  /** Confirm pass for human + auto-pass for AI, then start play. */
+  confirmPass(localPlayerIndex = 0): boolean {
+    if (!this.state) return false;
+    const hearts = getHeartsState(this.state);
+    if (!hearts.waitingForPass || hearts.humanPassIndices.length !== 3) return false;
+
+    const passes: Card[][] = [[], [], [], []];
+    const human = this.state.players[localPlayerIndex];
+    const sorted = [...hearts.humanPassIndices].sort((a, b) => b - a);
+    for (const i of sorted) {
+      passes[localPlayerIndex].push(human.hand.splice(i, 1)[0]);
+    }
+
+    for (let p = 0; p < 4; p++) {
+      if (p === localPlayerIndex) continue;
+      const aiPass = this.pickAIPassCards(this.state.players[p].hand);
+      passes[p] = aiPass;
+      for (const c of aiPass) {
+        const idx = this.state.players[p].hand.findIndex((h) => h.id === c.id);
+        if (idx >= 0) this.state.players[p].hand.splice(idx, 1);
+      }
+    }
+
+    for (let from = 0; from < 4; from++) {
+      const to = this.passTarget(from, hearts.passDirection);
+      this.state.players[to].hand.push(...passes[from]);
+    }
+
+    hearts.waitingForPass = false;
+    hearts.humanPassIndices = [];
+    this.state.waitingForRoundStart = false;
+    this.state.variantState = { ...this.state.variantState, hearts };
+
+    const twoClubs = this.state.players.findIndex((pl) =>
+      pl.hand.some((c) => c.rank === '2' && c.suit === 'clubs')
+    );
+    const leader = twoClubs >= 0 ? twoClubs : 0;
+    this.state.currentPlayerIndex = leader;
+    this.state.trickLeader = leader;
+    return true;
+  }
+
+  private passTarget(from: number, dir: PassDirection): number {
+    if (dir === 'left') return (from + 1) % 4;
+    if (dir === 'right') return (from + 3) % 4;
+    return (from + 2) % 4;
+  }
+
+  private pickAIPassCards(hand: Card[]): Card[] {
+    const sorted = [...hand].sort((a, b) => {
+      const score = (c: Card) =>
+        (c.suit === 'hearts' ? 10 : 0) + (c.rank === 'Q' && c.suit === 'spades' ? 20 : 0);
+      return score(b) - score(a);
+    });
+    return sorted.slice(0, 3);
   }
 
   private createRoundState(
@@ -53,6 +136,7 @@ export class HeartsGame extends BaseGameAdapter {
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const passDirection = passDirectionForRound(round);
 
     const players: Player[] = playerNames.slice(0, 4).map((name, index) => {
       const isTeam1 = index === 0 || index === 2;
@@ -82,22 +166,15 @@ export class HeartsGame extends BaseGameAdapter {
       }
     }
 
-    this.autoPass(players);
-
-    const twoClubs = players.findIndex((p) =>
-      p.hand.some((c) => c.rank === '2' && c.suit === 'clubs')
-    );
-    const leader = twoClubs >= 0 ? twoClubs : 0;
-
     return {
       variant: 'hearts',
       players,
-      currentPlayerIndex: leader,
+      currentPlayerIndex: 0,
       dealerIndex: 0,
       trumpSuit: null,
       trumpCard: null,
       currentTrick: [],
-      trickLeader: leader,
+      trickLeader: 0,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
       completedPentes: [],
@@ -109,7 +186,7 @@ export class HeartsGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      waitingForRoundStart: false,
+      waitingForRoundStart: true,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
       playedCards: [],
@@ -118,20 +195,28 @@ export class HeartsGame extends BaseGameAdapter {
       aiDifficulty: (options?.aiDifficulty as AIDifficulty) || 'medium',
       partnerSignals: [],
       variantState: {
-        hearts: { heartsBroken: false, playerScores }
+        hearts: {
+          heartsBroken: false,
+          playerScores,
+          roundPoints: [0, 0, 0, 0],
+          waitingForPass: true,
+          passDirection,
+          humanPassIndices: []
+        }
       }
     };
   }
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
     const s = this.state!;
+    const hearts = getHeartsState(s);
+    if (hearts.waitingForPass || s.waitingForRoundStart) return false;
     const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
     if (playerIndex !== s.currentPlayerIndex) return false;
     if (s.waitingForTrickEnd || s.isPaused) return false;
 
     const card = player.hand[cardIndex];
-    const hearts = getHeartsState(s);
 
     if (s.isFirstTrick && s.currentTrick.length === 0) {
       const must2c = player.hand.some((c) => c.rank === '2' && c.suit === 'clubs');
@@ -181,7 +266,7 @@ export class HeartsGame extends BaseGameAdapter {
     const winner = s.nextTrickLeader ?? s.lastTrickWinner ?? 0;
     const points = trickPoints(s.currentTrick);
     const hearts = getHeartsState(s);
-    hearts.playerScores[winner] += points;
+    hearts.roundPoints[winner] += points;
     s.variantState = { ...s.variantState, hearts };
 
     s.waitingForTrickEnd = false;
@@ -197,10 +282,26 @@ export class HeartsGame extends BaseGameAdapter {
 
   private endRound(s: GameState): void {
     const hearts = getHeartsState(s);
+    const roundTotal = hearts.roundPoints.reduce((a, b) => a + b, 0);
+    const shooter = hearts.roundPoints.findIndex((p) => p === 26);
+
+    if (shooter >= 0 && roundTotal === 26) {
+      for (let i = 0; i < 4; i++) {
+        if (i === shooter) continue;
+        hearts.playerScores[i] += 26;
+      }
+    } else {
+      for (let i = 0; i < 4; i++) {
+        hearts.playerScores[i] += hearts.roundPoints[i];
+      }
+    }
+
+    s.variantState = { ...s.variantState, hearts };
     const max = Math.max(...hearts.playerScores);
     if (max >= TARGET_SCORE) {
       s.isGameOver = true;
-      s.winner = hearts.playerScores.indexOf(max) < 2 ? 1 : 2;
+      const loser = hearts.playerScores.indexOf(max);
+      s.winner = loser < 2 ? 2 : 1;
       s.waitingForGameStart = true;
       return;
     }

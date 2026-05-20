@@ -1,31 +1,31 @@
 # SUECÂO — Índice de prompts de implementação
 
-Prompts executáveis por etapa (copy-paste no Cursor Agent).
+## Play Store ready-made (ordem recomendada)
 
-## Produção (ordem obrigatória)
+| Etapa | Ficheiro | Foco |
+|-------|----------|------|
+| P0 | [P0-assets.md](P0-assets.md) | Packs cartas + UX |
+| P1 | [P1-spades-hearts.md](P1-spades-hearts.md) | Regras Spades/Hearts |
+| P2 | [P2-king-simplified.md](P2-king-simplified.md) | King 6 neg + 4 pos |
+| P3 | [P3-mobile-chrome.md](P3-mobile-chrome.md) | Safe area, rules, touch |
+| P4 | [P4-capacitor.md](P4-capacitor.md) | Android AAB |
+| P5 | [P5-backend-mp.md](P5-backend-mp.md) | Auth + WS |
+| P6 | [P6-monetization.md](P6-monetization.md) | Ads + IAP |
+| P7 | [P7-play-compliance.md](P7-play-compliance.md) | Legal + listing |
+| P8 | [P8-qa-release.md](P8-qa-release.md) | Maestro + CI |
 
-| Etapa | Ficheiro | Build |
-|-------|----------|-------|
-| E1 | [E1-session-unified.md](E1-session-unified.md) | B |
-| E2 | [E2-spades.md](E2-spades.md) | C |
-| E3 | [E3-hearts.md](E3-hearts.md) | D |
-| E4 | [E4-king-mvp.md](E4-king-mvp.md) | E |
-| E5 | [E5-selector-release.md](E5-selector-release.md) | F |
+**Restrição global:** não editar `GameBoard.css` (mesa).
 
-**Restrição global:** não editar `frontend/src/components/GameBoard.css` (mesa).
+**Plano mestre:** ver plano Play Store ready-made (não editar o ficheiro `.plan.md` no Cursor).
 
-**Git:** Ctrl+Shift+G → Commit → Sync Changes.
+## Produção web (concluído)
 
-## Backlog (não executar neste ciclo)
+| Etapa | Ficheiro |
+|-------|----------|
+| E1–E5 | [E1-session-unified.md](E1-session-unified.md) … [E5-selector-release.md](E5-selector-release.md) |
 
-### Prompt 5 — IA com personalidades
+## Backlog
 
-Personas (Buga, etc.), heurísticas por jogo, separadas do motor.
-
-### Prompt 6 — Documentação e testes integração
-
-E2E, multiplayer por variante, CI `sueca-ai`.
-
-## Prompts históricos (referência)
-
-Os textos originais de 6 prompts genéricos foram substituídos por E1–E5 acima. Ver [PLAN_GLOBAL.md](../PLAN_GLOBAL.md) para visão do produto.
+- IA externa / personas (Prompt 5 histórico)
+- E2E multiplayer todas as variantes
+- iOS App Store

@@ -3,8 +3,14 @@ import { GameState, Player, Suit, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 
-const HAND_TYPES = ['negative', 'positive', 'negative', 'positive', 'negative', 'positive', 'negative', 'positive'] as const;
-const TOTAL_HANDS = HAND_TYPES.length;
+/** 6 negative hands, then 4 positive (simplified King — see docs/rules/king-simplified.md) */
+const NEGATIVE_HANDS = 6;
+const POSITIVE_HANDS = 4;
+const TOTAL_HANDS = NEGATIVE_HANDS + POSITIVE_HANDS;
+
+function handTypeForIndex(handIndex: number): 'negative' | 'positive' {
+  return handIndex < NEGATIVE_HANDS ? 'negative' : 'positive';
+}
 
 interface KingVariantState {
   handIndex: number;
@@ -47,7 +53,7 @@ export class KingGame extends BaseGameAdapter {
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
-    const handType = HAND_TYPES[handIndex % HAND_TYPES.length];
+    const handType = handTypeForIndex(handIndex);
     const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
     const trumpSuit = suits[handIndex % 4];
 
@@ -101,7 +107,7 @@ export class KingGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      waitingForRoundStart: false,
+      waitingForRoundStart: true,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
       playedCards: [],
@@ -114,7 +120,10 @@ export class KingGame extends BaseGameAdapter {
           handIndex,
           handType,
           trumpSuit,
-          playerScores
+          playerScores,
+          totalHands: TOTAL_HANDS,
+          negativeHands: NEGATIVE_HANDS,
+          positiveHands: POSITIVE_HANDS
         }
       }
     };
@@ -122,6 +131,7 @@ export class KingGame extends BaseGameAdapter {
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
     const s = this.state!;
+    if (s.waitingForRoundStart) return false;
     const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
     if (playerIndex !== s.currentPlayerIndex) return false;
@@ -204,6 +214,8 @@ export class KingGame extends BaseGameAdapter {
   }
 
   startRound(_state: GameState): void {
-    if (this.state) this.state.waitingForRoundStart = false;
+    if (this.state) {
+      this.state.waitingForRoundStart = false;
+    }
   }
 }

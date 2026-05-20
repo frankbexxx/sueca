@@ -34,8 +34,17 @@ vercel --prod
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
-- [ ] Selector mostra Sueca, Spades, Hearts e King
+- [x] Selector mostra Sueca, Spades, Hearts e King
 - [ ] Smoke: 1 ronda por variante (sem alterar layout da mesa)
+
+## Android (Capacitor)
+
+- [ ] `npm run cap:sync` após `npm run build`
+- [ ] AAB assinado (`docs/ANDROID_SIGNING.md`)
+- [ ] Legal: `/legal/privacy.html` e `/legal/terms.html` no deploy
+- [ ] `REACT_APP_USE_LOCAL_AI_ONLY=true` no build mobile
+- [ ] Maestro smoke (`.maestro/smoke.yaml`) no emulador
+- [ ] Backend v1: `REACT_APP_API_URL` + `wss://` se multiplayer ativo
 
 ## Serviços opcionais
 

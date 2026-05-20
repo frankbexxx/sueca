@@ -25,3 +25,9 @@ yarn-error.log*
 
 .vercel
 .env*.local
+
+# Capacitor
+/android
+/ios
+keystore.properties
+*.keystore

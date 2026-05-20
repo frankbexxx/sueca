@@ -1,3 +1,5 @@
+import { USE_LOCAL_AI_ONLY } from '../config/features';
+
 /**
  * Default AI service URL
  * Can be overridden via REACT_APP_AI_SERVICE_URL environment variable
@@ -25,6 +27,9 @@ export interface AiPlayPayload {
  * Throws error if service is unavailable or response is invalid
  */
 export async function requestAiPlay(payload: AiPlayPayload): Promise<string> {
+  if (USE_LOCAL_AI_ONLY) {
+    throw new Error('External AI disabled (local-only mode)');
+  }
   const res = await fetch(`${DEFAULT_AI_URL}/play`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

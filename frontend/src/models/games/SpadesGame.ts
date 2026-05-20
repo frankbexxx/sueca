@@ -5,17 +5,32 @@ import { trickWinnerIndex } from './trickUtils';
 
 const WINNING_SCORE = 500;
 const DEFAULT_BID = 4;
+const BAG_PENALTY_EVERY = 10;
+const BAG_PENALTY_POINTS = 100;
 
 interface SpadesVariantState {
   team1Bid: number;
   team2Bid: number;
   team1Tricks: number;
   team2Tricks: number;
+  team1Bags: number;
+  team2Bags: number;
+  waitingForBids: boolean;
 }
 
 function getSpadesState(state: GameState): SpadesVariantState {
   const vs = state.variantState?.spades as SpadesVariantState | undefined;
-  return vs ?? { team1Bid: DEFAULT_BID, team2Bid: DEFAULT_BID, team1Tricks: 0, team2Tricks: 0 };
+  return (
+    vs ?? {
+      team1Bid: DEFAULT_BID,
+      team2Bid: DEFAULT_BID,
+      team1Tricks: 0,
+      team2Tricks: 0,
+      team1Bags: 0,
+      team2Bags: 0,
+      waitingForBids: true
+    }
+  );
 }
 
 export class SpadesGame extends BaseGameAdapter {
@@ -23,7 +38,9 @@ export class SpadesGame extends BaseGameAdapter {
   private state?: GameState;
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    this.state = this.createRoundState(playerNames, options, 1, { team1: 0, team2: 0 });
+    const team1Bid = (options?.team1Bid as number) ?? DEFAULT_BID;
+    const team2Bid = (options?.team2Bid as number) ?? DEFAULT_BID;
+    this.state = this.createRoundState(playerNames, options, 1, { team1: 0, team2: 0 }, team1Bid, team2Bid, true);
     return this.cloneState(this.state);
   }
 
@@ -32,11 +49,24 @@ export class SpadesGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
+  applyBids(team1Bid: number, team2Bid: number): void {
+    if (!this.state) return;
+    const spades = getSpadesState(this.state);
+    spades.team1Bid = Math.max(0, Math.min(13, team1Bid));
+    spades.team2Bid = Math.max(0, Math.min(13, team2Bid));
+    spades.waitingForBids = false;
+    this.state.waitingForRoundStart = false;
+    this.state.variantState = { ...this.state.variantState, spades };
+  }
+
   private createRoundState(
     playerNames: string[],
     options: Record<string, unknown> | undefined,
     round: number,
-    gameScore: { team1: number; team2: number }
+    gameScore: { team1: number; team2: number },
+    team1Bid: number,
+    team2Bid: number,
+    waitingForBids: boolean
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
@@ -89,7 +119,7 @@ export class SpadesGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      waitingForRoundStart: false,
+      waitingForRoundStart: waitingForBids,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
       playedCards: [],
@@ -99,10 +129,13 @@ export class SpadesGame extends BaseGameAdapter {
       partnerSignals: [],
       variantState: {
         spades: {
-          team1Bid: DEFAULT_BID,
-          team2Bid: DEFAULT_BID,
+          team1Bid,
+          team2Bid,
           team1Tricks: 0,
-          team2Tricks: 0
+          team2Tricks: 0,
+          team1Bags: 0,
+          team2Bags: 0,
+          waitingForBids
         }
       }
     };
@@ -110,6 +143,8 @@ export class SpadesGame extends BaseGameAdapter {
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
     const s = this.state!;
+    const spades = getSpadesState(s);
+    if (spades.waitingForBids || s.waitingForRoundStart) return false;
     const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
     if (playerIndex !== s.currentPlayerIndex) return false;
@@ -166,21 +201,33 @@ export class SpadesGame extends BaseGameAdapter {
     }
   }
 
+  private scoreTeam(tricks: number, bid: number, bags: number): { round: number; newBags: number } {
+    let round = 0;
+    let newBags = bags;
+    if (tricks >= bid) {
+      round = bid * 10 + (tricks - bid);
+      newBags += tricks - bid;
+    } else {
+      round = -bid * 10;
+    }
+    while (newBags >= BAG_PENALTY_EVERY) {
+      round -= BAG_PENALTY_POINTS;
+      newBags -= BAG_PENALTY_EVERY;
+    }
+    return { round, newBags };
+  }
+
   private endRound(s: GameState): void {
     const spades = getSpadesState(s);
-    let team1Round = 0;
-    let team2Round = 0;
+    const t1 = this.scoreTeam(spades.team1Tricks, spades.team1Bid, spades.team1Bags);
+    const t2 = this.scoreTeam(spades.team2Tricks, spades.team2Bid, spades.team2Bags);
+    spades.team1Bags = t1.newBags;
+    spades.team2Bags = t2.newBags;
+    s.variantState = { ...s.variantState, spades };
 
-    if (spades.team1Tricks >= spades.team1Bid) {
-      team1Round = 10 + spades.team1Tricks;
-    }
-    if (spades.team2Tricks >= spades.team2Bid) {
-      team2Round = 10 + spades.team2Tricks;
-    }
-
-    s.scores = { team1: team1Round, team2: team2Round };
-    s.gameScore.team1 += team1Round;
-    s.gameScore.team2 += team2Round;
+    s.scores = { team1: t1.round, team2: t2.round };
+    s.gameScore.team1 += t1.round;
+    s.gameScore.team2 += t2.round;
 
     if (s.gameScore.team1 >= WINNING_SCORE) {
       s.isGameOver = true;
@@ -206,11 +253,15 @@ export class SpadesGame extends BaseGameAdapter {
 
     const names = s.players.map((p) => p.name);
     const gameScore = { ...s.gameScore };
+    const prev = getSpadesState(s);
     this.state = this.createRoundState(
       names,
       { aiDifficulty: s.aiDifficulty },
       s.round + 1,
-      gameScore
+      gameScore,
+      prev.team1Bid,
+      prev.team2Bid,
+      true
     );
   }
 

@@ -1,3 +1,5 @@
+import { authGuest, wsUrlWithToken } from './authClient';
+
 export type PlayerType = 'human' | 'ai' | 'remote';
 export type PlayerConnectionStatus = 'connected' | 'disconnected' | 'waiting';
 
@@ -29,7 +31,7 @@ export interface MultiplayerClientCallbacks {
   onPlayerAction?: (payload: { playerIndex: number; card: string; action: string }) => void;
 }
 
-const DEFAULT_MULTIPLAYER_URL = process.env.REACT_APP_MULTIPLAYER_URL || 'ws://127.0.0.1:8000/ws';
+const DEFAULT_MULTIPLAYER_URL = process.env.REACT_APP_MULTIPLAYER_URL || 'ws://127.0.0.1:8787/ws';
 
 export class MultiplayerClient {
   private socket: WebSocket | null = null;
@@ -43,6 +45,18 @@ export class MultiplayerClient {
     this.playerName = playerName;
     this.playerIndex = playerIndex;
     this.callbacks = callbacks;
+  }
+
+  /** Guest JWT auth then WebSocket (backend v1). */
+  static async connectAuthenticated(
+    playerName: string,
+    playerIndex: number,
+    callbacks: MultiplayerClientCallbacks = {}
+  ): Promise<MultiplayerClient> {
+    const { token } = await authGuest(playerName);
+    const client = new MultiplayerClient(playerName, playerIndex, callbacks);
+    client.connect(wsUrlWithToken(token));
+    return client;
   }
 
   connect(url: string = DEFAULT_MULTIPLAYER_URL): void {

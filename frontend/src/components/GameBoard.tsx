@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { GameState, Card, DealingMethod, AIDifficulty, Suit, GameVariant } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
-import { MultiplayerClient } from '../services/multiplayerClient';
+import { MultiplayerClient, MultiplayerClientCallbacks } from '../services/multiplayerClient';
 import { RoundEndModal } from './RoundEndModal';
 import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
@@ -27,6 +27,12 @@ import { TrickArea } from './TrickArea';
 import { PlayerHand } from './PlayerHand';
 import { GameScores } from './GameScores';
 import { GameActions } from './GameActions';
+import { SpadesBidModal } from './SpadesBidModal';
+import { HeartsPassModal } from './HeartsPassModal';
+import { SpadesGame } from '../models/games/SpadesGame';
+import { HeartsGame } from '../models/games/HeartsGame';
+import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
+import { MULTIPLAYER_ENABLED } from '../config/features';
 
 /**
  * Main game board component - renders the entire Sueca game interface
@@ -148,8 +154,8 @@ export const GameBoard: React.FC = () => {
       setGameStarted(true);
       setSelectedCard(null);
 
-      if (config.multiplayerEnabled) {
-        const client = new MultiplayerClient(config.playerNames[0], 0, {
+      if (config.multiplayerEnabled && MULTIPLAYER_ENABLED) {
+        const mpCallbacks: MultiplayerClientCallbacks = {
           onOpen: () => {
             setMultiplayerStatus('connected');
             setMultiplayerError(null);
@@ -157,7 +163,7 @@ export const GameBoard: React.FC = () => {
           onClose: () => {
             setMultiplayerStatus('disconnected');
           },
-          onError: (message) => {
+          onError: (message: string) => {
             setMultiplayerError(message);
             setMultiplayerStatus('disconnected');
           },
@@ -196,15 +202,26 @@ export const GameBoard: React.FC = () => {
             gameAdapter.playCard(currentState, playerIndex, cardIndex);
             setGameState(gameAdapter.getCurrentState());
           }
-        });
-        client.connect();
-        if (config.multiplayerJoinMode && config.multiplayerSessionId) {
-          client.joinSession(config.multiplayerSessionId);
-        } else {
-          client.createSession();
-        }
-        client.syncState(initialState);
-        setMultiplayerClient(client);
+        };
+        void (async () => {
+          try {
+            const client = await MultiplayerClient.connectAuthenticated(
+              config.playerNames[0],
+              0,
+              mpCallbacks
+            );
+            if (config.multiplayerJoinMode && config.multiplayerSessionId) {
+              client.joinSession(config.multiplayerSessionId);
+            } else {
+              client.createSession();
+            }
+            client.syncState(initialState);
+            setMultiplayerClient(client);
+          } catch (e) {
+            setMultiplayerError('Multiplayer auth failed');
+            setMultiplayerStatus('disconnected');
+          }
+        })();
       } else {
         if (multiplayerClient) {
           multiplayerClient.close();
@@ -345,6 +362,15 @@ export const GameBoard: React.FC = () => {
     // Only allow if game exists
     if (!gameAdapter) return;
 
+    if (gameVariant === 'hearts') {
+      const hearts = gameState.variantState?.hearts as { waitingForPass?: boolean } | undefined;
+      if (hearts?.waitingForPass) {
+        (gameAdapter as HeartsGame).togglePassCard(cardIndex, localPlayerIndex);
+        setGameState(gameAdapter.getCurrentState());
+        return;
+      }
+    }
+
     // Determine whether the current turn belongs to the local human player
     const isLocalTurn = isMultiplayer
       ? gameState.currentPlayerIndex === multiplayerPlayerIndex
@@ -431,7 +457,8 @@ export const GameBoard: React.FC = () => {
    */
   useEffect(() => {
     if (gameAdapter && gameState.isGameOver) {
-      // Show start menu after a short delay to allow game over modal to be seen
+      recordGameFinished();
+      void showInterstitialIfDue();
       const timer = setTimeout(() => {
         setShowStartMenu(true);
         setGameStarted(false);
@@ -816,20 +843,87 @@ export const GameBoard: React.FC = () => {
         />
       )}
 
-      {/* Game start modal - shown only for first game, displays trump card */}
-      {gameState.waitingForRoundStart && !gameState.isGameOver && gameState.round === 1 && (
-        <GameStartModal
-          gameState={gameState}
-          getCardImage={getCardImage}
-          getSuitEmoji={getSuitEmoji}
-          onStart={() => {
-            if (gameAdapter) {
-              gameAdapter.startRound(gameAdapter.getCurrentState());
-              setGameState(gameAdapter.getCurrentState());
+      {gameVariant === 'spades' &&
+        (gameState.variantState?.spades as { waitingForBids?: boolean } | undefined)?.waitingForBids && (
+          <SpadesBidModal
+            onConfirm={(team1Bid, team2Bid) => {
+              if (gameAdapter) {
+                (gameAdapter as SpadesGame).applyBids(team1Bid, team2Bid);
+                setGameState(gameAdapter.getCurrentState());
+              }
+            }}
+          />
+        )}
+
+      {gameVariant === 'hearts' &&
+        (gameState.variantState?.hearts as { waitingForPass?: boolean; passDirection?: string; humanPassIndices?: number[] } | undefined)
+          ?.waitingForPass && (
+          <HeartsPassModal
+            gameState={gameState}
+            localPlayerIndex={localPlayerIndex}
+            passDirection={
+              (gameState.variantState?.hearts as { passDirection?: string }).passDirection || 'left'
             }
-          }}
-        />
+            selectedIndices={
+              (gameState.variantState?.hearts as { humanPassIndices?: number[] }).humanPassIndices || []
+            }
+            onToggleCard={(index) => {
+              if (gameAdapter) {
+                (gameAdapter as HeartsGame).togglePassCard(index, localPlayerIndex);
+                setGameState(gameAdapter.getCurrentState());
+              }
+            }}
+            onConfirm={() => {
+              if (gameAdapter) {
+                (gameAdapter as HeartsGame).confirmPass(localPlayerIndex);
+                setGameState(gameAdapter.getCurrentState());
+              }
+            }}
+          />
+        )}
+
+      {gameVariant === 'king' && gameState.waitingForRoundStart && !gameState.isGameOver && (
+        <div className="variant-modal-overlay">
+          <div className="variant-modal">
+            <h2>
+              King — Hand {gameState.round}/10 (
+              {(gameState.variantState?.king as { handType?: string })?.handType || 'negative'})
+            </h2>
+            <p className="variant-modal-hint">
+              Trump: {gameState.trumpSuit} — see docs/rules/king-simplified.md
+            </p>
+            <button
+              type="button"
+              className="variant-modal-primary"
+              onClick={() => {
+                if (gameAdapter) {
+                  gameAdapter.startRound(gameAdapter.getCurrentState());
+                  setGameState(gameAdapter.getCurrentState());
+                }
+              }}
+            >
+              Start hand
+            </button>
+          </div>
+        </div>
       )}
+
+      {gameVariant === 'sueca' &&
+        gameState.waitingForRoundStart &&
+        !gameState.isGameOver &&
+        gameState.round === 1 && (
+          <GameStartModal
+            gameState={gameState}
+            getCardImage={getCardImage}
+            getSuitEmoji={getSuitEmoji}
+            onStart={() => {
+              if (gameAdapter) {
+                gameAdapter.startRound(gameAdapter.getCurrentState());
+                setGameState(gameAdapter.getCurrentState());
+              }
+            }}
+          />
+        )}
 
 
       {/* Game over modal - displays final scores and new game options */}
