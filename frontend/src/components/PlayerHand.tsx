@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameState, Card, GameVariant } from '../types/game';
-import { CARD_SPACING, MAX_CARDS_IN_HAND, SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
+import { MAX_CARDS_IN_HAND, SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
+import { useMobileLayout } from '../hooks/useMobileLayout';
 
 interface PlayerHandProps {
   gameState: GameState;
@@ -26,15 +27,15 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   getCardImage
 }) => {
   const player = gameState.players[localPlayerIndex];
+  const { isNarrow, cardSpacing, handMinWidth } = useMobileLayout();
   if (!player) return null;
 
   return (
-    <div className="player-hand-bar">
-      <div className="hand-row">
+    <div className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}`}>
+      <div className="hand-row" style={{ minWidth: handMinWidth }}>
         {player.hand.map((card: Card, cardIndex: number) => {
-          // Card spacing calculation - centers hand with proper overlap
-          const CENTER_OFFSET = ((MAX_CARDS_IN_HAND - 1) * CARD_SPACING) / 2;
-          const cardPosition = cardIndex * CARD_SPACING;
+          const CENTER_OFFSET = ((MAX_CARDS_IN_HAND - 1) * cardSpacing) / 2;
+          const cardPosition = cardIndex * cardSpacing;
           const translateX = cardPosition - CENTER_OFFSET;
           const fixedTransform = `translateX(${translateX}px)`;
 
@@ -53,6 +54,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                 zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1
               }}
               onClick={() => onCardClick(cardIndex)}
+              role="button"
+              tabIndex={isPlayable ? 0 : -1}
+              aria-disabled={!isPlayable}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}

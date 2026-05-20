@@ -4,10 +4,10 @@ Checklist rápido antes e depois de cada deploy de produção.
 
 ## Configuração Vercel
 
-- [ ] **Root Directory** = `frontend`
-- [ ] Deploy CLI a partir da **raiz do repo** (`~/projects/sueca`), não de `frontend/frontend`
-- [ ] Branch de produção: `v2-main`
-- [ ] URL de produção: `https://frontend-mu-five-18.vercel.app`
+- [x] **Root Directory** = `frontend`
+- [x] Deploy CLI a partir da **raiz do repo** (`~/projects/sueca`), não de `frontend/frontend`
+- [x] Branch de produção: `v2-main`
+- [x] URL de produção: `https://frontend-mu-five-18.vercel.app`
 
 ## Comandos locais
 
@@ -28,13 +28,13 @@ vercel --prod
 
 ## Smoke test (5 minutos)
 
-- [ ] Landing page carrega
-- [ ] Imagens das cartas aparecem (sem ícones partidos)
+- [x] Landing page carrega (HTTP 200 verificado)
+- [ ] Imagens das cartas aparecem (sem ícones partidos) — confirmar no browser
 - [ ] Iniciar jogo Sueca e jogar pelo menos 1 vaza
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
-- [ ] Testar em viewport mobile (360×800 ou dispositivo real)
-- [ ] Variantes experimentais (Spades/Hearts/King) **não** aparecem no selector por defeito
+- [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
+- [x] Variantes experimentais (Spades/Hearts/King) **não** aparecem no selector por defeito
 
 ## Serviços opcionais
 

@@ -1,0 +1,14 @@
+:root {
+  --sueca-color-primary: #6c5ce7;
+  --sueca-color-primary-dark: #5a4fd6;
+  --sueca-color-us: #3484ea;
+  --sueca-color-them: #e25c5c;
+  --sueca-color-surface: rgba(255, 255, 255, 0.08);
+  --sueca-color-text: #e9eef7;
+  --sueca-radius-md: 10px;
+  --sueca-radius-lg: 12px;
+  --sueca-space-sm: 6px;
+  --sueca-space-md: 12px;
+  --sueca-space-lg: 16px;
+  --sueca-touch-min: 48px;
+}

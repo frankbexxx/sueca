@@ -3,6 +3,7 @@ import './GameMenu.css';
 import { AIDifficulty, DealingMethod } from '../types/game';
 import { CreditsModal } from './CreditsModal';
 import { useLanguage } from '../i18n/useLanguage';
+import { FEEDBACK_ISSUE_URL } from '../constants/feedback';
 
 /**
  * Props interface for GameMenu component
@@ -328,6 +329,29 @@ export const GameMenu: React.FC<GameMenuProps> = ({
               >
                 {t.gameMenu.thanks}
               </button>
+              <a
+                href={FEEDBACK_ISSUE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="feedback-link"
+                style={{
+                  display: 'block',
+                  marginTop: '8px',
+                  padding: '10px 16px',
+                  minHeight: '48px',
+                  lineHeight: '28px',
+                  textAlign: 'center',
+                  fontSize: '0.95em',
+                  fontWeight: 600,
+                  color: '#e9eef7',
+                  background: 'rgba(108, 92, 231, 0.35)',
+                  border: '1px solid rgba(108, 92, 231, 0.5)',
+                  borderRadius: 'var(--sueca-radius-md, 10px)',
+                  textDecoration: 'none',
+                }}
+              >
+                Feedback / reportar bug
+              </a>
             </div>
             
             {/* Game control buttons moved to settings panel */}
