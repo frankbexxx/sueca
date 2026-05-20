@@ -75,17 +75,18 @@ This creates an optimized production build in the `build` folder.
 **Produção (V2)**  
 - Branch: `v2-main`  
 - URL: `https://frontend-mu-five-18.vercel.app`  
-- Comando: dentro de `frontend`, usar `vercel --prod`
+- Vercel **Root Directory**: `frontend`  
+- Deploy: a partir da **raiz do repo** (`vercel --prod`), não de `frontend/frontend`
 
 ### 🌐 Opção 1: Deploy Online (RECOMENDADO)
 
 **Vercel (Mais Fácil):**
 ```bash
 npm install -g vercel
-cd frontend
-vercel
-# Seguir instruções e obter URL
-# Partilhar URL com amigos!
+vercel login
+cd ~/projects/sueca   # raiz do repo; Root Directory na Vercel = frontend
+vercel              # preview
+vercel --prod       # produção
 ```
 
 **Netlify (Alternativa):**
@@ -104,7 +105,7 @@ npm run build
 # Amigo abre 'index.html' no navegador
 ```
 
-**📖 Guia Completo:** Ver `docs/DEPLOY_GUIDE.md` para instruções detalhadas.
+**📖 Guia Completo:** Ver [docs/DEPLOY.md](docs/DEPLOY.md) e [docs/RELEASE_CHECK.md](docs/RELEASE_CHECK.md).
 
 **💡 Dica:** Toda documentação está organizada na pasta `docs/`. Ver `docs/INDEX.md` para índice completo.
 
@@ -112,8 +113,8 @@ npm run build
 - `v1.0` (tag) — versão estável congelada (V1)
 - `v1-maintenance` — hotfixes para V1, se necessário
 - `v2-main` — desenvolvimento ativo do SUECA 2.0
-- Deploy preview: `vercel` a partir de `frontend`
-- Deploy produção: `vercel --prod` (usa `frontend-mu-five-18.vercel.app`)
+- Deploy preview: `vercel` a partir da raiz do repo
+- Deploy produção: `vercel --prod` (alias `frontend-mu-five-18.vercel.app`)
 
 ## 📁 Project Structure
 
@@ -122,8 +123,8 @@ SUECA/
 ├── README.md              # Este ficheiro (documentação principal)
 ├── docs/                  # Toda documentação detalhada
 │   ├── PROJECT_STATUS.md  # Estado atual do projeto
-│   ├── DEVELOPMENT_PLAN.md # Plano de desenvolvimento
-│   ├── NEXT_STEPS.md      # Próximos passos sugeridos
+│   ├── ROADMAP.md         # Roadmap e milestones
+│   ├── DEPLOY.md          # Guia de deploy
 │   └── ...                # Outros guias
 ├── frontend/              # Código fonte React/TypeScript
 │   ├── src/
@@ -176,12 +177,11 @@ Toda a documentação detalhada está organizada na pasta `docs/`:
 
 ### 📊 Estado e Planeamento
 - **`docs/PROJECT_STATUS.md`** - Estado atual e histórico completo
-- **`docs/NEXT_STEPS.md`** - Próximos passos sugeridos
-- **`docs/DEVELOPMENT_PLAN.md`** - Plano técnico detalhado
+- **`docs/ROADMAP.md`** - Roadmap e próximos passos
 
 ### 🌐 Deploy
-- **`docs/DEPLOY_QUICK.md`** - Deploy rápido (5 minutos)
-- **`docs/DEPLOY_GUIDE.md`** - Guia completo de deploy
+- **`docs/DEPLOY.md`** - Guia completo de deploy
+- **`docs/RELEASE_CHECK.md`** - Checklist pós-deploy
 
 **Ver `docs/INDEX.md` para navegação completa.**
 

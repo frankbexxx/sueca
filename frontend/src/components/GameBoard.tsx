@@ -12,6 +12,7 @@ import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '../utils/cardMappings';
+import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
   GAME_OVER_DELAY_MS,
@@ -433,13 +434,7 @@ export const GameBoard: React.FC = () => {
   const getCardImage = (card: Card): string => {
     const suit = SUIT_TO_NAME[card.suit];
     const rank = RANK_TO_IMAGE_NAME[card.rank];
-    
-    // Use relative path that works in both dev and production
-    // In production, PUBLIC_URL is empty string, so we use relative path
-    const publicUrl = process.env.PUBLIC_URL || '';
-    // Ensure we don't have double slashes
-    const basePath = publicUrl && !publicUrl.endsWith('/') ? publicUrl : (publicUrl || '');
-    return `${basePath}/assets/cards2/${rank}_of_${suit}.png`;
+    return getCardImagePath(rank, suit, process.env.PUBLIC_URL || '');
   };
 
   /**

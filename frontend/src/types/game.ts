@@ -76,7 +76,7 @@ export const CARD_POINTS: Record<Rank, number> = {
   '4': 0,
   '5': 0,
   '6': 0,
-  '7': 0,
+  '7': 10,
   '8': 0,
   '9': 0,
   '10': 0,

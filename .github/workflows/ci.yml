@@ -44,7 +44,7 @@ jobs:
       - name: Test
         env:
           CI: true
-        run: npm test -- --watchAll=false --passWithNoTests
+        run: npm test -- --watchAll=false
 
       - name: Build
         env:

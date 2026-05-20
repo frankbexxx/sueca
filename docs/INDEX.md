@@ -13,6 +13,7 @@
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
 | **[DEPLOY.md](DEPLOY.md)** | Guia completo de deploy | Deploy rápido e detalhado (Vercel, Netlify) |
+| **[RELEASE_CHECK.md](RELEASE_CHECK.md)** | Checklist pós-deploy | Validar produção antes/depois de `vercel --prod` |
 | **[ANDROID_PUBLICATION_REQUIREMENTS.md](ANDROID_PUBLICATION_REQUIREMENTS.md)** | Requisitos para publicação no Google Play | Publicar na Play Store |
 | **[GOOGLE_PLAY_STORE_LISTING.md](GOOGLE_PLAY_STORE_LISTING.md)** | Descrição e classificação para Play Store | Criar listagem na Play Store |
 | **[ADDING_FEEDBACK_EMAIL.md](ADDING_FEEDBACK_EMAIL.md)** | Como adicionar email de feedback | Adicionar contacto no jogo |
@@ -70,4 +71,4 @@ Documentação histórica e versões antigas estão em `archive/`:
 
 ---
 
-**Última atualização:** Dezembro 2025
+**Última atualização:** Maio 2026

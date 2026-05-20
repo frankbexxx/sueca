@@ -7,7 +7,7 @@ export interface GameMetadata {
   minPlayers: number;
   maxPlayers: number;
   deckType: 'sueca40' | 'standard52';
-  status: 'active' | 'placeholder';
+  status: 'active' | 'placeholder' | 'experimental';
 }
 
 export const GAME_METADATA: Record<GameVariant, GameMetadata> = {
@@ -23,20 +23,20 @@ export const GAME_METADATA: Record<GameVariant, GameMetadata> = {
   spades: {
     variant: 'spades',
     name: 'Spades',
-    description: 'Bid-based trick-taking game where spades are always trump',
+    description: 'Bid-based trick-taking game where spades are always trump (prototype)',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',
-    status: 'active'
+    status: 'experimental'
   },
   hearts: {
     variant: 'hearts',
     name: 'Hearts',
-    description: 'Point-avoidance game where hearts and Queen of Spades lose points',
+    description: 'Point-avoidance game where hearts and Queen of Spades lose points (prototype)',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',
-    status: 'active'
+    status: 'experimental'
   },
   king: {
     variant: 'king',
@@ -57,9 +57,19 @@ export const getGameMetadata = (variant: GameVariant): GameMetadata => {
   return metadata;
 };
 
+const showExperimentalGames = (): boolean =>
+  process.env.REACT_APP_SHOW_EXPERIMENTAL_GAMES === 'true';
+
+/** Games shown in the selector. Only Sueca is active in production by default. */
 export const getAvailableGames = (): GameMetadata[] => {
-  return Object.values(GAME_METADATA).sort((a, b) => {
-    if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
-    return a.name.localeCompare(b.name);
-  });
+  return Object.values(GAME_METADATA)
+    .filter((game) => {
+      if (game.status === 'active') return true;
+      if (game.status === 'experimental') return showExperimentalGames();
+      return false;
+    })
+    .sort((a, b) => {
+      if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
 };

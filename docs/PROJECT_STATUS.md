@@ -14,10 +14,13 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - 🚀 **Beta v0.1.0-beta ATIVA** - Foco em testes, estabilidade e melhorias de UX
 - V1 congelada em **tag `v1.0`** (branch de hotfix: `v1-maintenance`)
 - Desenvolvimento V2 ativo em **branch `v2-main`**
-- Produção: `https://frontend-mu-five-18.vercel.app` (deploy com `vercel --prod` a partir de `frontend`)
-- Preview manual: `vercel` (gera URL temporária)
+- Produção: `https://frontend-mu-five-18.vercel.app` (deploy com `vercel --prod` a partir da **raiz do repo**; Vercel Root Directory = `frontend`)
+- Preview manual: `vercel` na raiz do repo (gera URL temporária)
+- Checklist pós-deploy: `docs/RELEASE_CHECK.md`
 - Problema conhecido: **UI desalinhada em Android** (prioridade alta na Beta)
-- Limpezas: assets consolidados em `frontend/public/assets/cards1`; removidos duplicados (`cards2`, `assets/` raiz), `frontend/build` (artefacto), `archive/` e `vercel.json` na raiz (usar apenas `frontend/vercel.json`)
+- Assets de cartas: `frontend/public/assets/cards2/` (UI Sueca); `cards1/` mantém baralho 52 cartas para variantes futuras
+- SUECÂO multi-jogos: Spades/Hearts/King em protótipo — escondidos do selector por defeito (ver `gameMetadata.ts`)
+- Limpezas: `frontend/build` (artefacto), `vercel.json` na raiz (usar apenas `frontend/vercel.json`)
 - Roadmap da Beta: ver `docs/BETA_ROADMAP.md`
 - UI mobile: cabeçalho e painéis suavizados, Show Grid reduzido (debug), trunfo minimalista (título + mini-carta), botões Play/Next abaixo da mesa.
 

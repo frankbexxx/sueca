@@ -4,9 +4,11 @@ Este guia explica como fazer deploy do jogo Sueca para produção.
 
 **Produção (SUECA 2.0):**
 - Branch: `v2-main`
-- Comando: dentro de `frontend`, `vercel --prod`
+- Vercel **Root Directory**: `frontend`
+- Deploy CLI: a partir da **raiz do repo** (`vercel --prod`)
 - URL de produção: `https://frontend-mu-five-18.vercel.app`
-- Para preview manual: `vercel`
+- Para preview manual: `vercel` (na raiz do repo)
+- Checklist pós-deploy: [RELEASE_CHECK.md](RELEASE_CHECK.md)
 
 ---
 
@@ -21,7 +23,7 @@ npm install -g vercel
 
 #### 2. Fazer Deploy
 ```bash
-cd frontend
+cd ~/projects/sueca   # raiz do repo (Root Directory na Vercel = frontend)
 vercel
 ```
 
@@ -69,15 +71,17 @@ Enviar a URL para o teu amigo - ele pode jogar imediatamente!
 
 3. **Deploy de produção:**
    ```bash
-   cd frontend
+   cd ~/projects/sueca
    vercel --prod
    ```
 
 4. **Deploy de preview (teste):**
    ```bash
-   cd frontend
+   cd ~/projects/sueca
    vercel
    ```
+
+> **Nota:** Se correres `vercel` dentro de `frontend/` **e** o Root Directory na Vercel também for `frontend`, o caminho fica duplicado (`frontend/frontend`) e o deploy falha. Usa um dos dois: CLI na raiz **ou** Root Directory vazio com CLI em `frontend/`.
 
 #### Passo 4: Configurar Variáveis de Ambiente (se necessário)
 
@@ -176,9 +180,15 @@ Se precisares de variáveis de ambiente (ex: URL do serviço Python):
 ### Problema: Imagens não aparecem
 
 **Solução:**
-- Verificar caminhos relativos em `getCardImage()`
-- Garantir que imagens estão em `frontend/public/assets/`
+- Verificar caminhos relativos em `getCardImage()` (usa `frontend/public/assets/cards2/`)
+- Garantir que imagens estão em `frontend/public/assets/cards2/` (52 PNGs, nomes `Rank_of_Suit.png`)
 - Verificar que `PUBLIC_URL` está correto
+
+### Problema: Path `frontend/frontend` does not exist
+
+**Solução:**
+- Na Vercel: Settings → General → Root Directory = `frontend`
+- Correr `vercel --prod` a partir da **raiz** do repositório, não de `frontend/`
 
 ### Problema: Rotas não funcionam
 

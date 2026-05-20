@@ -9,7 +9,7 @@ Este documento consolida o planeamento e próximos passos do projeto.
 ### Contexto
 - V1 congelada em `v1.0` (hotfixes em `v1-maintenance`)
 - V2 em desenvolvimento em `v2-main`
-- Produção: `https://frontend-mu-five-18.vercel.app` (`vercel --prod` a partir de `frontend`)
+- Produção: `https://frontend-mu-five-18.vercel.app` (`vercel --prod` a partir da raiz do repo; Root Directory Vercel = `frontend`)
 - Problema nº1: UI desalinhada em Android/mobile
 
 ### Milestones
@@ -44,7 +44,7 @@ Este documento consolida o planeamento e próximos passos do projeto.
 - Board Kanban com WIP baixo (To Do / In Progress / Done)
 - Branches curtas a partir de `v2-main`
 - Preview com `vercel`
-- Produção apenas via `vercel --prod` (a partir de `frontend`)
+- Produção apenas via `vercel --prod` (a partir da raiz do repo; ver [RELEASE_CHECK.md](RELEASE_CHECK.md))
 
 ### Testes Mínimos por Milestone
 - **M1**: Smoke mobile (play 1 jogo completo), verificar colisões/legibilidade
