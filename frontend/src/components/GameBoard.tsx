@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Game } from '../models/Game';
 import { GameState, Card, DealingMethod, AIDifficulty, Suit, GameVariant } from '../types/game';
 import { GameMenu } from './GameMenu';
 import { StartMenu, GameConfig } from './StartMenu';
@@ -22,7 +21,7 @@ import {
   DEFAULT_AI_DIFFICULTY
 } from '../constants/gameConstants';
 import { GameFactory } from '../models/games/GameFactory';
-import { BaseGameAdapter } from '../models/games/GameAdapter';
+import { GameAdapter } from '../models/games/GameAdapter';
 import { GameInfo } from './GameInfo';
 import { TrickArea } from './TrickArea';
 import { PlayerHand } from './PlayerHand';
@@ -70,13 +69,9 @@ export const GameBoard: React.FC = () => {
     return saved ? saved === 'true' : false;
   });
 
-  /**
-   * Game instance - core game logic and state management
-   * Only created when game starts (not on initial render)
-   */
-  const [game, setGame] = useState<Game | null>(null);
   const [gameVariant, setGameVariant] = useState<GameVariant>('sueca');
-  const [gameAdapter, setGameAdapter] = useState<BaseGameAdapter | null>(null);
+  const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
+
   const [isMultiplayer, setIsMultiplayer] = useState(false);
   const [multiplayerSessionId, setMultiplayerSessionId] = useState<string | null>(null);
   const [multiplayerStatus, setMultiplayerStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
@@ -141,20 +136,13 @@ export const GameBoard: React.FC = () => {
     setMultiplayerStatus(config.multiplayerEnabled ? 'connecting' : 'disconnected');
 
     try {
-      const newGame = new Game(
-        config.playerNames,
-        config.dealingMethod,
-        config.aiDifficulty,
-        config.multiplayerEnabled ? 0 : undefined
-      );
-      setGame(newGame);
-      
-      // Create game adapter based on variant
       const adapter = GameFactory.getAdapter(config.gameVariant);
+      const initialState = adapter.initialize(config.playerNames, {
+        dealingMethod: config.dealingMethod,
+        aiDifficulty: config.aiDifficulty,
+        localPlayerIndex: config.multiplayerEnabled ? 0 : undefined
+      });
       setGameAdapter(adapter);
-      
-      const initialState = newGame.getState();
-      initialState.variant = config.gameVariant;
       setGameState(initialState);
       setShowStartMenu(false);
       setGameStarted(true);
@@ -177,10 +165,6 @@ export const GameBoard: React.FC = () => {
             setMultiplayerSessionId(sessionId);
             if (typeof localPlayerIndex === 'number') {
               setMultiplayerPlayerIndex(localPlayerIndex);
-              if (game) {
-                game.setLocalPlayerIndex(localPlayerIndex);
-                setGameState(game.getState());
-              }
             }
           },
           onPlayerListUpdate: (players) => {
@@ -196,11 +180,11 @@ export const GameBoard: React.FC = () => {
             }
           },
           onPlayerAction: (payload) => {
-            if (!game || !gameAdapter) {
+            if (!gameAdapter) {
               return;
             }
             const { playerIndex, card } = payload;
-            const currentState = game.getState();
+            const currentState = gameAdapter.getCurrentState();
             const targetPlayer = currentState.players[playerIndex];
             if (!targetPlayer) {
               return;
@@ -210,7 +194,7 @@ export const GameBoard: React.FC = () => {
               return;
             }
             gameAdapter.playCard(currentState, playerIndex, cardIndex);
-            setGameState(game.getState());
+            setGameState(gameAdapter.getCurrentState());
           }
         });
         client.connect();
@@ -219,7 +203,7 @@ export const GameBoard: React.FC = () => {
         } else {
           client.createSession();
         }
-        client.syncState(newGame.getState());
+        client.syncState(initialState);
         setMultiplayerClient(client);
       } else {
         if (multiplayerClient) {
@@ -232,15 +216,6 @@ export const GameBoard: React.FC = () => {
       alert(t.startMenu.errorStartingGame);
     }
   };
-
-  /**
-   * Update gameState when game changes
-   */
-  useEffect(() => {
-    if (game) {
-      setGameState(game.getState());
-    }
-  }, [game]);
 
   /**
    * Converts a Card object to a string code (e.g., "AS" for Ace of Spades)
@@ -256,8 +231,7 @@ export const GameBoard: React.FC = () => {
    * Includes fallback to first valid card if AI fails
    */
   const playAICard = useCallback(() => {
-    // Safety check - don't play if game doesn't exist
-    if (!game) {
+    if (!gameAdapter) {
       return;
     }
     
@@ -303,22 +277,19 @@ export const GameBoard: React.FC = () => {
      */
     const chooseAndPlay = async () => {
       let cardIndex = await tryExternal();
+      const currentState = gameAdapter.getCurrentState();
       if (cardIndex < 0) {
-        // External AI unavailable, use local AI strategy
-        cardIndex = game.chooseAICard(playerIndex);
+        cardIndex = gameAdapter.chooseAICard(currentState, playerIndex);
       }
 
-      // Attempt to play the selected card
-      if (cardIndex >= 0 && game.playCard(playerIndex, cardIndex)) {
+      if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
         playCardSound();
-        setGameState(game.getState());
+        setGameState(gameAdapter.getCurrentState());
       } else {
-        // Fallback: try first valid card if AI strategy fails
-        // This ensures the game never gets stuck
         for (let i = 0; i < player.hand.length; i++) {
-          if (game.playCard(playerIndex, i)) {
+          if (gameAdapter.playCard(gameAdapter.getCurrentState(), playerIndex, i)) {
             playCardSound();
-            setGameState(game.getState());
+            setGameState(gameAdapter.getCurrentState());
             break;
           }
         }
@@ -326,7 +297,7 @@ export const GameBoard: React.FC = () => {
     };
 
     chooseAndPlay();
-  }, [game, gameState, playCardSound, setGameState]);
+  }, [gameAdapter, gameState, playCardSound]);
 
   /**
    * Auto-play effect for AI players
@@ -336,7 +307,7 @@ export const GameBoard: React.FC = () => {
    */
   useEffect(() => {
     // Only auto-play if game exists and is started
-    if (!game || !gameStarted) return;
+    if (!gameAdapter || !gameStarted) return;
     
     // Auto-play for AI players (only if not waiting for round/game start and not paused)
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -360,7 +331,7 @@ export const GameBoard: React.FC = () => {
       }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [game, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, isMultiplayer, multiplayerPlayerIndex]);
+  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, isMultiplayer, multiplayerPlayerIndex]);
 
   /**
    * Handles card click from human player
@@ -372,7 +343,7 @@ export const GameBoard: React.FC = () => {
    */
   const handleCardClick = (cardIndex: number) => {
     // Only allow if game exists
-    if (!game) return;
+    if (!gameAdapter) return;
 
     // Determine whether the current turn belongs to the local human player
     const isLocalTurn = isMultiplayer
@@ -394,7 +365,8 @@ export const GameBoard: React.FC = () => {
         return;
       }
 
-      const canPlay = gameAdapter ? gameAdapter.canPlayCard(gameState, playerIndex, cardIndex) : game.canPlayCard(playerIndex, cardIndex);
+      const currentState = gameAdapter.getCurrentState();
+      const canPlay = gameAdapter.canPlayCard(currentState, playerIndex, cardIndex);
       if (!canPlay) {
         playErrorSound();
         return;
@@ -411,10 +383,10 @@ export const GameBoard: React.FC = () => {
       }
 
       if (selectedCard === cardIndex) {
-        const success = gameAdapter ? gameAdapter.playCard(gameState, playerIndex, cardIndex) : game.playCard(playerIndex, cardIndex);
+        const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
           playCardSound();
-          setGameState(game.getState());
+          setGameState(gameAdapter.getCurrentState());
           setSelectedCard(null);
         } else {
           playErrorSound();
@@ -458,7 +430,7 @@ export const GameBoard: React.FC = () => {
    * Effect to handle game over - show StartMenu when game ends
    */
   useEffect(() => {
-    if (game && gameState.isGameOver) {
+    if (gameAdapter && gameState.isGameOver) {
       // Show start menu after a short delay to allow game over modal to be seen
       const timer = setTimeout(() => {
         setShowStartMenu(true);
@@ -466,7 +438,7 @@ export const GameBoard: React.FC = () => {
       }, GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [game, gameState.isGameOver]);
+  }, [gameAdapter, gameState.isGameOver]);
 
   /**
    * Detects if the current device is a mobile device
@@ -533,9 +505,10 @@ export const GameBoard: React.FC = () => {
    * Stops AI auto-play and prevents further moves
    */
   const handlePause = () => {
-    if (!game) return;
-    game.pauseGame();
-    setGameState(game.getState());
+    if (!gameAdapter) return;
+    const current = gameAdapter.getCurrentState();
+    gameAdapter.pauseGame(current);
+    setGameState(gameAdapter.getCurrentState());
   };
 
   /**
@@ -543,9 +516,10 @@ export const GameBoard: React.FC = () => {
    * Re-enables AI auto-play and game flow
    */
   const handleResume = () => {
-    if (!game) return;
-    game.resumeGame();
-    setGameState(game.getState());
+    if (!gameAdapter) return;
+    const current = gameAdapter.getCurrentState();
+    gameAdapter.resumeGame(current);
+    setGameState(gameAdapter.getCurrentState());
   };
 
   /**
@@ -556,10 +530,10 @@ export const GameBoard: React.FC = () => {
     if (window.confirm(t.gameMenu.quitConfirm)) {
       setShowStartMenu(true);
       setGameStarted(false);
-      // Optionally quit the game (but keep it for potential resume)
-      if (game) {
-        game.quitGame();
-        setGameState(game.getState());
+      if (gameAdapter) {
+        const current = gameAdapter.getCurrentState();
+        gameAdapter.quitGame(current);
+        setGameState(gameAdapter.getCurrentState());
       }
     }
   };
@@ -578,29 +552,34 @@ export const GameBoard: React.FC = () => {
    * During active game, only updates state (not allowed to change difficulty)
    * If game is waiting to start or is over, recreates the game with new difficulty
    */
+  const reinitializeFromConfig = useCallback(
+    (names: string[], method: DealingMethod, difficulty: AIDifficulty, variant: GameVariant) => {
+      const adapter = GameFactory.getAdapter(variant);
+      const state = adapter.initialize(names, {
+        dealingMethod: method,
+        aiDifficulty: difficulty,
+        localPlayerIndex: isMultiplayer ? multiplayerPlayerIndex : undefined
+      });
+      setGameAdapter(adapter);
+      setGameState(state);
+    },
+    [isMultiplayer, multiplayerPlayerIndex]
+  );
+
   const handleAIDifficultyChange = (difficulty: AIDifficulty) => {
     setAIDifficulty(difficulty);
     localStorage.setItem(STORAGE_KEYS.AI_DIFFICULTY, difficulty);
-    
-    // Only allow changing difficulty if game hasn't started or is over
-    if (!game || gameState.waitingForGameStart || gameState.isGameOver) {
-      if (game) {
-        const newGame = new Game(playerNames, dealingMethod, difficulty);
-        setGame(newGame);
-        setGameState(newGame.getState());
+
+    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
+      if (gameStarted && gameAdapter) {
+        reinitializeFromConfig(playerNames, dealingMethod, difficulty, gameVariant);
       }
       return;
     }
-    
-    // During active game, update state immutably (without mutation)
-    // Note: This shouldn't normally happen as the setting should be disabled
-    if (game && gameState.aiDifficulty !== difficulty) {
-      const currentState = game.getState();
-      const updatedState: GameState = {
-        ...currentState,
-        aiDifficulty: difficulty
-      };
-      setGameState(updatedState);
+
+    if (gameState.aiDifficulty !== difficulty) {
+      const current = gameAdapter.getCurrentState();
+      setGameState({ ...current, aiDifficulty: difficulty });
     }
   };
 
@@ -612,26 +591,17 @@ export const GameBoard: React.FC = () => {
   const handleDealingMethodChange = (method: DealingMethod) => {
     setDealingMethod(method);
     localStorage.setItem(STORAGE_KEYS.DEALING_METHOD, method);
-    
-    // Only allow changing method if game hasn't started or is over
-    if (!game || gameState.waitingForGameStart || gameState.isGameOver) {
-      if (game) {
-        const newGame = new Game(playerNames, method, aiDifficulty);
-        setGame(newGame);
-        setGameState(newGame.getState());
+
+    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
+      if (gameStarted && gameAdapter) {
+        reinitializeFromConfig(playerNames, method, aiDifficulty, gameVariant);
       }
       return;
     }
-    
-    // During active game, update state immutably (without mutation)
-    // Note: This shouldn't normally happen as the setting should be disabled
-    if (game && gameState.dealingMethod !== method) {
-      const currentState = game.getState();
-      const updatedState: GameState = {
-        ...currentState,
-        dealingMethod: method
-      };
-      setGameState(updatedState);
+
+    if (gameState.dealingMethod !== method) {
+      const current = gameAdapter.getCurrentState();
+      setGameState({ ...current, dealingMethod: method });
     }
   };
 
@@ -646,27 +616,15 @@ export const GameBoard: React.FC = () => {
    */
   const handlePlayerNamesChange = (names: string[]) => {
     setPlayerNames(names);
-    
-    // If game hasn't started or is over, create new game with new names
-    if (!game || gameState.waitingForGameStart || gameState.isGameOver) {
-      const newGame = new Game(names, dealingMethod, aiDifficulty);
-      setGame(newGame);
-      setGameState(newGame.getState());
-    } else {
-      // Update names in both game instance and state without restarting
-      if (typeof game.updatePlayerNames === 'function') {
-        game.updatePlayerNames(names);
-        setGameState(game.getState());
-      } else {
-        // Fallback: update state directly if method doesn't exist (shouldn't happen)
-        setGameState(prevState => ({
-          ...prevState,
-          players: prevState.players.map((player, index) => ({
-            ...player,
-            name: names[index] || `Player ${index + 1}`
-          }))
-        }));
+
+    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
+      if (gameStarted && gameAdapter) {
+        reinitializeFromConfig(names, dealingMethod, aiDifficulty, gameVariant);
       }
+    } else {
+      const current = gameAdapter.getCurrentState();
+      gameAdapter.updatePlayerNames(current, names);
+      setGameState(gameAdapter.getCurrentState());
     }
     setSelectedCard(null);
   };
@@ -817,13 +775,15 @@ export const GameBoard: React.FC = () => {
       </div>
 
       {/* Human player's hand (South position) - displayed below table */}
-      {game && gameState.players[localPlayerIndex] && (
+      {gameAdapter && gameState.players[localPlayerIndex] && (
         <PlayerHand
           gameState={gameState}
           variant={gameVariant}
           localPlayerIndex={localPlayerIndex}
           selectedCard={selectedCard}
-          canPlayCard={(cardIndex: number) => gameAdapter ? gameAdapter.canPlayCard(gameState, localPlayerIndex, cardIndex) : false}
+          canPlayCard={(cardIndex: number) =>
+            gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex)
+          }
           onCardClick={handleCardClick}
           getCardImage={getCardImage}
         />
@@ -834,9 +794,9 @@ export const GameBoard: React.FC = () => {
         gameState={gameState}
         variant={gameVariant}
         onContinueTrick={() => {
-          if (game && gameState.waitingForTrickEnd) {
-            game.finishTrick();
-            setGameState(game.getState());
+          if (gameAdapter && gameState.waitingForTrickEnd) {
+            gameAdapter.finishTrick(gameAdapter.getCurrentState());
+            setGameState(gameAdapter.getCurrentState());
           }
         }}
       />
@@ -848,9 +808,9 @@ export const GameBoard: React.FC = () => {
           usTeam={usTeam}
           themTeam={themTeam}
           onContinue={() => {
-            if (game) {
-              game.continueToNextRound();
-              setGameState(game.getState());
+            if (gameAdapter) {
+              gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
+              setGameState(gameAdapter.getCurrentState());
             }
           }}
         />
@@ -863,9 +823,9 @@ export const GameBoard: React.FC = () => {
           getCardImage={getCardImage}
           getSuitEmoji={getSuitEmoji}
           onStart={() => {
-            if (game) {
-              game.startRound();
-              setGameState(game.getState());
+            if (gameAdapter) {
+              gameAdapter.startRound(gameAdapter.getCurrentState());
+              setGameState(gameAdapter.getCurrentState());
             }
           }}
         />

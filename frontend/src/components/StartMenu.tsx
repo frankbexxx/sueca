@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
+import { getAvailableGames } from '../constants/gameMetadata';
 import { GameSelector } from './GameSelector';
 import { useLanguage } from '../i18n/useLanguage';
 import './StartMenu.css';
@@ -86,11 +87,20 @@ export const StartMenu: React.FC<StartMenuProps> = ({
 
   const [gameVariant, setGameVariant] = useState<GameVariant>(() => {
     const saved = localStorage.getItem('sueca-game-variant');
-    if (saved === 'sueca' || saved === 'spades' || saved === 'hearts' || saved === 'king') {
-      return saved;
+    const allowed = getAvailableGames().map((g) => g.variant);
+    if (saved && allowed.includes(saved as GameVariant)) {
+      return saved as GameVariant;
     }
     return 'sueca';
   });
+
+  useEffect(() => {
+    const allowed = getAvailableGames().map((g) => g.variant);
+    if (!allowed.includes(gameVariant)) {
+      setGameVariant('sueca');
+      localStorage.setItem('sueca-game-variant', 'sueca');
+    }
+  }, [gameVariant]);
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,19 +1,31 @@
-# SUECÂO Implementation Prompts
+# SUECÂO — Índice de prompts de implementação
 
-## Prompt 1: Modular Game Engine
-Desenvolve um motor de jogo de cartas modular para SUECÂO que seja compatível com múltiplos jogos. Define tipos para cartas, baralhos de 52 cartas, naipes, rankings e regras de vaza. Cria interfaces limpas para `GameAdapter`, `TrickEngine` e `ScoringEngine`. Refatora o motor atual de Sueca para esta arquitetura.
+Prompts executáveis por etapa (copy-paste no Cursor Agent).
 
-## Prompt 2: Spades e Hearts
-Implementa o jogo Spades com leilão de bids, regra de espadas como trunfo, e pontuação de contrato mais bags. Implementa o jogo Hearts com passagem de cartas, proibição de copas antes de serem quebradas, contagem de pontos por copas e rainha de espadas, e tratamento de tiro da lua.
+## Produção (ordem obrigatória)
 
-## Prompt 3: King placeholder
-Cria um módulo King placeholder com metadados, fluxo de 13 vazas e estrutura de mãos negativas/positivas. Define stubs para regras de trunfo, leilão, pontuação e o King de copas. Deixa espaço claro para implementação futura sem bloquear o motor.
+| Etapa | Ficheiro | Build |
+|-------|----------|-------|
+| E1 | [E1-session-unified.md](E1-session-unified.md) | B |
+| E2 | [E2-spades.md](E2-spades.md) | C |
+| E3 | [E3-hearts.md](E3-hearts.md) | D |
+| E4 | [E4-king-mvp.md](E4-king-mvp.md) | E |
+| E5 | [E5-selector-release.md](E5-selector-release.md) | F |
 
-## Prompt 4: UI genérico e seleção de jogos
-Constrói uma interface de seleção de jogos e um `GameBoard` reutilizável que pode renderizar estados de Sueca, Spades, Hearts e King. Cria componentes de mesa, mão e vaza que aceitam modelos genéricos. Mantém a marca SUECÂO e Buga como tema central.
+**Restrição global:** não editar `frontend/src/components/GameBoard.css` (mesa).
 
-## Prompt 5: IA com personalidades
-Desenha um sistema de IA por personagem com nomes e estilos distintos. Implementa Buga como primeira persona, e define como cada persona escolhe jogadas e responde a dificuldades. Separa esta lógica de heurística do motor de regras e da UI.
+**Git:** Ctrl+Shift+G → Commit → Sync Changes.
 
-## Prompt 6: Documentação e testes
-Gera documentação clara para o plano global e para cada fase de implementação. Inclui um checklist de testes unitários e de integração para engine, regras e multiplayer. Usa nomenclatura assertiva e modularidade como linha condutora.
+## Backlog (não executar neste ciclo)
+
+### Prompt 5 — IA com personalidades
+
+Personas (Buga, etc.), heurísticas por jogo, separadas do motor.
+
+### Prompt 6 — Documentação e testes integração
+
+E2E, multiplayer por variante, CI `sueca-ai`.
+
+## Prompts históricos (referência)
+
+Os textos originais de 6 prompts genéricos foram substituídos por E1–E5 acima. Ver [PLAN_GLOBAL.md](../PLAN_GLOBAL.md) para visão do produto.

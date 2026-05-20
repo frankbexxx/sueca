@@ -34,7 +34,8 @@ vercel --prod
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
-- [x] Variantes experimentais (Spades/Hearts/King) **não** aparecem no selector por defeito
+- [ ] Selector mostra Sueca, Spades, Hearts e King
+- [ ] Smoke: 1 ronda por variante (sem alterar layout da mesa)
 
 ## Serviços opcionais
 

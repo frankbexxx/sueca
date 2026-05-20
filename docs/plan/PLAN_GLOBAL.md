@@ -10,16 +10,16 @@ Este plano define a evolução da base atual de SUECA para um framework modular 
 |------|--------|
 | Sueca (40 cartas) | Funcional e em produção |
 | Deploy Vercel | Ativo — ver [DEPLOY.md](../DEPLOY.md) e [RELEASE_CHECK.md](../RELEASE_CHECK.md) |
-| Spades / Hearts | Protótipo de adapter — **não exposto no selector** |
-| King | Placeholder — **não exposto no selector** |
-| Testes frontend | Suíte mínima em `Game.test.ts` |
+| Spades / Hearts / King | MVP jogável via `GameAdapter`; expostos no selector |
+| Sessão unificada | `GameBoard` → `adapter.initialize()` (E1) |
+| Testes frontend | `Game.test.ts`, `GameSession.test.ts`, `SpadesGame.test.ts` |
 | IA externa / multiplayer | Dev-only por defeito (localhost) |
 
 ## Fases principais
 
-1. Arquitetura modular de jogo — **parcial** (adapters existem; UI ainda usa `Game` diretamente para Sueca)
-2. Implementação dos jogos — **Sueca completo**; Spades/Hearts/King incompletos
-3. UI e multiplayer genéricos — **parcial** (selector e adapters; fluxo unificado pendente)
+1. Arquitetura modular de jogo — **feito** (`GameAdapter`, `GameFactory`, sessão unificada)
+2. Implementação dos jogos — **Sueca completo**; Spades/Hearts/King em MVP
+3. UI e multiplayer genéricos — **parcial** (4 jogos no selector; multiplayer prod pendente)
 4. IA e personalidades — **planeado**
 5. Documentação e entrega — **em curso**
 
@@ -38,8 +38,8 @@ Este plano define a evolução da base atual de SUECA para um framework modular 
 
 ## 3. UI e multiplayer genéricos
 
-- Seleção de jogo no frontend — apenas **Sueca** visível por defeito.
-- `GameBoard` genérico existe mas mistura `Game` + `GameAdapter` (estabilizar antes de reativar variantes).
+- Seleção de jogo: **Sueca, Spades, Hearts, King** (`getAvailableGames()`).
+- `GameBoard` usa apenas `GameAdapter` + `getCurrentState()`.
 - Multiplayer WebSocket: cliente pronto; servidor de produção não configurado.
 
 ## 4. IA e personalidades
@@ -55,9 +55,8 @@ Este plano define a evolução da base atual de SUECA para um framework modular 
 
 ## Próximo passo recomendado
 
-1. Estabilizar Sueca (mobile, testes, assets, deploy docs) — **prioridade**
-2. Corrigir fluxo `GameBoard` → `adapter.initialize()` **ou** manter variantes escondidas
-3. Só depois reativar Spades/Hearts no selector com `REACT_APP_SHOW_EXPERIMENTAL_GAMES=true`
+1. Smoke manual das 4 variantes + deploy Vercel (ver [RELEASE_CHECK.md](../RELEASE_CHECK.md))
+2. E6 backlog: IA personas, multiplayer por variante, bidding UI Spades
 
 ## Estrutura de documentação
 

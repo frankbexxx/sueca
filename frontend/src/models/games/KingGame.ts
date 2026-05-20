@@ -1,22 +1,67 @@
 import { BaseGameAdapter } from './GameAdapter';
-import { GameState, Player } from '../../types/game';
+import { GameState, Player, Suit, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
+import { trickWinnerIndex } from './trickUtils';
+
+const HAND_TYPES = ['negative', 'positive', 'negative', 'positive', 'negative', 'positive', 'negative', 'positive'] as const;
+const TOTAL_HANDS = HAND_TYPES.length;
+
+interface KingVariantState {
+  handIndex: number;
+  handType: 'negative' | 'positive';
+  trumpSuit: Suit;
+  playerScores: number[];
+}
+
+function getKingState(state: GameState): KingVariantState {
+  const vs = state.variantState?.king as KingVariantState | undefined;
+  return (
+    vs ?? {
+      handIndex: 0,
+      handType: 'negative',
+      trumpSuit: 'clubs',
+      playerScores: [0, 0, 0, 0]
+    }
+  );
+}
 
 export class KingGame extends BaseGameAdapter {
   variant = 'king' as const;
-  private deck?: Deck;
   private state?: GameState;
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    this.deck = new Deck('standard52');
+    this.state = this.createHandState(playerNames, options, 0, [0, 0, 0, 0]);
+    return this.cloneState(this.state);
+  }
+
+  getCurrentState(): GameState {
+    if (!this.state) throw new Error('KingGame not initialized');
+    return this.cloneState(this.state);
+  }
+
+  private createHandState(
+    playerNames: string[],
+    options: Record<string, unknown> | undefined,
+    handIndex: number,
+    playerScores: number[]
+  ): GameState {
+    const deck = new Deck('standard52');
+    const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const handType = HAND_TYPES[handIndex % HAND_TYPES.length];
+    const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
+    const trumpSuit = suits[handIndex % 4];
 
     const players: Player[] = playerNames.slice(0, 4).map((name, index) => {
       const isTeam1 = index === 0 || index === 2;
-      const localPlayerIndex = options?.localPlayerIndex as number | undefined;
       const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
-      const playerType = localPlayerIndex !== undefined
-        ? (isLocalHuman ? 'human' : 'remote')
-        : (isLocalHuman ? 'human' : 'ai');
+      const playerType =
+        localPlayerIndex !== undefined
+          ? isLocalHuman
+            ? 'human'
+            : 'ai'
+          : isLocalHuman
+            ? 'human'
+            : 'ai';
 
       return {
         id: `player_${index}`,
@@ -27,27 +72,28 @@ export class KingGame extends BaseGameAdapter {
       };
     });
 
-    // Deal 13 cards to each player
     for (let i = 0; i < 13; i++) {
       for (let p = 0; p < 4; p++) {
-        const card = this.deck.deal(1)[0];
+        const card = deck.deal(1)[0];
         if (card) players[p].hand.push(card);
       }
     }
 
-    this.state = {
+    const trumpCard = players[0].hand[0] ? { ...players[0].hand[0], id: `trump_${handIndex}` } : null;
+
+    return {
       variant: 'king',
       players,
       currentPlayerIndex: 0,
       dealerIndex: 0,
-      trumpSuit: null, // Will be decided per hand
-      trumpCard: null,
+      trumpSuit,
+      trumpCard,
       currentTrick: [],
       trickLeader: 0,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
       completedPentes: [],
-      round: 1,
+      round: handIndex + 1,
       isGameOver: false,
       winner: null,
       lastTrickWinner: null,
@@ -55,50 +101,109 @@ export class KingGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      waitingForRoundStart: true,
+      waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
       playedCards: [],
       isPaused: false,
       playerName: players[0]?.name || 'Player 1',
-      aiDifficulty: (options?.aiDifficulty as any) || 'medium',
+      aiDifficulty: (options?.aiDifficulty as AIDifficulty) || 'medium',
       partnerSignals: [],
-      nextRoundValue: undefined
+      variantState: {
+        king: {
+          handIndex,
+          handType,
+          trumpSuit,
+          playerScores
+        }
+      }
     };
-
-    return this.state;
   }
 
-  canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
-    // King placeholder: allow any card for now
-    const player = state.players[playerIndex];
+  canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
+    const s = this.state!;
+    const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
-    if (playerIndex !== state.currentPlayerIndex) return false;
-    return true;
-  }
+    if (playerIndex !== s.currentPlayerIndex) return false;
+    if (s.waitingForTrickEnd || s.isPaused) return false;
 
-  playCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
-    if (!this.canPlayCard(state, playerIndex, cardIndex)) return false;
-
-    const player = state.players[playerIndex];
     const card = player.hand[cardIndex];
-    player.hand.splice(cardIndex, 1);
-    state.currentTrick.push(card);
+    if (s.currentTrick.length === 0) return true;
 
-    if (state.currentTrick.length === 4) {
-      // TODO: Implement King-specific trick winner calculation
-      const winner = this.calculateTrickWinner(state);
-      state.lastTrickWinner = winner;
-      state.waitingForTrickEnd = true;
+    const ledSuit = s.currentTrick[0].suit;
+    const canFollow = player.hand.some((c) => c.suit === ledSuit);
+    return !canFollow || card.suit === ledSuit;
+  }
+
+  playCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
+    if (!this.canPlayCard(_state, playerIndex, cardIndex)) return false;
+    const s = this.state!;
+    const king = getKingState(s);
+    const player = s.players[playerIndex];
+    const card = player.hand.splice(cardIndex, 1)[0];
+    s.currentTrick.push(card);
+
+    if (s.currentTrick.length === 4) {
+      const winner = trickWinnerIndex(s.currentTrick, s.trickLeader, king.trumpSuit);
+      s.lastTrickWinner = winner;
+      s.waitingForTrickEnd = true;
+      s.nextTrickLeader = winner;
     } else {
-      state.currentPlayerIndex = (state.currentPlayerIndex + 1) % 4;
+      s.currentPlayerIndex = (s.currentPlayerIndex + 1) % 4;
     }
-
     return true;
   }
 
-  private calculateTrickWinner(state: GameState): number {
-    // King placeholder: first card always wins (will be replaced with actual logic)
-    return state.trickLeader;
+  finishTrick(_state: GameState): void {
+    const s = this.state!;
+    if (!s.waitingForTrickEnd) return;
+
+    const winner = s.nextTrickLeader ?? s.lastTrickWinner ?? 0;
+    const king = getKingState(s);
+    const delta = king.handType === 'negative' ? -5 : 5;
+    king.playerScores[winner] += delta;
+    s.variantState = { ...s.variantState, king };
+
+    s.waitingForTrickEnd = false;
+    s.currentTrick = [];
+    s.trickLeader = winner;
+    s.currentPlayerIndex = winner;
+
+    if (s.players[0].hand.length === 0) {
+      this.endHand(s);
+    }
+  }
+
+  private endHand(s: GameState): void {
+    const king = getKingState(s);
+    if (king.handIndex + 1 >= TOTAL_HANDS) {
+      const max = Math.max(...king.playerScores);
+      s.isGameOver = true;
+      s.winner = king.playerScores.indexOf(max) < 2 ? 1 : 2;
+      s.waitingForGameStart = true;
+      return;
+    }
+    s.waitingForRoundEnd = true;
+    s.scores = {
+      team1: king.playerScores[0] + king.playerScores[2],
+      team2: king.playerScores[1] + king.playerScores[3]
+    };
+  }
+
+  continueToNextRound(_state: GameState): void {
+    const s = this.state!;
+    if (!s.waitingForRoundEnd) return;
+    const king = getKingState(s);
+    const names = s.players.map((p) => p.name);
+    this.state = this.createHandState(
+      names,
+      { aiDifficulty: s.aiDifficulty },
+      king.handIndex + 1,
+      [...king.playerScores]
+    );
+  }
+
+  startRound(_state: GameState): void {
+    if (this.state) this.state.waitingForRoundStart = false;
   }
 }

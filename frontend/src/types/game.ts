@@ -52,7 +52,11 @@ export interface GameState {
   nextRoundValue?: number; // Internal: value for next round (used when continuing after round end)
   isMultiplayer?: boolean;
   sessionId?: string;
-  localPlayerIndex?: number;  variant?: GameVariant;}
+  localPlayerIndex?: number;
+  variant?: GameVariant;
+  /** Per-variant data (bids, hearts broken, king hand type, etc.) */
+  variantState?: Record<string, unknown>;
+}
 
 export const CARD_HIERARCHY: Record<Rank, number> = {
   '2': 1,

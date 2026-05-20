@@ -19,7 +19,7 @@ Este é um projeto de implementação do jogo de cartas Sueca em React/TypeScrip
 - Checklist pós-deploy: `docs/RELEASE_CHECK.md`
 - Problema conhecido: **UI desalinhada em Android** (prioridade alta na Beta)
 - Assets de cartas: `frontend/public/assets/cards2/` (UI Sueca); `cards1/` mantém baralho 52 cartas para variantes futuras
-- SUECÂO multi-jogos: Spades/Hearts/King em protótipo — escondidos do selector por defeito (ver `gameMetadata.ts`)
+- SUECÂO multi-jogos: Sueca + Spades + Hearts + King (MVP) no selector; sessão via `GameAdapter` (ver `gameMetadata.ts`, prompts E1–E5)
 - Limpezas: `frontend/build` (artefacto), `vercel.json` na raiz (usar apenas `frontend/vercel.json`)
 - Roadmap da Beta: ver `docs/BETA_ROADMAP.md`
 - UI mobile: cabeçalho e painéis suavizados, Show Grid reduzido (debug), trunfo minimalista (título + mini-carta), botões Play/Next abaixo da mesa.

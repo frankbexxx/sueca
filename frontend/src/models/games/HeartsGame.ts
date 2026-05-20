@@ -1,24 +1,70 @@
 import { BaseGameAdapter } from './GameAdapter';
-import { GameState, Card, Suit, Player } from '../../types/game';
+import { GameState, Card, Player, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
+import { trickWinnerIndex } from './trickUtils';
+
+const TARGET_SCORE = 100;
+
+interface HeartsVariantState {
+  heartsBroken: boolean;
+  playerScores: number[];
+}
+
+function getHeartsState(state: GameState): HeartsVariantState {
+  const vs = state.variantState?.hearts as HeartsVariantState | undefined;
+  return vs ?? { heartsBroken: false, playerScores: [0, 0, 0, 0] };
+}
+
+function trickPoints(trick: Card[]): number {
+  return trick.reduce((sum, card) => {
+    if (card.suit === 'hearts') return sum + 1;
+    if (card.rank === 'Q' && card.suit === 'spades') return sum + 13;
+    return sum;
+  }, 0);
+}
 
 export class HeartsGame extends BaseGameAdapter {
   variant = 'hearts' as const;
-  private deck?: Deck;
   private state?: GameState;
-  private heartsBroken: boolean = false;
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    this.deck = new Deck('standard52');
-    this.heartsBroken = false;
+    this.state = this.createRoundState(playerNames, options, 1, [0, 0, 0, 0]);
+    return this.cloneState(this.state);
+  }
+
+  getCurrentState(): GameState {
+    if (!this.state) throw new Error('HeartsGame not initialized');
+    return this.cloneState(this.state);
+  }
+
+  private autoPass(players: Player[]): void {
+    for (let i = 0; i < 4; i++) {
+      const to = (i + 1) % 4;
+      const pass = players[i].hand.splice(0, 3);
+      players[to].hand.push(...pass);
+    }
+  }
+
+  private createRoundState(
+    playerNames: string[],
+    options: Record<string, unknown> | undefined,
+    round: number,
+    playerScores: number[]
+  ): GameState {
+    const deck = new Deck('standard52');
+    const localPlayerIndex = options?.localPlayerIndex as number | undefined;
 
     const players: Player[] = playerNames.slice(0, 4).map((name, index) => {
       const isTeam1 = index === 0 || index === 2;
-      const localPlayerIndex = options?.localPlayerIndex as number | undefined;
       const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
-      const playerType = localPlayerIndex !== undefined
-        ? (isLocalHuman ? 'human' : 'remote')
-        : (isLocalHuman ? 'human' : 'ai');
+      const playerType =
+        localPlayerIndex !== undefined
+          ? isLocalHuman
+            ? 'human'
+            : 'ai'
+          : isLocalHuman
+            ? 'human'
+            : 'ai';
 
       return {
         id: `player_${index}`,
@@ -29,27 +75,33 @@ export class HeartsGame extends BaseGameAdapter {
       };
     });
 
-    // Deal 13 cards to each player
     for (let i = 0; i < 13; i++) {
       for (let p = 0; p < 4; p++) {
-        const card = this.deck.deal(1)[0];
+        const card = deck.deal(1)[0];
         if (card) players[p].hand.push(card);
       }
     }
 
-    this.state = {
+    this.autoPass(players);
+
+    const twoClubs = players.findIndex((p) =>
+      p.hand.some((c) => c.rank === '2' && c.suit === 'clubs')
+    );
+    const leader = twoClubs >= 0 ? twoClubs : 0;
+
+    return {
       variant: 'hearts',
       players,
-      currentPlayerIndex: 0, // Player with 2 of clubs starts
+      currentPlayerIndex: leader,
       dealerIndex: 0,
-      trumpSuit: null, // Hearts has no trump
+      trumpSuit: null,
       trumpCard: null,
       currentTrick: [],
-      trickLeader: 0,
+      trickLeader: leader,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
       completedPentes: [],
-      round: 1,
+      round,
       isGameOver: false,
       winner: null,
       lastTrickWinner: null,
@@ -63,99 +115,116 @@ export class HeartsGame extends BaseGameAdapter {
       playedCards: [],
       isPaused: false,
       playerName: players[0]?.name || 'Player 1',
-      aiDifficulty: (options?.aiDifficulty as any) || 'medium',
+      aiDifficulty: (options?.aiDifficulty as AIDifficulty) || 'medium',
       partnerSignals: [],
-      nextRoundValue: undefined
+      variantState: {
+        hearts: { heartsBroken: false, playerScores }
+      }
     };
-
-    return this.state;
   }
 
-  canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
-    const player = state.players[playerIndex];
+  canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
+    const s = this.state!;
+    const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
-    if (playerIndex !== state.currentPlayerIndex) return false;
+    if (playerIndex !== s.currentPlayerIndex) return false;
+    if (s.waitingForTrickEnd || s.isPaused) return false;
 
     const card = player.hand[cardIndex];
+    const hearts = getHeartsState(s);
 
-    // First trick: can't play hearts or queen of spades
-    if (state.isFirstTrick && state.currentTrick.length === 0) {
-      if ((card.suit === 'hearts') || (card.rank === 'Q' && card.suit === 'spades')) {
-        const hasOtherCards = player.hand.some(c => 
-          !(c.suit === 'hearts' || (c.rank === 'Q' && c.suit === 'spades'))
-        );
-        return !hasOtherCards;
-      }
+    if (s.isFirstTrick && s.currentTrick.length === 0) {
+      const must2c = player.hand.some((c) => c.rank === '2' && c.suit === 'clubs');
+      if (must2c && !(card.rank === '2' && card.suit === 'clubs')) return false;
     }
 
-    // Can't lead hearts until broken
-    if (state.currentTrick.length === 0 && card.suit === 'hearts' && !this.heartsBroken) {
-      const hasOtherSuits = player.hand.some(c => c.suit !== 'hearts');
-      return !hasOtherSuits;
+    if (s.currentTrick.length === 0 && card.suit === 'hearts' && !hearts.heartsBroken) {
+      const hasOther = player.hand.some((c) => c.suit !== 'hearts');
+      if (hasOther) return false;
     }
 
-    // Must follow suit if possible
-    if (state.currentTrick.length > 0) {
-      const ledSuit = state.currentTrick[0].suit;
-      const canFollowSuit = player.hand.some(c => c.suit === ledSuit);
-      return !canFollowSuit || card.suit === ledSuit;
+    if (s.currentTrick.length > 0) {
+      const ledSuit = s.currentTrick[0].suit;
+      const canFollow = player.hand.some((c) => c.suit === ledSuit);
+      return !canFollow || card.suit === ledSuit;
     }
 
     return true;
   }
 
-  playCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
-    if (!this.canPlayCard(state, playerIndex, cardIndex)) return false;
+  playCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
+    if (!this.canPlayCard(_state, playerIndex, cardIndex)) return false;
+    const s = this.state!;
+    const player = s.players[playerIndex];
+    const card = player.hand.splice(cardIndex, 1)[0];
+    s.currentTrick.push(card);
 
-    const player = state.players[playerIndex];
-    const card = player.hand[cardIndex];
-    player.hand.splice(cardIndex, 1);
-    state.currentTrick.push(card);
+    const hearts = getHeartsState(s);
+    if (card.suit === 'hearts') hearts.heartsBroken = true;
+    s.variantState = { ...s.variantState, hearts };
 
-    // Mark hearts as broken if a heart is played
-    if (card.suit === 'hearts') {
-      this.heartsBroken = true;
-    }
-
-    // Check if trick is complete
-    if (state.currentTrick.length === 4) {
-      const winner = this.calculateTrickWinner(state);
-      state.lastTrickWinner = winner;
-      state.waitingForTrickEnd = true;
-      state.isFirstTrick = false;
+    if (s.currentTrick.length === 4) {
+      const winner = trickWinnerIndex(s.currentTrick, s.trickLeader, null);
+      s.lastTrickWinner = winner;
+      s.waitingForTrickEnd = true;
+      s.nextTrickLeader = winner;
     } else {
-      state.currentPlayerIndex = (state.currentPlayerIndex + 1) % 4;
+      s.currentPlayerIndex = (s.currentPlayerIndex + 1) % 4;
     }
-
     return true;
   }
 
-  private calculateTrickWinner(state: GameState): number {
-    const ledSuit = state.currentTrick[0].suit;
-    let highestCard = state.currentTrick[0];
-    let highestIndex = 0;
+  finishTrick(_state: GameState): void {
+    const s = this.state!;
+    if (!s.waitingForTrickEnd) return;
 
-    for (let i = 1; i < state.currentTrick.length; i++) {
-      const card = state.currentTrick[i];
-      const compareResult = this.compareCards(card, highestCard, ledSuit);
-      if (compareResult > 0) {
-        highestCard = card;
-        highestIndex = i;
-      }
+    const winner = s.nextTrickLeader ?? s.lastTrickWinner ?? 0;
+    const points = trickPoints(s.currentTrick);
+    const hearts = getHeartsState(s);
+    hearts.playerScores[winner] += points;
+    s.variantState = { ...s.variantState, hearts };
+
+    s.waitingForTrickEnd = false;
+    s.currentTrick = [];
+    s.isFirstTrick = false;
+    s.trickLeader = winner;
+    s.currentPlayerIndex = winner;
+
+    if (s.players[0].hand.length === 0) {
+      this.endRound(s);
     }
-
-    return (state.trickLeader + highestIndex) % 4;
   }
 
-  private compareCards(card1: Card, card2: Card, ledSuit: Suit): number {
-    const HIERARCHY: Record<string, number> = {
-      '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8,
-      '10': 9, 'J': 10, 'Q': 11, 'K': 12, 'A': 13
-    };
-
-    if (card1.suit !== card2.suit) {
-      return card1.suit === ledSuit ? 1 : -1;
+  private endRound(s: GameState): void {
+    const hearts = getHeartsState(s);
+    const max = Math.max(...hearts.playerScores);
+    if (max >= TARGET_SCORE) {
+      s.isGameOver = true;
+      s.winner = hearts.playerScores.indexOf(max) < 2 ? 1 : 2;
+      s.waitingForGameStart = true;
+      return;
     }
-    return (HIERARCHY[card1.rank] || 0) - (HIERARCHY[card2.rank] || 0);
+    s.waitingForRoundEnd = true;
+    s.scores = {
+      team1: hearts.playerScores[0] + hearts.playerScores[2],
+      team2: hearts.playerScores[1] + hearts.playerScores[3]
+    };
+  }
+
+  continueToNextRound(_state: GameState): void {
+    const s = this.state!;
+    if (!s.waitingForRoundEnd) return;
+    const hearts = getHeartsState(s);
+    const names = s.players.map((p) => p.name);
+    this.state = this.createRoundState(
+      names,
+      { aiDifficulty: s.aiDifficulty },
+      s.round + 1,
+      [...hearts.playerScores]
+    );
+  }
+
+  startRound(_state: GameState): void {
+    if (this.state) this.state.waitingForRoundStart = false;
   }
 }

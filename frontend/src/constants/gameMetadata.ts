@@ -23,29 +23,29 @@ export const GAME_METADATA: Record<GameVariant, GameMetadata> = {
   spades: {
     variant: 'spades',
     name: 'Spades',
-    description: 'Bid-based trick-taking game where spades are always trump (prototype)',
+    description: 'Bid-based trick-taking game where spades are always trump',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',
-    status: 'experimental'
+    status: 'active'
   },
   hearts: {
     variant: 'hearts',
     name: 'Hearts',
-    description: 'Point-avoidance game where hearts and Queen of Spades lose points (prototype)',
+    description: 'Point-avoidance game — hearts and Queen of Spades score penalty points',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',
-    status: 'experimental'
+    status: 'active'
   },
   king: {
     variant: 'king',
     name: 'King',
-    description: 'Brazilian trick-taking game with negative and positive hands (placeholder)',
+    description: 'King MVP — alternating negative/positive hands with rotating trump',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',
-    status: 'placeholder'
+    status: 'active'
   }
 };
 
@@ -60,12 +60,14 @@ export const getGameMetadata = (variant: GameVariant): GameMetadata => {
 const showExperimentalGames = (): boolean =>
   process.env.REACT_APP_SHOW_EXPERIMENTAL_GAMES === 'true';
 
-/** Games shown in the selector. Only Sueca is active in production by default. */
+/** Games shown in the selector (active + optional experimental via env). */
 export const getAvailableGames = (): GameMetadata[] => {
   return Object.values(GAME_METADATA)
     .filter((game) => {
       if (game.status === 'active') return true;
-      if (game.status === 'experimental') return showExperimentalGames();
+      if (game.status === 'experimental' || game.status === 'placeholder') {
+        return showExperimentalGames();
+      }
       return false;
     })
     .sort((a, b) => {
