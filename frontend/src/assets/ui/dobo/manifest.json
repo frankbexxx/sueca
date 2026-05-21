@@ -1,0 +1,13 @@
+{
+  "pack": "Vector UI Pack",
+  "author": "dobo_ui",
+  "source": "https://dobo-ui.itch.io/vector-ui-pack",
+  "license": "Commercial use OK; do not resell or redistribute assets",
+  "usage": "StartMenu smoke trial",
+  "files": {
+    "panel_menu": "Panels/panel_green.png — start-menu-card background",
+    "button_primary": "Buttons/buttonAdvanced_blue.png — start game button",
+    "button_primary_pressed": "Buttons/buttonCircle_blue.png — button active/hover",
+    "header_title": "Headers/headerAsim_blue.png — optional title strip"
+  }
+}

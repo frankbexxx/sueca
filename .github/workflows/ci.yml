@@ -55,10 +55,15 @@ jobs:
         env:
           CI: true
           REACT_APP_USE_LOCAL_AI_ONLY: "true"
+          REACT_APP_CARD_EXT: png
         run: npm run build
 
       - name: Verify card assets
-        run: test "$(ls -1 public/assets/cards2/*_of_*.svg 2>/dev/null | wc -l)" -ge 52
+        run: |
+          png=$(ls -1 public/assets/cards2/*_of_*.png 2>/dev/null | wc -l)
+          svg=$(ls -1 public/assets/cards2/*_of_*.svg 2>/dev/null | wc -l)
+          total=$((png + svg))
+          test "$total" -ge 52
 
   backend:
     runs-on: ubuntu-latest

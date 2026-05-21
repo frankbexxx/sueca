@@ -7,9 +7,10 @@
 
 | Pack | Path | Estado |
 |------|------|--------|
-| Cartas (dev placeholder) | `frontend/public/assets/cards2/*.svg` | Substituir por pack comercial PNG |
-| Cartas (comercial) | Copiar para `frontend/public/assets/cards2/` | **Tu compras** — ver critérios abaixo |
-| UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base; kit UI opcional |
+| Cartas (activo) | `frontend/public/assets/cards2/*.png` | **Hazmat Hand Drawn** (trial) |
+| Import Hazmat | `frontend/public/assets/cards-pack-import/hazmat/` | Flat staging; `node tools/stage-hazmat.mjs` |
+| UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
+| UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
 | Ícones app | `image/ico/buga_ico_draw/` | Usado no Capacitor |
 | SFX | `frontend/public/assets/sfx/` | Opcional — licença documentada ao adicionar |
 
@@ -22,12 +23,12 @@
 
 **Fontes sugeridas:** itch.io, Kenney, Craftpix, GraphicRiver.
 
-## Integrar pack comprado ou export Figma/Penpot
+## Integrar pack (Hazmat ou outro)
 
-1. Exportar PNG/SVG (52 cartas + `card_back`) para `frontend/public/assets/cards-pack-import/`
-2. Correr: `node tools/map-card-pack.mjs --input frontend/public/assets/cards-pack-import --output frontend/public/assets/cards2`
-3. Build com PNG: `REACT_APP_CARD_EXT=png npm run build` (ou `npm run build:android`)
-4. Ver checklist em `tools/map-card-pack.mjs` (final)
+1. Fonte local: `_temp/` (gitignored)
+2. Hazmat: `node tools/stage-hazmat.mjs`
+3. Mapear: `node tools/map-card-pack.mjs --input frontend/public/assets/cards-pack-import/hazmat --output frontend/public/assets/cards2`
+4. Build: `REACT_APP_CARD_EXT=png npm run build` (`.env.development` já define PNG em dev)
 5. `npm test` + smoke visual no browser (360×800)
 
 ### Figma / Penpot
@@ -43,14 +44,16 @@
 
 ## Checklist “pack integrado”
 
-- [ ] 52 (ou 40+52) cartas visíveis na mão e na vaza
-- [ ] Card back na mesa (oponentes)
+- [x] 52 cartas PNG em `cards2/` (Hazmat trial)
+- [x] `card_back.png` + `card_back_red.png` (Red reservado para IAP futuro)
+- [ ] Card back na mesa (oponentes) — ainda gradiente CSS
 - [ ] `npm run build` sem 404 de assets
-- [ ] Licença registada neste ficheiro (secção abaixo)
+- [x] Licença registada neste ficheiro (secção abaixo)
 
 ## Licenças
 
 | Asset | Licença | Notas |
 |-------|---------|-------|
-| Placeholder SVG (gerado) | Projeto SUECÂO | Substituir por pack comercial |
-| (preencher ao comprar pack) | | |
+| Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — crédito opcional |
+| DOBO Vector UI Pack | Comercial OK; no resell/redistribute | [dobo-ui.itch.io](https://dobo-ui.itch.io/vector-ui-pack) — crédito recomendado |
+| Placeholder SVG (removido) | — | Substituído por Hazmat PNG Maio 2026 |
