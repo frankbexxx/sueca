@@ -1,15 +1,14 @@
 # Design handoff — SUECÂO
 
-Guia único para levar gráficos de **qualquer** ferramenta de design para o repo, sem depender de Figma sozinho.
+**Prioridade:** packs comerciais (cartas + UI) — ver [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md). Figma/Penpot são opcionais para ajustes pontuais.
 
-## Ferramentas suportadas
+## Caminhos (por ordem recomendada)
 
-| Tool | Export | Tokens |
-|------|--------|--------|
-| **Figma** | PNG/SVG por frame; plugin Tokens → JSON | Copiar JSON para `frontend/src/styles/design-tokens.json` e espelhar em `design-tokens.css` |
-| **Penpot** | Export assets + CSS/JSON specs | Idem |
-| **Pack comercial** | ZIP com cartas | `tools/map-card-pack.mjs` |
-| **Só código** | — | Editar `design-tokens.css` directamente |
+| Caminho | Export | Quando |
+|---------|--------|--------|
+| **Pack comercial (itch.io, etc.)** | PNG/SVG → `map-card-pack.mjs` | **Default** — Play Store |
+| **Figma / Penpot** | PNG + tokens JSON | Só se adaptares pack ou UI custom |
+| **Só código** | `design-tokens.css` | Polimento mínimo sem budget assets |
 
 **Não usar** como base principal: plugins “Figma → React” no `GameBoard` (lógica de jogo + posicionamento ficam em código).
 

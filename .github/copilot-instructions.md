@@ -59,7 +59,8 @@ pytest tests/     # Run tests
 | Resource | Purpose |
 |----------|---------|
 | [docs/README.md](docs/README.md) | Documentation index |
-| [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) | Current project state |
+| [docs/STATUS.md](docs/STATUS.md) | Current project state |
+| [docs/INDEX.md](docs/INDEX.md) | Documentation index |
 | [docs/QUICKSTART.md](docs/QUICKSTART.md) | Setup and first run |
 | [docs/TESTING.md](docs/TESTING.md) | Testing strategy |
 | [rules.txt](rules.txt) | Official SUECA game rules |

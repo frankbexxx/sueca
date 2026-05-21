@@ -30,7 +30,7 @@ Author: Cursor Agent (for Frank)
 - `frontend/` (single app, CRA-based)
 - `docs/` (status notes)
 - `assets/`
-- root docs: `README.md`, `SETUP.md`, `QUICKSTART.md`, `PROJECT_STATUS.md`
+- root docs: `README.md`, `docs/STATUS.md`, `docs/INDEX.md`, `SETUP.md`, `QUICKSTART.md`
 - file `rules and so.txt` (rules draft/reference)
 
 ## App/file inventory

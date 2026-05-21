@@ -7,7 +7,7 @@ Checklist rápido antes e depois de cada deploy de produção.
 - [x] **Root Directory** = `frontend`
 - [x] Deploy CLI a partir da **raiz do repo** (`~/projects/sueca`), não de `frontend/frontend`
 - [x] Branch de produção: `v2-main`
-- [x] URL de produção: `https://frontend-mu-five-18.vercel.app`
+- [x] URL de produção: `https://frontend-mu-five-18.vercel.app` (Render opcional: [DEPLOY_RENDER.md](DEPLOY_RENDER.md))
 
 ## Comandos locais
 

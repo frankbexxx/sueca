@@ -8,4 +8,4 @@ Safe areas, 48dp touch, RulesSheet, sem alterar mesa.
 
 ## Critérios
 - [ ] Smoke 360×800; botões ≥48px.
-- [ ] `GameBoard.css` mesa intacto.
+- [ ] Mesa: legível em mobile; usar packs UX + tokens onde fizer sentido.

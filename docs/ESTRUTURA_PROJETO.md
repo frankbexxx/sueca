@@ -36,7 +36,8 @@ docs/
 ├── DEPLOY_QUICK.md        # Deploy rápido
 ├── CORRIGIR_DEPLOY.md     # Troubleshooting
 │
-├── PROJECT_STATUS.md      # Estado atual do projeto
+├── STATUS.md              # Estado actual do projeto
+├── INDEX.md               # Índice documentação
 ├── DEVELOPMENT_PLAN.md    # Plano de desenvolvimento
 ├── NEXT_STEPS.md          # Próximos passos
 │

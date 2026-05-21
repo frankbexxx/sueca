@@ -1,73 +1,63 @@
-# SUECÂO Global Expansion Plan
+# SUECÂO — Plano global
 
-## Visão geral
+**Estado:** [STATUS.md](../STATUS.md) · **Índice:** [INDEX.md](../INDEX.md)
 
-Este plano define a evolução da base atual de SUECA para um framework modular chamado SUECÂO. O objetivo é suportar o jogo original e adicionar três jogos extras (Spades, Hearts e King placeholder) mantendo um núcleo reutilizável para decks, regras e IA.
+## Norte (2026)
 
-**Estado real (Maio 2026):**
+1. **Play Store AAB** — Android primeiro; web é suporte e partilha
+2. **Assets comerciais** — packs cartas + UX (itch.io); não depende de Figma
+3. **P5 Backend + multiplayer** — obrigatório para release com MP
+4. **P6 Monetização** — adiado pós-lançamento inicial
+5. **IA externa** — congelada até Android ([_archives/parallel-ai/](../_archives/parallel-ai/))
+
+## Produto (Maio 2026)
 
 | Área | Estado |
 |------|--------|
-| Sueca (40 cartas) | Funcional e em produção |
-| Deploy Vercel | Ativo — ver [DEPLOY.md](../DEPLOY.md) e [RELEASE_CHECK.md](../RELEASE_CHECK.md) |
-| Spades / Hearts / King | MVP jogável via `GameAdapter`; expostos no selector |
-| Sessão unificada | `GameBoard` → `adapter.initialize()` (E1) |
-| Testes frontend | `Game.test.ts`, `GameSession.test.ts`, `SpadesGame.test.ts` |
-| IA externa / multiplayer | Dev-only por defeito (localhost) |
+| Sueca | Completo |
+| Spades / Hearts / King | MVP + selector |
+| UI mesa | `table/*` + `GameBoard.css` (refactor com propósito) |
+| Deploy web | Vercel; migrar Render opcional — [DEPLOY_RENDER.md](../DEPLOY_RENDER.md) |
+| Android | Capacitor 6, `npm run release:android` |
 
-## Fases principais
+## Execução — ordem dos prompts
 
-1. Arquitetura modular de jogo — **feito** (`GameAdapter`, `GameFactory`, sessão unificada)
-2. Implementação dos jogos — **Sueca completo**; Spades/Hearts/King em MVP
-3. UI e multiplayer genéricos — **parcial** (4 jogos no selector; multiplayer prod pendente)
-4. IA e personalidades — **planeado**
-5. Documentação e entrega — **em curso**
+Ver [prompts/implementation-prompts.md](prompts/implementation-prompts.md).
 
-## 1. Arquitetura modular de jogo
+| Fase | Prompt | Notas |
+|------|--------|-------|
+| Assets | **P0** | Pack itch.io — [ASSET_PACK_RESEARCH.md](../ASSET_PACK_RESEARCH.md) |
+| Jogos | P1, P2 | Regras variantes (MVP) |
+| Mobile UX | P3 | Menus, safe area, touch 48px |
+| Android | **P4** | AAB, signing |
+| Backend | **P5** | **Obrigatório** |
+| Monetização | ~~P6~~ | Adiado |
+| Play | P7 | Legal, listing |
+| QA | P8 | CI, Maestro, internal track |
 
-- Definir um modelo de cartas e baralho reutilizável para 52 cartas.
-- Criar interfaces de jogo genéricas: `GameAdapter`, `GameFactory`.
-- Refatorar o motor atual de Sueca para esta arquitetura (Sueca ainda corre via `Game.ts` + `SuecaGame` adapter).
-- Garantir que o core não dependa de frontend ou de regras específicas de um jogo.
+## Mobile / UX (ex-ROADMAP M0–M3)
 
-## 2. Implementação dos jogos
+Fundido aqui — não usar `ROADMAP.md` (arquivado).
 
-- **Sueca:** completo (regras, scoring, IA local, deploy).
-- **Spades / Hearts:** protótipos com regras parciais; scoring e fluxo de ronda incompletos.
-- **King:** placeholder com TODOs explícitos em `KingGame.ts`.
+- **M1:** 360×800 sem corte na mão Sul; toque ≥48px — [MOBILE_AUDIT.md](../MOBILE_AUDIT.md)
+- **M2:** Tokens + packs UI em menus/modais
+- **M3:** Feedback / error boundary (backlog leve)
 
-## 3. UI e multiplayer genéricos
+## Design → código
 
-- Seleção de jogo: **Sueca, Spades, Hearts, King** (`getAvailableGames()`).
-- `GameBoard` usa apenas `GameAdapter` + `getCurrentState()`.
-- Multiplayer WebSocket: cliente pronto; servidor de produção não configurado.
+- Packs PNG → `map-card-pack.mjs` → `public/assets/cards2/`
+- Tokens: `design-tokens.css` + JSON opcional
+- Guia: [DESIGN_HANDOFF.md](../DESIGN_HANDOFF.md)
 
-## 4. IA e personalidades
+## Próximos passos
 
-- IA local em `Game.chooseAICard`.
-- Serviço Python em `sueca-ai/` com testes pytest; deploy e `REACT_APP_AI_SERVICE_URL` pendentes.
+1. Tu: pesquisa packs ([ASSET_PACK_RESEARCH.md](../ASSET_PACK_RESEARCH.md))
+2. Integrar assets + smoke dispositivo
+3. Deploy P5 (Render) + ligar cliente WS
+4. AAB internal track
+5. Decidir migração front Vercel → Render
 
-## 5. Documentação e entrega
+## Documentação histórica
 
-- Plano global: `docs/plan/PLAN_GLOBAL.md`
-- Prompts: `docs/plan/prompts/implementation-prompts.md`
-- Release checklist: `docs/RELEASE_CHECK.md`
-
-## Design pipeline + Android (Maio 2026)
-
-- Avaliação: [PHASE0_ASSESSMENT.md](../PHASE0_ASSESSMENT.md)
-- Handoff Figma/Penpot/pack: [DESIGN_HANDOFF.md](../DESIGN_HANDOFF.md)
-- Refactor UI: `TableSurface`, `PlayerSeats`, `ScoreStrip` (mesa); CRA + Capacitor (B1)
-- Release Android: `npm run release:android` → [ANDROID_SIGNING.md](../ANDROID_SIGNING.md)
-
-## Próximo passo recomendado
-
-1. Integrar pack de cartas PNG + smoke 360×800
-2. `npm run release:android` + AAB internal track
-3. E6 backlog: IA personas, multiplayer por variante, bidding UI Spades
-
-## Estrutura de documentação
-
-- `docs/plan/PLAN_GLOBAL.md`
-- `docs/plan/prompts/implementation-prompts.md`
-- `docs/RELEASE_CHECK.md`
+- Prompts E1–E5 (concluídos): `_archives/plan-prompts-e/`
+- Snapshots antigos: `_archives/snapshots/`

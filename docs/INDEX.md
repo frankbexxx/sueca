@@ -1,77 +1,76 @@
-# 📚 Índice da Documentação
+# Documentação SUECÂO — índice
 
-## 🚀 Início Rápido
-
-| Documento | Descrição | Quando Usar |
-|-----------|-----------|-------------|
-| **[QUICKSTART.md](QUICKSTART.md)** | Início rápido em 3 passos | Primeira vez no projeto |
-| **[SETUP.md](SETUP.md)** | Setup detalhado | Configuração inicial completa |
-| **[COMO_PARTILHAR.md](COMO_PARTILHAR.md)** | Como partilhar o jogo | Quer partilhar com amigos |
-
-## 🌐 Deploy e Distribuição
-
-| Documento | Descrição | Quando Usar |
-|-----------|-----------|-------------|
-| **[DEPLOY.md](DEPLOY.md)** | Guia completo de deploy | Deploy rápido e detalhado (Vercel, Netlify) |
-| **[RELEASE_CHECK.md](RELEASE_CHECK.md)** | Checklist pós-deploy | Validar produção antes/depois de `vercel --prod` |
-| **[DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)** | Figma / Penpot / pack → repo | Integrar gráficos e tokens |
-| **[PHASE0_ASSESSMENT.md](PHASE0_ASSESSMENT.md)** | Avaliação UI + Android (Maio 2026) | Decisões B1 / pipeline design |
-| **[ASSETS.md](ASSETS.md)** | Cartas e packs | Comprar ou mapear assets |
-| **[ANDROID_PUBLICATION_REQUIREMENTS.md](ANDROID_PUBLICATION_REQUIREMENTS.md)** | Requisitos para publicação no Google Play | Publicar na Play Store |
-| **[GOOGLE_PLAY_STORE_LISTING.md](GOOGLE_PLAY_STORE_LISTING.md)** | Descrição e classificação para Play Store | Criar listagem na Play Store |
-| **[ADDING_FEEDBACK_EMAIL.md](ADDING_FEEDBACK_EMAIL.md)** | Como adicionar email de feedback | Adicionar contacto no jogo |
-| **[PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md)** | Template de Política de Privacidade | Criar política de privacidade |
-| **[TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md)** | Template de Termos de Serviço | Criar termos de serviço |
-
-## 📊 Estado e Planeamento
-
-| Documento | Descrição | Quando Usar |
-|-----------|-----------|-------------|
-| **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Estado atual do projeto | Ver o que está implementado |
-| **[ROADMAP.md](ROADMAP.md)** | Roadmap e próximos passos | Planeamento e continuar desenvolvimento |
-| **[TODO_NEXT_SESSION.md](TODO_NEXT_SESSION.md)** | Tarefas para próxima sessão | Começar nova sessão de trabalho |
-
-## 🧪 Testes
-
-| Documento | Descrição | Quando Usar |
-|-----------|-----------|-------------|
-| **[TESTING.md](TESTING.md)** | Guia completo de testes | Testes e validação |
-
-## 📁 Estrutura do Projeto
-
-| Documento | Descrição | Quando Usar |
-|-----------|-----------|-------------|
-| **[ESTRUTURA_PROJETO.md](ESTRUTURA_PROJETO.md)** | Estrutura do código | Entender organização do projeto |
+**Começar aqui:** [STATUS.md](STATUS.md) (estado e prioridades) · [README.md](../README.md) (raiz do repo)
 
 ---
 
-## 🎯 Fluxo Recomendado
+## Núcleo (plano actual)
 
-### Para Novos Desenvolvedores:
-1. Ler `QUICKSTART.md`
-2. Ler `PROJECT_STATUS.md` para entender estado atual
-3. Ler `ROADMAP.md` para ver próximas melhorias
+| Doc | Uso |
+|-----|-----|
+| [STATUS.md](STATUS.md) | Estado actual, prioridades, próximos passos |
+| [plan/PLAN_GLOBAL.md](plan/PLAN_GLOBAL.md) | Plano mestre |
+| [plan/prompts/implementation-prompts.md](plan/prompts/implementation-prompts.md) | Ordem P0–P8 |
+| [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md) | Critérios compra packs (itch.io) |
+| [ASSETS.md](ASSETS.md) | Integração cartas/UX no repo |
+| [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | Export → `map-card-pack`, tokens |
+| [RELEASE_CHECK.md](RELEASE_CHECK.md) | Checklist antes de release |
 
-### Para Fazer Deploy:
-1. Ler `DEPLOY.md` (guia rápido e completo)
+## Android + Play Store
 
-### Para Continuar Desenvolvimento:
-1. Ler `PROJECT_STATUS.md` (estado atual)
-2. Ler `ROADMAP.md` (próximos passos e milestones)
-3. Implementar features seguindo o roadmap
+| Doc | Uso |
+|-----|-----|
+| [ANDROID_SIGNING.md](ANDROID_SIGNING.md) | Keystore, AAB |
+| [ANDROID_PUBLICATION_REQUIREMENTS.md](ANDROID_PUBLICATION_REQUIREMENTS.md) | Requisitos Google |
+| [GOOGLE_PLAY_STORE_LISTING.md](GOOGLE_PLAY_STORE_LISTING.md) | Textos listagem |
+| [MOBILE_AUDIT.md](MOBILE_AUDIT.md) | Smoke 360×800 |
+| [MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md) | Testes em dispositivo |
+| [OFFLINE.md](OFFLINE.md) | Offline + Capacitor |
 
-### Para Testar:
-1. Ler `TESTING.md` (checklists e guias de teste)
+## Prompts de implementação (activos)
+
+| | |
+|--|--|
+| [P0-assets](plan/prompts/P0-assets.md) | Packs cartas + UX |
+| [P1-spades-hearts](plan/prompts/P1-spades-hearts.md) | Regras |
+| [P2-king-simplified](plan/prompts/P2-king-simplified.md) | King |
+| [P3-mobile-chrome](plan/prompts/P3-mobile-chrome.md) | Mobile UX |
+| [P4-capacitor](plan/prompts/P4-capacitor.md) | Android AAB |
+| [P5-backend-mp](plan/prompts/P5-backend-mp.md) | **Backend obrigatório** |
+| [P6-monetization](plan/prompts/P6-monetization.md) | Adiado |
+| [P7-play-compliance](plan/prompts/P7-play-compliance.md) | Legal / listing |
+| [P8-qa-release](plan/prompts/P8-qa-release.md) | QA + CI |
+
+## Deploy
+
+| Doc | Uso |
+|-----|-----|
+| [DEPLOY.md](DEPLOY.md) | Vercel / Netlify (CRA) |
+| [DEPLOY_QUICKSTART.md](DEPLOY_QUICKSTART.md) | Deploy rápido |
+| [DEPLOY_RENDER.md](DEPLOY_RENDER.md) | Migração Render (opcional) |
+| [COMO_PARTILHAR.md](COMO_PARTILHAR.md) | Partilhar com amigos |
+
+## Regras e copy
+
+| Doc | Uso |
+|-----|-----|
+| [rules/sueca.md](rules/sueca.md) | Regras Sueca |
+| [rules/king-simplified.md](rules/king-simplified.md) | King simplificado |
+| [TEXTOS_ECRAN.md](TEXTOS_ECRAN.md) | Textos UI |
+| [PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md) | Privacidade |
+| [TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md) | Termos |
+
+## Outros
+
+| Doc | Uso |
+|-----|-----|
+| [TESTING.md](TESTING.md) | Testes gerais |
+| [SETUP.md](SETUP.md) / [QUICKSTART.md](QUICKSTART.md) | Setup dev |
+| [ESTRUTURA_PROJETO.md](ESTRUTURA_PROJETO.md) | Estrutura código |
+| [backend/README.md](../backend/README.md) | API P5 |
+| [sueca-ai/README.md](../sueca-ai/README.md) | IA Python (congelada) |
+| [_archives/README.md](_archives/README.md) | Docs históricos |
 
 ---
 
-## 📦 Documentação Arquivada
-
-Documentação histórica e versões antigas estão em `archive/`:
-- `CHAT_SUMMARY.md` - Resumo histórico de sessões
-- `DEVELOPMENT_PLAN.md` - Plano técnico antigo
-- `CORRIGIR_DEPLOY.md` - Troubleshooting histórico
-
----
-
-**Última atualização:** Maio 2026
+**Última actualização:** Maio 2026

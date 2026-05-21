@@ -1,12 +1,13 @@
 # SUECÂO — Assets (cartas e UX)
 
-**Handoff completo (Figma / Penpot / pack):** [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
+**Pesquisa packs (itch.io):** [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md)  
+**Handoff técnico:** [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 
 ## Estado no repositório
 
 | Pack | Path | Estado |
 |------|------|--------|
-| Cartas (dev placeholder) | `frontend/public/assets/cards2/*.svg` | Gerado por `tools/generate-card-placeholders.mjs` |
+| Cartas (dev placeholder) | `frontend/public/assets/cards2/*.svg` | Substituir por pack comercial PNG |
 | Cartas (comercial) | Copiar para `frontend/public/assets/cards2/` | **Tu compras** — ver critérios abaixo |
 | UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base; kit UI opcional |
 | Ícones app | `image/ico/buga_ico_draw/` | Usado no Capacitor |

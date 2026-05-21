@@ -16,5 +16,8 @@ Integrar assets + documentar licenças. Ver [DESIGN_HANDOFF.md](../../DESIGN_HAN
 - [ ] 52 cartas visíveis; build sem 404.
 - [ ] `npm test` verde.
 
-## Proibido
-- `GameBoard.css` mesa.
+## Referência compra
+- [ASSET_PACK_RESEARCH.md](../../ASSET_PACK_RESEARCH.md) — critérios itch.io (qualidade).
+
+## Mesa
+- Preferir não redesenhar a vaza sem smoke mobile; alterações em `GameBoard.css` / `table/*` **com propósito** (legibilidade, pack UX).

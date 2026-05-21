@@ -1,5 +1,7 @@
 # Prompt P8 — QA e release
 
+> P5 obrigatório antes de release MP. P6 adiado. Ver [STATUS.md](../../STATUS.md).
+
 ## Objetivo
 CI verde + Maestro smoke + internal track.
 
