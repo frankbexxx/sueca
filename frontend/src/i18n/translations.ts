@@ -81,6 +81,51 @@ export interface Translations {
   menu: {
     selectGame: string;
   };
+
+  nav: {
+    home: string;
+    play: string;
+    rules: string;
+    more: string;
+  };
+
+  dashboard: {
+    greeting: string;
+    continueGame: string;
+    continueHint: string;
+    playNow: string;
+    lastGame: string;
+    statsTitle: string;
+    gamesPlayed: string;
+    wins: string;
+    noSavedGame: string;
+  };
+
+  playSetup: {
+    title: string;
+    subtitle: string;
+  };
+
+  rulesHub: {
+    title: string;
+    subtitle: string;
+    openRules: string;
+  };
+
+  moreScreen: {
+    title: string;
+    settings: string;
+    profile: string;
+    credits: string;
+    playerName: string;
+    sound: string;
+    language: string;
+  };
+
+  inGame: {
+    exit: string;
+    exitConfirm: string;
+  };
   
   // Game Menu
   gameMenu: {
@@ -158,6 +203,45 @@ export const translations: Record<Language, Translations> = {
     },
     menu: {
       selectGame: 'Selecionar Jogo'
+    },
+    nav: {
+      home: 'Início',
+      play: 'Jogar',
+      rules: 'Regras',
+      more: 'Mais'
+    },
+    dashboard: {
+      greeting: 'Olá',
+      continueGame: 'Continuar partida',
+      continueHint: 'Retoma a última partida guardada',
+      playNow: 'Jogar agora',
+      lastGame: 'Último jogo',
+      statsTitle: 'Estatísticas',
+      gamesPlayed: 'Partidas',
+      wins: 'Vitórias',
+      noSavedGame: 'Sem partida guardada'
+    },
+    playSetup: {
+      title: 'Nova partida',
+      subtitle: 'Escolhe o jogo e os adversários'
+    },
+    rulesHub: {
+      title: 'Regras',
+      subtitle: 'Consulta as regras de cada jogo',
+      openRules: 'Ver regras'
+    },
+    moreScreen: {
+      title: 'Mais',
+      settings: 'Definições',
+      profile: 'Perfil local',
+      credits: 'Créditos',
+      playerName: 'O teu nome',
+      sound: 'Som',
+      language: 'Idioma'
+    },
+    inGame: {
+      exit: 'Sair',
+      exitConfirm: 'Abandonar a partida actual?'
     },
     startMenu: {
       title: '🃏 Sueca',
@@ -280,6 +364,45 @@ export const translations: Record<Language, Translations> = {
     },
     menu: {
       selectGame: 'Select Game'
+    },
+    nav: {
+      home: 'Home',
+      play: 'Play',
+      rules: 'Rules',
+      more: 'More'
+    },
+    dashboard: {
+      greeting: 'Hello',
+      continueGame: 'Continue game',
+      continueHint: 'Resume your saved game',
+      playNow: 'Play now',
+      lastGame: 'Last game',
+      statsTitle: 'Statistics',
+      gamesPlayed: 'Games played',
+      wins: 'Wins',
+      noSavedGame: 'No saved game'
+    },
+    playSetup: {
+      title: 'New game',
+      subtitle: 'Pick a game and opponents'
+    },
+    rulesHub: {
+      title: 'Rules',
+      subtitle: 'Browse rules for each game',
+      openRules: 'View rules'
+    },
+    moreScreen: {
+      title: 'More',
+      settings: 'Settings',
+      profile: 'Local profile',
+      credits: 'Credits',
+      playerName: 'Your name',
+      sound: 'Sound',
+      language: 'Language'
+    },
+    inGame: {
+      exit: 'Exit',
+      exitConfirm: 'Leave the current game?'
     },
     startMenu: {
       title: '🃏 Sueca',

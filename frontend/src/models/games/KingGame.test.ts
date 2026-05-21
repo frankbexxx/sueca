@@ -23,4 +23,16 @@ describe('KingGame simplified', () => {
     expect(king.handIndex).toBe(6);
     expect(king.handType).toBe('positive');
   });
+
+  it('applies -5 per trick on negative hands', () => {
+    const game = new KingGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as { state: ReturnType<KingGame['getCurrentState']> };
+    internal.state.waitingForRoundStart = false;
+    internal.state.waitingForTrickEnd = true;
+    internal.state.nextTrickLeader = 0;
+    game.finishTrick(internal.state);
+    const king = internal.state.variantState?.king as { playerScores: number[] };
+    expect(king.playerScores[0]).toBe(-5);
+  });
 });

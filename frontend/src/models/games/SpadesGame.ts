@@ -16,6 +16,7 @@ interface SpadesVariantState {
   team1Bags: number;
   team2Bags: number;
   waitingForBids: boolean;
+  spadesBroken: boolean;
 }
 
 function getSpadesState(state: GameState): SpadesVariantState {
@@ -28,7 +29,8 @@ function getSpadesState(state: GameState): SpadesVariantState {
       team2Tricks: 0,
       team1Bags: 0,
       team2Bags: 0,
-      waitingForBids: true
+      waitingForBids: true,
+      spadesBroken: false
     }
   );
 }
@@ -135,7 +137,8 @@ export class SpadesGame extends BaseGameAdapter {
           team2Tricks: 0,
           team1Bags: 0,
           team2Bags: 0,
-          waitingForBids
+          waitingForBids,
+          spadesBroken: false
         }
       }
     };
@@ -153,7 +156,7 @@ export class SpadesGame extends BaseGameAdapter {
     const card = player.hand[cardIndex];
     if (s.currentTrick.length === 0) {
       const hasNonSpades = player.hand.some((c) => c.suit !== 'spades');
-      if (card.suit === 'spades' && hasNonSpades) return false;
+      if (card.suit === 'spades' && hasNonSpades && !spades.spadesBroken) return false;
       return true;
     }
 
@@ -168,6 +171,12 @@ export class SpadesGame extends BaseGameAdapter {
     const player = s.players[playerIndex];
     const card = player.hand.splice(cardIndex, 1)[0];
     s.currentTrick.push(card);
+
+    const spades = getSpadesState(s);
+    if (card.suit === 'spades') {
+      spades.spadesBroken = true;
+    }
+    s.variantState = { ...s.variantState, spades };
 
     if (s.currentTrick.length === 4) {
       const winner = trickWinnerIndex(s.currentTrick, s.trickLeader, 'spades');
@@ -267,5 +276,41 @@ export class SpadesGame extends BaseGameAdapter {
 
   startRound(_state: GameState): void {
     if (this.state) this.state.waitingForRoundStart = false;
+  }
+
+  restoreState(state: GameState): GameState {
+    this.state = JSON.parse(JSON.stringify(state));
+    return this.getCurrentState();
+  }
+
+  chooseAICard(state: GameState, playerIndex: number): number {
+    const spades = getSpadesState(this.state!);
+    const player = state.players[playerIndex];
+    if (!player) return -1;
+    const valid: number[] = [];
+    for (let i = 0; i < player.hand.length; i++) {
+      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
+    }
+    if (valid.length === 0) return -1;
+
+    const team = player.team ?? 1;
+    const teamTricks = team === 1 ? spades.team1Tricks : spades.team2Tricks;
+    const teamBid = team === 1 ? spades.team1Bid : spades.team2Bid;
+    const needTricks = teamTricks < teamBid;
+
+    if (state.currentTrick.length === 0) {
+      const nonSpades = valid.filter((i) => player.hand[i].suit !== 'spades');
+      const pool = nonSpades.length > 0 ? nonSpades : valid;
+      return pool[needTricks ? pool.length - 1 : 0];
+    }
+
+    const ledSuit = state.currentTrick[0].suit;
+    const trumpPlayed = state.currentTrick.some((c) => c.suit === 'spades');
+    const winning = valid.find((i) => {
+      const c = player.hand[i];
+      if (trumpPlayed && c.suit === 'spades') return true;
+      return c.suit === ledSuit;
+    });
+    return winning ?? valid[0];
   }
 }

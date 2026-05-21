@@ -50,6 +50,7 @@ export interface GameState {
   aiDifficulty: AIDifficulty; // AI difficulty level
   partnerSignals: Array<{ playerIndex: number; signal: string; trick: number }>; // Partner coordination signals
   nextRoundValue?: number; // Internal: value for next round (used when continuing after round end)
+  pendingRoundMultiplier?: number; // Sueca: 2 after 60-60 tie — doubles next hand's game award
   isMultiplayer?: boolean;
   sessionId?: string;
   localPlayerIndex?: number;

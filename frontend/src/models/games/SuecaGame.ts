@@ -63,4 +63,11 @@ export class SuecaGame extends BaseGameAdapter {
   updatePlayerNames(_state: GameState, names: string[]): void {
     this.game?.updatePlayerNames(names);
   }
+
+  restoreState(state: GameState): GameState {
+    const names = state.players.map((p) => p.name);
+    this.game = new Game(names, state.dealingMethod || 'A', state.aiDifficulty || 'medium');
+    this.game.loadState(state);
+    return this.getCurrentState();
+  }
 }

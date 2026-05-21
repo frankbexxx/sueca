@@ -1,5 +1,5 @@
 import { Game } from './Game';
-import { CARD_POINTS } from '../types/game';
+import { CARD_POINTS, GameState } from '../types/game';
 
 describe('Game Sueca invariants', () => {
   it('deals 10 cards to each of 4 players', () => {
@@ -70,5 +70,30 @@ describe('Game Sueca invariants', () => {
     expect(after.waitingForTrickEnd).toBe(false);
     expect(after.currentTrick).toHaveLength(0);
     expect(after.lastTrickWinner).not.toBeNull();
+  });
+
+  it('awards 2 games after 60-60 carry on next round win', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void; startNewRound: (v: number) => void };
+    internal.state.scores = { team1: 60, team2: 60 };
+    internal.endRound();
+    expect(internal.state.nextRoundValue).toBe(2);
+    internal.state.waitingForRoundEnd = false;
+    internal.startNewRound(2);
+    internal.state.scores = { team1: 65, team2: 55 };
+    internal.endRound();
+    expect(internal.state.gameScore.team1).toBe(2);
+  });
+
+  it('ends game when a team reaches 4 games', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.gameScore = { team1: 3, team2: 0 };
+    internal.state.scores = { team1: 65, team2: 55 };
+    internal.endRound();
+    expect(internal.state.isGameOver).toBe(true);
+    expect(internal.state.winner).toBe(1);
   });
 });

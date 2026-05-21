@@ -23,6 +23,7 @@ export interface GameAdapter {
   getPlayerHand(state: GameState, playerIndex: number): Card[];
   getPlayers(state: GameState): Player[];
   getState(state: GameState): GameState;
+  restoreState(state: GameState): GameState;
 }
 
 function cloneState(state: GameState): GameState {
@@ -90,6 +91,10 @@ export abstract class BaseGameAdapter implements GameAdapter {
   }
 
   getState(state: GameState): GameState {
+    return cloneState(state);
+  }
+
+  restoreState(state: GameState): GameState {
     return cloneState(state);
   }
 

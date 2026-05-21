@@ -1,0 +1,38 @@
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: linear-gradient(160deg, #1a2332 0%, #0f1419 100%);
+  color: #e9eef7;
+}
+
+.app-shell.dark-mode {
+  background: linear-gradient(160deg, #0d1117 0%, #050608 100%);
+}
+
+.app-shell-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(var(--sueca-bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0) + 8px);
+}
+
+.app-shell--game {
+  padding-bottom: 0;
+}
+
+.app-shell--game .app-shell-content {
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.screen-header .screen-title,
+.screen-home .screen-title,
+.screen-play .screen-title,
+.screen-rules .screen-title,
+.screen-more .screen-title {
+  color: #e9eef7;
+}
+
+.screen-subtitle {
+  color: rgba(233, 238, 247, 0.75);
+}

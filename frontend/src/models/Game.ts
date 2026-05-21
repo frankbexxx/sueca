@@ -247,6 +247,10 @@ export class Game {
     return { ...this.state };
   }
 
+  loadState(state: GameState): void {
+    this.state = JSON.parse(JSON.stringify(state));
+  }
+
   setLocalPlayerIndex(localPlayerIndex: number): void {
     this.state.players = this.state.players.map((player, index) => ({
       ...player,
@@ -723,37 +727,42 @@ export class Game {
       roundValue = 2; // Next round worth 2 points
       // Don't add to game score yet, will be added in next round
     } else {
+      const multiplier = this.state.pendingRoundMultiplier ?? 1;
+      const award = (team: 'team1' | 'team2', base: number) => {
+        if (base > 0) {
+          this.state.gameScore[team] += base * multiplier;
+        }
+      };
+
       // Determine winner
       if (team1 >= 61) {
         if (team1 === 120) {
-          // 120 points = stand alone pente (4-0)
-          // Create a new completed pente and add to completedPentes
-          // Do NOT add to gameScore (it's a separate pente)
           this.state.completedPentes.push({ team1: 4, team2: 0 });
           isStandAlonePente = true;
-          roundValue = 0; // Don't add to current gameScore
+          roundValue = 0;
         } else if (team1 >= 91) {
-          roundValue = 2; // 91+ = 2 victories
-          this.state.gameScore.team1 += roundValue;
+          roundValue = 2;
+          award('team1', roundValue);
         } else {
-          roundValue = 1; // Normal victory
-          this.state.gameScore.team1 += roundValue;
+          roundValue = 1;
+          award('team1', roundValue);
         }
       } else if (team2 >= 61) {
         if (team2 === 120) {
-          // 120 points = stand alone pente (0-4)
-          // Create a new completed pente and add to completedPentes
-          // Do NOT add to gameScore (it's a separate pente)
           this.state.completedPentes.push({ team1: 0, team2: 4 });
           isStandAlonePente = true;
-          roundValue = 0; // Don't add to current gameScore
+          roundValue = 0;
         } else if (team2 >= 91) {
-          roundValue = 2; // 91+ = 2 victories
-          this.state.gameScore.team2 += roundValue;
+          roundValue = 2;
+          award('team2', roundValue);
         } else {
-          roundValue = 1; // Normal victory
-          this.state.gameScore.team2 += roundValue;
+          roundValue = 1;
+          award('team2', roundValue);
         }
+      }
+
+      if (multiplier > 1) {
+        this.state.pendingRoundMultiplier = undefined;
       }
     }
 
@@ -791,6 +800,10 @@ export class Game {
   }
 
   private startNewRound(roundValue: number): void {
+    if (roundValue === 2) {
+      this.state.pendingRoundMultiplier = 2;
+    }
+    this.state.nextRoundValue = undefined;
     this.state.round++;
     this.state.scores = { team1: 0, team2: 0 };
     this.state.currentTrick = [];

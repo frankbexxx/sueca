@@ -1,24 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
+import { GameConfig } from '../types/gameConfig';
+export type { GameConfig } from '../types/gameConfig';
 import { getAvailableGames } from '../constants/gameMetadata';
 import { GameSelector } from './GameSelector';
 import { RulesSheet } from './RulesSheet';
 import { useLanguage } from '../i18n/useLanguage';
 import { MULTIPLAYER_ENABLED } from '../config/features';
 import './StartMenu.css';
-
-/**
- * Configuration interface for starting a new game
- */
-export interface GameConfig {
-  playerNames: string[];
-  aiDifficulty: AIDifficulty;
-  dealingMethod: DealingMethod;
-  multiplayerEnabled: boolean;
-  multiplayerSessionId?: string;
-  multiplayerJoinMode?: boolean;
-  gameVariant: GameVariant;
-}
 
 /**
  * Props interface for StartMenu component

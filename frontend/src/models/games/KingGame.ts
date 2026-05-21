@@ -86,16 +86,18 @@ export class KingGame extends BaseGameAdapter {
     }
 
     const trumpCard = players[0].hand[0] ? { ...players[0].hand[0], id: `trump_${handIndex}` } : null;
+    const dealerIndex = handIndex % 4;
+    const leader = (dealerIndex + 1) % 4;
 
     return {
       variant: 'king',
       players,
-      currentPlayerIndex: 0,
-      dealerIndex: 0,
+      currentPlayerIndex: leader,
+      dealerIndex,
       trumpSuit,
       trumpCard,
       currentTrick: [],
-      trickLeader: 0,
+      trickLeader: leader,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
       completedPentes: [],
@@ -217,5 +219,39 @@ export class KingGame extends BaseGameAdapter {
     if (this.state) {
       this.state.waitingForRoundStart = false;
     }
+  }
+
+  restoreState(state: GameState): GameState {
+    this.state = JSON.parse(JSON.stringify(state));
+    return this.getCurrentState();
+  }
+
+  chooseAICard(state: GameState, playerIndex: number): number {
+    if (!this.state) return -1;
+    const king = getKingState(this.state);
+    const player = state.players[playerIndex];
+    if (!player) return -1;
+    const valid: number[] = [];
+    for (let i = 0; i < player.hand.length; i++) {
+      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
+    }
+    if (valid.length === 0) return -1;
+
+    if (king.handType === 'negative') {
+      if (state.currentTrick.length === 0) {
+        return valid.reduce((best, i) => {
+          const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+          const a = rankOrder.indexOf(player.hand[best].rank);
+          const b = rankOrder.indexOf(player.hand[i].rank);
+          return a < b ? best : i;
+        }, valid[0]);
+      }
+      return valid[0];
+    }
+
+    if (state.currentTrick.length === 0) {
+      return valid[valid.length - 1];
+    }
+    return valid[0];
   }
 }

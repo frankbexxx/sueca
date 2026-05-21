@@ -1,0 +1,83 @@
+.screen-play {
+  padding: 16px 16px 24px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.play-setup-card {
+  padding: 16px;
+  border-radius: var(--sueca-radius-md, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.play-setup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.play-setup-label {
+  font-weight: 600;
+  color: #cfdffc;
+  font-size: 0.95rem;
+}
+
+.player-buttons-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.player-name-button {
+  min-height: var(--sueca-touch-min, 48px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.form-input,
+.form-select {
+  min-height: var(--sueca-touch-min, 48px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option,
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--sueca-touch-min, 48px);
+  color: #e9eef7;
+  cursor: pointer;
+}
+
+.play-setup-error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+.play-start-btn {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: var(--sueca-radius-md, 10px);
+}

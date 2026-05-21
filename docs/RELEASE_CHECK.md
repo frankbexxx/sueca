@@ -39,7 +39,10 @@ vercel --prod
 
 ## Android (Capacitor)
 
-- [ ] Primeira vez: `cd frontend && npx cap add android` (pasta `android/` é local, `.gitignore`)
+> **Gate:** complete [plan/PRODUCT_ESSENTIALS.md](plan/PRODUCT_ESSENTIALS.md) must-have checklist first.
+
+- [ ] App shell 4 tabs (Início · Jogar · Regras · Mais)
+- [ ] Regras + testes verdes (Sueca, Hearts, Spades, King)
 - [ ] `npm run release:android` (build mobile + `cap sync android`) — ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 - [ ] Ou manual: `npm run build:android` depois `npx cap sync android`
 - [ ] AAB assinado (`docs/ANDROID_SIGNING.md`) — internal track Play Console

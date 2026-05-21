@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameState, Card, DealingMethod, AIDifficulty, Suit, GameVariant } from '../types/game';
-import { GameMenu } from './GameMenu';
-import { StartMenu, GameConfig } from './StartMenu';
-import { MultiplayerClient, MultiplayerClientCallbacks } from '../services/multiplayerClient';
+import { GameState, Card, Suit } from '../types/game';
+import { GameConfig } from '../types/gameConfig';
+import { InGameBar } from './navigation/InGameBar';
 import { RoundEndModal } from './RoundEndModal';
 import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
@@ -14,11 +13,7 @@ import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '.
 import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
-  GAME_OVER_DELAY_MS,
-  STORAGE_KEYS,
-  DEFAULT_PLAYER_NAMES,
-  DEFAULT_DEALING_METHOD,
-  DEFAULT_AI_DIFFICULTY
+  GAME_OVER_DELAY_MS
 } from '../constants/gameConstants';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
@@ -31,58 +26,38 @@ import { HeartsPassModal } from './HeartsPassModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
-import { MULTIPLAYER_ENABLED } from '../config/features';
+import { getAvailableGames } from '../constants/gameMetadata';
+import {
+  saveGameSession,
+  clearGameSession,
+  recordGameResult,
+  SavedGameSession
+} from '../services/gameSessionStorage';
+
+export interface GameBoardProps {
+  config: GameConfig;
+  resumeSession?: SavedGameSession | null;
+  darkMode: boolean;
+  onExit: () => void;
+}
 
 /**
  * Main game board component - renders the entire Sueca game interface
  * Manages game state, player interactions, AI moves, and UI rendering
  */
-export const GameBoard: React.FC = () => {
+export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, darkMode, onExit }) => {
   const { t } = useLanguage();
-  // Start menu and game state
-  const [showStartMenu, setShowStartMenu] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
-  const [aiSource, setAiSource] = useState<'external' | 'local'>('local'); // Observabilidade da AI
+  const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
   
-  // Game configuration state - loaded from localStorage or defaults
-  const [dealingMethod, setDealingMethod] = useState<DealingMethod>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.DEALING_METHOD);
-    return (saved === 'A' || saved === 'B') ? saved : DEFAULT_DEALING_METHOD;
-  });
-  const [playerNames, setPlayerNames] = useState<string[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PLAYER_NAMES);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 4) {
-          return parsed;
-        }
-      } catch (e) {
-        console.error('Error parsing saved player names:', e);
-      }
-    }
-    return DEFAULT_PLAYER_NAMES;
-  });
-  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.AI_DIFFICULTY);
-    return (saved === 'easy' || saved === 'medium' || saved === 'hard') ? saved : DEFAULT_AI_DIFFICULTY;
-  });
-  
-  // UI preferences - dark mode persisted in localStorage
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
-    return saved ? saved === 'true' : false;
-  });
+  const { playerNames, dealingMethod, aiDifficulty, gameVariant } = config;
+  const isMultiplayer = Boolean(config.multiplayerEnabled);
+  const multiplayerPlayerIndex = 0;
+  const multiplayerStatus = 'disconnected' as const;
+  const multiplayerSessionId: string | null = config.multiplayerSessionId ?? null;
+  const multiplayerError: string | null = null;
 
-  const [gameVariant, setGameVariant] = useState<GameVariant>('sueca');
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
-
-  const [isMultiplayer, setIsMultiplayer] = useState(false);
-  const [multiplayerSessionId, setMultiplayerSessionId] = useState<string | null>(null);
-  const [multiplayerStatus, setMultiplayerStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-  const [multiplayerError, setMultiplayerError] = useState<string | null>(null);
-  const [multiplayerPlayerIndex, setMultiplayerPlayerIndex] = useState<number>(0);
-  const [multiplayerClient, setMultiplayerClient] = useState<MultiplayerClient | null>(null);
   
   /**
    * Game state snapshot - reactive state for UI updates
@@ -123,115 +98,42 @@ export const GameBoard: React.FC = () => {
   });
   // UI state
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
-  const { playCardSound, playErrorSound } = useSound(); // Sound effects hook
-  const [showGridOverlay, setShowGridOverlay] = useState(false); // Debug grid overlay toggle
+  const { playCardSound, playErrorSound } = useSound();
+  const showGridOverlay = false;
 
-  /**
-   * Handles starting a new game with configuration from StartMenu
-   * Creates new Game instance and initializes game state
-   */
-  const handleStartGame = (config: GameConfig) => {
-    setPlayerNames(config.playerNames);
-    setAIDifficulty(config.aiDifficulty);
-    setDealingMethod(config.dealingMethod);
-    setGameVariant(config.gameVariant);
-    setIsMultiplayer(Boolean(config.multiplayerEnabled));
-    setMultiplayerSessionId(config.multiplayerSessionId || null);
-    setMultiplayerError(null);
-    setMultiplayerStatus(config.multiplayerEnabled ? 'connecting' : 'disconnected');
+  const gameLabel =
+    getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
 
+  useEffect(() => {
     try {
       const adapter = GameFactory.getAdapter(config.gameVariant);
-      const initialState = adapter.initialize(config.playerNames, {
-        dealingMethod: config.dealingMethod,
-        aiDifficulty: config.aiDifficulty,
-        localPlayerIndex: config.multiplayerEnabled ? 0 : undefined
-      });
+      let initialState: GameState;
+      if (resumeSession?.state && resumeSession.config.gameVariant === config.gameVariant) {
+        initialState = adapter.restoreState(resumeSession.state);
+      } else {
+        initialState = adapter.initialize(config.playerNames, {
+          dealingMethod: config.dealingMethod,
+          aiDifficulty: config.aiDifficulty,
+          localPlayerIndex: config.multiplayerEnabled ? 0 : undefined
+        });
+      }
       setGameAdapter(adapter);
       setGameState(initialState);
-      setShowStartMenu(false);
       setGameStarted(true);
-      setSelectedCard(null);
-
-      if (config.multiplayerEnabled && MULTIPLAYER_ENABLED) {
-        const mpCallbacks: MultiplayerClientCallbacks = {
-          onOpen: () => {
-            setMultiplayerStatus('connected');
-            setMultiplayerError(null);
-          },
-          onClose: () => {
-            setMultiplayerStatus('disconnected');
-          },
-          onError: (message: string) => {
-            setMultiplayerError(message);
-            setMultiplayerStatus('disconnected');
-          },
-          onSessionInfo: (sessionId, players, localPlayerIndex) => {
-            setMultiplayerSessionId(sessionId);
-            if (typeof localPlayerIndex === 'number') {
-              setMultiplayerPlayerIndex(localPlayerIndex);
-            }
-          },
-          onPlayerListUpdate: (players) => {
-            // Player list update - could be used for UI updates if needed
-          },
-          onStateUpdate: (update) => {
-            const updatedState = update.gameState as GameState;
-            if (updatedState) {
-              setGameState(updatedState);
-            }
-            if (update.sessionId) {
-              setMultiplayerSessionId(update.sessionId);
-            }
-          },
-          onPlayerAction: (payload) => {
-            if (!gameAdapter) {
-              return;
-            }
-            const { playerIndex, card } = payload;
-            const currentState = gameAdapter.getCurrentState();
-            const targetPlayer = currentState.players[playerIndex];
-            if (!targetPlayer) {
-              return;
-            }
-            const cardIndex = targetPlayer.hand.findIndex((c) => cardToCode(c) === card);
-            if (cardIndex === -1) {
-              return;
-            }
-            gameAdapter.playCard(currentState, playerIndex, cardIndex);
-            setGameState(gameAdapter.getCurrentState());
-          }
-        };
-        void (async () => {
-          try {
-            const client = await MultiplayerClient.connectAuthenticated(
-              config.playerNames[0],
-              0,
-              mpCallbacks
-            );
-            if (config.multiplayerJoinMode && config.multiplayerSessionId) {
-              client.joinSession(config.multiplayerSessionId);
-            } else {
-              client.createSession();
-            }
-            client.syncState(initialState);
-            setMultiplayerClient(client);
-          } catch (e) {
-            setMultiplayerError('Multiplayer auth failed');
-            setMultiplayerStatus('disconnected');
-          }
-        })();
-      } else {
-        if (multiplayerClient) {
-          multiplayerClient.close();
-          setMultiplayerClient(null);
-        }
-      }
     } catch (error) {
       console.error('Error starting game:', error);
       alert(t.startMenu.errorStartingGame);
+      onExit();
     }
-  };
+  }, [config, resumeSession, onExit, t.startMenu.errorStartingGame]);
+
+  useEffect(() => {
+    if (!gameAdapter || !gameStarted || gameState.isGameOver) return;
+    saveGameSession(
+      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
+      gameState
+    );
+  }, [gameAdapter, gameStarted, gameState, config, playerNames, aiDifficulty, dealingMethod, gameVariant]);
 
   /**
    * Converts a Card object to a string code (e.g., "AS" for Ace of Spades)
@@ -397,16 +299,6 @@ export const GameBoard: React.FC = () => {
         return;
       }
 
-      if (isMultiplayer && multiplayerClient && multiplayerStatus === 'connected') {
-        const card = player.hand[cardIndex];
-        multiplayerClient.sendPlayerAction('play_card', {
-          playerIndex,
-          card: cardToCode(card)
-        });
-        setSelectedCard(null);
-        return;
-      }
-
       if (selectedCard === cardIndex) {
         const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
@@ -443,19 +335,20 @@ export const GameBoard: React.FC = () => {
   };
 
   /**
-   * Effect to handle game over - show StartMenu when game ends
+   * Effect to handle game over — record stats and return to dashboard
    */
   useEffect(() => {
-    if (gameAdapter && gameState.isGameOver) {
+    if (gameAdapter && gameState.isGameOver && gameState.winner) {
       recordGameFinished();
       void showInterstitialIfDue();
-      const timer = setTimeout(() => {
-        setShowStartMenu(true);
-        setGameStarted(false);
-      }, GAME_OVER_DELAY_MS);
+      const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
+      const us = gameState.players[localIdx]?.team;
+      recordGameResult(gameVariant, us === gameState.winner);
+      clearGameSession();
+      const timer = setTimeout(() => onExit(), GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameState.isGameOver]);
+  }, [gameAdapter, gameState.isGameOver, gameState.winner, gameState.players, gameVariant, isMultiplayer, multiplayerPlayerIndex, onExit]);
 
   /**
    * Team identification
@@ -501,148 +394,28 @@ export const GameBoard: React.FC = () => {
    * Shows confirmation dialog before quitting
    */
   const handleQuit = () => {
-    if (window.confirm(t.gameMenu.quitConfirm)) {
-      setShowStartMenu(true);
-      setGameStarted(false);
-      if (gameAdapter) {
-        const current = gameAdapter.getCurrentState();
-        gameAdapter.quitGame(current);
-        setGameState(gameAdapter.getCurrentState());
-      }
+    clearGameSession();
+    if (gameAdapter) {
+      const current = gameAdapter.getCurrentState();
+      gameAdapter.quitGame(current);
     }
+    onExit();
   };
 
-  /**
-   * Starts a completely new game
-   * Shows StartMenu to allow configuration before starting
-   */
   const handleNewGame = () => {
-    setShowStartMenu(true);
-    setGameStarted(false);
+    clearGameSession();
+    onExit();
   };
 
-  /**
-   * Updates AI difficulty setting
-   * During active game, only updates state (not allowed to change difficulty)
-   * If game is waiting to start or is over, recreates the game with new difficulty
-   */
-  const reinitializeFromConfig = useCallback(
-    (names: string[], method: DealingMethod, difficulty: AIDifficulty, variant: GameVariant) => {
-      const adapter = GameFactory.getAdapter(variant);
-      const state = adapter.initialize(names, {
-        dealingMethod: method,
-        aiDifficulty: difficulty,
-        localPlayerIndex: isMultiplayer ? multiplayerPlayerIndex : undefined
-      });
-      setGameAdapter(adapter);
-      setGameState(state);
-    },
-    [isMultiplayer, multiplayerPlayerIndex]
-  );
-
-  const handleAIDifficultyChange = (difficulty: AIDifficulty) => {
-    setAIDifficulty(difficulty);
-    localStorage.setItem(STORAGE_KEYS.AI_DIFFICULTY, difficulty);
-
-    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
-      if (gameStarted && gameAdapter) {
-        reinitializeFromConfig(playerNames, dealingMethod, difficulty, gameVariant);
-      }
-      return;
-    }
-
-    if (gameState.aiDifficulty !== difficulty) {
-      const current = gameAdapter.getCurrentState();
-      setGameState({ ...current, aiDifficulty: difficulty });
-    }
-  };
-
-  /**
-   * Updates dealing method setting
-   * During active game, only updates state (not allowed to change method)
-   * If game is waiting to start or is over, recreates the game with new method
-   */
-  const handleDealingMethodChange = (method: DealingMethod) => {
-    setDealingMethod(method);
-    localStorage.setItem(STORAGE_KEYS.DEALING_METHOD, method);
-
-    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
-      if (gameStarted && gameAdapter) {
-        reinitializeFromConfig(playerNames, method, aiDifficulty, gameVariant);
-      }
-      return;
-    }
-
-    if (gameState.dealingMethod !== method) {
-      const current = gameAdapter.getCurrentState();
-      setGameState({ ...current, dealingMethod: method });
-    }
-  };
-
-  /**
-   * Updates player names and restarts game
-   * Creates new game instance with new names
-   * Resets selected card
-   */
-  /**
-   * Updates player names in the current game state without restarting the game
-   * If game hasn't started, creates a new game. Otherwise, updates names in both game instance and state.
-   */
-  const handlePlayerNamesChange = (names: string[]) => {
-    setPlayerNames(names);
-
-    if (!gameAdapter || gameState.waitingForGameStart || gameState.isGameOver) {
-      if (gameStarted && gameAdapter) {
-        reinitializeFromConfig(names, dealingMethod, aiDifficulty, gameVariant);
-      }
-    } else {
-      const current = gameAdapter.getCurrentState();
-      gameAdapter.updatePlayerNames(current, names);
-      setGameState(gameAdapter.getCurrentState());
-    }
-    setSelectedCard(null);
-  };
-
-  // Show StartMenu if it should be visible
-  if (showStartMenu) {
-    return (
-      <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
-        <StartMenu
-          onStartGame={handleStartGame}
-          darkMode={darkMode}
-          onDarkModeChange={(mode) => {
-            setDarkMode(mode);
-            localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(mode));
-          }}
-        />
-      </div>
-    );
-  }
-
-  // Show game board if game is started
   return (
     <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
-      <GameMenu
-        playerNames={playerNames}
-        onPlayerNamesChange={handlePlayerNamesChange}
-        aiDifficulty={gameState.aiDifficulty || aiDifficulty}
-        onAIDifficultyChange={handleAIDifficultyChange}
-        dealingMethod={gameState.dealingMethod || dealingMethod}
-        onDealingMethodChange={handleDealingMethodChange}
+      <InGameBar
+        playerName={playerNames[localPlayerIndex] || 'Player 1'}
+        gameLabel={gameLabel}
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}
-        onQuit={handleQuit}
-        onNewGame={handleNewGame}
-        isGameOver={gameState.isGameOver}
-        isGameActive={!gameState.waitingForGameStart}
-        darkMode={darkMode}
-        onDarkModeChange={(mode) => {
-          setDarkMode(mode);
-          localStorage.setItem('sueca-dark-mode', String(mode));
-        }}
-        showGrid={showGridOverlay}
-        onToggleGrid={() => setShowGridOverlay(!showGridOverlay)}
+        onExit={handleQuit}
       />
 
       <ScoreStrip
@@ -806,7 +579,7 @@ export const GameBoard: React.FC = () => {
           themTeam={themTeam}
           dealingMethod={dealingMethod}
           getTeamName={getTeamName}
-          onDealingMethodChange={setDealingMethod}
+          onDealingMethodChange={() => {}}
           onNewGame={handleNewGame}
         />
       )}
