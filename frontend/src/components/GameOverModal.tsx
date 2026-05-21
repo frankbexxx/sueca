@@ -30,7 +30,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   const { t } = useLanguage();
   return (
     <div className="modal-overlay modal-overlay-game-over">
-      <div className="modal-container modal-container-large">
+      <div className="modal-container modal-container-large dobo-panel">
         <h2 className="modal-title modal-title-large">{t.modals.gamesComplete}</h2>
         <p className="modal-winner-text">
           {getTeamName(gameState.winner!)} {t.modals.won}
@@ -68,7 +68,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         
         <button
           onClick={onNewGame}
-          className="modal-button modal-button-new-game"
+          className="modal-button modal-button-new-game dobo-btn"
         >
           {t.modals.newGame}
         </button>

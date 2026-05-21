@@ -9,6 +9,14 @@ const CARD_EXT = process.env.REACT_APP_CARD_EXT === 'png' ? 'png' : 'svg';
 
 export const CARD_BACK_PATH = `${CARD_ASSETS_DIR}/card_back.${CARD_EXT}`;
 
+/** Alternate back (Hazmat red) — future theme / IAP */
+export const CARD_BACK_RED_PATH = `${CARD_ASSETS_DIR}/card_back_red.${CARD_EXT}`;
+
+export function getPublicAssetPath(relativePath: string, publicUrl = process.env.PUBLIC_URL || ''): string {
+  const base = publicUrl && !publicUrl.endsWith('/') ? publicUrl : publicUrl || '';
+  return `${base}${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}`;
+}
+
 /**
  * Builds the public URL for a card image used by the Sueca UI.
  */

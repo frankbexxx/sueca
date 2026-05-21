@@ -26,7 +26,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
           ×
         </button>
 
-        <div className="credits-modal-card">
+        <div className="credits-modal-card dobo-panel">
           <main className="credits-main">
             <div className="credits-title-block">
               <h1 className="credits-title">{t.credits.title}</h1>
@@ -75,6 +75,11 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
               <p className="credits-ack-text">
                 {t.credits.acknowledgmentsText}
               </p>
+            </div>
+            <div className="credits-assets">
+              <h3 className="credits-ack-title">{t.credits.assetsTitle}</h3>
+              <p className="credits-ack-text">{t.credits.assetsCards}</p>
+              <p className="credits-ack-text">{t.credits.assetsUi}</p>
             </div>
             <div className="credits-copyright">
               {t.credits.copyright}

@@ -189,7 +189,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
 
   return (
     <div className={`start-menu-overlay ${darkMode ? 'dark-mode' : ''}`}>
-      <div className="start-menu-card">
+      <div className="start-menu-card dobo-panel">
         <div className="start-menu-header">
           <h1 className="start-menu-title">{t.startMenu.title}</h1>
           {/* Language Selector */}
@@ -390,7 +390,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
 
           {/* Start Game Button */}
           <button
-            className="start-game-button"
+            className="start-game-button dobo-btn"
             onClick={handleStart}
           >
             {t.startMenu.startGame}

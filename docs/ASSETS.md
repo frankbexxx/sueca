@@ -44,9 +44,10 @@
 
 ## Checklist “pack integrado”
 
-- [x] 52 cartas PNG em `cards2/` (Hazmat trial)
+- [x] 52 cartas PNG em `cards2/` (Hazmat)
 - [x] `card_back.png` + `card_back_red.png` (Red reservado para IAP futuro)
-- [ ] Card back na mesa (oponentes) — ainda gradiente CSS
+- [x] Verso Hazmat nos contadores de mão dos oponentes
+- [x] DOBO: StartMenu, GameMenu, RulesSheet, Credits
 - [ ] `npm run build` sem 404 de assets
 - [x] Licença registada neste ficheiro (secção abaixo)
 

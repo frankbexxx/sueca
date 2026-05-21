@@ -23,7 +23,7 @@ export const GameStartModal: React.FC<GameStartModalProps> = ({
   const { t, tReplace } = useLanguage();
   return (
     <div className="modal-overlay modal-overlay-game-start">
-      <div className="modal-container modal-container-medium">
+      <div className="modal-container modal-container-medium dobo-panel">
         <h2 className="modal-title">{tReplace('modals.gameReady', { round: gameState.round })}</h2>
         
         {gameState.trumpCard && (
@@ -52,7 +52,7 @@ export const GameStartModal: React.FC<GameStartModalProps> = ({
         
         <button
           onClick={onStart}
-          className="modal-button modal-button-primary modal-button-hover"
+          className="modal-button modal-button-primary modal-button-hover dobo-btn"
         >
           {t.modals.startGame}
         </button>

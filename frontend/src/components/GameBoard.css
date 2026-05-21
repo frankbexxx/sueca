@@ -529,9 +529,10 @@
   width: 25px; /* 70% of 36px */
   height: 36px; /* 70% of 52px */
   border-radius: 3px; /* 70% of 4px */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  object-fit: cover;
   border: 1px solid #fff; /* 70% of 2px */
   box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 70% scaling */
+  background: #2a3a52;
 }
 
 .card-count {

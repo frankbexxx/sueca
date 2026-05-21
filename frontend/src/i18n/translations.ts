@@ -121,6 +121,9 @@ export interface Translations {
     imagePlaceholderFormat: string;
     acknowledgmentsTitle: string;
     acknowledgmentsText: string;
+    assetsTitle: string;
+    assetsCards: string;
+    assetsUi: string;
     copyright: string;
     close: string;
     imageAlt: string;
@@ -246,6 +249,9 @@ export const translations: Record<Language, Translations> = {
       imagePlaceholderFormat: 'jpg · png · gif',
       acknowledgmentsTitle: 'Agradecimentos',
       acknowledgmentsText: 'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
+      assetsTitle: 'Assets gráficos',
+      assetsCards: 'Cartas: Hand Drawn Playing Cards por Hazmat Game Studios (itch.io).',
+      assetsUi: 'Interface: Vector UI Pack por dobo_ui (itch.io).',
       copyright: '© 2025 Todos os direitos reservados.',
       close: 'Fechar',
       imageAlt: 'SUECÃO - Capa do Jogo'
@@ -365,6 +371,9 @@ export const translations: Record<Language, Translations> = {
       imagePlaceholderFormat: 'jpg · png · gif',
       acknowledgmentsTitle: 'Acknowledgments',
       acknowledgmentsText: 'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
+      assetsTitle: 'Graphic assets',
+      assetsCards: 'Playing cards: Hand Drawn Playing Cards by Hazmat Game Studios (itch.io).',
+      assetsUi: 'UI chrome: Vector UI Pack by dobo_ui (itch.io).',
       copyright: '© 2025 All rights reserved.',
       close: 'Close',
       imageAlt: 'SUECÃO - Game Cover'

@@ -27,13 +27,8 @@
   }
 }
 
-/* Start Menu Card - centered modal */
+/* Start Menu Card — add class dobo-panel in TSX */
 .start-menu-card {
-  background-color: #2a3a52;
-  background-image: url('../assets/ui/dobo/panel_menu.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
   color: var(--sueca-color-text, #e9eef7);
   border-radius: var(--sueca-radius-lg, 12px);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
@@ -349,21 +344,12 @@
   border-color: #ff6b6b;
 }
 
-/* Start Game Button */
+/* Start Game Button — add class dobo-btn in TSX */
 .start-game-button {
   padding: 16px 32px;
-  min-height: var(--sueca-touch-min, 48px);
   font-size: 1.2em;
   font-weight: 700;
-  background-color: var(--sueca-color-primary, #6c5ce7);
-  background-image: url('../assets/ui/dobo/button_primary.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  color: white;
-  border: none;
   border-radius: var(--sueca-radius-md, 10px);
-  cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   margin-top: 10px;
@@ -372,13 +358,11 @@
 .start-game-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
 }
 
 .start-game-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
 }
 
 /* Advanced Toggle */

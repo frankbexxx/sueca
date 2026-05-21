@@ -11,7 +11,7 @@ export const SpadesBidModal: React.FC<SpadesBidModalProps> = ({ onConfirm }) => 
 
   return (
     <div className="variant-modal-overlay">
-      <div className="variant-modal">
+      <div className="variant-modal dobo-panel">
         <h2>Spades — Bids</h2>
         <p className="variant-modal-hint">Set team bids (0–13) before the round.</p>
         <label>
@@ -34,7 +34,7 @@ export const SpadesBidModal: React.FC<SpadesBidModalProps> = ({ onConfirm }) => 
             onChange={(e) => setTeam2Bid(Number(e.target.value))}
           />
         </label>
-        <button type="button" className="variant-modal-primary" onClick={() => onConfirm(team1Bid, team2Bid)}>
+        <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onConfirm(team1Bid, team2Bid)}>
           Start round
         </button>
       </div>

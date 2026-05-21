@@ -123,7 +123,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({
       </div>
 
       {showSettings && (
-        <div className="settings-panel">
+        <div className="settings-panel dobo-panel">
           <div className="settings-content">
             <h3>{t.gameMenu.settings}</h3>
             <div className="setting-item">

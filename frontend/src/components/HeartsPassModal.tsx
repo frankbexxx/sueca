@@ -24,7 +24,7 @@ export const HeartsPassModal: React.FC<HeartsPassModalProps> = ({
 
   return (
     <div className="variant-modal-overlay">
-      <div className="variant-modal variant-modal-wide">
+      <div className="variant-modal variant-modal-wide dobo-panel">
         <h2>Hearts — Pass 3 cards</h2>
         <p className="variant-modal-hint">Pass to: {passDirection}. Select exactly 3 cards.</p>
         <div className="pass-card-grid">
@@ -42,7 +42,7 @@ export const HeartsPassModal: React.FC<HeartsPassModalProps> = ({
         </div>
         <button
           type="button"
-          className="variant-modal-primary"
+          className="variant-modal-primary dobo-btn"
           disabled={!ready}
           onClick={onConfirm}
         >

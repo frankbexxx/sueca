@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameState } from '../../types/game';
 import { getTablePosition, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
+import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
 
 export interface PlayerSeatsProps {
   gameState: GameState;
@@ -29,7 +30,12 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
           if (isHuman) return null;
           return (
             <div className="hand-back-stack">
-              <div className="card-back-small" />
+              <img
+                src={getPublicAssetPath(CARD_BACK_PATH)}
+                alt=""
+                className="card-back-small"
+                draggable={false}
+              />
               <span className="card-count">{player.hand.length}</span>
             </div>
           );

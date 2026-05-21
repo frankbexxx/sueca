@@ -46,14 +46,14 @@ export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, onClose }) => {
   const rule = RULES[variant];
   return (
     <div className="rules-sheet-overlay" onClick={onClose} role="presentation">
-      <div className="rules-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="rules-title">
+      <div className="rules-sheet dobo-panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="rules-title">
         <h2 id="rules-title">{rule.title}</h2>
         <ul>
           {rule.bullets.map((b) => (
             <li key={b}>{b}</li>
           ))}
         </ul>
-        <button type="button" className="rules-sheet-close" onClick={onClose}>
+        <button type="button" className="rules-sheet-close dobo-btn" onClick={onClose}>
           Close
         </button>
       </div>

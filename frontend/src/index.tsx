@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import './styles/design-tokens.css';
+import './styles/dobo-ui.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 

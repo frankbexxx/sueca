@@ -1,0 +1,49 @@
+/* Shared DOBO pack chrome (StartMenu, GameMenu, RulesSheet, Credits) */
+
+.dobo-panel {
+  background-color: #2a3a52;
+  background-image: url('../assets/ui/dobo/panel_menu.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.dobo-btn {
+  background-color: var(--sueca-color-primary, #6c5ce7);
+  background-image: url('../assets/ui/dobo/button_primary.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  min-height: var(--sueca-touch-min, 48px);
+}
+
+.dobo-btn:hover,
+.dobo-btn:active {
+  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
+}
+
+/* Override gradient/solid fills when combined with modal / variant buttons */
+.dobo-btn.modal-button,
+.dobo-btn.modal-button-primary,
+.dobo-btn.modal-button-new-game,
+.dobo-btn.variant-modal-primary {
+  background-color: var(--sueca-color-primary, #6c5ce7);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url('../assets/ui/dobo/button_primary.png');
+}
+
+.dobo-btn.modal-button:hover,
+.dobo-btn.modal-button:active,
+.dobo-btn.modal-button-primary:hover,
+.dobo-btn.modal-button-primary:active,
+.dobo-btn.modal-button-new-game:hover,
+.dobo-btn.modal-button-new-game:active,
+.dobo-btn.variant-modal-primary:hover,
+.dobo-btn.variant-modal-primary:active {
+  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
+}

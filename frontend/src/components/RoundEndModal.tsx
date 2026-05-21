@@ -24,7 +24,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   const { t, tReplace } = useLanguage();
   return (
     <div className="modal-overlay modal-overlay-round-end">
-      <div className="modal-container modal-container-large">
+      <div className="modal-container modal-container-large dobo-panel">
         <h2 className="modal-title">{tReplace('modals.roundComplete', { round: gameState.round })}</h2>
         
         <div className="modal-content">
@@ -63,7 +63,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
         
         <button
           onClick={onContinue}
-          className="modal-button modal-button-primary"
+          className="modal-button modal-button-primary dobo-btn"
         >
           {tReplace('modals.continueToGame', { nextRound: gameState.round + 1 })}
         </button>
