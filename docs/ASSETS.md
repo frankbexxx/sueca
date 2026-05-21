@@ -1,5 +1,7 @@
 # SUECÂO — Assets (cartas e UX)
 
+**Handoff completo (Figma / Penpot / pack):** [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
+
 ## Estado no repositório
 
 | Pack | Path | Estado |
@@ -19,12 +21,19 @@
 
 **Fontes sugeridas:** itch.io, Kenney, Craftpix, GraphicRiver.
 
-## Integrar pack comprado
+## Integrar pack comprado ou export Figma/Penpot
 
-1. Extrair ficheiros para `frontend/public/assets/cards-pack-import/`
+1. Exportar PNG/SVG (52 cartas + `card_back`) para `frontend/public/assets/cards-pack-import/`
 2. Correr: `node tools/map-card-pack.mjs --input frontend/public/assets/cards-pack-import --output frontend/public/assets/cards2`
-3. Ver checklist em `tools/map-card-pack.mjs` (final)
-4. `npm test` + smoke visual no browser
+3. Build com PNG: `REACT_APP_CARD_EXT=png npm run build` (ou `npm run build:android`)
+4. Ver checklist em `tools/map-card-pack.mjs` (final)
+5. `npm test` + smoke visual no browser (360×800)
+
+### Figma / Penpot
+
+- Tokens: JSON → espelhar em `frontend/src/styles/design-tokens.css`
+- Não gerar React automático para a mesa; só assets + tokens
+- Ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 
 ## Critérios pack UX
 

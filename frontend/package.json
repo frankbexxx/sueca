@@ -25,7 +25,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "build:android": "REACT_APP_USE_LOCAL_AI_ONLY=true REACT_APP_PLATFORM=android REACT_APP_CARD_EXT=png REACT_APP_MULTIPLAYER_ENABLED=false REACT_APP_ADS_ENABLED=false react-scripts build",
     "cap:sync": "npm run build && npx cap sync",
+    "cap:sync:android": "npm run build:android && npx cap sync android",
+    "release:android": "npm run cap:sync:android && echo 'Next: npm run cap:open:android → Build → Generate Signed Bundle (docs/ANDROID_SIGNING.md)'",
     "cap:open:android": "npx cap open android",
     "generate:cards": "node ../tools/generate-card-placeholders.mjs"
   },

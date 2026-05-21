@@ -22,11 +22,10 @@ import {
 } from '../constants/gameConstants';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
-import { GameInfo } from './GameInfo';
-import { TrickArea } from './TrickArea';
 import { PlayerHand } from './PlayerHand';
-import { GameScores } from './GameScores';
 import { GameActions } from './GameActions';
+import { ScoreStrip } from './table/ScoreStrip';
+import { TableSurface } from './table/TableSurface';
 import { SpadesBidModal } from './SpadesBidModal';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SpadesGame } from '../models/games/SpadesGame';
@@ -444,15 +443,6 @@ export const GameBoard: React.FC = () => {
   };
 
   /**
-   * Truncates player name to maximum 8 characters for mobile info boxes
-   * Adds "..." if truncated
-   */
-  const truncatePlayerName = (name: string, maxLength: number = 8): string => {
-    if (name.length <= maxLength) return name;
-    return name.substring(0, maxLength - 3) + '...';
-  };
-
-  /**
    * Effect to handle game over - show StartMenu when game ends
    */
   useEffect(() => {
@@ -466,49 +456,6 @@ export const GameBoard: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [gameAdapter, gameState.isGameOver]);
-
-  /**
-   * Detects if the current device is a mobile device
-   * Uses both User Agent detection and screen width check
-   * Used to apply mobile-specific layout fixes (position inversion)
-   * Returns false if window is undefined (SSR safety)
-   */
-  const isMobileDevice = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    
-    // Check user agent for mobile devices
-    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-    
-    // Also check screen width as additional indicator (tablets in portrait, etc.)
-    const isSmallScreen = window.innerWidth <= 768;
-    
-    return isMobileUA || isSmallScreen;
-  };
-
-  /**
-   * Maps player index to table position (compass directions)
-   * Fixed mapping (same for desktop and mobile):
-   *   - Index 0 (You) = South (bottom)
-   *   - Index 1 (AI 1) = East (right)
-   *   - Index 2 (Partner) = North (top)
-   *   - Index 3 (AI 2) = West (left)
-   * 
-   * Order of play (anti-clockwise): 0 (South) → 1 (East) → 2 (North) → 3 (West) → 0
-   * 
-   * Note: Position adjustments for mobile are handled via CSS media queries,
-   * not by inverting the position mapping, to maintain correct game flow direction.
-   */
-  const getTablePosition = (playerIndex: number): 'north' | 'east' | 'south' | 'west' => {
-    const positionMap: Record<number, 'north' | 'east' | 'south' | 'west'> = {
-      0: 'south',  // You
-      1: 'east',    // AI 1
-      2: 'north',   // Partner
-      3: 'west'     // AI 2
-    };
-    
-    return positionMap[playerIndex] || 'south';
-  };
 
   /**
    * Team identification
@@ -698,18 +645,12 @@ export const GameBoard: React.FC = () => {
         onToggleGrid={() => setShowGridOverlay(!showGridOverlay)}
       />
 
-      <div className="top-strip">
-        <GameScores
-          gameState={gameState}
-          variant={gameVariant}
-          usTeam={usTeam}
-          themTeam={themTeam}
-        />
-        <div className="round-block">
-          <div>{t.gameBoard.game} {gameState.round}</div>
-          <GameInfo gameState={gameState} variant={gameVariant} />
-        </div>
-      </div>
+      <ScoreStrip
+        gameState={gameState}
+        variant={gameVariant}
+        usTeam={usTeam}
+        themTeam={themTeam}
+      />
       {/* Indicador de fonte da AI */}
       <div className="ai-source-banner">
         {aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
@@ -722,84 +663,15 @@ export const GameBoard: React.FC = () => {
         </div>
       )}
 
-      {/* Main game table container */}
-      <div className="table-layout">
-
-        {/* Green table surface - main playing area */}
-        <div className="table-surface">
-          {/* Debug grid overlay - shows positioning grid when enabled */}
-          {showGridOverlay && <div className="grid-overlay" />}
-
-          {/* Center area - displays current trick cards in cross formation */}
-          <TrickArea
-            gameState={gameState}
-            variant={gameVariant}
-            getCardImage={getCardImage}
-            getTablePosition={getTablePosition}
-          />
-
-          {/* Player seats layer - displays player info and card counts around table */}
-          <div className="seats-layer">
-            {gameState.players.map((player, index) => {
-              const position = getTablePosition(index);
-              const isDealer = index === gameState.dealerIndex;
-              const isCurrentPlayer = index === gameState.currentPlayerIndex;
-              const isHuman = index === localPlayerIndex;
-
-              /**
-               * Renders AI player's card count (back of cards + number)
-               * Human player (South) doesn't show this - they see their actual cards below
-               */
-              const renderAICards = () => {
-                if (isHuman) return null;
-                return (
-                  <div className="hand-back-stack">
-                    <div className="card-back-small" />
-                    <span className="card-count">{player.hand.length}</span>
-                  </div>
-                );
-              };
-
-              // Determine if we should use mobile layout for info box
-              const useMobileLayout = isMobileDevice();
-
-              return (
-                <div
-                  key={player.id}
-                  className={`player-seat player-${position} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
-                >
-                  <div className={`player-info ${useMobileLayout ? 'mobile-layout' : ''}`}>
-                    {useMobileLayout ? (
-                      // Mobile layout: 2 lines, fixed size
-                      <>
-                        <div className="player-name-line-1">
-                          {truncatePlayerName(player.name)}
-                          {isDealer && <span className="dealer-badge">🃏</span>}
-                        </div>
-                        <div className="player-name-line-2">
-                          {getTeamName(player.team)}
-                          {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
-                        </div>
-                      </>
-                    ) : (
-                      // Desktop layout: original
-                      <>
-                        <h3 className="player-name">
-                          {player.name}
-                          {isDealer && <span className="dealer-badge">🃏</span>}
-                          {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
-                        </h3>
-                        <div className="team-badge">{getTeamName(player.team)}</div>
-                      </>
-                    )}
-                  </div>
-                  {position === 'south' ? null : renderAICards()}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <TableSurface
+        gameState={gameState}
+        variant={gameVariant}
+        localPlayerIndex={localPlayerIndex}
+        usTeam={usTeam}
+        showGridOverlay={showGridOverlay}
+        getCardImage={getCardImage}
+        getTeamName={getTeamName}
+      />
 
       {/* Human player's hand (South position) - displayed below table */}
       {gameAdapter && gameState.players[localPlayerIndex] && (

@@ -53,10 +53,18 @@ Este plano define a evolução da base atual de SUECA para um framework modular 
 - Prompts: `docs/plan/prompts/implementation-prompts.md`
 - Release checklist: `docs/RELEASE_CHECK.md`
 
+## Design pipeline + Android (Maio 2026)
+
+- Avaliação: [PHASE0_ASSESSMENT.md](../PHASE0_ASSESSMENT.md)
+- Handoff Figma/Penpot/pack: [DESIGN_HANDOFF.md](../DESIGN_HANDOFF.md)
+- Refactor UI: `TableSurface`, `PlayerSeats`, `ScoreStrip` (mesa); CRA + Capacitor (B1)
+- Release Android: `npm run release:android` → [ANDROID_SIGNING.md](../ANDROID_SIGNING.md)
+
 ## Próximo passo recomendado
 
-1. Smoke manual das 4 variantes + deploy Vercel (ver [RELEASE_CHECK.md](../RELEASE_CHECK.md))
-2. E6 backlog: IA personas, multiplayer por variante, bidding UI Spades
+1. Integrar pack de cartas PNG + smoke 360×800
+2. `npm run release:android` + AAB internal track
+3. E6 backlog: IA personas, multiplayer por variante, bidding UI Spades
 
 ## Estrutura de documentação
 

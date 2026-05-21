@@ -39,8 +39,10 @@ vercel --prod
 
 ## Android (Capacitor)
 
-- [ ] `npm run cap:sync` após `npm run build`
-- [ ] AAB assinado (`docs/ANDROID_SIGNING.md`)
+- [ ] Primeira vez: `cd frontend && npx cap add android` (pasta `android/` é local, `.gitignore`)
+- [ ] `npm run release:android` (build mobile + `cap sync android`) — ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
+- [ ] Ou manual: `npm run build:android` depois `npx cap sync android`
+- [ ] AAB assinado (`docs/ANDROID_SIGNING.md`) — internal track Play Console
 - [ ] Legal: `/legal/privacy.html` e `/legal/terms.html` no deploy
 - [ ] `REACT_APP_USE_LOCAL_AI_ONLY=true` no build mobile
 - [ ] Maestro smoke (`.maestro/smoke.yaml`) no emulador

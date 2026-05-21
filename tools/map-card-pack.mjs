@@ -31,8 +31,15 @@ function parseArgs() {
   return { input, output };
 }
 
+const BACK_ALIASES = new Set([
+  'card_back', 'cardback', 'back', 'card-back', 'deck_back', 'deckback'
+]);
+
 function normalizeName(filename) {
   const base = path.basename(filename, path.extname(filename)).toLowerCase();
+  if (BACK_ALIASES.has(base)) {
+    return `card_back${path.extname(filename) || '.png'}`;
+  }
   const parts = base.split(/[_\-\s]+/).filter(Boolean);
   let rank;
   let suit;
@@ -70,7 +77,9 @@ function main() {
   console.log(`Mapped ${mapped} files to ${output}`);
   const expected = 52;
   const outFiles = fs.readdirSync(output).filter((f) => f.includes('_of_'));
+  const hasBack = fs.readdirSync(output).some((f) => /^card_back\./i.test(f));
   console.log(`Cards in output: ${outFiles.length} (target ${expected} for standard deck)`);
+  console.log(`Card back: ${hasBack ? 'yes' : 'MISSING — add card_back.png to import folder'}`);
   if (outFiles.length < 40) {
     console.warn('CHECKLIST: fewer than 40 card images — Sueca may show broken images.');
     process.exitCode = 1;

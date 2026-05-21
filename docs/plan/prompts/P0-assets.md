@@ -1,15 +1,15 @@
 # Prompt P0 — Asset packs (cartas + UX)
 
 ## Contexto
-Cartas em `public/assets/cards2/` (SVG placeholder). Pack comercial pendente.
+Cartas em `public/assets/cards2/` (SVG placeholder). Pack comercial ou export Figma/Penpot pendente.
 
 ## Objetivo
-Integrar pack comprado + documentar licenças.
+Integrar assets + documentar licenças. Ver [DESIGN_HANDOFF.md](../../DESIGN_HANDOFF.md).
 
 ## Tarefas
-1. Comprar pack 52+back; copiar para `cards-pack-import/`.
+1. Export Figma/Penpot **ou** pack comprado → `cards-pack-import/`.
 2. `node tools/map-card-pack.mjs --input ... --output frontend/public/assets/cards2`
-3. `REACT_APP_CARD_EXT=png` se PNG.
+3. `npm run build:android` ou `REACT_APP_CARD_EXT=png npm run build`.
 4. Atualizar `docs/ASSETS.md` com licença.
 
 ## Critérios

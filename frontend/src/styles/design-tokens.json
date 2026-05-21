@@ -1,0 +1,21 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "color": {
+    "primary": { "value": "#6c5ce7" },
+    "primaryDark": { "value": "#5a4fd6" },
+    "us": { "value": "#3484ea" },
+    "them": { "value": "#e25c5c" },
+    "surface": { "value": "rgba(255, 255, 255, 0.08)" },
+    "text": { "value": "#e9eef7" }
+  },
+  "radius": {
+    "md": { "value": "10px" },
+    "lg": { "value": "12px" }
+  },
+  "space": {
+    "sm": { "value": "6px" },
+    "md": { "value": "12px" },
+    "lg": { "value": "16px" }
+  },
+  "touchMin": { "value": "48px" }
+}

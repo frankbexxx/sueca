@@ -14,6 +14,9 @@
 |-----------|-----------|-------------|
 | **[DEPLOY.md](DEPLOY.md)** | Guia completo de deploy | Deploy rápido e detalhado (Vercel, Netlify) |
 | **[RELEASE_CHECK.md](RELEASE_CHECK.md)** | Checklist pós-deploy | Validar produção antes/depois de `vercel --prod` |
+| **[DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)** | Figma / Penpot / pack → repo | Integrar gráficos e tokens |
+| **[PHASE0_ASSESSMENT.md](PHASE0_ASSESSMENT.md)** | Avaliação UI + Android (Maio 2026) | Decisões B1 / pipeline design |
+| **[ASSETS.md](ASSETS.md)** | Cartas e packs | Comprar ou mapear assets |
 | **[ANDROID_PUBLICATION_REQUIREMENTS.md](ANDROID_PUBLICATION_REQUIREMENTS.md)** | Requisitos para publicação no Google Play | Publicar na Play Store |
 | **[GOOGLE_PLAY_STORE_LISTING.md](GOOGLE_PLAY_STORE_LISTING.md)** | Descrição e classificação para Play Store | Criar listagem na Play Store |
 | **[ADDING_FEEDBACK_EMAIL.md](ADDING_FEEDBACK_EMAIL.md)** | Como adicionar email de feedback | Adicionar contacto no jogo |
