@@ -54,8 +54,11 @@
 
 | Doc | Uso |
 |-----|-----|
-| [rules/sueca.md](rules/sueca.md) | Regras Sueca |
-| [rules/king-simplified.md](rules/king-simplified.md) | King simplificado |
+| [rules/sueca.md](rules/sueca.md) | Sueca PT · modo normal |
+| [rules/spades.md](rules/spades.md) | Spades PT · modo normal |
+| [rules/hearts.md](rules/hearts.md) | Hearts US · modo normal |
+| [rules/king.md](rules/king.md) | King PT · modo normal |
+| [rules/king-simplified.md](rules/king-simplified.md) | King · variante simplificada |
 | [TEXTOS_ECRAN.md](TEXTOS_ECRAN.md) | Textos UI |
 | [PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md) | Privacidade |
 | [TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md) | Termos |

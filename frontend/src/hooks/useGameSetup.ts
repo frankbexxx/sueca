@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { getAvailableGames } from '../constants/gameMetadata';
+import {
+  getDefaultPresetId,
+  getPresetsForVariant,
+  resolvePresetId,
+  RulesPresetId
+} from '../constants/rulesPresets';
 import { MULTIPLAYER_ENABLED } from '../config/features';
 import { loadLastConfig } from '../services/gameSessionStorage';
 
@@ -41,13 +47,31 @@ export function useGameSetup(initialVariant?: GameVariant) {
     () => localStorage.getItem('sueca-multiplayer-session-id') || ''
   );
 
-  const [gameVariant, setGameVariant] = useState<GameVariant>(() => {
+  const [gameVariant, setGameVariantState] = useState<GameVariant>(() => {
     const saved = localStorage.getItem('sueca-game-variant');
     const allowed = getAvailableGames().map((g) => g.variant);
     if (initialVariant && allowed.includes(initialVariant)) return initialVariant;
     if (saved && allowed.includes(saved as GameVariant)) return saved as GameVariant;
     return last?.gameVariant ?? 'sueca';
   });
+
+  const [rulesPresetId, setRulesPresetId] = useState<RulesPresetId>(() => {
+    const saved = localStorage.getItem('sueca-rules-preset');
+    const variant =
+      initialVariant ??
+      (localStorage.getItem('sueca-game-variant') as GameVariant | null) ??
+      last?.gameVariant ??
+      'sueca';
+    if (last?.rulesPresetId) {
+      return resolvePresetId(variant, last.rulesPresetId);
+    }
+    return resolvePresetId(variant, saved ?? undefined);
+  });
+
+  const setGameVariant = (variant: GameVariant) => {
+    setGameVariantState(variant);
+    setRulesPresetId((prev) => resolvePresetId(variant, prev));
+  };
 
   useEffect(() => {
     localStorage.setItem('sueca-player-names', JSON.stringify(playerNames));
@@ -78,6 +102,17 @@ export function useGameSetup(initialVariant?: GameVariant) {
   }, [gameVariant]);
 
   useEffect(() => {
+    localStorage.setItem('sueca-rules-preset', rulesPresetId);
+  }, [rulesPresetId]);
+
+  useEffect(() => {
+    const allowed = getPresetsForVariant(gameVariant).map((p) => p.id);
+    if (!allowed.includes(rulesPresetId)) {
+      setRulesPresetId(getDefaultPresetId(gameVariant));
+    }
+  }, [gameVariant, rulesPresetId]);
+
+  useEffect(() => {
     const allowed = getAvailableGames().map((g) => g.variant);
     if (!allowed.includes(gameVariant)) setGameVariant('sueca');
   }, [gameVariant]);
@@ -94,7 +129,8 @@ export function useGameSetup(initialVariant?: GameVariant) {
       multiplayerEnabled: MULTIPLAYER_ENABLED && multiplayerEnabled,
       multiplayerSessionId: multiplayerSessionId.trim() || undefined,
       multiplayerJoinMode,
-      gameVariant
+      gameVariant,
+      rulesPresetId: resolvePresetId(gameVariant, rulesPresetId)
     };
   };
 
@@ -113,6 +149,9 @@ export function useGameSetup(initialVariant?: GameVariant) {
     setMultiplayerSessionId,
     gameVariant,
     setGameVariant,
+    rulesPresetId,
+    setRulesPresetId,
+    presetOptions: getPresetsForVariant(gameVariant),
     buildConfig
   };
 }

@@ -1,58 +1,38 @@
 import React from 'react';
 import { GameVariant } from '../types/game';
+import { getDefaultPresetId, getPreset, resolvePresetId, RulesPresetId } from '../constants/rulesPresets';
+import { useLanguage } from '../i18n/useLanguage';
 import './RulesSheet.css';
-
-const RULES: Record<GameVariant, { title: string; bullets: string[] }> = {
-  sueca: {
-    title: 'Sueca',
-    bullets: [
-      '4 players, 2 teams. 40-card deck.',
-      'Follow suit; trump wins if you cannot follow.',
-      'First team to 4 games (120+ points per game) wins the match.'
-    ]
-  },
-  spades: {
-    title: 'Spades',
-    bullets: [
-      'Bid tricks per team before each round.',
-      'Spades are always trump. Follow suit when possible.',
-      'Score to 500; bags penalize overtricks.'
-    ]
-  },
-  hearts: {
-    title: 'Hearts',
-    bullets: [
-      'Avoid hearts (1 pt) and Queen of Spades (13 pts).',
-      'Pass 3 cards each round (left / right / across).',
-      'Lowest total score wins; shoot the moon reverses scoring.'
-    ]
-  },
-  king: {
-    title: 'King (simplified)',
-    bullets: [
-      '10 hands: 6 negative, 4 positive.',
-      'Negative: avoid winning tricks. Positive: win tricks.',
-      'Rotating trump. See docs/rules/king-simplified.md.'
-    ]
-  }
-};
 
 interface RulesSheetProps {
   variant: GameVariant;
+  presetId?: RulesPresetId;
   onClose: () => void;
 }
 
-export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, onClose }) => {
-  const rule = RULES[variant];
+export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, presetId, onClose }) => {
+  const { language } = useLanguage();
+  const resolved = getPreset(resolvePresetId(variant, presetId ?? getDefaultPresetId(variant)));
+  const title = language === 'pt' ? resolved.namePt : resolved.name;
+  const bullets = language === 'pt' ? resolved.bulletsPt : resolved.bullets;
+
   return (
     <div className="rules-sheet-overlay" onClick={onClose} role="presentation">
-      <div className="rules-sheet dobo-panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="rules-title">
-        <h2 id="rules-title">{rule.title}</h2>
+      <div
+        className="rules-sheet dobo-panel"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="rules-title"
+      >
+        <h2 id="rules-title">{title}</h2>
         <ul>
-          {rule.bullets.map((b) => (
+          {bullets.map((b) => (
             <li key={b}>{b}</li>
           ))}
         </ul>
+        <p className="rules-sheet-note">
+          {language === 'pt' ? 'Variantes regionais em breve.' : 'Regional variants coming soon.'}
+        </p>
         <button type="button" className="rules-sheet-close dobo-btn" onClick={onClose}>
           Close
         </button>

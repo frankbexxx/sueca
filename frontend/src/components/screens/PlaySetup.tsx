@@ -96,6 +96,26 @@ export const PlaySetup: React.FC<PlaySetupProps> = ({ onStartGame, initialVarian
           </select>
         </div>
 
+        {setup.presetOptions.length > 1 && (
+          <div className="play-setup-section">
+            <label className="play-setup-label" htmlFor="play-rules-preset">
+              {t.playSetup.rulesPreset}
+            </label>
+            <select
+              id="play-rules-preset"
+              className="form-select"
+              value={setup.rulesPresetId}
+              onChange={(e) => setup.setRulesPresetId(e.target.value as typeof setup.rulesPresetId)}
+            >
+              {setup.presetOptions.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.namePt}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {setup.gameVariant === 'sueca' && (
           <div className="play-setup-section">
             <div className="play-setup-label">{t.startMenu.dealingMethod}</div>

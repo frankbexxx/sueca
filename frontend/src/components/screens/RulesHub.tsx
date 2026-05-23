@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GameVariant } from '../../types/game';
 import { getAvailableGames } from '../../constants/gameMetadata';
+import { getDefaultPresetId } from '../../constants/rulesPresets';
 import { RulesSheet } from '../RulesSheet';
 import { useLanguage } from '../../i18n/useLanguage';
 import './RulesHub.css';
@@ -32,7 +33,11 @@ export const RulesHub: React.FC = () => {
       </div>
 
       {openVariant && (
-        <RulesSheet variant={openVariant} onClose={() => setOpenVariant(null)} />
+        <RulesSheet
+          variant={openVariant}
+          presetId={getDefaultPresetId(openVariant)}
+          onClose={() => setOpenVariant(null)}
+        />
       )}
     </div>
   );

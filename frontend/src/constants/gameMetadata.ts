@@ -41,7 +41,7 @@ export const GAME_METADATA: Record<GameVariant, GameMetadata> = {
   king: {
     variant: 'king',
     name: 'King',
-    description: 'King MVP — alternating negative/positive hands with rotating trump',
+    description: 'Portuguese King — 6 negative contracts, 4 festas with auction (zero-sum)',
     minPlayers: 4,
     maxPlayers: 4,
     deckType: 'standard52',

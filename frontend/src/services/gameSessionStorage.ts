@@ -1,5 +1,6 @@
 import { GameConfig } from '../types/gameConfig';
 import { GameState, GameVariant } from '../types/game';
+import { resolvePresetId } from '../constants/rulesPresets';
 
 const SESSION_KEY = 'sueca-saved-session';
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -46,7 +47,18 @@ export function loadLastConfig(): GameConfig | null {
   const raw = localStorage.getItem(LAST_CONFIG_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as GameConfig;
+    const parsed = JSON.parse(raw) as Partial<GameConfig>;
+    if (!parsed.gameVariant) return null;
+    return {
+      playerNames: parsed.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+      aiDifficulty: parsed.aiDifficulty ?? 'medium',
+      dealingMethod: parsed.dealingMethod ?? 'A',
+      multiplayerEnabled: parsed.multiplayerEnabled ?? false,
+      multiplayerJoinMode: parsed.multiplayerJoinMode ?? false,
+      multiplayerSessionId: parsed.multiplayerSessionId,
+      gameVariant: parsed.gameVariant,
+      rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId)
+    };
   } catch {
     return null;
   }

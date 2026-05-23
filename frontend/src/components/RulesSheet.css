@@ -31,3 +31,9 @@
   font-size: 1rem;
   font-weight: 700;
 }
+
+.rules-sheet-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}

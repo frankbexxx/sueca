@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
+import { getDefaultPresetId } from '../constants/rulesPresets';
 export type { GameConfig } from '../types/gameConfig';
 import { getAvailableGames } from '../constants/gameMetadata';
 import { GameSelector } from './GameSelector';
@@ -152,7 +153,8 @@ export const StartMenu: React.FC<StartMenuProps> = ({
       multiplayerEnabled,
       multiplayerSessionId: multiplayerSessionId.trim() || undefined,
       multiplayerJoinMode,
-      gameVariant
+      gameVariant,
+      rulesPresetId: getDefaultPresetId(gameVariant)
     };
 
     // Save final config to localStorage
