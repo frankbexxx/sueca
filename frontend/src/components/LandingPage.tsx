@@ -44,12 +44,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               <div className="landing-description">
                 <p className="landing-intro">{t.landing.subtitle}</p>
                 <p className="landing-description-text">{t.landing.description}</p>
-                <div className="landing-meta-list">
-                  <div className="landing-meta-item">{t.landing.metaPlayers}</div>
-                  <div className="landing-meta-item">{t.landing.metaTeams}</div>
-                  <div className="landing-meta-item">{t.landing.metaCards}</div>
-                  <div className="landing-meta-item">{t.landing.metaGames}</div>
-                </div>
               </div>
             </div>
           </main>

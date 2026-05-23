@@ -84,19 +84,24 @@
   flex-direction: column;
   gap: 10px;
   align-items: stretch;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
 .landing-media {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
 }
 
 .landing-media-frame {
   width: 100%;
-  max-width: 280px;
+  max-width: none;
+  height: 100%;
+  min-height: clamp(240px, 52vh, calc(100dvh - 220px));
   border-radius: 16px;
   padding: 4px;
   background:
@@ -106,15 +111,15 @@
     0 12px 24px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(255, 255, 255, 0.12);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .landing-cover-image {
   width: 100%;
-  max-height: 22vh;
-  height: auto;
+  height: 100%;
   display: block;
-  margin: 0 auto;
   object-fit: cover;
+  object-position: center top;
   border-radius: 13px;
 }
 
@@ -124,8 +129,7 @@
     radial-gradient(circle at 30% 0, rgba(255, 255, 255, 0.15), transparent 40%),
     linear-gradient(145deg, #263238, #37474f);
   border: 1px dashed rgba(255, 255, 255, 0.4);
-  min-height: 120px;
-  max-height: 22vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,7 +153,7 @@
 .landing-description {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   font-size: 0.9rem;
   color: #e2e6ff;
   flex-shrink: 0;
@@ -171,20 +175,6 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.landing-meta-list {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.landing-meta-item {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.75;
 }
 
 .landing-cta {
@@ -240,13 +230,18 @@
     align-items: stretch;
   }
 
+  .landing-media {
+    flex: none;
+  }
+
   .landing-media-frame {
+    min-height: 320px;
     max-width: none;
   }
 
   .landing-cover-image {
-    max-height: none;
     width: 100%;
+    height: 100%;
   }
 
   .landing-title {
@@ -255,10 +250,6 @@
 
   .landing-intro {
     font-size: 1.1rem;
-  }
-
-  .landing-meta-item {
-    font-size: 0.85rem;
   }
 
   .landing-small-print {
@@ -282,7 +273,7 @@
     gap: 8px;
   }
 
-  .landing-cover-image {
-    max-height: 20vh;
+  .landing-media-frame {
+    min-height: clamp(220px, 50vh, calc(100dvh - 210px));
   }
 }
