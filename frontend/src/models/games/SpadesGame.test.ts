@@ -70,10 +70,24 @@ describe('SpadesGame', () => {
     expect(game.canPlayCard(s, 0, 0)).toBe(true);
   });
 
+  it('sums individual bids into team totals', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    game.applyBids([3, 2, 4, 1]);
+    const spades = game.getCurrentState().variantState?.spades as {
+      team1Bid: number;
+      team2Bid: number;
+      playerBids: number[];
+    };
+    expect(spades.playerBids).toEqual([3, 2, 4, 1]);
+    expect(spades.team1Bid).toBe(7);
+    expect(spades.team2Bid).toBe(3);
+  });
+
   it('scores contract and bags', () => {
     const game = new SpadesGame();
-    game.initialize(names, { team1Bid: 4, team2Bid: 4 });
-    game.applyBids(4, 4);
+    game.initialize(names, {});
+    game.applyBids([2, 2, 2, 2]);
     const internal = game as unknown as {
       state: ReturnType<SpadesGame['getCurrentState']>;
       endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;

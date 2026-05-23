@@ -64,6 +64,10 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.updatePlayerNames(names);
   }
 
+  setDealingMethod(method: DealingMethod): void {
+    this.game?.setDealingMethod(method);
+  }
+
   restoreState(state: GameState): GameState {
     const names = state.players.map((p) => p.name);
     this.game = new Game(names, state.dealingMethod || 'A', state.aiDifficulty || 'medium');

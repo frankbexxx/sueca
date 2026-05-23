@@ -118,6 +118,7 @@ export interface Translations {
   playSetup: {
     title: string;
     subtitle: string;
+    rulesPreset: string;
   };
 
   rulesHub: {
@@ -253,7 +254,8 @@ export const translations: Record<Language, Translations> = {
     },
     playSetup: {
       title: 'Nova partida',
-      subtitle: 'Escolhe o jogo e os adversários'
+      subtitle: 'Escolhe o jogo e os adversários',
+      rulesPreset: 'Modo de regras'
     },
     rulesHub: {
       title: 'Regras',
@@ -430,7 +432,8 @@ export const translations: Record<Language, Translations> = {
     },
     playSetup: {
       title: 'New game',
-      subtitle: 'Pick a game and opponents'
+      subtitle: 'Pick a game and opponents',
+      rulesPreset: 'Rules mode'
     },
     rulesHub: {
       title: 'Rules',

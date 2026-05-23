@@ -3,11 +3,13 @@ import { GameFactory } from './GameFactory';
 describe('GameSession', () => {
   const names = ['P1', 'P2', 'P3', 'P4'];
 
-  it('sueca initialize returns 40-card hands (10 per player)', () => {
+  it('sueca initialize returns 40-card hands (10 per player) after startRound', () => {
     const adapter = GameFactory.getAdapter('sueca');
     const state = adapter.initialize(names, { dealingMethod: 'A', aiDifficulty: 'medium' });
     expect(state.variant).toBe('sueca');
-    state.players.forEach((p) => expect(p.hand).toHaveLength(10));
+    adapter.startRound(state);
+    const after = adapter.getCurrentState();
+    after.players.forEach((p) => expect(p.hand).toHaveLength(10));
   });
 
   it('spades initialize deals 52 cards (13 per player)', () => {

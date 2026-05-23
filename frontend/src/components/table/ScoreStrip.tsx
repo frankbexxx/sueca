@@ -9,9 +9,16 @@ export interface ScoreStripProps {
   variant: GameVariant;
   usTeam: 1 | 2;
   themTeam: 1 | 2;
+  rulesPresetId?: string;
 }
 
-export const ScoreStrip: React.FC<ScoreStripProps> = ({ gameState, variant, usTeam, themTeam }) => {
+export const ScoreStrip: React.FC<ScoreStripProps> = ({
+  gameState,
+  variant,
+  usTeam,
+  themTeam,
+  rulesPresetId
+}) => {
   const { t } = useLanguage();
   return (
     <div className="top-strip">
@@ -20,7 +27,7 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({ gameState, variant, usTe
         <div>
           {t.gameBoard.game} {gameState.round}
         </div>
-        <GameInfo gameState={gameState} variant={variant} />
+        <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>
     </div>
   );

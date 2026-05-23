@@ -187,7 +187,7 @@ export class Game {
     // Seat players (fixed positions)
     const seatedOrder = this.seatPlayers(playerNames);
     
-    // Create players with fixed teams: indices 0/2 = team1 (US), 1/3 = team2 (THEM)
+    // Step 5: Deal after dealing modal (startRound)
     const players: Player[] = seatedOrder.map((name, index) => {
       const isTeam1 = index === 0 || index === 2;
       const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
@@ -205,19 +205,14 @@ export class Game {
     
     // Find dealer index in seated order
     const dealerIndex = seatedOrder.indexOf(dealerName);
-    
-    // Step 5: Deal 10 cards to each player using selected method
-    const trumpResult = this.dealCards(players, dealerIndex, dealingMethod);
-
-    // First trick: player to the right of dealer starts (counterclockwise)
     const firstTrickStarter = (dealerIndex + 1) % 4;
 
     return {
       players,
-      currentPlayerIndex: firstTrickStarter, // Player to the right of dealer starts first trick
+      currentPlayerIndex: firstTrickStarter,
       dealerIndex: dealerIndex,
-      trumpSuit: trumpResult.suit,
-      trumpCard: trumpResult.card, // The actual trump card for display
+      trumpSuit: null,
+      trumpCard: null,
       currentTrick: [],
       trickLeader: firstTrickStarter,
       scores: { team1: 0, team2: 0 },
@@ -722,10 +717,10 @@ export class Game {
     let roundValue = 1;
     let isStandAlonePente = false; // Track if this is a 120-point stand alone pente
 
-    // Check for tie (60-60)
+    // Check for tie (60-60) — carry doubles next hand's game award
     if (team1 === 60 && team2 === 60) {
-      roundValue = 2; // Next round worth 2 points
-      // Don't add to game score yet, will be added in next round
+      this.state.pendingRoundMultiplier = 2;
+      roundValue = 0;
     } else {
       const multiplier = this.state.pendingRoundMultiplier ?? 1;
       const award = (team: 'team1' | 'team2', base: number) => {
@@ -793,44 +788,51 @@ export class Game {
   // Called from UI to continue after showing round results
   continueToNextRound(): void {
     if (this.state.waitingForRoundEnd) {
-      const roundValue = this.state.nextRoundValue || 1;
       this.state.waitingForRoundEnd = false;
-      this.startNewRound(roundValue);
+      this.startNewRound();
     }
   }
 
-  private startNewRound(roundValue: number): void {
-    if (roundValue === 2) {
-      this.state.pendingRoundMultiplier = 2;
-    }
+  setDealingMethod(method: DealingMethod): void {
+    this.state.dealingMethod = method;
+  }
+
+  private startNewRound(): void {
     this.state.nextRoundValue = undefined;
     this.state.round++;
     this.state.scores = { team1: 0, team2: 0 };
     this.state.currentTrick = [];
-    this.state.playedCards = []; // Reset played cards for new round
-    
-    // Rotate dealer counterclockwise (to the right)
+    this.state.playedCards = [];
+
     this.state.dealerIndex = (this.state.dealerIndex + 1) % 4;
-    
-    // Deal new hands using the same method
-    const trumpResult = this.dealCards(this.state.players, this.state.dealerIndex, this.state.dealingMethod);
-    this.state.trumpSuit = trumpResult.suit;
-    this.state.trumpCard = trumpResult.card;
-    
-    // First trick: player to the right of dealer starts
+
+    this.state.players.forEach((p) => {
+      p.hand = [];
+    });
+    this.state.trumpSuit = null;
+    this.state.trumpCard = null;
+
     const firstTrickStarter = (this.state.dealerIndex + 1) % 4;
     this.state.currentPlayerIndex = firstTrickStarter;
     this.state.trickLeader = firstTrickStarter;
     this.state.lastTrickWinner = null;
     this.state.isFirstTrick = true;
     this.state.waitingForRoundEnd = false;
-    // Only pause on first round of the game (round 1)
-    this.state.waitingForRoundStart = (this.state.round === 1);
+    this.state.waitingForRoundStart = true;
   }
 
   // Called from UI when user is ready to start the round
   startRound(): void {
     if (this.state.waitingForRoundStart) {
+      if (this.state.players[0].hand.length === 0) {
+        const trumpResult = this.dealCards(
+          this.state.players,
+          this.state.dealerIndex,
+          this.state.dealingMethod
+        );
+        this.state.trumpSuit = trumpResult.suit;
+        this.state.trumpCard = trumpResult.card;
+      }
       this.state.waitingForRoundStart = false;
     }
   }

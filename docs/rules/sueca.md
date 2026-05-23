@@ -1,5 +1,7 @@
 # Sueca Portuguesa - Regras Canonicas (Fonte de Verdade)
 
+Preset id: `sueca-pt-normal`
+
 Status: draft canonico para alinhar engine e testes  
 Date: 2026-04-24
 

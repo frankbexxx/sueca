@@ -3,13 +3,12 @@ import { GameState, Card, Suit } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
 import { RoundEndModal } from './RoundEndModal';
-import { GameStartModal } from './GameStartModal';
 import { GameOverModal } from './GameOverModal';
 import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
-import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME, SUIT_TO_EMOJI } from '../utils/cardMappings';
+import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
@@ -23,8 +22,15 @@ import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
 import { SpadesBidModal } from './SpadesBidModal';
 import { HeartsPassModal } from './HeartsPassModal';
+import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
+import { KingFestaModal } from './KingFestaModal';
+import { KingScoreModal } from './KingScoreModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
+import { KingGame } from '../models/games/KingGame';
+import { SuecaGame } from '../models/games/SuecaGame';
+import { getKingPtState } from '../models/games/KingPtGame';
+import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
@@ -50,7 +56,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   const [gameStarted, setGameStarted] = useState(false);
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
   
-  const { playerNames, dealingMethod, aiDifficulty, gameVariant } = config;
+  const { playerNames, dealingMethod, aiDifficulty, gameVariant, rulesPresetId } = config;
+  const [roundDealingMethod, setRoundDealingMethod] = useState(dealingMethod);
+  const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const multiplayerPlayerIndex = 0;
   const multiplayerStatus = 'disconnected' as const;
@@ -114,7 +122,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         initialState = adapter.initialize(config.playerNames, {
           dealingMethod: config.dealingMethod,
           aiDifficulty: config.aiDifficulty,
-          localPlayerIndex: config.multiplayerEnabled ? 0 : undefined
+          localPlayerIndex: config.multiplayerEnabled ? 0 : undefined,
+          rulesPresetId: config.rulesPresetId
         });
       }
       setGameAdapter(adapter);
@@ -327,14 +336,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   };
 
   /**
-   * Returns emoji representation of a suit
-   * Used for display in UI (trump indicators, etc.)
-   */
-  const getSuitEmoji = (suit: string): string => {
-    return SUIT_TO_EMOJI[suit] || suit;
-  };
-
-  /**
    * Effect to handle game over — record stats and return to dashboard
    */
   useEffect(() => {
@@ -423,6 +424,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         variant={gameVariant}
         usTeam={usTeam}
         themTeam={themTeam}
+        rulesPresetId={rulesPresetId}
       />
       {/* Indicador de fonte da AI */}
       <div className="ai-source-banner">
@@ -491,9 +493,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       {gameVariant === 'spades' &&
         (gameState.variantState?.spades as { waitingForBids?: boolean } | undefined)?.waitingForBids && (
           <SpadesBidModal
-            onConfirm={(team1Bid, team2Bid) => {
+            playerNames={gameState.players.map((p) => p.name)}
+            onConfirm={(playerBids) => {
               if (gameAdapter) {
-                (gameAdapter as SpadesGame).applyBids(team1Bid, team2Bid);
+                (gameAdapter as SpadesGame).applyBids(playerBids);
                 setGameState(gameAdapter.getCurrentState());
               }
             }}
@@ -527,48 +530,89 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           />
         )}
 
-      {gameVariant === 'king' && gameState.waitingForRoundStart && !gameState.isGameOver && (
-        <div className="variant-modal-overlay">
-          <div className="variant-modal">
-            <h2>
-              King — Hand {gameState.round}/10 (
-              {(gameState.variantState?.king as { handType?: string })?.handType || 'negative'})
-            </h2>
-            <p className="variant-modal-hint">
-              Trump: {gameState.trumpSuit} — see docs/rules/king-simplified.md
-            </p>
-            <button
-              type="button"
-              className="variant-modal-primary"
-              onClick={() => {
-                if (gameAdapter) {
-                  gameAdapter.startRound(gameAdapter.getCurrentState());
-                  setGameState(gameAdapter.getCurrentState());
-                }
-              }}
-            >
-              Start hand
-            </button>
-          </div>
-        </div>
-      )}
+      {gameVariant === 'king' &&
+        resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+        (() => {
+          const king = getKingPtState(gameState);
+          if (king.waitingForFestaChoice && gameState.waitingForRoundStart) {
+            return (
+              <KingFestaModal
+                ownerName={gameState.players[king.festaOwnerIndex]?.name ?? 'Owner'}
+                onChoose={(choice) => {
+                  if (gameAdapter) {
+                    (gameAdapter as KingGame).chooseFesta(choice);
+                    setGameState(gameAdapter.getCurrentState());
+                  }
+                }}
+              />
+            );
+          }
+          if (king.showScorePopup) {
+            return (
+              <KingScoreModal
+                gameState={gameState}
+                showContinue={gameState.waitingForRoundEnd}
+                onDismiss={() => {
+                  if (gameAdapter) {
+                    (gameAdapter as KingGame).dismissScorePopup();
+                    setGameState(gameAdapter.getCurrentState());
+                  }
+                }}
+                onContinue={() => {
+                  if (gameAdapter) {
+                    (gameAdapter as KingGame).dismissScorePopup();
+                    gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
+                    setGameState(gameAdapter.getCurrentState());
+                  }
+                }}
+              />
+            );
+          }
+          return null;
+        })()}
 
-      {gameVariant === 'sueca' &&
+      {gameVariant === 'king' &&
+        resolvePresetId('king', rulesPresetId) === 'king-simplified' &&
         gameState.waitingForRoundStart &&
-        !gameState.isGameOver &&
-        gameState.round === 1 && (
-          <GameStartModal
-            gameState={gameState}
-            getCardImage={getCardImage}
-            getSuitEmoji={getSuitEmoji}
-            onStart={() => {
-              if (gameAdapter) {
-                gameAdapter.startRound(gameAdapter.getCurrentState());
-                setGameState(gameAdapter.getCurrentState());
-              }
-            }}
-          />
+        !gameState.isGameOver && (
+          <div className="variant-modal-overlay">
+            <div className="variant-modal dobo-panel">
+              <h2>
+                King simplificado — mão {gameState.round}/10 (
+                {(gameState.variantState?.kingSimplified as { handType?: string })?.handType || '…'})
+              </h2>
+              <button
+                type="button"
+                className="variant-modal-primary dobo-btn"
+                onClick={() => {
+                  if (gameAdapter) {
+                    gameAdapter.startRound(gameAdapter.getCurrentState());
+                    setGameState(gameAdapter.getCurrentState());
+                  }
+                }}
+              >
+                Começar mão
+              </button>
+            </div>
+          </div>
         )}
+
+      {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && (
+        <SuecaDealingModal
+          round={gameState.round}
+          dealingMethod={roundDealingMethod}
+          dealingDirection={dealingDirection}
+          onMethodChange={setRoundDealingMethod}
+          onDirectionChange={setDealingDirection}
+          onConfirm={() => {
+            if (gameAdapter) {
+              (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
+              gameAdapter.startRound(gameAdapter.getCurrentState());
+              setGameState(gameAdapter.getCurrentState());
+            }
+          }}
+        />
+      )}
 
 
       {/* Game over modal - displays final scores and new game options */}

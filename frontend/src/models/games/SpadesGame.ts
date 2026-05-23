@@ -9,6 +9,7 @@ const BAG_PENALTY_EVERY = 10;
 const BAG_PENALTY_POINTS = 100;
 
 interface SpadesVariantState {
+  playerBids: number[];
   team1Bid: number;
   team2Bid: number;
   team1Tricks: number;
@@ -23,8 +24,9 @@ function getSpadesState(state: GameState): SpadesVariantState {
   const vs = state.variantState?.spades as SpadesVariantState | undefined;
   return (
     vs ?? {
-      team1Bid: DEFAULT_BID,
-      team2Bid: DEFAULT_BID,
+      playerBids: [DEFAULT_BID, DEFAULT_BID, DEFAULT_BID, DEFAULT_BID],
+      team1Bid: DEFAULT_BID * 2,
+      team2Bid: DEFAULT_BID * 2,
       team1Tricks: 0,
       team2Tricks: 0,
       team1Bags: 0,
@@ -35,14 +37,24 @@ function getSpadesState(state: GameState): SpadesVariantState {
   );
 }
 
+function teamBidsFromPlayerBids(bids: number[]): { team1: number; team2: number } {
+  return { team1: bids[0] + bids[2], team2: bids[1] + bids[3] };
+}
+
 export class SpadesGame extends BaseGameAdapter {
   variant = 'spades' as const;
   private state?: GameState;
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    const team1Bid = (options?.team1Bid as number) ?? DEFAULT_BID;
-    const team2Bid = (options?.team2Bid as number) ?? DEFAULT_BID;
-    this.state = this.createRoundState(playerNames, options, 1, { team1: 0, team2: 0 }, team1Bid, team2Bid, true);
+    const defaultBids = [DEFAULT_BID, DEFAULT_BID, DEFAULT_BID, DEFAULT_BID];
+    this.state = this.createRoundState(
+      playerNames,
+      options,
+      1,
+      { team1: 0, team2: 0 },
+      defaultBids,
+      true
+    );
     return this.cloneState(this.state);
   }
 
@@ -51,11 +63,15 @@ export class SpadesGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
-  applyBids(team1Bid: number, team2Bid: number): void {
+  applyBids(playerBids: number[]): void {
     if (!this.state) return;
     const spades = getSpadesState(this.state);
-    spades.team1Bid = Math.max(0, Math.min(13, team1Bid));
-    spades.team2Bid = Math.max(0, Math.min(13, team2Bid));
+    const bids = playerBids.slice(0, 4).map((b) => Math.max(0, Math.min(13, b)));
+    while (bids.length < 4) bids.push(DEFAULT_BID);
+    spades.playerBids = bids;
+    const teams = teamBidsFromPlayerBids(bids);
+    spades.team1Bid = teams.team1;
+    spades.team2Bid = teams.team2;
     spades.waitingForBids = false;
     this.state.waitingForRoundStart = false;
     this.state.variantState = { ...this.state.variantState, spades };
@@ -66,8 +82,7 @@ export class SpadesGame extends BaseGameAdapter {
     options: Record<string, unknown> | undefined,
     round: number,
     gameScore: { team1: number; team2: number },
-    team1Bid: number,
-    team2Bid: number,
+    playerBids: number[],
     waitingForBids: boolean
   ): GameState {
     const deck = new Deck('standard52');
@@ -101,6 +116,8 @@ export class SpadesGame extends BaseGameAdapter {
       }
     }
 
+    const teams = teamBidsFromPlayerBids(playerBids);
+
     return {
       variant: 'spades',
       players,
@@ -131,8 +148,9 @@ export class SpadesGame extends BaseGameAdapter {
       partnerSignals: [],
       variantState: {
         spades: {
-          team1Bid,
-          team2Bid,
+          playerBids: [...playerBids],
+          team1Bid: teams.team1,
+          team2Bid: teams.team2,
           team1Tricks: 0,
           team2Tricks: 0,
           team1Bags: 0,
@@ -268,8 +286,7 @@ export class SpadesGame extends BaseGameAdapter {
       { aiDifficulty: s.aiDifficulty },
       s.round + 1,
       gameScore,
-      prev.team1Bid,
-      prev.team2Bid,
+      prev.playerBids,
       true
     );
   }

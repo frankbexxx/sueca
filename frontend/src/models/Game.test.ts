@@ -2,8 +2,9 @@ import { Game } from './Game';
 import { CARD_POINTS, GameState } from '../types/game';
 
 describe('Game Sueca invariants', () => {
-  it('deals 10 cards to each of 4 players', () => {
+  it('deals 10 cards to each of 4 players after startRound', () => {
     const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
     const state = game.getState();
     state.players.forEach((player) => {
       expect(player.hand).toHaveLength(10);
@@ -12,6 +13,7 @@ describe('Game Sueca invariants', () => {
 
   it('distributes exactly 120 card points across all hands', () => {
     const game = new Game();
+    game.startRound();
     const state = game.getState();
     const totalPoints = state.players
       .flatMap((p) => p.hand)
@@ -75,12 +77,17 @@ describe('Game Sueca invariants', () => {
   it('awards 2 games after 60-60 carry on next round win', () => {
     const game = new Game(['You', 'East', 'Partner', 'West']);
     game.startRound();
-    const internal = game as unknown as { state: GameState; endRound: () => void; startNewRound: (v: number) => void };
+    const internal = game as unknown as {
+      state: GameState;
+      endRound: () => void;
+      startNewRound: () => void;
+    };
     internal.state.scores = { team1: 60, team2: 60 };
     internal.endRound();
-    expect(internal.state.nextRoundValue).toBe(2);
+    expect(internal.state.pendingRoundMultiplier).toBe(2);
     internal.state.waitingForRoundEnd = false;
-    internal.startNewRound(2);
+    internal.startNewRound();
+    game.startRound();
     internal.state.scores = { team1: 65, team2: 55 };
     internal.endRound();
     expect(internal.state.gameScore.team1).toBe(2);

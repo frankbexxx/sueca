@@ -1,4 +1,6 @@
-# King (simplificado) — SUECÂO v1
+# King (simplificado) — variante
+
+Preset id: `king-simplified` (modo normal = [`king.md`](king.md))
 
 Versão intermédia para Play Store: **sem festas por jogador**.
 

@@ -35,7 +35,8 @@ vercel --prod
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
 - [x] Selector mostra Sueca, Spades, Hearts e King
-- [ ] Smoke: 1 ronda por variante (sem alterar layout da mesa)
+- [ ] Smoke por jogo (modo normal): Sueca popup distribuição · Spades bids individuais · Hearts 4 scores · King PT 6 neg + festa
+- [ ] Tab Regras mostra preset por defeito
 
 ## Android (Capacitor)
 

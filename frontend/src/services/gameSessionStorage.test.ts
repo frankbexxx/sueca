@@ -17,7 +17,8 @@ const mockConfig = (): GameConfig => ({
   dealingMethod: 'A',
   multiplayerEnabled: false,
   multiplayerJoinMode: false,
-  gameVariant: 'hearts'
+  gameVariant: 'hearts',
+  rulesPresetId: 'hearts-us-normal'
 });
 
 describe('gameSessionStorage', () => {
