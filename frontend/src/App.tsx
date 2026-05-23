@@ -8,9 +8,11 @@ import { RulesHub } from './components/screens/RulesHub';
 import { MoreScreen } from './components/screens/MoreScreen';
 import { AppScreen, AppTab } from './types/navigation';
 import { GameConfig } from './types/gameConfig';
+import { GameVariant } from './types/game';
 import {
   SavedGameSession,
   loadGameSession,
+  loadLastConfig,
   saveLastConfig,
   clearGameSession
 } from './services/gameSessionStorage';
@@ -23,6 +25,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [resumeSession, setResumeSession] = useState<SavedGameSession | null>(null);
+  const [playInitialVariant, setPlayInitialVariant] = useState<GameVariant | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
     return saved ? saved === 'true' : false;
@@ -46,6 +49,13 @@ function App() {
     setResumeSession(null);
     setScreen('shell');
     setActiveTab('home');
+  }, []);
+
+  const handleTabChange = useCallback((tab: AppTab) => {
+    setActiveTab(tab);
+    if (tab !== 'play') {
+      setPlayInitialVariant(null);
+    }
   }, []);
 
   if (screen === 'landing') {
@@ -78,11 +88,28 @@ function App() {
               const saved = loadGameSession();
               if (saved) startGame(saved.config, saved);
             }}
-            onPlayNow={() => setActiveTab('play')}
-            onSelectTab={setActiveTab}
+            onPlayLast={() => {
+              const last = loadLastConfig();
+              if (last) startGame(last);
+            }}
+            onChooseGame={() => {
+              setPlayInitialVariant(null);
+              setActiveTab('play');
+            }}
+            onPickVariant={(variant) => {
+              setPlayInitialVariant(variant);
+              setActiveTab('play');
+            }}
+            onOpenProfile={() => setActiveTab('more')}
           />
         )}
-        {activeTab === 'play' && <PlaySetup onStartGame={(c) => startGame(c)} />}
+        {activeTab === 'play' && (
+          <PlaySetup
+            key={playInitialVariant ?? 'default'}
+            initialVariant={playInitialVariant}
+            onStartGame={(c) => startGame(c)}
+          />
+        )}
         {activeTab === 'rules' && <RulesHub />}
         {activeTab === 'more' && (
           <MoreScreen
@@ -94,7 +121,7 @@ function App() {
           />
         )}
       </main>
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onChange={handleTabChange} />
     </div>
   );
 }

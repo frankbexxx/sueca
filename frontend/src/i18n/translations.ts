@@ -17,6 +17,7 @@ export interface Translations {
     tapHint: string;
     credits: string;
     copyright: string;
+    imageAlt: string;
   };
   
   // Start Menu
@@ -99,6 +100,19 @@ export interface Translations {
     gamesPlayed: string;
     wins: string;
     noSavedGame: string;
+    playLastGame: (game: string) => string;
+    chooseGame: string;
+    otherGame: string;
+    lastPlayed: string;
+    lastPlayedNever: string;
+    lastPlayedSaved: string;
+    savedAgo: (time: string) => string;
+    quickPickTitle: string;
+    winRate: string;
+    viewProfile: string;
+    perGameStats: string;
+    playedShort: string;
+    winsShort: string;
   };
 
   playSetup: {
@@ -120,6 +134,8 @@ export interface Translations {
     playerName: string;
     sound: string;
     language: string;
+    editName: string;
+    saveName: string;
   };
 
   inGame: {
@@ -191,15 +207,16 @@ export const translations: Record<Language, Translations> = {
   pt: {
     landing: {
       title: 'SUECÃO',
-      subtitle: 'Um jogo de Sueca',
-      description: 'Versão digital do clássico jogo de cartas português, pensada para jogar a solo contra a IA ou em modo cooperativo com amigos ao redor da mesa.',
+      subtitle: '4 jogos de cartas',
+      description: 'Sueca, Hearts, Spades e King — joga offline contra a IA.',
       metaPlayers: '4 JOGADORES',
       metaTeams: '2 equipas',
-      metaCards: '40 cartas',
+      metaCards: 'baralhos variados',
       metaGames: '4 jogos',
-      tapHint: 'toque ou clique para começar a jogar',
+      tapHint: 'Entrar',
       credits: 'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
-      copyright: '© 2025 Todos os direitos reservados.'
+      copyright: '© 2025 Todos os direitos reservados.',
+      imageAlt: 'SUECÃO — capa do jogo'
     },
     menu: {
       selectGame: 'Selecionar Jogo'
@@ -219,7 +236,20 @@ export const translations: Record<Language, Translations> = {
       statsTitle: 'Estatísticas',
       gamesPlayed: 'Partidas',
       wins: 'Vitórias',
-      noSavedGame: 'Sem partida guardada'
+      noSavedGame: 'Sem partida guardada',
+      playLastGame: (game) => `Jogar ${game}`,
+      chooseGame: 'Escolher jogo',
+      otherGame: 'Outro jogo…',
+      lastPlayed: 'Última partida',
+      lastPlayedNever: 'Ainda não jogaste',
+      lastPlayedSaved: 'Partida guardada',
+      savedAgo: (time) => `guardada ${time}`,
+      quickPickTitle: 'Jogos',
+      winRate: 'Taxa de vitória',
+      viewProfile: 'Ver perfil',
+      perGameStats: 'Por jogo',
+      playedShort: 'J',
+      winsShort: 'V'
     },
     playSetup: {
       title: 'Nova partida',
@@ -237,7 +267,9 @@ export const translations: Record<Language, Translations> = {
       credits: 'Créditos',
       playerName: 'O teu nome',
       sound: 'Som',
-      language: 'Idioma'
+      language: 'Idioma',
+      editName: 'Editar nome',
+      saveName: 'Guardar'
     },
     inGame: {
       exit: 'Sair',
@@ -352,15 +384,16 @@ export const translations: Record<Language, Translations> = {
   en: {
     landing: {
       title: 'SUECÃO',
-      subtitle: 'A Sueca Game',
-      description: 'Digital version of the classic Portuguese card game, designed to play solo against AI or cooperatively with friends around the table.',
+      subtitle: '4 card games',
+      description: 'Sueca, Hearts, Spades and King — play offline against AI.',
       metaPlayers: '4 PLAYERS',
       metaTeams: '2 teams',
-      metaCards: '40 cards',
+      metaCards: 'mixed decks',
       metaGames: '4 games',
-      tapHint: 'tap or click to start playing',
+      tapHint: 'Enter',
       credits: 'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
-      copyright: '© 2025 All rights reserved.'
+      copyright: '© 2025 All rights reserved.',
+      imageAlt: 'SUECÃO — game cover'
     },
     menu: {
       selectGame: 'Select Game'
@@ -380,7 +413,20 @@ export const translations: Record<Language, Translations> = {
       statsTitle: 'Statistics',
       gamesPlayed: 'Games played',
       wins: 'Wins',
-      noSavedGame: 'No saved game'
+      noSavedGame: 'No saved game',
+      playLastGame: (game) => `Play ${game}`,
+      chooseGame: 'Choose game',
+      otherGame: 'Another game…',
+      lastPlayed: 'Last played',
+      lastPlayedNever: 'Not played yet',
+      lastPlayedSaved: 'Saved game',
+      savedAgo: (time) => `saved ${time}`,
+      quickPickTitle: 'Games',
+      winRate: 'Win rate',
+      viewProfile: 'View profile',
+      perGameStats: 'By game',
+      playedShort: 'P',
+      winsShort: 'W'
     },
     playSetup: {
       title: 'New game',
@@ -398,7 +444,9 @@ export const translations: Record<Language, Translations> = {
       credits: 'Credits',
       playerName: 'Your name',
       sound: 'Sound',
-      language: 'Language'
+      language: 'Language',
+      editName: 'Edit name',
+      saveName: 'Save'
     },
     inGame: {
       exit: 'Exit',

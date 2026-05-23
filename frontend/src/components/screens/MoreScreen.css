@@ -16,10 +16,30 @@
   color: #e9eef7;
 }
 
-.more-profile-name,
-.more-stats-line {
-  margin: 0 0 8px;
-  color: rgba(233, 238, 247, 0.85);
+.more-name-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: rgba(233, 238, 247, 0.75);
+}
+
+.more-name-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.more-name-input {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  box-sizing: border-box;
+}
+
+.more-save-name {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  font-weight: 600;
+  border-radius: var(--sueca-radius-md, 10px);
 }
 
 .more-toggle {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AIDifficulty, DealingMethod } from '../../types/game';
+import { AIDifficulty, DealingMethod, GameVariant } from '../../types/game';
 import { GameConfig } from '../../types/gameConfig';
 import { GameSelector } from '../GameSelector';
 import { useLanguage } from '../../i18n/useLanguage';
@@ -10,11 +10,12 @@ import './PlaySetup.css';
 
 interface PlaySetupProps {
   onStartGame: (config: GameConfig) => void;
+  initialVariant?: GameVariant | null;
 }
 
-export const PlaySetup: React.FC<PlaySetupProps> = ({ onStartGame }) => {
+export const PlaySetup: React.FC<PlaySetupProps> = ({ onStartGame, initialVariant }) => {
   const { t } = useLanguage();
-  const setup = useGameSetup();
+  const setup = useGameSetup(initialVariant ?? undefined);
   const [editingPlayerIndex, setEditingPlayerIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,24 +1,53 @@
 import React, { useState } from 'react';
 import { CreditsModal } from '../CreditsModal';
 import { useLanguage } from '../../i18n/useLanguage';
-import { loadLastConfig, loadLocalStats } from '../../services/gameSessionStorage';
+import { loadLastConfig } from '../../services/gameSessionStorage';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
 import { STORAGE_KEYS } from '../../constants/gameConstants';
 import './MoreScreen.css';
+
+const LAST_CONFIG_KEY = 'sueca-last-config';
 
 interface MoreScreenProps {
   darkMode: boolean;
   onDarkModeChange: (value: boolean) => void;
 }
 
+function loadPlayerNames(): string[] {
+  const saved = localStorage.getItem('sueca-player-names');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 4) return parsed;
+    } catch {
+      /* ignore */
+    }
+  }
+  const last = loadLastConfig();
+  return last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+}
+
 export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChange }) => {
   const { language, setLanguage, t } = useLanguage();
   const [showCredits, setShowCredits] = useState(false);
-  const lastConfig = loadLastConfig();
-  const stats = loadLocalStats();
+  const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
   const [soundEnabled, setSoundEnabled] = useState(
     () => localStorage.getItem('sueca-sound-enabled') !== 'false'
   );
+
+  const savePlayerName = () => {
+    const trimmed = playerName.trim() || 'Player 1';
+    setPlayerName(trimmed);
+    const names = loadPlayerNames();
+    names[0] = trimmed;
+    localStorage.setItem('sueca-player-names', JSON.stringify(names));
+    const last = loadLastConfig();
+    if (last) {
+      const updatedNames = [...last.playerNames];
+      updatedNames[0] = trimmed;
+      localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify({ ...last, playerNames: updatedNames }));
+    }
+  };
 
   const toggleSound = () => {
     const next = !soundEnabled;
@@ -40,12 +69,23 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
 
       <section className="more-section dobo-panel">
         <h2 className="more-section-title">{t.moreScreen.profile}</h2>
-        <p className="more-profile-name">
-          {t.moreScreen.playerName}: <strong>{lastConfig?.playerNames[0] || 'Player 1'}</strong>
-        </p>
-        <p className="more-stats-line">
-          {t.dashboard.gamesPlayed}: {stats.gamesPlayed} · {t.dashboard.wins}: {stats.wins}
-        </p>
+        <label className="more-name-label" htmlFor="more-player-name">
+          {t.moreScreen.editName}
+        </label>
+        <div className="more-name-row">
+          <input
+            id="more-player-name"
+            type="text"
+            className="more-name-input form-input"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            maxLength={20}
+            placeholder={t.moreScreen.playerName}
+          />
+          <button type="button" className="more-save-name dobo-btn" onClick={savePlayerName}>
+            {t.moreScreen.saveName}
+          </button>
+        </div>
       </section>
 
       <section className="more-section dobo-panel">

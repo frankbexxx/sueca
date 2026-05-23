@@ -14,6 +14,8 @@ export interface SavedGameSession {
 export interface LocalStats {
   gamesPlayed: number;
   wins: number;
+  lastPlayedAt?: number;
+  lastPlayedVariant?: GameVariant;
   byVariant: Record<GameVariant, { played: number; wins: number }>;
 }
 
@@ -28,8 +30,16 @@ const emptyStats = (): LocalStats => ({
   }
 });
 
+export function touchLastPlayed(variant: GameVariant): void {
+  const stats = loadLocalStats();
+  stats.lastPlayedAt = Date.now();
+  stats.lastPlayedVariant = variant;
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
 export function saveLastConfig(config: GameConfig): void {
   localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify(config));
+  touchLastPlayed(config.gameVariant);
 }
 
 export function loadLastConfig(): GameConfig | null {
@@ -86,5 +96,42 @@ export function recordGameResult(variant: GameVariant, playerWon: boolean): void
     stats.wins += 1;
     stats.byVariant[variant].wins += 1;
   }
+  stats.lastPlayedAt = Date.now();
+  stats.lastPlayedVariant = variant;
   localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+export function getWinRate(stats: LocalStats): number | null {
+  if (stats.gamesPlayed === 0) return null;
+  return Math.round((stats.wins / stats.gamesPlayed) * 100);
+}
+
+export function formatRelativeTime(ms: number, locale: 'pt' | 'en'): string {
+  const now = Date.now();
+  const diffMs = Math.max(0, now - ms);
+  const diffMinutes = Math.floor(diffMs / (60 * 1000));
+  const diffHours = Math.floor(diffMs / (60 * 60 * 1000));
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
+  if (diffMinutes < 1) {
+    return locale === 'pt' ? 'agora' : 'just now';
+  }
+  if (diffHours < 1) {
+    return locale === 'pt' ? `há ${diffMinutes} min` : `${diffMinutes} min ago`;
+  }
+  if (diffHours < 24) {
+    return locale === 'pt' ? `há ${diffHours} h` : `${diffHours} h ago`;
+  }
+  if (diffDays === 1) {
+    return locale === 'pt' ? 'ontem' : 'yesterday';
+  }
+  if (diffDays < 7) {
+    return locale === 'pt' ? `há ${diffDays} dias` : `${diffDays} days ago`;
+  }
+
+  const date = new Date(ms);
+  return date.toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-GB', {
+    day: 'numeric',
+    month: 'short'
+  });
 }

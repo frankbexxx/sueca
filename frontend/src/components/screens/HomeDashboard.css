@@ -2,6 +2,21 @@
   padding: 16px 16px 24px;
   max-width: 480px;
   margin: 0 auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-header-text {
+  min-width: 0;
+  flex: 1;
 }
 
 .screen-header {
@@ -19,11 +34,72 @@
   color: rgba(233, 238, 247, 0.75);
 }
 
-.dashboard-actions {
+.dashboard-profile {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--sueca-touch-min, 48px);
+  min-width: var(--sueca-touch-min, 48px);
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--sueca-radius-md, 12px);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e9eef7;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dashboard-profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(108, 92, 231, 0.35);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.dashboard-profile-label {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  max-width: 72px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.dashboard-context {
+  margin-bottom: 12px;
+}
+
+.dashboard-primary-action {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dashboard-play-last {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: var(--sueca-radius-md, 10px);
+  cursor: pointer;
+  color: #fff;
+}
+
+.dashboard-other-game {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  background: none;
+  border: none;
+  color: var(--sueca-color-primary, #6c5ce7);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .dashboard-card {
@@ -55,6 +131,34 @@
   opacity: 0.85;
 }
 
+.dashboard-quick-pick {
+  margin-bottom: 16px;
+}
+
+.dashboard-quick-pick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dashboard-game-tile {
+  min-height: var(--sueca-touch-min, 48px);
+  padding: 12px 10px;
+  border-radius: var(--sueca-radius-md, 10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e9eef7;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.dashboard-game-tile--active {
+  border-color: rgba(108, 92, 231, 0.6);
+  background: rgba(108, 92, 231, 0.2);
+  box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.35);
+}
+
 .dashboard-stats {
   padding: 16px;
   border-radius: var(--sueca-radius-md, 12px);
@@ -67,43 +171,84 @@
   color: #e9eef7;
 }
 
+.dashboard-subsection-title {
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+  color: rgba(233, 238, 247, 0.85);
+  font-weight: 600;
+}
+
 .dashboard-stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .dashboard-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
+  padding: 8px 4px;
 }
 
 .dashboard-stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
 }
 
 .dashboard-stat-label {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: rgba(233, 238, 247, 0.7);
-}
-
-.dashboard-muted {
-  font-size: 0.85rem;
-  color: rgba(233, 238, 247, 0.5);
   text-align: center;
 }
 
-.dashboard-link {
-  display: block;
-  margin-top: 16px;
-  background: none;
-  border: none;
-  color: var(--sueca-color-primary, #6c5ce7);
+.dashboard-per-game-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-per-game-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(233, 238, 247, 0.85);
+}
+
+.dashboard-per-game-name {
   font-weight: 600;
-  cursor: pointer;
-  min-height: var(--sueca-touch-min, 48px);
+}
+
+.dashboard-per-game-counts {
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.dashboard-last-played {
+  font-size: 0.8rem;
+  color: rgba(233, 238, 247, 0.5);
+  text-align: center;
+  margin: 8px 0 0;
+}
+
+@media (max-width: 360px) {
+  .screen-home {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+  }
+
+  .dashboard-stat-value {
+    font-size: 1.1rem;
+  }
 }
