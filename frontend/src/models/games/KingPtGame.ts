@@ -481,9 +481,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     let guard = 0;
     while (guard++ < 24) {
-      const king = getKingPtState(this.state);
-      const acted = this.runOneAiFestaStep(king);
-      this.syncKing(king);
+      const acted = this.runOneAiFestaStep(getKingPtState(this.state));
       if (!acted) break;
     }
   }
@@ -632,11 +630,10 @@ export class KingPtGame extends BaseGameAdapter {
       variantState: { kingPt: king, rulesPresetId: 'king-pt-normal' }
     };
 
+    this.state = state;
+
     if (!withKohReveal && !isFesta) this.deal(state);
-    if (isFesta) {
-      this.syncKing(king);
-      this.runAiFestaSteps();
-    }
+    if (isFesta) this.runAiFestaSteps();
     return state;
   }
 

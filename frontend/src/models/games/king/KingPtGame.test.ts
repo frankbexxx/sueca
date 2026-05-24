@@ -78,6 +78,7 @@ describe('KingPtGame', () => {
     king.festaPhase = 'negotiation';
     king.bestBid = { bidderIndex: 1, bidType: 'positive', amount: 4 };
     king.festaOwnerIndex = 0;
+    internal.state.players[1].type = 'human';
     internal.state.variantState = { ...internal.state.variantState, kingPt: king };
     game.requestHigherBid('positive', 6);
     const after = getKingPtState(game.getCurrentState());
@@ -86,6 +87,30 @@ describe('KingPtGame', () => {
     expect(bidAbsoluteValue(after.requestedBid!)).toBeGreaterThanOrEqual(
       bidAbsoluteValue(after.bestBid!)
     );
+  });
+
+  it('runs AI auction when entering first festa', () => {
+    const game = new KingPtGame();
+    game.initialize(['P1', 'P2', 'P3', 'P4'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 5;
+    king.kohPlayerIndex = 0;
+    internal.state.waitingForRoundEnd = true;
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+
+    game.continueToNextRound(internal.state);
+    const after = getKingPtState(game.getCurrentState());
+
+    expect(after.gameIndex).toBe(6);
+    expect(after.festaOwnerIndex).toBe(0);
+    const aiActed =
+      after.auctionTurnIndex > 0 ||
+      after.bestBid !== null ||
+      after.festaPhase !== 'auction';
+    expect(aiActed).toBe(true);
   });
 
   it('aligns first festa owner with K♥ holder', () => {
