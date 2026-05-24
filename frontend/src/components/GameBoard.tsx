@@ -352,12 +352,51 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     }
   }, [gameAdapter, gameState.isGameOver, gameState.winner, gameState.players, gameVariant, isMultiplayer, multiplayerPlayerIndex, onExit]);
 
-  /**
-   * Team identification
-   * "US" = the team containing the human player (index 0)
-   * "THEM" = the opposing team
-   */
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
+
+  const kingPtFestaKey =
+    gameVariant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal'
+      ? (() => {
+          const k = getKingPtState(gameState);
+          return [
+            k.festaPhase,
+            k.auctionTurnIndex,
+            k.bestBid?.bidderIndex,
+            k.bestBid?.amount,
+            k.requestedBid?.amount,
+            k.waitingForFallback,
+            k.waitingForFestaSetup,
+            k.eightOrNullsPending,
+            k.eightOrNullsTarget
+          ].join('|');
+        })()
+      : '';
+
+  useEffect(() => {
+    if (!gameAdapter || gameVariant !== 'king') return;
+    if (resolvePresetId('king', rulesPresetId) !== 'king-pt-normal') return;
+    if (!gameState.waitingForRoundStart) return;
+
+    const king = getKingPtState(gameState);
+    const inFestaFlow =
+      king.festaPhase === 'auction' ||
+      king.festaPhase === 'negotiation' ||
+      king.festaPhase === 'negotiation_counter' ||
+      king.waitingForFallback ||
+      king.waitingForFestaSetup ||
+      king.eightOrNullsPending;
+    if (!inFestaFlow) return;
+
+    const timer = window.setTimeout(() => {
+      const acted = (gameAdapter as KingGame).tickFestaAi();
+      if (acted) {
+        setGameState(gameAdapter.getCurrentState());
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+    // kingPtFestaKey tracks festa state; full gameState would retrigger on unrelated clones
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameAdapter, gameVariant, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
   const usTeam = gameState.players[localPlayerIndex]?.team || 1;
   const themTeam = usTeam === 1 ? 2 : 1;
 
@@ -477,7 +516,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       />
 
       {/* Game end modal - displays game scores and games progress */}
-      {gameState.waitingForRoundEnd && !gameState.isGameOver && (
+      {gameState.waitingForRoundEnd &&
+        !gameState.isGameOver &&
+        !(
+          gameVariant === 'king' &&
+          resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+          getKingPtState(gameState).showScorePopup
+        ) && (
         <RoundEndModal
           gameState={gameState}
           usTeam={usTeam}
@@ -485,6 +530,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           onContinue={() => {
             if (gameAdapter) {
               gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
+              if (gameVariant === 'king') {
+                (gameAdapter as KingGame).tickFestaAi();
+              }
               setGameState(gameAdapter.getCurrentState());
             }
           }}
@@ -625,6 +673,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
                   if (gameAdapter) {
                     (gameAdapter as KingGame).dismissScorePopup();
                     gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
+                    (gameAdapter as KingGame).tickFestaAi();
                     setGameState(gameAdapter.getCurrentState());
                   }
                 }}

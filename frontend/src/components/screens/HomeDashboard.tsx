@@ -9,6 +9,7 @@ import {
   getWinRate
 } from '../../services/gameSessionStorage';
 import { GameVariant } from '../../types/game';
+import { BUILD_VERSION } from '../../generated/buildInfo';
 import './HomeDashboard.css';
 
 interface HomeDashboardProps {
@@ -140,6 +141,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         ) : (
           t.dashboard.lastPlayedNever
         )}
+      </p>
+
+      <p className="dashboard-version" aria-label={`${t.dashboard.buildVersion} ${BUILD_VERSION}`}>
+        {t.dashboard.buildVersion}: <code>{BUILD_VERSION}</code>
       </p>
     </div>
   );

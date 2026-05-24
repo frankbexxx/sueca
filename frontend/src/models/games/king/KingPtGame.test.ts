@@ -113,6 +113,33 @@ describe('KingPtGame', () => {
     expect(aiActed).toBe(true);
   });
 
+  it('tickFestaAi advances auction when restoring saved festa state', () => {
+    const game = new KingPtGame();
+    game.initialize(['P1', 'P2', 'P3', 'P4'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 6;
+    king.phase = 'festa_setup';
+    king.festaOwnerIndex = 0;
+    king.festaPhase = 'auction';
+    king.auctionOrder = [1, 2, 3];
+    king.auctionTurnIndex = 0;
+    internal.state.waitingForRoundStart = true;
+    internal.state.waitingForRoundEnd = false;
+    internal.state.variantState = { kingPt: king, rulesPresetId: 'king-pt-normal' };
+
+    const snapshot = JSON.parse(JSON.stringify(internal.state)) as typeof internal.state;
+    const restored = game.restoreState(snapshot);
+    const after = getKingPtState(restored);
+    const aiActed =
+      after.auctionTurnIndex > 0 ||
+      after.bestBid !== null ||
+      after.festaPhase !== 'auction';
+    expect(aiActed).toBe(true);
+  });
+
   it('aligns first festa owner with K♥ holder', () => {
     const koh = 2;
     expect(festaOwner(koh, 6)).toBe(koh);

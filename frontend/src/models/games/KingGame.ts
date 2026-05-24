@@ -90,6 +90,11 @@ export class KingGame extends BaseGameAdapter {
     if (this.impl && isPtGame(this.impl)) this.impl.dismissScorePopup();
   }
 
+  tickFestaAi(): boolean {
+    if (this.impl && isPtGame(this.impl)) return this.impl.tickFestaAi();
+    return false;
+  }
+
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
     return this.impl?.canPlayCard(state, playerIndex, cardIndex) ?? false;
   }

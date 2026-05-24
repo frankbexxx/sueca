@@ -113,6 +113,7 @@ export interface Translations {
     perGameStats: string;
     playedShort: string;
     winsShort: string;
+    buildVersion: string;
   };
 
   playSetup: {
@@ -250,7 +251,8 @@ export const translations: Record<Language, Translations> = {
       viewProfile: 'Ver perfil',
       perGameStats: 'Por jogo',
       playedShort: 'J',
-      winsShort: 'V'
+      winsShort: 'V',
+      buildVersion: 'Versão'
     },
     playSetup: {
       title: 'Nova partida',
@@ -428,7 +430,8 @@ export const translations: Record<Language, Translations> = {
       viewProfile: 'View profile',
       perGameStats: 'By game',
       playedShort: 'P',
-      winsShort: 'W'
+      winsShort: 'W',
+      buildVersion: 'Version'
     },
     playSetup: {
       title: 'New game',

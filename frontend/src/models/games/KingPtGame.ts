@@ -477,13 +477,21 @@ export class KingPtGame extends BaseGameAdapter {
     king.nullAuctionStartNote = null;
   }
 
-  private runAiFestaSteps(): void {
-    if (!this.state) return;
+  private runAiFestaSteps(): boolean {
+    if (!this.state) return false;
     let guard = 0;
+    let any = false;
     while (guard++ < 24) {
       const acted = this.runOneAiFestaStep(getKingPtState(this.state));
       if (!acted) break;
+      any = true;
     }
+    return any;
+  }
+
+  /** Runs AI festa steps until a human decision is required. */
+  tickFestaAi(): boolean {
+    return this.runAiFestaSteps();
   }
 
   private runOneAiFestaStep(king: KingPtVariantState): boolean {
@@ -638,8 +646,10 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private buildPlayers(names: string[], localPlayerIndex?: number): Player[] {
+    const humanIndex =
+      localPlayerIndex !== undefined && localPlayerIndex >= 0 ? localPlayerIndex : 0;
     return names.slice(0, 4).map((name, index) => {
-      const isHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
+      const isHuman = index === humanIndex;
       return {
         id: `player_${index}`,
         name,
@@ -886,11 +896,12 @@ export class KingPtGame extends BaseGameAdapter {
     const s = this.state!;
     if (!s.waitingForRoundEnd) return;
     const king = getKingPtState(s);
+    const humanIndex = s.players.findIndex((p) => p.type === 'human');
     this.state = this.buildState(
       s.players.map((p) => p.name),
       {
         aiDifficulty: s.aiDifficulty,
-        localPlayerIndex: s.players.findIndex((p) => p.type === 'human'),
+        localPlayerIndex: humanIndex >= 0 ? humanIndex : 0,
         gameHistory: king.gameHistory,
         kohPlayerIndex: king.kohPlayerIndex
       },
@@ -905,7 +916,12 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   restoreState(state: GameState): GameState {
-    this.state = JSON.parse(JSON.stringify(state));
+    const restored = JSON.parse(JSON.stringify(state)) as GameState;
+    this.state = restored;
+    const king = getKingPtState(restored);
+    if (restored.waitingForRoundStart && isFestaFlowBlocking(king)) {
+      this.runAiFestaSteps();
+    }
     return this.getCurrentState();
   }
 
