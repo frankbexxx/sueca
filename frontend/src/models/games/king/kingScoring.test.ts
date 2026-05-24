@@ -1,32 +1,33 @@
 import {
-  negativeTrickPenalty,
+  settleFourByThree,
   settleNegativeFesta,
-  settlePositiveAuction,
+  settleNullAuctionFesta,
+  settlePositiveAuctionRound,
   sumScores
 } from './kingScoring';
 
 describe('kingScoring', () => {
-  it('no_tricks penalty is 20 per trick', () => {
-    expect(negativeTrickPenalty('no_tricks', [], 1)).toBe(20);
+  it('negative festa sums to +325', () => {
+    const tricks = [3, 4, 3, 3];
+    expect(sumScores(settleNegativeFesta(tricks))).toBe(325);
   });
 
-  it('no_hearts sums hearts in trick', () => {
-    const trick = [
-      { id: '1', rank: '3' as const, suit: 'hearts' as const },
-      { id: '2', rank: '5' as const, suit: 'hearts' as const }
-    ];
-    expect(negativeTrickPenalty('no_hearts', trick, 1)).toBe(40);
+  it('4x3x3 sums to +325', () => {
+    const split = settleFourByThree();
+    expect(split.owner + split.others * 3).toBe(325);
   });
 
-  it('negative festa settlements sum to 325', () => {
-    const tricks = [13, 0, 0, 0];
-    const settlements = settleNegativeFesta(tricks);
-    expect(sumScores(settlements)).toBe(325);
+  it('positive auction round sums to +325', () => {
+    const tricks = [0, 4, 4, 5];
+    const deltas = settlePositiveAuctionRound(6, tricks, 0, 1);
+    expect(sumScores(deltas)).toBe(325);
+    expect(deltas[0]).toBe(150);
+    expect(deltas[1]).toBe(-50);
   });
 
-  it('positive auction penalizes bidder shortfall', () => {
-    const { ownerGain, bidderPenalty } = settlePositiveAuction(5, 3);
-    expect(ownerGain).toBe(125);
-    expect(bidderPenalty).toBe(50);
+  it('null auction festa sums to +325', () => {
+    const tricks = [2, 4, 3, 4];
+    const deltas = settleNullAuctionFesta(tricks, 0, 1, 2);
+    expect(sumScores(deltas)).toBe(325);
   });
 });

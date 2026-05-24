@@ -23,7 +23,7 @@ import { TableSurface } from './table/TableSurface';
 import { SpadesBidModal } from './SpadesBidModal';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
-import { KingFestaModal } from './KingFestaModal';
+import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingScoreModal } from './KingScoreModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
@@ -534,15 +534,52 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
         (() => {
           const king = getKingPtState(gameState);
-          if (king.waitingForFestaChoice && gameState.waitingForRoundStart) {
+          const kingAdapter = gameAdapter as KingGame;
+          const inFestaFlow =
+            king.festaPhase === 'auction' ||
+            king.festaPhase === 'negotiation' ||
+            king.waitingForFallback ||
+            king.waitingForFestaSetup ||
+            king.eightOrNullsPending;
+
+          if (inFestaFlow && gameState.waitingForRoundStart) {
             return (
-              <KingFestaModal
-                ownerName={gameState.players[king.festaOwnerIndex]?.name ?? 'Owner'}
-                onChoose={(choice) => {
-                  if (gameAdapter) {
-                    (gameAdapter as KingGame).chooseFesta(choice);
-                    setGameState(gameAdapter.getCurrentState());
+              <KingFestaFlowModal
+                gameState={gameState}
+                localPlayerIndex={localPlayerIndex}
+                onAuctionPass={() => {
+                  kingAdapter.submitAuctionPass(localPlayerIndex);
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onAuctionBid={(bidType, amount) => {
+                  kingAdapter.submitAuctionBid(localPlayerIndex, bidType, amount);
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onAcceptContract={() => {
+                  kingAdapter.acceptContract();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onRejectContract={() => {
+                  kingAdapter.rejectContract();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onEightOrNulls={() => {
+                  kingAdapter.declareEightOrNulls();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onRespondEight={(offerEight) => {
+                  if (king.eightOrNullsTarget !== null) {
+                    kingAdapter.respondEightOrNulls(king.eightOrNullsTarget, offerEight);
+                    setGameState(gameAdapter!.getCurrentState());
                   }
+                }}
+                onFallback={(choice) => {
+                  kingAdapter.chooseFallback(choice);
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onSetup={(trump, noTrump, firstPlayer) => {
+                  kingAdapter.setupFesta(trump, noTrump, firstPlayer);
+                  setGameState(gameAdapter!.getCurrentState());
                 }}
               />
             );

@@ -21,6 +21,16 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
     <div className="variant-modal-overlay">
       <div className="variant-modal dobo-panel king-score-modal">
         <h2>Pontuação · jogo {king.gameIndex + 1}/10</h2>
+        {king.activeContract && (
+          <p className="variant-modal-hint">
+            Contrato: {king.activeContract.amount}{' '}
+            {king.activeContract.bidType === 'positive' ? 'positivas' : 'nulos'} ·{' '}
+            {gameState.players[king.activeContract.bidderIndex]?.name}
+          </p>
+        )}
+        {king.festaMode === 'negative_festa' && !king.activeContract && (
+          <p className="variant-modal-hint">Nulos</p>
+        )}
         <table className="king-score-table">
           <thead>
             <tr>

@@ -16,8 +16,8 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 |---|----------|-------------|-------|
 | 1 | Não fazer vazas | 20/vaza | 260 |
 | 2 | Não fazer copas | 20/copa | 260 |
-| 3 | Não fazer homens (K+V) | 30/homem | 240 |
-| 4 | Não fazer damas | 50/dama | 200 |
+| 3 | Não fazer damas | 50/dama | 200 |
+| 4 | Não fazer homens (K+V) | 30/homem | 240 |
 | 5 | Não fazer K♥ | 160 | 160 |
 | 6 | Não fazer duas últimas | 90/vaza (×2) | 180 |
 
@@ -26,13 +26,16 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 - Ordem = ordem de jogo (começa quem tirou K♥)
 - **Positiva:** +25/vaza (325 total)
 - **Negativa (nulos):** cada jogador `325 − 75×vazas`; total da festa = 325
-- Opções do dono: trunfo, sem trunfo, nulos, 4×3×3, leilão
+- **Leilão sempre primeiro** (3 licitadores); se todos passarem ou ofertas &lt; 4 positivas equivalentes, o beneficiário decide
+- Opções fallback: trunfo, sem trunfo, nulos, 4×3×3 (só se permitido)
 
 ## Leilão
 
-- Preferência sequencial (jogador a seguir ao dono)
-- Positivo: oferta 1–8 vazas; dono fica sempre com total oferecido; incumprimento −25/vaza
-- Negativo: surplus de vazas para o dono vale +75 cada
+- Preferência sequencial (jogador a seguir ao beneficiário); equivalência **3 positivas = 1 nulo**
+- Positivo: oferta 1–8 vazas; beneficiário recebe sempre o contratado; incumprimento −25/vaza ao leiloado
+- Nulo: ajuste inicial (+475 beneficiário, +175 leiloado para 2 nulos) ou equivalente no fim
+- **8 ou nulos**: beneficiário pode forçar 8 positivas; se oferecidas, é obrigado a aceitar
+- Proibição de puxar Copas (com outro naipe); obrigação de jogar K♥ na 1.ª oportunidade legal (negativos relevantes)
 
 ## UI
 

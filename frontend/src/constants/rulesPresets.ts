@@ -95,15 +95,17 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
     isDefault: true,
     bullets: [
       '4 individual players. K♥ draw sets festa order; zero-sum (1300 neg + 1300 pos).',
-      '6 negative games (no trump): tricks, hearts, men, queens, K♥, last two.',
-      '4 festas (one per player): positive (+25/trick) or negative festa, trump/no-trump, auction.',
-      'Auction: sequential preference; positive 1–8 tricks; penalties for unfulfilled bids.'
+      '6 negative games (no trump): tricks, hearts, queens, men, K♥, last two.',
+      'Hearts lead ban (with other suits); forced K♥ play in NO_KING.',
+      '4 festas: auction always first; 3 pos = 1 null; 8 or nulls; 4×3×3 if weak bids.',
+      'Positive +25/trick; nulls 325−75×tricks; contract settlement preserves +325/round.'
     ],
     bulletsPt: [
       '4 jogadores individuais. Viragem K♥ define ordem; zero-sum (1300 neg + 1300 pos).',
-      '6 jogos negativos (sem trunfo): vazas, copas, homens, damas, K♥, duas últimas.',
-      '4 festas (uma por jogador): positiva (+25/vaza) ou negativa, trunfo/sem trunfo, leilão.',
-      'Leilão: preferência sequencial; positivo 1–8 vazas; penalização por incumprimento.'
+      '6 negativos (sem trunfo): vazas, copas, damas, homens, K♥, duas últimas.',
+      'Proibido puxar Copas (com outro naipe); obrigação de jogar K♥ no negativo King.',
+      '4 festas: leilão sempre primeiro; 3 pos = 1 nulo; 8 ou nulos; 4×3×3 se ofertas fracas.',
+      'Positivo +25/vaza; nulos 325−75×vazas; contratos preservam +325/ronda.'
     ]
   },
   'king-simplified': {

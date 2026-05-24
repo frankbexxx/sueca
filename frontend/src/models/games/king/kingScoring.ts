@@ -49,7 +49,36 @@ export function settleNegativeFesta(tricksWon: number[]): number[] {
   return tricksWon.map((t) => 325 - 75 * t);
 }
 
-/** Auction positive: owner always gets offeredTricks * 25; bidder penalized for shortfall. */
+/** Null auction festa: base nulos + transfer between beneficiary and bidder. */
+export function settleNullAuctionFesta(
+  tricksWon: number[],
+  beneficiaryIndex: number,
+  bidderIndex: number,
+  nullAmount: number
+): number[] {
+  const deltas = settleNegativeFesta(tricksWon);
+  const transfer = nullAmount * 75;
+  deltas[beneficiaryIndex] += transfer;
+  deltas[bidderIndex] -= transfer;
+  return deltas;
+}
+
+/** Positive auction: beneficiary gets contracted tricks; bidder funds the top-up. */
+export function settlePositiveAuctionRound(
+  offeredTricks: number,
+  tricksWon: number[],
+  beneficiaryIndex: number,
+  bidderIndex: number
+): number[] {
+  const deltas = tricksWon.map((t) => t * FESTA_POSITIVE_TRICK);
+  const target = offeredTricks * FESTA_POSITIVE_TRICK;
+  const topUp = target - deltas[beneficiaryIndex];
+  deltas[beneficiaryIndex] = target;
+  deltas[bidderIndex] -= topUp;
+  return deltas;
+}
+
+/** @deprecated use settlePositiveAuctionRound */
 export function settlePositiveAuction(
   offeredTricks: number,
   bidderTricks: number
@@ -59,7 +88,7 @@ export function settlePositiveAuction(
   return { ownerGain, bidderPenalty: shortfall * FESTA_POSITIVE_TRICK };
 }
 
-/** Auction negative: owner targeted N penalty tricks; surplus tricks worth +75 each. */
+/** @deprecated use settleNullAuctionFesta */
 export function settleNegativeAuction(ownerTricks: number, offeredTricks: number): number {
   const surplus = Math.max(0, offeredTricks - ownerTricks);
   return surplus * 75;

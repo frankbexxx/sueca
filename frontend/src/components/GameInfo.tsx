@@ -8,6 +8,7 @@ import {
   KING_NEGATIVE_GAMES
 } from '../models/games/king/kingContracts';
 import { resolvePresetId } from '../constants/rulesPresets';
+import { getKingRulesHint } from './KingRulesHelper';
 
 interface GameInfoProps {
   gameState: GameState;
@@ -17,6 +18,7 @@ interface GameInfoProps {
 
 export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPresetId }) => {
   const { language } = useLanguage();
+  const locale = language === 'pt' ? 'pt' : 'en';
 
   if (variant === 'king') {
     const preset = resolvePresetId('king', rulesPresetId);
@@ -27,15 +29,22 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
         king.gameIndex,
         king.contract,
         king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
-        language === 'pt' ? 'pt' : 'en'
+        locale
       );
+      const hint = getKingRulesHint(gameState, locale);
       return (
         <div className="game-info king-info">
           <span className="king-game-title">{title}</span>
           {king.contract && (
             <span className="king-contract-label">
-              {kingContractLabel(king.contract, language === 'pt' ? 'pt' : 'en')}
+              {kingContractLabel(king.contract, locale)}
             </span>
+          )}
+          {hint && (
+            <div className="king-rules-hint" title={hint.body}>
+              <strong>{hint.title}</strong>
+              <span>{hint.body}</span>
+            </div>
           )}
         </div>
       );

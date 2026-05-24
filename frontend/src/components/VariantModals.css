@@ -88,3 +88,35 @@
   border-color: #6fcf97;
   background: rgba(111, 207, 151, 0.25);
 }
+
+.king-festa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.king-auction-bid-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.king-auction-bid-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.king-rules-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  max-width: 220px;
+}
+
+.king-rules-hint strong {
+  font-size: 0.8rem;
+}

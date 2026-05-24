@@ -1,9 +1,9 @@
 import { BaseGameAdapter } from './GameAdapter';
-import { GameState } from '../../types/game';
+import { GameState, Suit } from '../../types/game';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { KingPtGame } from './KingPtGame';
 import { KingSimplifiedGame } from './KingSimplifiedGame';
-import { KingFestaChoice } from './king/kingContracts';
+import { KingBidType, KingFestaChoice } from './king/kingContracts';
 
 type KingImpl = KingPtGame | KingSimplifiedGame;
 
@@ -34,12 +34,40 @@ export class KingGame extends BaseGameAdapter {
     return this.impl.getCurrentState();
   }
 
-  chooseFesta(choice: KingFestaChoice): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.chooseFesta(choice);
+  submitAuctionPass(playerIndex: number): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionPass(playerIndex);
   }
 
-  submitAuctionBid(playerIndex: number, tricks: number, positive?: boolean): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionBid(playerIndex, tricks, positive);
+  submitAuctionBid(playerIndex: number, bidType: KingBidType, amount: number): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionBid(playerIndex, bidType, amount);
+  }
+
+  acceptContract(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.acceptContract();
+  }
+
+  rejectContract(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.rejectContract();
+  }
+
+  declareEightOrNulls(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.declareEightOrNulls();
+  }
+
+  respondEightOrNulls(bidderIndex: number, offerEight: boolean): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.respondEightOrNulls(bidderIndex, offerEight);
+  }
+
+  chooseFallback(choice: KingFestaChoice): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.chooseFallback(choice);
+  }
+
+  setupFesta(trump: Suit | null, noTrump: boolean, firstPlayerIndex: number): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.setupFesta(trump, noTrump, firstPlayerIndex);
+  }
+
+  confirmFestaSetup(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.confirmFestaSetup();
   }
 
   dismissScorePopup(): void {

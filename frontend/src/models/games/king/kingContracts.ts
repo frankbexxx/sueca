@@ -13,14 +13,35 @@ export type KingPhase =
   | 'festa_play'
   | 'game_over';
 
+export interface KingActiveContract {
+  bidType: KingBidType;
+  amount: number;
+  bidderIndex: number;
+  beneficiaryIndex: number;
+}
+
 export type KingFestaMode = 'positive' | 'negative_festa';
+
+export type KingBidType = 'positive' | 'null';
+
+export interface KingBid {
+  bidderIndex: number;
+  bidType: KingBidType;
+  amount: number;
+}
+
+export type KingFestaPhase =
+  | 'auction'
+  | 'negotiation'
+  | 'fallback'
+  | 'setup'
+  | null;
 
 export type KingFestaChoice =
   | 'trump'
   | 'no_trump'
   | 'nulos'
-  | 'four_by_three'
-  | 'auction';
+  | 'four_by_three';
 
 export interface KingNegativeContractDef {
   id: KingNegativeContract;
@@ -32,8 +53,8 @@ export interface KingNegativeContractDef {
 export const KING_NEGATIVE_CONTRACTS: KingNegativeContractDef[] = [
   { id: 'no_tricks', namePt: 'Não fazer vazas', nameEn: 'No tricks', totalPoints: 260 },
   { id: 'no_hearts', namePt: 'Não fazer copas', nameEn: 'No hearts', totalPoints: 260 },
-  { id: 'no_men', namePt: 'Não fazer homens', nameEn: 'No men (K+J)', totalPoints: 240 },
   { id: 'no_queens', namePt: 'Não fazer damas', nameEn: 'No queens', totalPoints: 200 },
+  { id: 'no_men', namePt: 'Não fazer homens', nameEn: 'No men (K+J)', totalPoints: 240 },
   { id: 'no_king_hearts', namePt: 'Não fazer rei de copas', nameEn: 'No K♥', totalPoints: 160 },
   { id: 'no_last_two', namePt: 'Não fazer duas últimas', nameEn: 'No last two tricks', totalPoints: 180 }
 ];
