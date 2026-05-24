@@ -9,6 +9,7 @@ import {
 } from '../models/games/king/kingContracts';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { getKingRulesHint } from './KingRulesHelper';
+import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 
 interface GameInfoProps {
   gameState: GameState;
@@ -46,6 +47,10 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
               <span>{hint.body}</span>
             </div>
           )}
+          {king.nullAuctionStartNote && (
+            <div className="king-null-start-note">{king.nullAuctionStartNote}</div>
+          )}
+          <KingGameHistoryPanel gameState={gameState} />
         </div>
       );
     }

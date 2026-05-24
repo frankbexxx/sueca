@@ -17,9 +17,11 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
   showContinue
 }) => {
   const king = getKingPtState(gameState);
+  const breakdown = king.roundBreakdown.lines;
+
   return (
     <div className="variant-modal-overlay">
-      <div className="variant-modal dobo-panel king-score-modal">
+      <div className="variant-modal dobo-panel king-score-modal variant-modal-wide">
         <h2>Pontuação · jogo {king.gameIndex + 1}/10</h2>
         {king.activeContract && (
           <p className="variant-modal-hint">
@@ -28,8 +30,18 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
             {gameState.players[king.activeContract.bidderIndex]?.name}
           </p>
         )}
+        {king.nullAuctionStartNote && (
+          <p className="variant-modal-hint">{king.nullAuctionStartNote}</p>
+        )}
         {king.festaMode === 'negative_festa' && !king.activeContract && (
           <p className="variant-modal-hint">Nulos</p>
+        )}
+        {breakdown.length > 0 && (
+          <ul className="king-score-breakdown">
+            {breakdown.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         )}
         <table className="king-score-table">
           <thead>

@@ -19,6 +19,8 @@ interface KingFestaFlowModalProps {
   onAuctionBid: (bidType: KingBidType, amount: number) => void;
   onAcceptContract: () => void;
   onRejectContract: () => void;
+  onRequestHigherBid: (bidType: KingBidType, amount: number) => void;
+  onRespondHigherBid: (raise: boolean, bidType?: KingBidType, amount?: number) => void;
   onEightOrNulls: () => void;
   onRespondEight: (offerEight: boolean) => void;
   onFallback: (choice: KingFestaChoice) => void;
@@ -32,6 +34,8 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   onAuctionBid,
   onAcceptContract,
   onRejectContract,
+  onRequestHigherBid,
+  onRespondHigherBid,
   onEightOrNulls,
   onRespondEight,
   onFallback,
@@ -44,6 +48,9 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   const [setupTrump, setSetupTrump] = useState<Suit>('clubs');
   const [setupNoTrump, setSetupNoTrump] = useState(false);
   const [firstPlayer, setFirstPlayer] = useState(king.benefitOwnerIndex ?? king.festaOwnerIndex);
+  const [showRaiseForm, setShowRaiseForm] = useState(false);
+  const [raiseType, setRaiseType] = useState<KingBidType>('positive');
+  const [raiseAmount, setRaiseAmount] = useState(5);
 
   const currentAuctionPlayer =
     king.festaPhase === 'auction'
@@ -123,6 +130,65 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
+  if (king.festaPhase === 'negotiation_counter' && king.bestBid && king.requestedBid) {
+    const bidderIdx = king.bestBid.bidderIndex;
+    if (king.festaOwnerIndex === localPlayerIndex) {
+      return (
+        <div className="variant-modal-overlay">
+          <div className="variant-modal dobo-panel">
+            <h2>A aguardar resposta</h2>
+            <p className="variant-modal-hint">
+              Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    if (bidderIdx === localPlayerIndex) {
+      return (
+        <div className="variant-modal-overlay">
+          <div className="variant-modal dobo-panel">
+            <h2>Pedido de subida</h2>
+            <p className="variant-modal-hint">
+              {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
+            </p>
+            <div className="king-auction-bid-form">
+              <label>
+                Tipo
+                <select value={raiseType} onChange={(e) => setRaiseType(e.target.value as KingBidType)}>
+                  <option value="positive">Positivas</option>
+                  <option value="null">Nulos</option>
+                </select>
+              </label>
+              <label>
+                Quantidade
+                <input
+                  type="number"
+                  min={1}
+                  max={raiseType === 'positive' ? 8 : 4}
+                  value={raiseAmount}
+                  onChange={(e) => setRaiseAmount(Number(e.target.value))}
+                />
+              </label>
+            </div>
+            <div className="king-festa-actions">
+              <button
+                type="button"
+                className="variant-modal-primary dobo-btn"
+                onClick={() => onRespondHigherBid(true, raiseType, raiseAmount)}
+              >
+                Subir oferta
+              </button>
+              <button type="button" className="dobo-btn" onClick={() => onRespondHigherBid(false)}>
+                Recusar subida
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   if (king.festaPhase === 'negotiation' && king.festaOwnerIndex === localPlayerIndex && king.bestBid) {
     const bidder = gameState.players[king.bestBid.bidderIndex];
     return (
@@ -132,9 +198,43 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
           <p className="variant-modal-hint">
             {bidder?.name} oferece {formatBid(king.bestBid)}.
           </p>
+          {showRaiseForm && (
+            <div className="king-auction-bid-form">
+              <label>
+                Pedir mínimo
+                <select value={raiseType} onChange={(e) => setRaiseType(e.target.value as KingBidType)}>
+                  <option value="positive">Positivas</option>
+                  <option value="null">Nulos</option>
+                </select>
+              </label>
+              <label>
+                Quantidade
+                <input
+                  type="number"
+                  min={1}
+                  max={raiseType === 'positive' ? 8 : 4}
+                  value={raiseAmount}
+                  onChange={(e) => setRaiseAmount(Number(e.target.value))}
+                />
+              </label>
+              <button
+                type="button"
+                className="dobo-btn"
+                onClick={() => {
+                  onRequestHigherBid(raiseType, raiseAmount);
+                  setShowRaiseForm(false);
+                }}
+              >
+                Enviar pedido
+              </button>
+            </div>
+          )}
           <div className="king-festa-actions">
             <button type="button" className="variant-modal-primary dobo-btn" onClick={onAcceptContract}>
               Aceitar
+            </button>
+            <button type="button" className="dobo-btn" onClick={() => setShowRaiseForm(!showRaiseForm)}>
+              Pedir mais
             </button>
             <button type="button" className="dobo-btn" onClick={onRejectContract}>
               Recusar
@@ -231,6 +331,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   if (
     king.festaPhase === 'negotiation' ||
+    king.festaPhase === 'negotiation_counter' ||
     king.waitingForFallback ||
     king.waitingForFestaSetup ||
     king.eightOrNullsPending

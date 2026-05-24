@@ -24,6 +24,7 @@ import { SpadesBidModal } from './SpadesBidModal';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
+import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreModal } from './KingScoreModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
@@ -538,9 +539,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           const inFestaFlow =
             king.festaPhase === 'auction' ||
             king.festaPhase === 'negotiation' ||
+            king.festaPhase === 'negotiation_counter' ||
             king.waitingForFallback ||
             king.waitingForFestaSetup ||
             king.eightOrNullsPending;
+
+          if (king.phase === 'koh_reveal' && gameState.waitingForRoundStart) {
+            return (
+              <KingKohRevealModal
+                gameState={gameState}
+                onNext={() => {
+                  kingAdapter.advanceKohRevealStep();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onConfirm={() => {
+                  kingAdapter.confirmKohReveal();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+              />
+            );
+          }
 
           if (inFestaFlow && gameState.waitingForRoundStart) {
             return (
@@ -561,6 +579,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
                 }}
                 onRejectContract={() => {
                   kingAdapter.rejectContract();
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onRequestHigherBid={(bidType, amount) => {
+                  kingAdapter.requestHigherBid(bidType, amount);
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onRespondHigherBid={(raise, bidType, amount) => {
+                  kingAdapter.respondToHigherBid(raise, bidType, amount);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onEightOrNulls={() => {

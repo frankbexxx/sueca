@@ -4,12 +4,26 @@ import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import {
   auctionBidderOrder,
+  bidAbsoluteValue,
   canBeatBid,
   canUseFourThreeThree,
   clampBid,
   isWeakBid,
   minBidToBeat
 } from './king/kingAuction';
+import {
+  emptyBreakdown,
+  KingKohRevealState,
+  KingRoundBreakdown,
+  KingRoundSummary
+} from './king/kingBreakdown';
+import {
+  accumulateFestaTrickBreakdown,
+  accumulateTrickBreakdown,
+  buildBreakdownLines,
+  initBreakdownForRound,
+  nullAuctionStartNote
+} from './king/kingBreakdownHelpers';
 import {
   KING_NEGATIVE_CONTRACTS,
   KING_NEGATIVE_GAMES,
@@ -21,7 +35,8 @@ import {
   KingFestaMode,
   KingFestaPhase,
   KingNegativeContract,
-  KingPhase
+  KingPhase,
+  kingGameTitle
 } from './king/kingContracts';
 import {
   FESTA_POSITIVE_TRICK,
@@ -47,6 +62,7 @@ export interface KingPtVariantState {
   auctionOrder: number[];
   auctionTurnIndex: number;
   bestBid: KingBid | null;
+  requestedBid: KingBid | null;
   activeContract: KingActiveContract | null;
   benefitOwnerIndex: number | null;
   eightOrNullsPending: boolean;
@@ -57,6 +73,10 @@ export interface KingPtVariantState {
   noTrumpChosen: boolean;
   firstPlayerIndex: number | null;
   roundStartScores: number[];
+  roundBreakdown: KingRoundBreakdown;
+  gameHistory: KingRoundSummary[];
+  kohReveal: KingKohRevealState | null;
+  nullAuctionStartNote: string | null;
   showScorePopup: string | null;
 }
 
@@ -80,6 +100,7 @@ function defaultKingState(): KingPtVariantState {
     auctionOrder: [],
     auctionTurnIndex: 0,
     bestBid: null,
+    requestedBid: null,
     activeContract: null,
     benefitOwnerIndex: null,
     eightOrNullsPending: false,
@@ -90,6 +111,10 @@ function defaultKingState(): KingPtVariantState {
     noTrumpChosen: false,
     firstPlayerIndex: null,
     roundStartScores: empty4(),
+    roundBreakdown: emptyBreakdown(),
+    gameHistory: [],
+    kohReveal: null,
+    nullAuctionStartNote: null,
     showScorePopup: null
   };
 }
@@ -107,19 +132,26 @@ export function getKingPtState(state: GameState): KingPtVariantState {
   return {
     ...defaultKingState(),
     ...vs,
+    roundBreakdown: vs.roundBreakdown ?? emptyBreakdown(),
+    gameHistory: vs.gameHistory ?? [],
     showScorePopup
   };
 }
 
-function performKohDraw(): number {
+function simulateKohDraw(): KingKohRevealState {
   const deck = new Deck('standard52');
+  const sequence: KingKohRevealState['sequence'] = [];
   let player = 0;
   while (deck.getRemaining() > 0) {
     const card = deck.deal(1)[0];
-    if (card?.rank === 'K' && card.suit === 'hearts') return player;
+    if (!card) break;
+    sequence.push({ card, playerIndex: player });
+    if (card.rank === 'K' && card.suit === 'hearts') {
+      return { sequence, winnerIndex: player, step: 0 };
+    }
     player = (player + 1) % 4;
   }
-  return 0;
+  return { sequence, winnerIndex: 0, step: 0 };
 }
 
 export function festaOwner(koh: number, gameIndex: number): number {
@@ -149,13 +181,23 @@ function hasNonHeart(player: Player): boolean {
   return player.hand.some((c) => c.suit !== 'hearts');
 }
 
+function isFestaFlowBlocking(king: KingPtVariantState): boolean {
+  return (
+    king.festaPhase === 'auction' ||
+    king.festaPhase === 'negotiation' ||
+    king.festaPhase === 'negotiation_counter' ||
+    king.waitingForFallback ||
+    king.waitingForFestaSetup ||
+    king.eightOrNullsPending
+  );
+}
+
 export class KingPtGame extends BaseGameAdapter {
   variant = 'king' as const;
   private state?: GameState;
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    const koh = performKohDraw();
-    this.state = this.buildState(playerNames, options, koh, empty4(), 0);
+    this.state = this.buildState(playerNames, options, empty4(), 0, true);
     return this.cloneState(this.state);
   }
 
@@ -164,10 +206,36 @@ export class KingPtGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
-  /** Current player who must act in auction (or null). */
   getCurrentAuctionPlayer(king: KingPtVariantState): number | null {
     if (king.festaPhase !== 'auction') return null;
     return king.auctionOrder[king.auctionTurnIndex] ?? null;
+  }
+
+  advanceKohRevealStep(): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (king.phase !== 'koh_reveal' || !king.kohReveal) return;
+    if (king.kohReveal.step < king.kohReveal.sequence.length - 1) {
+      king.kohReveal.step += 1;
+    }
+    this.syncKing(king);
+  }
+
+  confirmKohReveal(): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (king.phase !== 'koh_reveal' || !king.kohReveal) return;
+    king.phase = 'negative';
+    king.kohReveal = null;
+    king.roundBreakdown = initBreakdownForRound(
+      king.gameIndex,
+      king.contract,
+      king.festaMode,
+      king.activeContract
+    );
+    this.deal(this.state);
+    this.state.waitingForRoundStart = false;
+    this.syncKing(king);
   }
 
   submitAuctionPass(playerIndex: number): void {
@@ -202,16 +270,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
-    king.activeContract = {
-      bidType: king.bestBid.bidType,
-      amount: king.bestBid.amount,
-      bidderIndex: king.bestBid.bidderIndex,
-      beneficiaryIndex: king.festaOwnerIndex
-    };
-    king.benefitOwnerIndex = king.bestBid.bidderIndex;
-    king.festaMode = king.bestBid.bidType === 'positive' ? 'positive' : 'negative_festa';
-    king.festaPhase = 'setup';
-    king.waitingForFestaSetup = true;
+    this.applyContractFromBid(king, king.bestBid);
     this.syncKing(king);
     this.runAiFestaSteps();
   }
@@ -225,13 +284,51 @@ export class KingPtGame extends BaseGameAdapter {
     this.runAiFestaSteps();
   }
 
+  requestHigherBid(bidType: KingBidType, amount: number): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
+    const requested: KingBid = {
+      bidderIndex: king.bestBid.bidderIndex,
+      bidType,
+      amount: clampBid(bidType, amount)
+    };
+    if (bidAbsoluteValue(requested) < bidAbsoluteValue(king.bestBid)) return;
+    king.requestedBid = requested;
+    king.festaPhase = 'negotiation_counter';
+    this.syncKing(king);
+    this.runAiFestaSteps();
+  }
+
+  respondToHigherBid(raise: boolean, bidType?: KingBidType, amount?: number): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (king.festaPhase !== 'negotiation_counter' || !king.requestedBid || !king.bestBid) return;
+    if (raise && bidType !== undefined && amount !== undefined) {
+      const newBid: KingBid = {
+        bidderIndex: king.bestBid.bidderIndex,
+        bidType,
+        amount: clampBid(bidType, amount)
+      };
+      if (bidAbsoluteValue(newBid) >= bidAbsoluteValue(king.requestedBid)) {
+        king.bestBid = newBid;
+        king.requestedBid = null;
+        king.festaPhase = 'negotiation';
+      }
+    } else {
+      king.requestedBid = null;
+      this.enterFallback(king);
+    }
+    this.syncKing(king);
+    this.runAiFestaSteps();
+  }
+
   declareEightOrNulls(): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
     king.eightOrNullsPending = true;
     king.eightOrNullsTarget = king.bestBid.bidderIndex;
-    king.festaPhase = 'negotiation';
     this.syncKing(king);
     this.runAiFestaSteps();
   }
@@ -242,17 +339,9 @@ export class KingPtGame extends BaseGameAdapter {
     if (!king.eightOrNullsPending || king.eightOrNullsTarget !== bidderIndex) return;
     king.eightOrNullsPending = false;
     if (offerEight) {
-      king.bestBid = { bidderIndex, bidType: 'positive', amount: 8 };
-      king.activeContract = {
-        bidType: 'positive',
-        amount: 8,
-        bidderIndex,
-        beneficiaryIndex: king.festaOwnerIndex
-      };
-      king.benefitOwnerIndex = bidderIndex;
-      king.festaMode = 'positive';
-      king.festaPhase = 'setup';
-      king.waitingForFestaSetup = true;
+      const bid: KingBid = { bidderIndex, bidType: 'positive', amount: 8 };
+      king.bestBid = bid;
+      this.applyContractFromBid(king, bid);
     } else {
       king.benefitOwnerIndex = king.festaOwnerIndex;
       this.enterFallback(king);
@@ -276,7 +365,13 @@ export class KingPtGame extends BaseGameAdapter {
       for (let i = 0; i < 4; i++) {
         if (i !== king.festaOwnerIndex) deltas[i] = split.others;
       }
+      king.roundBreakdown.lines = [
+        '4×3×3',
+        `Dono +${split.owner}`,
+        `Outros +${split.others} cada`
+      ];
       this.applyDeltas(king, deltas);
+      this.appendHistory(king);
       this.advanceOrFinish(king);
     } else if (choice === 'nulos') {
       king.festaMode = 'negative_festa';
@@ -305,12 +400,10 @@ export class KingPtGame extends BaseGameAdapter {
     king.noTrumpChosen = noTrump;
     king.firstPlayerIndex = firstPlayerIndex;
     king.waitingForFestaSetup = false;
-    king.festaPhase = 'setup';
     this.startPlay(king);
     this.syncKing(king);
   }
 
-  /** Quick setup with defaults (AI / auto). */
   confirmFestaSetup(): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
@@ -327,6 +420,20 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(this.state);
     king.showScorePopup = null;
     this.syncKing(king);
+  }
+
+  private applyContractFromBid(king: KingPtVariantState, bid: KingBid): void {
+    king.activeContract = {
+      bidType: bid.bidType,
+      amount: bid.amount,
+      bidderIndex: bid.bidderIndex,
+      beneficiaryIndex: king.festaOwnerIndex
+    };
+    king.benefitOwnerIndex = bid.bidderIndex;
+    king.festaMode = bid.bidType === 'positive' ? 'positive' : 'negative_festa';
+    king.festaPhase = 'setup';
+    king.waitingForFestaSetup = true;
+    king.requestedBid = null;
   }
 
   private syncKing(king: KingPtVariantState): void {
@@ -352,6 +459,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.festaPhase = 'fallback';
     king.waitingForFallback = true;
     king.eightOrNullsPending = false;
+    king.requestedBid = null;
   }
 
   private startAuction(king: KingPtVariantState): void {
@@ -359,18 +467,20 @@ export class KingPtGame extends BaseGameAdapter {
     king.auctionOrder = auctionBidderOrder(king.festaOwnerIndex);
     king.auctionTurnIndex = 0;
     king.bestBid = null;
+    king.requestedBid = null;
     king.activeContract = null;
     king.benefitOwnerIndex = null;
     king.eightOrNullsPending = false;
     king.eightOrNullsTarget = null;
     king.waitingForFallback = false;
     king.waitingForFestaSetup = false;
+    king.nullAuctionStartNote = null;
   }
 
   private runAiFestaSteps(): void {
     if (!this.state) return;
     let guard = 0;
-    while (guard++ < 20) {
+    while (guard++ < 24) {
       const king = getKingPtState(this.state);
       const acted = this.runOneAiFestaStep(king);
       this.syncKing(king);
@@ -388,11 +498,21 @@ export class KingPtGame extends BaseGameAdapter {
         this.submitAuctionPass(current);
       } else {
         const min = minBidToBeat(king.bestBid, king.auctionOrder, current);
-        if (min) {
-          this.submitAuctionBid(current, min.bidType, min.amount);
-        } else {
-          this.submitAuctionPass(current);
-        }
+        if (min) this.submitAuctionBid(current, min.bidType, min.amount);
+        else this.submitAuctionPass(current);
+      }
+      return true;
+    }
+
+    if (king.festaPhase === 'negotiation_counter') {
+      const bidder = king.bestBid?.bidderIndex;
+      if (bidder === undefined) return false;
+      const player = this.state!.players[bidder];
+      if (player?.type !== 'ai') return false;
+      if (king.requestedBid && Math.random() < 0.55) {
+        this.respondToHigherBid(true, king.requestedBid.bidType, king.requestedBid.amount);
+      } else {
+        this.respondToHigherBid(false);
       }
       return true;
     }
@@ -445,29 +565,41 @@ export class KingPtGame extends BaseGameAdapter {
   private buildState(
     playerNames: string[],
     options: Record<string, unknown> | undefined,
-    koh: number,
     scores: number[],
-    gameIndex: number
+    gameIndex: number,
+    withKohReveal: boolean
   ): GameState {
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
     const isFesta = gameIndex >= KING_NEGATIVE_GAMES;
+    const kohReveal = withKohReveal ? simulateKohDraw() : null;
+
+    const kohIndex = (options?.kohPlayerIndex as number | undefined) ?? kohReveal?.winnerIndex ?? 0;
+
     const king: KingPtVariantState = {
       ...defaultKingState(),
-      phase: isFesta ? 'festa_setup' : 'negative',
+      phase: withKohReveal ? 'koh_reveal' : isFesta ? 'festa_setup' : 'negative',
       gameIndex,
-      kohPlayerIndex: koh,
+      kohPlayerIndex: kohIndex,
       contract: isFesta ? null : KING_NEGATIVE_CONTRACTS[gameIndex].id,
       playerScores: [...scores],
-      festaOwnerIndex: isFesta ? festaOwner(koh, gameIndex) : koh,
-      roundStartScores: [...scores]
+      festaOwnerIndex: isFesta ? festaOwner(kohIndex, gameIndex) : kohIndex,
+      roundStartScores: [...scores],
+      kohReveal,
+      gameHistory: (options?.gameHistory as KingRoundSummary[]) ?? []
     };
 
-    if (isFesta) {
-      this.startAuction(king);
+    if (isFesta) this.startAuction(king);
+    if (!withKohReveal && !isFesta) {
+      king.roundBreakdown = initBreakdownForRound(
+        king.gameIndex,
+        king.contract,
+        king.festaMode,
+        king.activeContract
+      );
     }
 
     const players = this.buildPlayers(playerNames, localPlayerIndex);
-    const leader = gameLeader(koh, gameIndex);
+    const leader = gameLeader(king.kohPlayerIndex, gameIndex);
 
     const state: GameState = {
       variant: 'king',
@@ -489,7 +621,7 @@ export class KingPtGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      waitingForRoundStart: isFesta,
+      waitingForRoundStart: withKohReveal || isFesta,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
       playedCards: [],
@@ -500,7 +632,7 @@ export class KingPtGame extends BaseGameAdapter {
       variantState: { kingPt: king, rulesPresetId: 'king-pt-normal' }
     };
 
-    if (!isFesta) this.deal(state);
+    if (!withKohReveal && !isFesta) this.deal(state);
     if (isFesta) {
       this.syncKing(king);
       this.runAiFestaSteps();
@@ -541,6 +673,21 @@ export class KingPtGame extends BaseGameAdapter {
     king.roundStartScores = [...king.playerScores];
     king.festaPhase = null;
     king.phase = king.gameIndex >= KING_NEGATIVE_GAMES ? 'festa_play' : 'negative';
+    king.roundBreakdown = initBreakdownForRound(
+      king.gameIndex,
+      king.contract,
+      king.festaMode,
+      king.activeContract
+    );
+
+    if (king.activeContract?.bidType === 'null') {
+      const { beneficiaryIndex, bidderIndex, amount } = king.activeContract;
+      king.roundBreakdown.nullTransfer = { beneficiary: beneficiaryIndex, bidder: bidderIndex, amount };
+      king.nullAuctionStartNote = nullAuctionStartNote(beneficiaryIndex, bidderIndex, amount, 'pt');
+    } else {
+      king.nullAuctionStartNote = null;
+    }
+
     this.deal(this.state!);
     const leader =
       king.firstPlayerIndex ??
@@ -559,11 +706,8 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(s);
     if (
       s.waitingForRoundStart ||
-      king.festaPhase === 'auction' ||
-      king.festaPhase === 'negotiation' ||
-      king.waitingForFallback ||
-      king.waitingForFestaSetup ||
-      king.eightOrNullsPending
+      king.phase === 'koh_reveal' ||
+      isFestaFlowBlocking(king)
     ) {
       return false;
     }
@@ -619,18 +763,29 @@ export class KingPtGame extends BaseGameAdapter {
     king.trickNumber += 1;
     king.tricksWonThisGame[winner] += 1;
 
-    const scoreDuringPlay =
-      king.gameIndex < KING_NEGATIVE_GAMES ||
-      (king.festaMode === 'positive' && !king.activeContract) ||
-      (king.festaMode === 'negative_festa' && !king.activeContract);
-
     if (king.gameIndex < KING_NEGATIVE_GAMES && king.contract) {
+      accumulateTrickBreakdown(
+        king.roundBreakdown,
+        king.contract,
+        s.currentTrick,
+        king.trickNumber,
+        winner
+      );
       const penalty = negativeTrickPenalty(king.contract, s.currentTrick, king.trickNumber);
       if (penalty > 0) {
         king.lastRoundDeltas[winner] -= penalty;
         king.playerScores[winner] -= penalty;
       }
-    } else if (scoreDuringPlay && king.festaMode === 'positive') {
+    } else if (king.gameIndex >= KING_NEGATIVE_GAMES) {
+      accumulateFestaTrickBreakdown(king.roundBreakdown, s.currentTrick, winner);
+    }
+
+    const scoreDuringPlay =
+      king.gameIndex < KING_NEGATIVE_GAMES ||
+      (king.festaMode === 'positive' && !king.activeContract) ||
+      (king.festaMode === 'negative_festa' && !king.activeContract);
+
+    if (scoreDuringPlay && king.festaMode === 'positive') {
       king.lastRoundDeltas[winner] += FESTA_POSITIVE_TRICK;
       king.playerScores[winner] += FESTA_POSITIVE_TRICK;
     } else if (scoreDuringPlay && king.festaMode === 'negative_festa') {
@@ -676,6 +831,13 @@ export class KingPtGame extends BaseGameAdapter {
       }
     }
 
+    king.roundBreakdown.lines = buildBreakdownLines(
+      king.roundBreakdown,
+      king.contract,
+      'pt'
+    );
+    this.appendHistory(king);
+
     king.showScorePopup = 'round';
     this.state!.scores = {
       team1: king.playerScores[0] + king.playerScores[2],
@@ -684,11 +846,24 @@ export class KingPtGame extends BaseGameAdapter {
     this.advanceOrFinish(king);
   }
 
+  private appendHistory(king: KingPtVariantState): void {
+    const ownerName = this.state!.players[king.festaOwnerIndex]?.name ?? '';
+    const title = kingGameTitle(king.gameIndex, king.contract, king.gameIndex >= 6 ? ownerName : null, 'pt');
+    king.gameHistory.push({
+      gameIndex: king.gameIndex,
+      title,
+      deltas: [...king.lastRoundDeltas],
+      scoresAfter: [...king.playerScores],
+      breakdownLines: [...king.roundBreakdown.lines]
+    });
+  }
+
   private applyDeltas(king: KingPtVariantState, deltas: number[]): void {
     for (let i = 0; i < 4; i++) {
       king.lastRoundDeltas[i] = deltas[i];
       king.playerScores[i] += deltas[i];
     }
+    this.appendHistory(king);
     king.showScorePopup = 'round';
     this.state!.scores = {
       team1: king.playerScores[0] + king.playerScores[2],
@@ -716,10 +891,15 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(s);
     this.state = this.buildState(
       s.players.map((p) => p.name),
-      { aiDifficulty: s.aiDifficulty, localPlayerIndex: s.players.findIndex((p) => p.type === 'human') },
-      king.kohPlayerIndex,
+      {
+        aiDifficulty: s.aiDifficulty,
+        localPlayerIndex: s.players.findIndex((p) => p.type === 'human'),
+        gameHistory: king.gameHistory,
+        kohPlayerIndex: king.kohPlayerIndex
+      },
       [...king.playerScores],
-      king.gameIndex + 1
+      king.gameIndex + 1,
+      false
     );
   }
 

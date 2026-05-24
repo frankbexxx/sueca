@@ -39,8 +39,11 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 
 ## UI
 
-- Popup tabela após cada jogo
-- Nome do contrato + índice na mesa
+- Popup viragem K♥ no arranque
+- Popup tabela + **breakdown** após cada jogo
+- Histórico colapsável in-game
+- Leilão: aceitar / recusar / **pedir subida** / 8 ou nulos
+- RulesSheet com secções completas (preset `king-pt-normal`)
 
 ## Detalhe contabilístico
 

@@ -34,6 +34,14 @@ export class KingGame extends BaseGameAdapter {
     return this.impl.getCurrentState();
   }
 
+  advanceKohRevealStep(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.advanceKohRevealStep();
+  }
+
+  confirmKohReveal(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.confirmKohReveal();
+  }
+
   submitAuctionPass(playerIndex: number): void {
     if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionPass(playerIndex);
   }
@@ -48,6 +56,14 @@ export class KingGame extends BaseGameAdapter {
 
   rejectContract(): void {
     if (this.impl && isPtGame(this.impl)) this.impl.rejectContract();
+  }
+
+  requestHigherBid(bidType: KingBidType, amount: number): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.requestHigherBid(bidType, amount);
+  }
+
+  respondToHigherBid(raise: boolean, bidType?: KingBidType, amount?: number): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.respondToHigherBid(raise, bidType, amount);
   }
 
   declareEightOrNulls(): void {

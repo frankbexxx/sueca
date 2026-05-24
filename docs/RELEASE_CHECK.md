@@ -35,8 +35,8 @@ vercel --prod
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
 - [x] Selector mostra Sueca, Spades, Hearts e King
-- [ ] Smoke por jogo (modo normal): Sueca popup distribuição · Spades bids individuais · Hearts 4 scores · King PT 6 neg + festa
-- [ ] Tab Regras mostra preset por defeito
+- [ ] Smoke por jogo (modo normal): Sueca popup distribuição · Spades bids individuais · Hearts 4 scores · **King PT**: viragem K♥ · leilão + pedir subida · breakdown score · histórico
+- [ ] Tab Regras King PT mostra secções completas (negativos, leilão, invariantes)
 
 ## Android (Capacitor)
 

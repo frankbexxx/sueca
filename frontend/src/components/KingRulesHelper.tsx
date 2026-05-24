@@ -15,6 +15,15 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
   const king = getKingPtState(gameState);
   const isPt = locale === 'pt';
 
+  if (king.phase === 'koh_reveal') {
+    return {
+      title: isPt ? 'Viragem K♥' : 'K♥ draw',
+      body: isPt
+        ? 'A viragem define o 1.º beneficiário das festas. Avança até sair o Rei de Copas.'
+        : 'The draw sets the 1st festa beneficiary. Advance until K♥ appears.'
+    };
+  }
+
   if (king.gameIndex < KING_NEGATIVE_GAMES && king.contract) {
     const label = kingContractLabel(king.contract, locale);
     const special: string[] = [];
@@ -51,13 +60,18 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
     };
   }
 
-  if (king.festaPhase === 'negotiation') {
+  if (king.festaPhase === 'negotiation' || king.festaPhase === 'negotiation_counter') {
     const bidText = king.bestBid ? formatBid(king.bestBid, locale) : '';
+    const reqText = king.requestedBid ? formatBid(king.requestedBid, locale) : '';
     return {
       title: isPt ? 'Negociação' : 'Negotiation',
       body: isPt
-        ? `O beneficiário pode aceitar, recusar ou declarar «8 ou nulos». Oferta: ${bidText}.`
-        : `Beneficiary may accept, reject, or declare "8 or nulls". Bid: ${bidText}.`
+        ? king.festaPhase === 'negotiation_counter'
+          ? `Contra-proposta: pedido ${reqText}.`
+          : `Aceitar, recusar, pedir subida ou «8 ou nulos». Oferta: ${bidText}.`
+        : king.festaPhase === 'negotiation_counter'
+          ? `Counter-offer: requested ${reqText}.`
+          : `Accept, reject, request raise, or "8 or nulls". Bid: ${bidText}.`
     };
   }
 

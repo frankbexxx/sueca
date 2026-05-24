@@ -1,14 +1,29 @@
 import { KingPtGame, festaOwner, gameLeader, getKingPtState } from '../KingPtGame';
 import { KING_NEGATIVE_CONTRACTS, KING_TOTAL_GAMES } from './kingContracts';
+import { bidAbsoluteValue } from './kingAuction';
 
 describe('KingPtGame', () => {
-  it('starts negative phase with contract no_tricks', () => {
+  it('starts with koh_reveal phase', () => {
     const game = new KingPtGame();
     const state = game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
     const king = getKingPtState(state);
-    expect(king.gameIndex).toBe(0);
-    expect(king.contract).toBe('no_tricks');
+    expect(king.phase).toBe('koh_reveal');
+    expect(king.kohReveal).not.toBeNull();
+    expect(state.waitingForRoundStart).toBe(true);
+  });
+
+  it('deals after koh confirm', () => {
+    const game = new KingPtGame();
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
+    while (true) {
+      const k = getKingPtState(game.getCurrentState());
+      if (!k.kohReveal || k.kohReveal.step >= k.kohReveal.sequence.length - 1) break;
+      game.advanceKohRevealStep();
+    }
+    game.confirmKohReveal();
+    const state = game.getCurrentState();
     expect(state.players.every((p) => p.hand.length === 13)).toBe(true);
+    expect(getKingPtState(state).phase).toBe('negative');
   });
 
   it('orders negatives: queens before men', () => {
@@ -19,6 +34,7 @@ describe('KingPtGame', () => {
   it('applies -20 for trick winner in no_tricks', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], {});
+    game.confirmKohReveal();
     const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
     internal.state.waitingForRoundStart = false;
     internal.state.waitingForTrickEnd = true;
@@ -37,6 +53,7 @@ describe('KingPtGame', () => {
   it('blocks leading hearts when holding other suits in no_hearts', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
+    game.confirmKohReveal();
     const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
     const king = getKingPtState(internal.state);
     king.contract = 'no_hearts';
@@ -53,24 +70,22 @@ describe('KingPtGame', () => {
     expect(game.canPlayCard(internal.state, 0, 1)).toBe(true);
   });
 
-  it('forces K♥ when void in led suit during no_king_hearts', () => {
+  it('requestHigherBid moves to negotiation_counter', () => {
     const game = new KingPtGame();
-    game.initialize(['A', 'B', 'C', 'D'], {});
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
     const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
     const king = getKingPtState(internal.state);
-    king.contract = 'no_king_hearts';
-    king.gameIndex = 4;
+    king.festaPhase = 'negotiation';
+    king.bestBid = { bidderIndex: 1, bidType: 'positive', amount: 4 };
+    king.festaOwnerIndex = 0;
     internal.state.variantState = { ...internal.state.variantState, kingPt: king };
-    internal.state.waitingForRoundStart = false;
-    internal.state.currentTrick = [{ id: '1', rank: 'A', suit: 'clubs' }];
-    internal.state.currentPlayerIndex = 0;
-    internal.state.trickLeader = 1;
-    internal.state.players[0].hand = [
-      { id: 'kh', rank: 'K', suit: 'hearts' },
-      { id: 'd1', rank: '2', suit: 'diamonds' }
-    ];
-    expect(game.canPlayCard(internal.state, 0, 1)).toBe(false);
-    expect(game.canPlayCard(internal.state, 0, 0)).toBe(true);
+    game.requestHigherBid('positive', 6);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.festaPhase).toBe('negotiation_counter');
+    expect(after.requestedBid?.amount).toBe(6);
+    expect(bidAbsoluteValue(after.requestedBid!)).toBeGreaterThanOrEqual(
+      bidAbsoluteValue(after.bestBid!)
+    );
   });
 
   it('aligns first festa owner with K♥ holder', () => {

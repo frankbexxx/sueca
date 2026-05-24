@@ -1,4 +1,5 @@
 import { GameFactory } from './GameFactory';
+import { KingGame } from './KingGame';
 
 describe('GameSession', () => {
   const names = ['P1', 'P2', 'P3', 'P4'];
@@ -27,9 +28,11 @@ describe('GameSession', () => {
     state.players.forEach((p) => expect(p.hand).toHaveLength(13));
   });
 
-  it('king initialize deals 13 cards per player', () => {
-    const adapter = GameFactory.getAdapter('king');
-    const state = adapter.initialize(names, { aiDifficulty: 'medium' });
+  it('king initialize deals 13 cards per player after KOH reveal', () => {
+    const adapter = GameFactory.getAdapter('king') as KingGame;
+    adapter.initialize(names, { aiDifficulty: 'medium' });
+    adapter.confirmKohReveal();
+    const state = adapter.getCurrentState();
     state.players.forEach((p) => expect(p.hand).toHaveLength(13));
   });
 });
