@@ -16,6 +16,19 @@
   min-width: 0;
 }
 
+.in-game-bar-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.in-game-bar-meta {
+  font-size: 0.65rem;
+  color: rgba(233, 238, 247, 0.5);
+  font-weight: 500;
+}
+
 .in-game-bar-title {
   font-weight: 700;
   font-size: 0.95rem;

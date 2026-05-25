@@ -1,4 +1,4 @@
-import { KingPtGame, festaOwner, gameLeader, getKingPtState } from '../KingPtGame';
+import { KingPtGame, festaOwner, gameLeader, getKingPtState, simulateKohDraw } from '../KingPtGame';
 import { KING_NEGATIVE_CONTRACTS, KING_TOTAL_GAMES } from './kingContracts';
 import { bidAbsoluteValue } from './kingAuction';
 
@@ -87,6 +87,53 @@ describe('KingPtGame', () => {
     expect(bidAbsoluteValue(after.requestedBid!)).toBeGreaterThanOrEqual(
       bidAbsoluteValue(after.bestBid!)
     );
+  });
+
+  it('koh draw rotates from chosen start player', () => {
+    const reveal = simulateKohDraw(2);
+    expect(reveal.startPlayerIndex).toBe(2);
+    expect(reveal.sequence[0].playerIndex).toBe(2);
+    const last = reveal.sequence[reveal.sequence.length - 1];
+    expect(last.card.rank).toBe('K');
+    expect(last.card.suit).toBe('hearts');
+    expect(reveal.winnerIndex).toBe(last.playerIndex);
+  });
+
+  it('deals 13 cards before festa auction', () => {
+    const game = new KingPtGame();
+    game.initialize(['P1', 'P2', 'P3', 'P4'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 5;
+    internal.state.waitingForRoundEnd = true;
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+
+    game.continueToNextRound(internal.state);
+    const state = game.getCurrentState();
+    expect(state.players.every((p) => p.hand.length === 13)).toBe(true);
+  });
+
+  it('weak positive bid enters negotiation not fallback', () => {
+    const game = new KingPtGame();
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 6;
+    king.festaOwnerIndex = 0;
+    king.festaPhase = 'auction';
+    king.auctionOrder = [1, 2, 3];
+    king.auctionTurnIndex = 2;
+    king.bestBid = { bidderIndex: 1, bidType: 'positive', amount: 1 };
+    internal.state.waitingForRoundStart = true;
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+
+    game.submitAuctionPass(3);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.festaPhase).toBe('negotiation');
+    expect(after.bestBid?.amount).toBe(1);
   });
 
   it('runs AI auction when entering first festa', () => {

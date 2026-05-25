@@ -5,6 +5,7 @@ import './InGameBar.css';
 interface InGameBarProps {
   playerName: string;
   gameLabel: string;
+  metaLabel?: string;
   isPaused: boolean;
   onPause: () => void;
   onResume: () => void;
@@ -14,6 +15,7 @@ interface InGameBarProps {
 export const InGameBar: React.FC<InGameBarProps> = ({
   playerName,
   gameLabel,
+  metaLabel,
   isPaused,
   onPause,
   onResume,
@@ -30,7 +32,10 @@ export const InGameBar: React.FC<InGameBarProps> = ({
   return (
     <div className="in-game-bar">
       <div className="in-game-bar-left">
-        <span className="in-game-bar-title">{gameLabel}</span>
+        <div className="in-game-bar-title-row">
+          <span className="in-game-bar-title">{gameLabel}</span>
+          {metaLabel && <span className="in-game-bar-meta">{metaLabel}</span>}
+        </div>
         <span className="in-game-bar-player">{playerName}</span>
       </div>
       <div className="in-game-bar-actions">

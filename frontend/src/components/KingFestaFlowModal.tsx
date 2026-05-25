@@ -254,7 +254,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
       <div className="variant-modal-overlay">
         <div className="variant-modal dobo-panel">
           <h2>Festa de {owner?.name}</h2>
-          <p className="variant-modal-hint">Leilão sem ofertas fortes. Escolhe como jogar.</p>
+          <p className="variant-modal-hint">Ninguém licitou. Escolhe como jogar.</p>
           <div className="king-festa-actions">
             <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onFallback('trump')}>
               Trunfo

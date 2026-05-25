@@ -12,6 +12,7 @@ export interface TableSurfaceProps {
   showGridOverlay: boolean;
   getCardImage: (card: Card) => string;
   getTeamName: (team: 1 | 2) => string;
+  showTeamLabels?: boolean;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -21,7 +22,8 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   usTeam,
   showGridOverlay,
   getCardImage,
-  getTeamName
+  getTeamName,
+  showTeamLabels = true
 }) => {
   return (
     <div className="table-layout">
@@ -37,6 +39,7 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           gameState={gameState}
           localPlayerIndex={localPlayerIndex}
           usTeam={usTeam}
+          showTeamLabels={showTeamLabels}
           getTeamName={getTeamName}
         />
       </div>

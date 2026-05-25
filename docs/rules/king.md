@@ -26,8 +26,9 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 - Ordem = ordem de jogo (começa quem tirou K♥)
 - **Positiva:** +25/vaza (325 total)
 - **Negativa (nulos):** cada jogador `325 − 75×vazas`; total da festa = 325
-- **Leilão sempre primeiro** (3 licitadores); se todos passarem ou ofertas &lt; 4 positivas equivalentes, o beneficiário decide
-- Opções fallback: trunfo, sem trunfo, nulos, 4×3×3 (só se permitido)
+- **Leilão sempre primeiro** (3 licitadores); **13 cartas distribuídas** antes do leilão
+- Se **todos passarem**, o beneficiário decide (trunfo / sem trunfo / nulos / 4×3×3)
+- Se houver **qualquer oferta** (mesmo 1 positiva), o beneficiário **negocia e pode aceitar**
 
 ## Leilão
 
@@ -39,8 +40,8 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 
 ## UI
 
-- Popup viragem K♥ no arranque
-- Popup tabela + **breakdown** após cada jogo
+- Popup viragem K♥ no arranque (automática na mesa, sem contador total)
+- Popup **folha de pontuação** 10×4 após cada jogo + detalhe da ronda
 - Histórico colapsável in-game
 - Leilão: aceitar / recusar / **pedir subida** / 8 ou nulos
 - RulesSheet com secções completas (preset `king-pt-normal`)

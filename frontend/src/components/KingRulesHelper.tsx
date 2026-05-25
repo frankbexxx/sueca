@@ -79,8 +79,8 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
     return {
       title: isPt ? 'Decisão do beneficiário' : 'Beneficiary choice',
       body: isPt
-        ? 'Ofertas fracas ou inexistentes. Escolhe trunfo, sem trunfo, nulos ou 4×3×3 (se permitido).'
-        : 'Weak or no bids. Choose trump, no trump, nulls, or 4×3×3 (if allowed).'
+        ? 'Ninguém licitou. Escolhe trunfo, sem trunfo, nulos ou 4×3×3.'
+        : 'No bids were made. Choose trump, no trump, nulls, or 4×3×3.'
     };
   }
 

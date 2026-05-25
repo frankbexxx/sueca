@@ -41,14 +41,14 @@ export const GameScores: React.FC<GameScoresProps> = ({ gameState, variant, usTe
     return (
       <>
         <div className="score-block us">
-          <div className="label">{t.gameBoard.us}</div>
+          <div className="label">Equipa 1</div>
           <div className="line">Bid: {spades?.team1Bid ?? 0}</div>
-          <div className="line">Score: {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Score: {gameState.gameScore.team1}</div>
         </div>
         <div className="score-block them">
-          <div className="label">{t.gameBoard.them}</div>
+          <div className="label">Equipa 2</div>
           <div className="line">Bid: {spades?.team2Bid ?? 0}</div>
-          <div className="line">Score: {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}</div>
+          <div className="line">Score: {gameState.gameScore.team2}</div>
         </div>
       </>
     );
@@ -77,14 +77,14 @@ export const GameScores: React.FC<GameScoresProps> = ({ gameState, variant, usTe
 
   switch (variant) {
     case 'sueca':
-      return <div className="game-scores">{renderSuecaScores()}</div>;
+      return <div className="game-scores game-scores--teams">{renderSuecaScores()}</div>;
     case 'spades':
-      return <div className="game-scores">{renderSpadesScores()}</div>;
+      return <div className="game-scores game-scores--teams">{renderSpadesScores()}</div>;
     case 'hearts':
       return <div className="game-scores">{renderIndividualScores('Hearts')}</div>;
     case 'king':
       return <div className="game-scores">{renderIndividualScores('King')}</div>;
     default:
-      return <div className="game-scores">{renderSuecaScores()}</div>;
+      return <div className="game-scores game-scores--teams">{renderSuecaScores()}</div>;
   }
 };

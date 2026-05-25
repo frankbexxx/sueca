@@ -25,7 +25,7 @@ import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
-import { KingScoreModal } from './KingScoreModal';
+import { KingScoreSheetModal } from './KingScoreSheetModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
@@ -448,11 +448,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     onExit();
   };
 
+  const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
+
   return (
     <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}
+        metaLabel={aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}
@@ -466,10 +469,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         themTeam={themTeam}
         rulesPresetId={rulesPresetId}
       />
-      {/* Indicador de fonte da AI */}
-      <div className="ai-source-banner">
-        {aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
-      </div>
       {isMultiplayer && (
         <div className={`multiplayer-banner multiplayer-${multiplayerStatus}`}>
           <span>{`Multiplayer: ${multiplayerStatus}`}</span>
@@ -486,6 +485,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         showGridOverlay={showGridOverlay}
         getCardImage={getCardImage}
         getTeamName={getTeamName}
+        showTeamLabels={showTeamLabels}
       />
 
       {/* Human player's hand (South position) - displayed below table */}
@@ -596,6 +596,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
             return (
               <KingKohRevealModal
                 gameState={gameState}
+                getCardImage={getCardImage}
                 onNext={() => {
                   kingAdapter.advanceKohRevealStep();
                   setGameState(gameAdapter!.getCurrentState());
@@ -660,7 +661,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           }
           if (king.showScorePopup) {
             return (
-              <KingScoreModal
+              <KingScoreSheetModal
                 gameState={gameState}
                 showContinue={gameState.waitingForRoundEnd}
                 onDismiss={() => {

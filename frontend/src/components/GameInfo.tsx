@@ -3,7 +3,6 @@ import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import { getKingPtState } from '../models/games/KingPtGame';
 import {
-  kingContractLabel,
   kingGameTitle,
   KING_NEGATIVE_GAMES
 } from '../models/games/king/kingContracts';
@@ -26,27 +25,22 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
     if (preset === 'king-pt-normal') {
       const king = getKingPtState(gameState);
       const ownerName = gameState.players[king.festaOwnerIndex]?.name ?? '';
-      const title = kingGameTitle(
-        king.gameIndex,
-        king.contract,
-        king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
-        locale
-      );
-      const hint = getKingRulesHint(gameState, locale);
+      const title =
+        king.phase === 'koh_reveal'
+          ? locale === 'pt'
+            ? 'Viragem do Rei de Copas'
+            : 'King of Hearts draw'
+          : kingGameTitle(
+              king.gameIndex,
+              king.contract,
+              king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
+              locale
+            );
+      const hint = king.phase === 'koh_reveal' ? null : getKingRulesHint(gameState, locale);
       return (
         <div className="game-info king-info">
           <span className="king-game-title">{title}</span>
-          {king.contract && (
-            <span className="king-contract-label">
-              {kingContractLabel(king.contract, locale)}
-            </span>
-          )}
-          {hint && (
-            <div className="king-rules-hint" title={hint.body}>
-              <strong>{hint.title}</strong>
-              <span>{hint.body}</span>
-            </div>
-          )}
+          {hint && <span className="king-rules-hint">{hint.body}</span>}
           {king.nullAuctionStartNote && (
             <div className="king-null-start-note">{king.nullAuctionStartNote}</div>
           )}

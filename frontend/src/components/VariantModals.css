@@ -132,6 +132,132 @@
   font-weight: 600;
 }
 
+.king-koh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(8, 12, 24, 0.82);
+}
+
+.king-koh-table {
+  position: relative;
+  width: min(92vw, 360px);
+  height: min(92vw, 360px);
+  max-height: 42vh;
+  background: radial-gradient(circle at 50% 40%, #2f6d2f, #1f4f1f 70%);
+  border: 8px solid #7a5736;
+  border-radius: 10px;
+}
+
+.king-koh-seat {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.king-koh-seat-north { top: 4%; left: 50%; transform: translateX(-50%); }
+.king-koh-seat-south { bottom: 4%; left: 50%; transform: translateX(-50%); }
+.king-koh-seat-east { right: 4%; top: 50%; transform: translateY(-50%); }
+.king-koh-seat-west { left: 4%; top: 50%; transform: translateY(-50%); }
+
+.king-koh-seat-name {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 72px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.king-koh-pile {
+  position: relative;
+}
+
+.king-koh-card-img {
+  width: 42px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.king-koh-card-img--latest {
+  transform: scale(1.08);
+}
+
+.king-koh-pile-count {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  font-size: 0.6rem;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+.king-koh-controls {
+  width: min(92vw, 420px);
+  text-align: center;
+}
+
+.king-koh-dealing {
+  animation: king-koh-pulse 0.48s ease-in-out infinite alternate;
+}
+
+@keyframes king-koh-pulse {
+  from { opacity: 0.65; }
+  to { opacity: 1; }
+}
+
+.king-score-sheet-wrap {
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.king-score-sheet {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.king-score-sheet th,
+.king-score-sheet td {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.25rem 0.35rem;
+  text-align: center;
+}
+
+.king-score-sheet-label {
+  text-align: left;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.king-score-sheet-row--active {
+  background: rgba(52, 132, 234, 0.18);
+}
+
+.king-score-sheet-total {
+  font-weight: 700;
+}
+
+.king-score-round-detail h3 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.85rem;
+}
+
 .king-score-breakdown {
   margin: 0;
   padding-left: 1.1rem;

@@ -12,6 +12,7 @@ export type KingFestaPhase =
 export interface KingKohRevealState {
   sequence: Array<{ card: Card; playerIndex: number }>;
   winnerIndex: number;
+  startPlayerIndex: number;
   step: number;
 }
 

@@ -20,13 +20,12 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
   rulesPresetId
 }) => {
   const { t } = useLanguage();
+  const isKing = variant === 'king';
   return (
-    <div className="top-strip">
+    <div className={`top-strip${isKing ? ' top-strip--king' : ''}`}>
       <GameScores gameState={gameState} variant={variant} usTeam={usTeam} themTeam={themTeam} />
-      <div className="round-block">
-        <div>
-          {t.gameBoard.game} {gameState.round}
-        </div>
+      <div className={`round-block${isKing ? ' round-block--king' : ''}`}>
+        {!isKing && <div>{t.gameBoard.game} {gameState.round}</div>}
         <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>
     </div>

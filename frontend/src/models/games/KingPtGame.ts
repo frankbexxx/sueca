@@ -8,7 +8,6 @@ import {
   canBeatBid,
   canUseFourThreeThree,
   clampBid,
-  isWeakBid,
   minBidToBeat
 } from './king/kingAuction';
 import {
@@ -138,20 +137,21 @@ export function getKingPtState(state: GameState): KingPtVariantState {
   };
 }
 
-function simulateKohDraw(): KingKohRevealState {
+export function simulateKohDraw(startPlayerIndex?: number): KingKohRevealState {
   const deck = new Deck('standard52');
   const sequence: KingKohRevealState['sequence'] = [];
-  let player = 0;
+  const start = startPlayerIndex ?? Math.floor(Math.random() * 4);
+  let player = start;
   while (deck.getRemaining() > 0) {
     const card = deck.deal(1)[0];
     if (!card) break;
     sequence.push({ card, playerIndex: player });
     if (card.rank === 'K' && card.suit === 'hearts') {
-      return { sequence, winnerIndex: player, step: 0 };
+      return { sequence, winnerIndex: player, startPlayerIndex: start, step: 0 };
     }
     player = (player + 1) % 4;
   }
-  return { sequence, winnerIndex: 0, step: 0 };
+  return { sequence, winnerIndex: 0, startPlayerIndex: start, step: 0 };
 }
 
 export function festaOwner(koh: number, gameIndex: number): number {
@@ -448,7 +448,7 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private finishAuction(king: KingPtVariantState): void {
-    if (!king.bestBid || isWeakBid(king.bestBid)) {
+    if (!king.bestBid) {
       this.enterFallback(king);
       return;
     }
@@ -641,7 +641,10 @@ export class KingPtGame extends BaseGameAdapter {
     this.state = state;
 
     if (!withKohReveal && !isFesta) this.deal(state);
-    if (isFesta) this.runAiFestaSteps();
+    if (isFesta) {
+      this.deal(state);
+      this.runAiFestaSteps();
+    }
     return state;
   }
 

@@ -7,6 +7,7 @@ export interface PlayerSeatsProps {
   gameState: GameState;
   localPlayerIndex: number;
   usTeam: 1 | 2;
+  showTeamLabels?: boolean;
   getTeamName: (team: 1 | 2) => string;
 }
 
@@ -14,6 +15,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   gameState,
   localPlayerIndex,
   usTeam,
+  showTeamLabels = true,
   getTeamName
 }) => {
   const useMobileLayout = isMobileDevice();
@@ -54,7 +56,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                     {isDealer && <span className="dealer-badge">🃏</span>}
                   </div>
                   <div className="player-name-line-2">
-                    {getTeamName(player.team)}
+                    {showTeamLabels && getTeamName(player.team)}
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                   </div>
                 </>
@@ -65,7 +67,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                     {isDealer && <span className="dealer-badge">🃏</span>}
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                   </h3>
-                  <div className="team-badge">{getTeamName(player.team)}</div>
+                  <div className="team-badge">{showTeamLabels ? getTeamName(player.team) : null}</div>
                 </>
               )}
             </div>
