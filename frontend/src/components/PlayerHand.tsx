@@ -30,15 +30,12 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 }) => {
   const player = gameState.players[localPlayerIndex];
   const cardCount = player?.hand.length ?? 0;
-  const { isNarrow, cardSpacing, handMinWidth, useScrollLayout } = useMobileLayout(cardCount);
+  const { isNarrow, cardSpacing, useScrollLayout } = useMobileLayout(cardCount);
   if (!player) return null;
 
   return (
     <div className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}`}>
-      <div
-        className={`hand-row${useScrollLayout ? ' hand-row--scroll' : ''}`}
-        style={{ minWidth: useScrollLayout ? handMinWidth : undefined }}
-      >
+      <div className={`hand-row${useScrollLayout ? ' hand-row--scroll' : ''}`}>
         {player.hand.map((card: Card, cardIndex: number) => {
           const isPlayable = !readOnly && canPlayCard(cardIndex);
           const isSelected = selectedCard === cardIndex;

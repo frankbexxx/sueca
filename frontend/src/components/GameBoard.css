@@ -607,13 +607,19 @@
 
 .hand-row--scroll {
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
   justify-content: flex-start;
   flex-wrap: nowrap;
+  display: flex;
+  width: 100%;
   height: auto;
   min-height: var(--hand-row-h);
   max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .hand-row--scroll .card-hand {
@@ -637,7 +643,8 @@
 
 .player-hand-bar {
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -875,7 +882,8 @@
   .player-hand-bar--narrow {
     padding: 0 4px;
     margin-bottom: 4px;
-    max-width: 100vw;
+    max-width: 100%;
+    min-width: 0;
   }
   .player-hand-bar--narrow .hand-row {
     min-width: 0;
