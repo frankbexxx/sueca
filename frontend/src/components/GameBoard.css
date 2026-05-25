@@ -581,6 +581,24 @@
   color: #ffcccc; /* Pale pink/red for THEM/ELES */
 }
 
+.player-auction-badge {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.2;
+  background: rgba(196, 181, 253, 0.22);
+  color: #e9d5ff;
+  white-space: nowrap;
+}
+
+.player-info.mobile-layout .player-auction-badge {
+  margin-top: 1px;
+  font-size: 0.58rem;
+}
+
 .player-info.mobile-layout .dealer-badge {
   font-size: 0.7em;
   margin-left: 2px;

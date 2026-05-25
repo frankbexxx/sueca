@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, GameState, GameVariant } from '../../types/game';
+import { KingBid } from '../../models/games/king/kingContracts';
 import { TrickArea } from '../TrickArea';
 import { PlayerSeats } from './PlayerSeats';
 import { getTablePosition } from '../../utils/tableLayout';
@@ -13,6 +14,9 @@ export interface TableSurfaceProps {
   getCardImage: (card: Card) => string;
   getTeamName: (team: 1 | 2) => string;
   showTeamLabels?: boolean;
+  showAuctionBadges?: boolean;
+  auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
+  auctionLocale?: 'pt' | 'en';
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -23,7 +27,10 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   showGridOverlay,
   getCardImage,
   getTeamName,
-  showTeamLabels = true
+  showTeamLabels = true,
+  showAuctionBadges = false,
+  auctionActions,
+  auctionLocale = 'pt'
 }) => {
   return (
     <div className="table-layout">
@@ -41,6 +48,9 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           usTeam={usTeam}
           showTeamLabels={showTeamLabels}
           getTeamName={getTeamName}
+          showAuctionBadges={showAuctionBadges}
+          auctionActions={auctionActions}
+          auctionLocale={auctionLocale}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { GameState } from '../types/game';
+import { GameState, Suit } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import {
   kingContractLabel,
@@ -9,6 +9,39 @@ import { formatBid } from '../models/games/king/kingAuction';
 export interface KingRulesHint {
   title: string;
   body: string;
+}
+
+const TRUMP_SYMBOL: Record<Suit, string> = {
+  clubs: '♣',
+  diamonds: '♦',
+  hearts: '♥',
+  spades: '♠'
+};
+
+function effectiveTrumpSuit(
+  gameState: GameState,
+  king: ReturnType<typeof getKingPtState>
+): Suit | null {
+  if (king.phase === 'festa_play') {
+    return gameState.trumpSuit;
+  }
+  if (king.waitingForFestaSetup || king.festaPhase === 'setup') {
+    return king.noTrumpChosen ? null : king.chosenTrump;
+  }
+  return null;
+}
+
+function positiveFestaHint(gameState: GameState, locale: 'pt' | 'en'): string {
+  const king = getKingPtState(gameState);
+  const isPt = locale === 'pt';
+  const trump = effectiveTrumpSuit(gameState, king);
+  if (trump) {
+    const symbol = TRUMP_SYMBOL[trump];
+    return isPt
+      ? `+25/vaza · com trunfo ${symbol}`
+      : `+25/trick · with trump ${symbol}`;
+  }
+  return isPt ? '+25/vaza · sem trunfo' : '+25/trick · no trump';
 }
 
 export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): KingRulesHint | null {
@@ -55,7 +88,7 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
     return {
       title: isPt ? 'Leilão' : 'Auction',
       body: isPt
-        ? 'Os 3 jogadores seguintes ao beneficiário ofertam em sequência. 3 positivas = 1 nulo.'
+        ? 'Os 3 jogadores seguintes ao beneficiário oferecem em sequência. 3 positivas = 1 nulo.'
         : 'The 3 players after the beneficiary bid in order. 3 positive = 1 null.'
     };
   }
@@ -96,9 +129,7 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
   if (king.gameIndex >= KING_NEGATIVE_GAMES && king.festaMode === 'positive') {
     return {
       title: isPt ? 'Positivo' : 'Positive',
-      body: isPt
-        ? 'Cada vaza vale +25. Trunfo opcional; não és obrigado a cortar.'
-        : 'Each trick is +25. Optional trump; no forced trumping.'
+      body: positiveFestaHint(gameState, locale)
     };
   }
 

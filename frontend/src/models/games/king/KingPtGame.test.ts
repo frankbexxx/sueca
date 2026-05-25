@@ -115,6 +115,68 @@ describe('KingPtGame', () => {
     expect(state.players.every((p) => p.hand.length === 13)).toBe(true);
   });
 
+  it('preserves hands after festa setup (no re-deal)', () => {
+    const game = new KingPtGame();
+    game.initialize(['P1', 'P2', 'P3', 'P4'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 6;
+    king.festaOwnerIndex = 0;
+    king.festaMode = 'positive';
+    king.festaPhase = 'setup';
+    king.waitingForFestaSetup = true;
+    king.benefitOwnerIndex = 1;
+    internal.state.waitingForRoundStart = true;
+    internal.state.players.forEach((p, i) => {
+      p.hand = Array.from({ length: 13 }, (_, j) => ({
+        id: `p${i}c${j}`,
+        rank: '2',
+        suit: 'clubs' as const
+      }));
+    });
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+
+    const beforeIds = internal.state.players.map((p) => p.hand.map((c) => c.id).sort());
+    game.setupFesta('hearts', false, 1);
+    const after = game.getCurrentState();
+    const afterIds = after.players.map((p) => p.hand.map((c) => c.id).sort());
+
+    expect(afterIds).toEqual(beforeIds);
+    expect(getKingPtState(after).phase).toBe('festa_play');
+    expect(after.trumpSuit).toBe('hearts');
+  });
+
+  it('records auction player actions on bid and pass', () => {
+    const game = new KingPtGame();
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 6;
+    king.festaOwnerIndex = 0;
+    king.festaPhase = 'auction';
+    king.auctionOrder = [1, 2, 3];
+    king.auctionTurnIndex = 0;
+    king.auctionPlayerActions = {};
+    internal.state.waitingForRoundStart = true;
+    internal.state.players[1].type = 'human';
+    internal.state.players[2].type = 'human';
+    internal.state.players[3].type = 'human';
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+
+    game.submitAuctionBid(1, 'positive', 2);
+    expect(getKingPtState(game.getCurrentState()).auctionPlayerActions[1]).toEqual({
+      bidderIndex: 1,
+      bidType: 'positive',
+      amount: 2
+    });
+
+    game.submitAuctionPass(2);
+    expect(getKingPtState(game.getCurrentState()).auctionPlayerActions[2]).toBe('pass');
+  });
+
   it('weak positive bid enters negotiation not fallback', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0, kohPlayerIndex: 0 });

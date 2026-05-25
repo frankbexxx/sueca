@@ -4,6 +4,7 @@ import {
   bidEquivalentPositive,
   canBeatBid,
   canUseFourThreeThree,
+  formatAuctionActionShort,
   isWeakBid
 } from './kingAuction';
 import { KingBid } from './kingContracts';
@@ -40,5 +41,15 @@ describe('kingAuction', () => {
     expect(canUseFourThreeThree({ bidderIndex: 1, bidType: 'positive', amount: 3 })).toBe(true);
     expect(canUseFourThreeThree({ bidderIndex: 1, bidType: 'positive', amount: 4 })).toBe(false);
     expect(bidEquivalentPositive({ bidType: 'null', amount: 1, bidderIndex: 1 })).toBe(3);
+  });
+
+  it('formats short auction actions', () => {
+    expect(formatAuctionActionShort('pass', 'pt')).toBe('Passou');
+    expect(formatAuctionActionShort({ bidderIndex: 1, bidType: 'positive', amount: 3 }, 'pt')).toBe(
+      '3 pos.'
+    );
+    expect(formatAuctionActionShort({ bidderIndex: 2, bidType: 'null', amount: 2 }, 'pt')).toBe(
+      '2 nul.'
+    );
   });
 });

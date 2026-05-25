@@ -5,9 +5,16 @@ import { KingBidType, KingFestaChoice } from '../models/games/king/kingContracts
 import { canUseFourThreeThree, formatBid } from '../models/games/king/kingAuction';
 import './VariantModals.css';
 
-const FestaSheet: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const FestaSheet: React.FC<{ children: React.ReactNode; compact?: boolean }> = ({
+  children,
+  compact = false
+}) => (
   <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet">
-    <div className="variant-modal variant-modal--bottom-sheet dobo-panel">{children}</div>
+    <div
+      className={`variant-modal variant-modal--bottom-sheet dobo-panel${compact ? ' variant-modal--festa-compact' : ''}`}
+    >
+      {children}
+    </div>
   </div>
 );
 
@@ -17,6 +24,58 @@ const SUITS: { id: Suit; label: string }[] = [
   { id: 'hearts', label: '♥ Copas' },
   { id: 'spades', label: '♠ Espadas' }
 ];
+
+interface AuctionToolbarProps {
+  bidType: KingBidType;
+  bidAmount: number;
+  onBidTypeChange: (type: KingBidType) => void;
+  onBidAmountChange: (amount: number) => void;
+  onOffer: () => void;
+  onPass?: () => void;
+  passLabel?: string;
+  offerLabel?: string;
+}
+
+const AuctionToolbar: React.FC<AuctionToolbarProps> = ({
+  bidType,
+  bidAmount,
+  onBidTypeChange,
+  onBidAmountChange,
+  onOffer,
+  onPass,
+  passLabel = 'Passar',
+  offerLabel = 'Oferecer'
+}) => (
+  <div className="king-auction-toolbar">
+    <select
+      className="king-auction-toolbar__select"
+      value={bidType}
+      onChange={(e) => onBidTypeChange(e.target.value as KingBidType)}
+      aria-label="Tipo de oferta"
+    >
+      <option value="positive">Positivas</option>
+      <option value="null">Nulos</option>
+    </select>
+    <label className="king-auction-toolbar__amount">
+      <span className="king-auction-toolbar__amount-label">Vazas</span>
+      <input
+        type="number"
+        min={1}
+        max={bidType === 'positive' ? 8 : 4}
+        value={bidAmount}
+        onChange={(e) => onBidAmountChange(Number(e.target.value))}
+      />
+    </label>
+    <button type="button" className="sueca-btn sueca-btn--primary sueca-btn--compact" onClick={onOffer}>
+      {offerLabel}
+    </button>
+    {onPass && (
+      <button type="button" className="sueca-btn sueca-btn--secondary sueca-btn--compact" onClick={onPass}>
+        {passLabel}
+      </button>
+    )}
+  </div>
+);
 
 interface KingFestaFlowModalProps {
   gameState: GameState;
@@ -65,40 +124,21 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   if (king.festaPhase === 'auction' && currentAuctionPlayer === localPlayerIndex) {
     return (
-      <FestaSheet>
-        <h2>Leilão · festa de {owner?.name}</h2>
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
         <p className="variant-modal-hint king-auction-current-bid">
           {king.bestBid
             ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
             : 'Ainda sem ofertas.'}
         </p>
-        <div className="king-auction-bid-form">
-          <label>
-            Tipo
-            <select value={bidType} onChange={(e) => setBidType(e.target.value as KingBidType)}>
-              <option value="positive">Positivas</option>
-              <option value="null">Nulos</option>
-            </select>
-          </label>
-          <label>
-            Quantidade
-            <input
-              type="number"
-              min={1}
-              max={bidType === 'positive' ? 8 : 4}
-              value={bidAmount}
-              onChange={(e) => setBidAmount(Number(e.target.value))}
-            />
-          </label>
-        </div>
-        <div className="king-festa-actions">
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onAuctionBid(bidType, bidAmount)}>
-            Ofertar
-          </button>
-          <button type="button" className="dobo-btn" onClick={onAuctionPass}>
-            Passar
-          </button>
-        </div>
+        <AuctionToolbar
+          bidType={bidType}
+          bidAmount={bidAmount}
+          onBidTypeChange={setBidType}
+          onBidAmountChange={setBidAmount}
+          onOffer={() => onAuctionBid(bidType, bidAmount)}
+          onPass={onAuctionPass}
+        />
       </FestaSheet>
     );
   }
@@ -106,9 +146,13 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   if (king.festaPhase === 'auction') {
     const waiting = gameState.players[currentAuctionPlayer ?? 0]?.name ?? '…';
     return (
-      <FestaSheet>
-        <h2>Leilão · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint">A aguardar oferta de {waiting}…</p>
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+        <p className="variant-modal-hint king-auction-current-bid">
+          {king.bestBid
+            ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
+            : 'A aguardar oferta de ' + waiting + '…'}
+        </p>
       </FestaSheet>
     );
   }
@@ -144,42 +188,21 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     }
     if (bidderIdx === localPlayerIndex) {
       return (
-        <FestaSheet>
-          <h2>Pedido de subida</h2>
-          <p className="variant-modal-hint">
+        <FestaSheet compact>
+          <h2 className="king-festa-sheet-title">Pedido de subida</h2>
+          <p className="variant-modal-hint king-auction-current-bid">
             {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
           </p>
-          <div className="king-auction-bid-form">
-            <label>
-              Tipo
-              <select value={raiseType} onChange={(e) => setRaiseType(e.target.value as KingBidType)}>
-                <option value="positive">Positivas</option>
-                <option value="null">Nulos</option>
-              </select>
-            </label>
-            <label>
-              Quantidade
-              <input
-                type="number"
-                min={1}
-                max={raiseType === 'positive' ? 8 : 4}
-                value={raiseAmount}
-                onChange={(e) => setRaiseAmount(Number(e.target.value))}
-              />
-            </label>
-          </div>
-          <div className="king-festa-actions">
-            <button
-              type="button"
-              className="variant-modal-primary dobo-btn"
-              onClick={() => onRespondHigherBid(true, raiseType, raiseAmount)}
-            >
-              Subir oferta
-            </button>
-            <button type="button" className="dobo-btn" onClick={() => onRespondHigherBid(false)}>
-              Recusar subida
-            </button>
-          </div>
+          <AuctionToolbar
+            bidType={raiseType}
+            bidAmount={raiseAmount}
+            onBidTypeChange={setRaiseType}
+            onBidAmountChange={setRaiseAmount}
+            onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
+            onPass={() => onRespondHigherBid(false)}
+            passLabel="Recusar subida"
+            offerLabel="Subir oferta"
+          />
         </FestaSheet>
       );
     }
@@ -195,33 +218,17 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
         </p>
         {showRaiseForm && (
           <div className="king-auction-bid-form">
-            <label>
-              Pedir mínimo
-              <select value={raiseType} onChange={(e) => setRaiseType(e.target.value as KingBidType)}>
-                <option value="positive">Positivas</option>
-                <option value="null">Nulos</option>
-              </select>
-            </label>
-            <label>
-              Quantidade
-              <input
-                type="number"
-                min={1}
-                max={raiseType === 'positive' ? 8 : 4}
-                value={raiseAmount}
-                onChange={(e) => setRaiseAmount(Number(e.target.value))}
-              />
-            </label>
-            <button
-              type="button"
-              className="dobo-btn"
-              onClick={() => {
+            <AuctionToolbar
+              bidType={raiseType}
+              bidAmount={raiseAmount}
+              onBidTypeChange={setRaiseType}
+              onBidAmountChange={setRaiseAmount}
+              onOffer={() => {
                 onRequestHigherBid(raiseType, raiseAmount);
                 setShowRaiseForm(false);
               }}
-            >
-              Enviar pedido
-            </button>
+              offerLabel="Enviar pedido"
+            />
           </div>
         )}
         <div className="king-festa-actions">
@@ -327,8 +334,8 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     king.eightOrNullsPending
   ) {
     return (
-      <FestaSheet>
-        <h2>Festa de {owner?.name}</h2>
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
         <p className="variant-modal-hint">A aguardar decisão…</p>
       </FestaSheet>
     );

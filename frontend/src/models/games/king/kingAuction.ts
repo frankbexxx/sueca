@@ -64,6 +64,19 @@ export function formatBid(bid: KingBid, locale: 'pt' | 'en' = 'pt'): string {
   return locale === 'pt' ? `${bid.amount} nulos` : `${bid.amount} nulls`;
 }
 
+export function formatAuctionActionShort(
+  action: KingBid | 'pass',
+  locale: 'pt' | 'en' = 'pt'
+): string {
+  if (action === 'pass') {
+    return locale === 'pt' ? 'Passou' : 'Pass';
+  }
+  if (action.bidType === 'positive') {
+    return locale === 'pt' ? `${action.amount} pos.` : `${action.amount} pos.`;
+  }
+  return locale === 'pt' ? `${action.amount} nul.` : `${action.amount} null`;
+}
+
 export function clampBid(bidType: KingBidType, amount: number): number {
   if (bidType === 'positive') {
     return Math.max(1, Math.min(MAX_POSITIVE_BID, Math.round(amount)));

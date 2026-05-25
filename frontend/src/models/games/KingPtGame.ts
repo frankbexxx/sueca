@@ -82,6 +82,7 @@ export interface KingPtVariantState {
   waitingForEarlyEnd: boolean;
   scoringFrozen: boolean;
   earlyEndOffered: boolean;
+  auctionPlayerActions: Partial<Record<number, KingBid | 'pass'>>;
 }
 
 function empty4(): number[] {
@@ -122,7 +123,8 @@ function defaultKingState(): KingPtVariantState {
     showScorePopup: null,
     waitingForEarlyEnd: false,
     scoringFrozen: false,
-    earlyEndOffered: false
+    earlyEndOffered: false,
+    auctionPlayerActions: {}
   };
 }
 
@@ -255,6 +257,7 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'auction') return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
+    king.auctionPlayerActions[playerIndex] = 'pass';
     this.advanceAuctionTurn(king);
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -270,6 +273,7 @@ export class KingPtGame extends BaseGameAdapter {
       bidType,
       amount: clampBid(bidType, amount)
     };
+    king.auctionPlayerActions[playerIndex] = bid;
     if (canBeatBid(king.bestBid, bid, king.auctionOrder)) {
       king.bestBid = bid;
     }
@@ -487,6 +491,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.waitingForFallback = false;
     king.waitingForFestaSetup = false;
     king.nullAuctionStartNote = null;
+    king.auctionPlayerActions = {};
   }
 
   private runAiFestaSteps(): boolean {
@@ -714,13 +719,13 @@ export class KingPtGame extends BaseGameAdapter {
       king.nullAuctionStartNote = null;
     }
 
-    this.deal(this.state!);
     const leader =
       king.firstPlayerIndex ??
       king.benefitOwnerIndex ??
       gameLeader(king.kohPlayerIndex, king.gameIndex);
     const trump = king.noTrumpChosen ? null : king.chosenTrump;
     this.state!.trumpSuit = trump;
+    applyHandSortToState(this.state!);
     this.state!.trickLeader = leader;
     this.state!.currentPlayerIndex = leader;
     this.state!.waitingForRoundStart = false;

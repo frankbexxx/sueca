@@ -56,7 +56,7 @@ export interface GameBoardProps {
  * Manages game state, player interactions, AI moves, and UI rendering
  */
 export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, darkMode, onExit }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [gameStarted, setGameStarted] = useState(false);
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
   
@@ -576,6 +576,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         getCardImage={getCardImage}
         getTeamName={getTeamName}
         showTeamLabels={showTeamLabels}
+        showAuctionBadges={
+          gameVariant === 'king' &&
+          resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+          kingPtState?.festaPhase === 'auction'
+        }
+        auctionActions={kingPtState?.auctionPlayerActions}
+        auctionLocale={language === 'pt' ? 'pt' : 'en'}
       />
 
       {/* Human player's hand (South position) - displayed below table */}

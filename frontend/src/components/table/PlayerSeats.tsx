@@ -1,5 +1,7 @@
 import React from 'react';
 import { GameState } from '../../types/game';
+import { KingBid } from '../../models/games/king/kingContracts';
+import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import { getTablePosition, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
 import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
 
@@ -9,6 +11,9 @@ export interface PlayerSeatsProps {
   usTeam: 1 | 2;
   showTeamLabels?: boolean;
   getTeamName: (team: 1 | 2) => string;
+  showAuctionBadges?: boolean;
+  auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
+  auctionLocale?: 'pt' | 'en';
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -16,9 +21,21 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   localPlayerIndex,
   usTeam,
   showTeamLabels = true,
-  getTeamName
+  getTeamName,
+  showAuctionBadges = false,
+  auctionActions,
+  auctionLocale = 'pt'
 }) => {
   const useMobileLayout = isMobileDevice();
+
+  const renderAuctionBadge = (playerIndex: number) => {
+    if (!showAuctionBadges || !auctionActions) return null;
+    const action = auctionActions[playerIndex];
+    if (!action) return null;
+    return (
+      <span className="player-auction-badge">{formatAuctionActionShort(action, auctionLocale)}</span>
+    );
+  };
 
   return (
     <div className="seats-layer">
@@ -58,6 +75,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                   <div className="player-name-line-2">
                     {showTeamLabels && getTeamName(player.team)}
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
+                    {renderAuctionBadge(index)}
                   </div>
                 </>
               ) : (
@@ -68,6 +86,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                   </h3>
                   <div className="team-badge">{showTeamLabels ? getTeamName(player.team) : null}</div>
+                  {renderAuctionBadge(index)}
                 </>
               )}
             </div>
