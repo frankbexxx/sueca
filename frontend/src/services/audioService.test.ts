@@ -1,9 +1,13 @@
 import { CARD_PLAY_VARIANTS, SFX_PATHS } from '../constants/sfxAssets';
+import { AMBIANCE_PATH } from '../constants/musicAssets';
 import {
   isSoundEnabled,
   playSfx,
   preloadSfx,
-  resetAudioServiceForTests
+  resetAudioServiceForTests,
+  setSoundEnabled,
+  startAmbiance,
+  stopAmbiance
 } from './audioService';
 
 describe('audioService', () => {
@@ -37,5 +41,22 @@ describe('audioService', () => {
 
   it('preloadSfx can be called without throwing', () => {
     expect(() => preloadSfx()).not.toThrow();
+  });
+
+  it('exports ambiance path', () => {
+    expect(AMBIANCE_PATH).toMatch(/\/assets\/music\/ambiance\.ogg$/);
+  });
+
+  it('setSoundEnabled stops ambiance when disabled', () => {
+    const pause = jest.fn();
+    const play = jest.fn().mockResolvedValue(undefined);
+    const audioMock = { loop: false, preload: '', volume: 1, pause, play, paused: false, currentTime: 0 };
+    // @ts-expect-error test mock
+    global.Audio = jest.fn(() => audioMock);
+
+    startAmbiance();
+    setSoundEnabled(false);
+    expect(pause).toHaveBeenCalled();
+    expect(isSoundEnabled()).toBe(false);
   });
 });

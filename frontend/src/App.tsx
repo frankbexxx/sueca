@@ -17,7 +17,7 @@ import {
   buildQuickConfigForVariant
 } from './services/gameSessionStorage';
 import { STORAGE_KEYS } from './constants/gameConstants';
-import { playUiClick, preloadSfx } from './services/audioService';
+import { playUiClick, preloadAmbiance, preloadSfx, startAmbiance } from './services/audioService';
 import './App.css';
 import './styles/app-shell.css';
 
@@ -36,7 +36,9 @@ function App() {
 
   useEffect(() => {
     preloadSfx();
+    preloadAmbiance();
     const onClick = (event: MouseEvent) => {
+      startAmbiance();
       const target = (event.target as Element | null)?.closest(UI_CLICK_SELECTOR);
       if (!target) return;
       if (target instanceof HTMLButtonElement && target.disabled) return;

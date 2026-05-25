@@ -39,8 +39,10 @@
 }
 
 .game-status-panel {
+  --status-penalty-card-w: 15px;
+  --status-penalty-card-h: 21px;
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -50,13 +52,18 @@
 
 .game-status-panel__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) 1px minmax(0, 1fr);
   align-items: start;
-  gap: 10px 12px;
+  gap: 8px 10px;
 }
 
 .game-status-panel__col {
   min-width: 0;
+}
+
+.game-status-panel__col--contract {
+  font-size: 0.62rem;
+  line-height: 1.25;
 }
 
 .game-status-panel__divider {
@@ -66,59 +73,64 @@
 }
 
 .game-status-panel__label {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   opacity: 0.72;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .game-status-panel__scores {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.78rem;
-  line-height: 1.3;
+  gap: 3px;
+  font-size: 0.68rem;
+  line-height: 1.25;
 }
 
 .game-status-panel__score-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 6px;
+  align-items: flex-start;
+  gap: 2px 4px;
 }
 
 .game-status-panel__score-item {
   white-space: nowrap;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .game-status-panel__penalty-cards {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 2px;
-  max-width: 100%;
-  overflow-x: auto;
+  flex: 1 1 0;
+  min-width: 48px;
+  max-height: calc(3 * (var(--status-penalty-card-h) + 2px));
+  overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
 .game-status-panel__penalty-card {
-  width: 22px;
+  width: var(--status-penalty-card-w);
   height: auto;
   border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
 }
 
 .game-status-panel__contract {
-  font-size: 0.78rem;
-  line-height: 1.35;
+  font-size: 0.62rem;
+  line-height: 1.25;
   word-break: break-word;
 }
 
 .game-status-panel__contract-title {
   font-weight: 700;
+  font-size: 0.62rem;
 }
 
 .game-status-panel__contract-sep {
@@ -127,12 +139,18 @@
 
 .game-status-panel__contract-hint {
   opacity: 0.88;
+  font-size: 0.58rem;
 }
 
-.game-status-panel .king-null-start-note {
-  margin-top: 6px;
-  font-size: 0.72rem;
+.game-status-panel__col--contract .king-null-start-note {
+  margin-top: 4px;
+  font-size: 0.58rem;
   opacity: 0.85;
+  line-height: 1.2;
+}
+
+.game-status-panel__col--contract .king-history-panel {
+  margin-top: 6px;
 }
 
 .game-board--festa-sheet .player-hand-bar {
@@ -749,9 +767,11 @@
   .game-status-panel {
     padding: 7px 10px;
   }
-  .game-status-panel__scores,
+  .game-status-panel__scores {
+    font-size: 0.68rem;
+  }
   .game-status-panel__contract {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
   }
   .player-seat.player-north { top: -24px; }
   .player-seat.player-south { bottom: -24px; }
@@ -799,9 +819,11 @@
   .game-status-panel__label {
     font-size: 0.62rem;
   }
-  .game-status-panel__scores,
+  .game-status-panel__scores {
+    font-size: 0.68rem;
+  }
   .game-status-panel__contract {
-    font-size: 0.7rem;
+    font-size: 0.62rem;
   }
   .score-block { padding: 4px 6px; }
   .round-block { padding: 5px 7px; min-width: 105px; }

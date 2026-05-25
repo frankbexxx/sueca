@@ -12,6 +12,7 @@ import {
   TrumpPosition
 } from '../../constants/handPreferences';
 import { loadAutoPauseTrick, saveAutoPauseTrick } from '../../utils/trickAutoContinue';
+import { isSoundEnabled, setSoundEnabled } from '../../services/audioService';
 import './MoreScreen.css';
 
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -39,9 +40,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
   const { language, setLanguage, t } = useLanguage();
   const [showCredits, setShowCredits] = useState(false);
   const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
-  const [soundEnabled, setSoundEnabled] = useState(
-    () => localStorage.getItem('sueca-sound-enabled') !== 'false'
-  );
+  const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
   const [handPrefs, setHandPrefs] = useState(() => loadHandPreferences());
   const [autoPauseTrick, setAutoPauseTrick] = useState(() => loadAutoPauseTrick());
 
@@ -61,8 +60,8 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
 
   const toggleSound = () => {
     const next = !soundEnabled;
+    setSoundEnabledState(next);
     setSoundEnabled(next);
-    localStorage.setItem('sueca-sound-enabled', String(next));
   };
 
   const toggleDark = () => {

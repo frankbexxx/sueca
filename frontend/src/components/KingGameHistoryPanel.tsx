@@ -14,7 +14,11 @@ export const KingGameHistoryPanel: React.FC<KingGameHistoryPanelProps> = ({ game
 
   return (
     <div className="king-history-panel">
-      <button type="button" className="king-history-toggle dobo-btn" onClick={() => setOpen(!open)}>
+      <button
+        type="button"
+        className="sueca-btn sueca-btn--secondary sueca-btn--compact king-history-toggle"
+        onClick={() => setOpen(!open)}
+      >
         Histórico ({king.gameHistory.length})
       </button>
       {open && (

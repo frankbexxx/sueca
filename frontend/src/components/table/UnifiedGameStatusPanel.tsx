@@ -26,7 +26,7 @@ const PENALTY_CARD_CONTRACTS: KingNegativeContract[] = [
   'no_king_hearts'
 ];
 
-function truncateHint(text: string, maxLength = 48): string {
+function truncateHint(text: string, maxLength = 36): string {
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 1).trim()}…`;
 }
@@ -56,33 +56,34 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       ? hearts?.playerScores ?? [0, 0, 0, 0]
       : kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
 
-  const pointsLabel = isPt ? 'Pontos (4 jogadores)' : 'Points (4 players)';
+  const pointsLabel = isPt ? 'Pontos' : 'Points';
   const contractHeader = isPt ? 'Contrato + regra curta' : 'Contract + short rule';
 
   let contractLine = '';
   let ruleLine = '';
   let kingContract: KingNegativeContract | null = null;
   let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
+  const kingPreset = variant === 'king' ? resolvePresetId('king', rulesPresetId) : null;
+  const showKingPtExtras = variant === 'king' && kingPreset === 'king-pt-normal';
+  const kingPtState = showKingPtExtras ? getKingPtState(gameState) : null;
 
   if (variant === 'king') {
-    const preset = resolvePresetId('king', rulesPresetId);
-    if (preset === 'king-pt-normal') {
-      const king = getKingPtState(gameState);
-      kingContract = king.contract;
-      penaltyCardsByPlayer = king.roundBreakdown.penaltyCardsTaken;
-      const ownerName = gameState.players[king.festaOwnerIndex]?.name ?? '';
+    if (kingPreset === 'king-pt-normal' && kingPtState) {
+      kingContract = kingPtState.contract;
+      penaltyCardsByPlayer = kingPtState.roundBreakdown.penaltyCardsTaken;
+      const ownerName = gameState.players[kingPtState.festaOwnerIndex]?.name ?? '';
       const title =
-        king.phase === 'koh_reveal'
+        kingPtState.phase === 'koh_reveal'
           ? isPt
             ? 'Viragem do Rei de Copas'
             : 'King of Hearts draw'
           : kingGameTitle(
-              king.gameIndex,
-              king.contract,
-              king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
+              kingPtState.gameIndex,
+              kingPtState.contract,
+              kingPtState.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
               locale
             );
-      const hint = king.phase === 'koh_reveal' ? null : getKingRulesHint(gameState, locale);
+      const hint = kingPtState.phase === 'koh_reveal' ? null : getKingRulesHint(gameState, locale);
       contractLine = title;
       ruleLine = hint ? truncateHint(hint.body) : '';
     } else {
@@ -144,19 +145,12 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                 </>
               )}
             </div>
+            {showKingPtExtras && kingPtState?.nullAuctionStartNote && (
+              <div className="king-null-start-note">{kingPtState.nullAuctionStartNote}</div>
+            )}
+            {showKingPtExtras && <KingGameHistoryPanel gameState={gameState} />}
           </div>
         </div>
-        {variant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal' && (() => {
-          const king = getKingPtState(gameState);
-          return (
-            <>
-              {king.nullAuctionStartNote && (
-                <div className="king-null-start-note">{king.nullAuctionStartNote}</div>
-              )}
-              <KingGameHistoryPanel gameState={gameState} />
-            </>
-          );
-        })()}
       </div>
     </div>
   );
