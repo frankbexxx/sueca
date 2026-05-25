@@ -1,4 +1,5 @@
 import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, AIDifficulty } from '../types/game';
+import { applyHandSortToState } from '../utils/handSort';
 import { Deck } from './Deck';
 
 export class Game {
@@ -832,6 +833,7 @@ export class Game {
         );
         this.state.trumpSuit = trumpResult.suit;
         this.state.trumpCard = trumpResult.card;
+        applyHandSortToState(this.state);
       }
       this.state.waitingForRoundStart = false;
     }

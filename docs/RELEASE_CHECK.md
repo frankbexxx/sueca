@@ -34,8 +34,13 @@ vercel --prod
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
+- [ ] MoreScreen: ordenar mão on/off; ordem naipes; trunfo Sueca; som on/off
+- [ ] Sueca: 10 cartas + trunfo à esquerda (se configurado)
 - [x] Selector mostra Sueca, Spades, Hearts e King
-- [ ] Smoke King PT: viragem K♥ automática · folha 10×4 · festa com cartas visíveis · aceitar 1 positiva · sem NÓS/ELES na mesa
+- [ ] Smoke King PT: viragem K♥ automática · folha 10×4 · festa 13 cartas scroll + bottom sheet · aceitar 1 positiva · sem NÓS/ELES na mesa
+- [ ] King `no_king_hearts`: K♥ tomado → popup terminar cedo (aceitar/recusar)
+- [ ] Hearts: Q♠ + 13 copas → popup terminar cedo
+- [ ] SFX: trick-win após 4.ª carta (~200 ms); shuffle após deal (~250 ms)
 - [ ] Tab Regras King PT mostra secções completas (negativos, leilão, invariantes)
 
 ## Android (Capacitor)

@@ -44,6 +44,8 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 - Popup **folha de pontuação** 10×4 após cada jogo + detalhe da ronda
 - Histórico colapsável in-game
 - Leilão: aceitar / recusar / **pedir subida** / 8 ou nulos
+- Festa: **bottom sheet** (~45vh) com leilão/negociação; mão de 13 cartas scrollável por cima (consulta read-only)
+- **Terminar cedo:** quando a penalização do negativo está esgotada (ex.: K♥ tomado, 13 copas, 4 damas, 8 homens), o jogo pergunta se termina a ronda; recusar = vazas mortas sem alterar pontos
 - RulesSheet com secções completas (preset `king-pt-normal`)
 
 ## Detalhe contabilístico

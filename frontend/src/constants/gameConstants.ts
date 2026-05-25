@@ -17,13 +17,21 @@ export const MODAL_Z_INDEX_GAME_OVER = 1001;
 
 // Game delays
 export const GAME_OVER_DELAY_MS = 3000; // Delay before showing start menu after game over (3s)
+export const TRICK_WIN_DELAY_MS = 200;
+export const SHUFFLE_DELAY_MS = 250;
+
+// Card layout thresholds
+export const HAND_SCROLL_THRESHOLD = 8;
 
 // LocalStorage keys
 export const STORAGE_KEYS = {
   DEALING_METHOD: 'sueca-dealing-method',
   PLAYER_NAMES: 'sueca-player-names',
   AI_DIFFICULTY: 'sueca-ai-difficulty',
-  DARK_MODE: 'sueca-dark-mode'
+  DARK_MODE: 'sueca-dark-mode',
+  SORT_HAND: 'sueca-sort-hand',
+  HAND_SUIT_ORDER: 'sueca-hand-suit-order',
+  TRUMP_POSITION: 'sueca-trump-position'
 } as const;
 
 // Default values

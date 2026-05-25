@@ -2,6 +2,7 @@ import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, Suit, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
+import { applyHandSortToState } from '../../utils/handSort';
 
 const NEGATIVE_HANDS = 6;
 const POSITIVE_HANDS = 4;
@@ -78,7 +79,7 @@ export class KingSimplifiedGame extends BaseGameAdapter {
     const dealerIndex = handIndex % 4;
     const leader = (dealerIndex + 1) % 4;
 
-    return {
+    const state: GameState = {
       variant: 'king',
       players,
       currentPlayerIndex: leader,
@@ -116,6 +117,8 @@ export class KingSimplifiedGame extends BaseGameAdapter {
         rulesPresetId: 'king-simplified'
       }
     };
+    applyHandSortToState(state);
+    return state;
   }
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {

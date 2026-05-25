@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameState, Card, Suit } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
@@ -12,7 +12,9 @@ import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMap
 import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
-  GAME_OVER_DELAY_MS
+  GAME_OVER_DELAY_MS,
+  SHUFFLE_DELAY_MS,
+  TRICK_WIN_DELAY_MS
 } from '../constants/gameConstants';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
@@ -26,6 +28,7 @@ import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
+import { EarlyRoundEndModal } from './EarlyRoundEndModal';
 import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
@@ -111,6 +114,43 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   const showGridOverlay = false;
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
+  const shuffleTimerRef = useRef<number | null>(null);
+  const trickWinTimerRef = useRef<number | null>(null);
+
+  const kingPtState = useMemo(
+    () =>
+      gameVariant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal'
+        ? getKingPtState(gameState)
+        : null,
+    [gameVariant, rulesPresetId, gameState]
+  );
+
+  const waitingForEarlyEnd = useMemo(
+    () =>
+      Boolean(kingPtState?.waitingForEarlyEnd) ||
+      Boolean(
+        gameVariant === 'hearts' &&
+          (gameState.variantState?.hearts as { waitingForEarlyEnd?: boolean } | undefined)
+            ?.waitingForEarlyEnd
+      ),
+    [kingPtState, gameVariant, gameState.variantState]
+  );
+
+  const festaSheetActive = useMemo(
+    () =>
+      Boolean(
+        kingPtState &&
+          gameState.waitingForRoundStart &&
+          kingPtState.phase !== 'koh_reveal' &&
+          (kingPtState.festaPhase === 'auction' ||
+            kingPtState.festaPhase === 'negotiation' ||
+            kingPtState.festaPhase === 'negotiation_counter' ||
+            kingPtState.waitingForFallback ||
+            kingPtState.waitingForFestaSetup ||
+            kingPtState.eightOrNullsPending)
+      ),
+    [kingPtState, gameState.waitingForRoundStart]
+  );
 
   const gameLabel =
     getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
@@ -152,18 +192,44 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     const wasWaiting = prevWaitingRoundStartRef.current;
     if (wasWaiting === true && !gameState.waitingForRoundStart) {
       const hasHands = gameState.players.length > 0 && gameState.players.every((p) => p.hand.length > 0);
-      if (hasHands) playShuffleSound();
+      if (hasHands) {
+        if (shuffleTimerRef.current !== null) {
+          window.clearTimeout(shuffleTimerRef.current);
+        }
+        shuffleTimerRef.current = window.setTimeout(() => {
+          playShuffleSound();
+          shuffleTimerRef.current = null;
+        }, SHUFFLE_DELAY_MS);
+      }
     }
     prevWaitingRoundStartRef.current = gameState.waitingForRoundStart;
+    return () => {
+      if (shuffleTimerRef.current !== null) {
+        window.clearTimeout(shuffleTimerRef.current);
+        shuffleTimerRef.current = null;
+      }
+    };
   }, [gameStarted, gameState.waitingForRoundStart, gameState.players, playShuffleSound]);
 
   useEffect(() => {
     if (!gameStarted) return;
     const wasWaiting = prevWaitingTrickEndRef.current;
     if (wasWaiting === false && gameState.waitingForTrickEnd) {
-      playTrickWinSound();
+      if (trickWinTimerRef.current !== null) {
+        window.clearTimeout(trickWinTimerRef.current);
+      }
+      trickWinTimerRef.current = window.setTimeout(() => {
+        playTrickWinSound();
+        trickWinTimerRef.current = null;
+      }, TRICK_WIN_DELAY_MS);
     }
     prevWaitingTrickEndRef.current = gameState.waitingForTrickEnd;
+    return () => {
+      if (trickWinTimerRef.current !== null) {
+        window.clearTimeout(trickWinTimerRef.current);
+        trickWinTimerRef.current = null;
+      }
+    };
   }, [gameStarted, gameState.waitingForTrickEnd, playTrickWinSound]);
 
   /**
@@ -273,14 +339,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       !gameState.waitingForRoundEnd &&
       !gameState.waitingForGameStart &&
       !isRemoteTurn &&
-      !isLocalHumanTurn
+      !isLocalHumanTurn &&
+      !waitingForEarlyEnd
     ) {
       const timer = setTimeout(() => {
         playAICard();
       }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, playAICard, isMultiplayer, multiplayerPlayerIndex]);
+  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, waitingForEarlyEnd]);
 
   /**
    * Handles card click from human player
@@ -472,7 +539,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
 
   return (
-    <div className={`game-board ${darkMode ? 'dark-mode' : ''}`}>
+    <div
+      className={`game-board ${darkMode ? 'dark-mode' : ''}${festaSheetActive ? ' game-board--festa-sheet' : ''}`}
+    >
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}
@@ -516,6 +585,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           variant={gameVariant}
           localPlayerIndex={localPlayerIndex}
           selectedCard={selectedCard}
+          readOnly={festaSheetActive}
           canPlayCard={(cardIndex: number) =>
             gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex)
           }
@@ -759,6 +829,29 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           getTeamName={getTeamName}
           onDealingMethodChange={() => {}}
           onNewGame={handleNewGame}
+        />
+      )}
+
+      {waitingForEarlyEnd && (
+        <EarlyRoundEndModal
+          onAccept={() => {
+            if (!gameAdapter) return;
+            if (gameVariant === 'king') {
+              (gameAdapter as KingGame).acceptEarlyEnd();
+            } else if (gameVariant === 'hearts') {
+              (gameAdapter as HeartsGame).acceptEarlyEnd();
+            }
+            setGameState(gameAdapter.getCurrentState());
+          }}
+          onDecline={() => {
+            if (!gameAdapter) return;
+            if (gameVariant === 'king') {
+              (gameAdapter as KingGame).declineEarlyEnd();
+            } else if (gameVariant === 'hearts') {
+              (gameAdapter as HeartsGame).declineEarlyEnd();
+            }
+            setGameState(gameAdapter.getCurrentState());
+          }}
         />
       )}
     </div>

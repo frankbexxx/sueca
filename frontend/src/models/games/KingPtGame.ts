@@ -45,6 +45,8 @@ import {
   settleNullAuctionFesta,
   settlePositiveAuctionRound
 } from './king/kingScoring';
+import { applyHandSortToState } from '../../utils/handSort';
+import { canKingEndRoundEarly } from '../../utils/earlyRoundEnd';
 
 export interface KingPtVariantState {
   phase: KingPhase;
@@ -77,6 +79,9 @@ export interface KingPtVariantState {
   kohReveal: KingKohRevealState | null;
   nullAuctionStartNote: string | null;
   showScorePopup: string | null;
+  waitingForEarlyEnd: boolean;
+  scoringFrozen: boolean;
+  earlyEndOffered: boolean;
 }
 
 function empty4(): number[] {
@@ -114,7 +119,10 @@ function defaultKingState(): KingPtVariantState {
     gameHistory: [],
     kohReveal: null,
     nullAuctionStartNote: null,
-    showScorePopup: null
+    showScorePopup: null,
+    waitingForEarlyEnd: false,
+    scoringFrozen: false,
+    earlyEndOffered: false
   };
 }
 
@@ -674,6 +682,7 @@ export class KingPtGame extends BaseGameAdapter {
         if (c) state.players[p].hand.push(c);
       }
     }
+    applyHandSortToState(state);
   }
 
   private startPlay(king: KingPtVariantState): void {
@@ -682,6 +691,9 @@ export class KingPtGame extends BaseGameAdapter {
     king.lastRoundDeltas = empty4();
     king.roundStartScores = [...king.playerScores];
     king.festaPhase = null;
+    king.scoringFrozen = false;
+    king.earlyEndOffered = false;
+    king.waitingForEarlyEnd = false;
     king.phase = king.gameIndex >= KING_NEGATIVE_GAMES ? 'festa_play' : 'negative';
     king.roundBreakdown = initBreakdownForRound(
       king.gameIndex,
@@ -717,6 +729,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (
       s.waitingForRoundStart ||
       king.phase === 'koh_reveal' ||
+      king.waitingForEarlyEnd ||
       isFestaFlowBlocking(king)
     ) {
       return false;
@@ -774,26 +787,29 @@ export class KingPtGame extends BaseGameAdapter {
     king.tricksWonThisGame[winner] += 1;
 
     if (king.gameIndex < KING_NEGATIVE_GAMES && king.contract) {
-      accumulateTrickBreakdown(
-        king.roundBreakdown,
-        king.contract,
-        s.currentTrick,
-        king.trickNumber,
-        winner
-      );
-      const penalty = negativeTrickPenalty(king.contract, s.currentTrick, king.trickNumber);
-      if (penalty > 0) {
-        king.lastRoundDeltas[winner] -= penalty;
-        king.playerScores[winner] -= penalty;
+      if (!king.scoringFrozen) {
+        accumulateTrickBreakdown(
+          king.roundBreakdown,
+          king.contract,
+          s.currentTrick,
+          king.trickNumber,
+          winner
+        );
+        const penalty = negativeTrickPenalty(king.contract, s.currentTrick, king.trickNumber);
+        if (penalty > 0) {
+          king.lastRoundDeltas[winner] -= penalty;
+          king.playerScores[winner] -= penalty;
+        }
       }
     } else if (king.gameIndex >= KING_NEGATIVE_GAMES) {
       accumulateFestaTrickBreakdown(king.roundBreakdown, s.currentTrick, winner);
     }
 
     const scoreDuringPlay =
-      king.gameIndex < KING_NEGATIVE_GAMES ||
-      (king.festaMode === 'positive' && !king.activeContract) ||
-      (king.festaMode === 'negative_festa' && !king.activeContract);
+      !king.scoringFrozen &&
+      (king.gameIndex < KING_NEGATIVE_GAMES ||
+        (king.festaMode === 'positive' && !king.activeContract) ||
+        (king.festaMode === 'negative_festa' && !king.activeContract));
 
     if (scoreDuringPlay && king.festaMode === 'positive') {
       king.lastRoundDeltas[winner] += FESTA_POSITIVE_TRICK;
@@ -809,7 +825,35 @@ export class KingPtGame extends BaseGameAdapter {
     s.currentPlayerIndex = winner;
     this.syncKing(king);
 
-    if (s.players[0].hand.length === 0) this.endGame(king);
+    if (s.players[0].hand.length === 0) {
+      this.endGame(king);
+      return;
+    }
+
+    if (
+      !king.scoringFrozen &&
+      !king.earlyEndOffered &&
+      canKingEndRoundEarly(king.gameIndex, king.contract, king.roundBreakdown)
+    ) {
+      king.earlyEndOffered = true;
+      king.waitingForEarlyEnd = true;
+      this.syncKing(king);
+    }
+  }
+
+  acceptEarlyEnd(): void {
+    const king = getKingPtState(this.state!);
+    if (!king.waitingForEarlyEnd) return;
+    king.waitingForEarlyEnd = false;
+    this.endGame(king);
+  }
+
+  declineEarlyEnd(): void {
+    const king = getKingPtState(this.state!);
+    if (!king.waitingForEarlyEnd) return;
+    king.waitingForEarlyEnd = false;
+    king.scoringFrozen = true;
+    this.syncKing(king);
   }
 
   private endGame(king: KingPtVariantState): void {

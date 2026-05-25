@@ -110,8 +110,15 @@
   opacity: 0.85;
 }
 
-.game-status-panel .king-history-panel {
-  margin-top: 6px;
+.game-board--festa-sheet .player-hand-bar {
+  position: relative;
+  z-index: 2100;
+  margin-bottom: calc(45vh + 8px);
+  pointer-events: auto;
+}
+
+.game-board--festa-sheet .player-hand-bar .hand-row--scroll {
+  touch-action: pan-x;
 }
 
 .game-scores--teams .score-block .label {
@@ -594,14 +601,29 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   box-shadow: inset 0 1px 4px rgba(0,0,0,0.12);
-  /* Width calculation: covers all 10 cards with spacing
-   * CENTER_OFFSET = (10-1) * 18 / 2 = 81px
-   * Card width = 49px * 0.92 = 45px
-   * Total width = 81px + 45px + 81px + padding(24px) = 231px
-   * Using 250px to ensure full coverage with margin
-   */
   min-width: 250px;
   overflow: visible;
+}
+
+.hand-row--scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  height: auto;
+  min-height: var(--hand-row-h);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.hand-row--scroll .card-hand {
+  position: relative;
+  transform: none !important;
+  flex-shrink: 0;
+  margin-right: 4px;
+  min-width: calc(var(--card-w) * 0.92);
+  min-height: calc(var(--card-h) * 0.93);
+  object-fit: contain;
 }
 
 .card-hand {

@@ -2,6 +2,7 @@ import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
+import { applyHandSortToState } from '../../utils/handSort';
 
 const WINNING_SCORE = 500;
 const DEFAULT_BID = 4;
@@ -118,7 +119,7 @@ export class SpadesGame extends BaseGameAdapter {
 
     const teams = teamBidsFromPlayerBids(playerBids);
 
-    return {
+    const state: GameState = {
       variant: 'spades',
       players,
       currentPlayerIndex: 0,
@@ -160,6 +161,8 @@ export class SpadesGame extends BaseGameAdapter {
         }
       }
     };
+    applyHandSortToState(state);
+    return state;
   }
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {

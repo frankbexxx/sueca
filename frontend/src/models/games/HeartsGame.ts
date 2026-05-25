@@ -2,6 +2,12 @@ import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Card, Player, AIDifficulty } from '../../types/game';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
+import { applyHandSortToState } from '../../utils/handSort';
+import {
+  canHeartsEndRoundEarly,
+  countHeartsInTrick,
+  trickHasQueenSpades
+} from '../../utils/earlyRoundEnd';
 
 const TARGET_SCORE = 100;
 
@@ -14,20 +20,29 @@ interface HeartsVariantState {
   waitingForPass: boolean;
   passDirection: PassDirection;
   humanPassIndices: number[];
+  heartsTakenCount: number;
+  queenSpadesTaken: boolean;
+  waitingForEarlyEnd: boolean;
+  scoringFrozen: boolean;
+  earlyEndOffered: boolean;
 }
 
 function getHeartsState(state: GameState): HeartsVariantState {
   const vs = state.variantState?.hearts as HeartsVariantState | undefined;
-  return (
-    vs ?? {
-      heartsBroken: false,
-      playerScores: [0, 0, 0, 0],
-      roundPoints: [0, 0, 0, 0],
-      waitingForPass: true,
-      passDirection: 'left',
-      humanPassIndices: []
-    }
-  );
+  const defaults: HeartsVariantState = {
+    heartsBroken: false,
+    playerScores: [0, 0, 0, 0],
+    roundPoints: [0, 0, 0, 0],
+    waitingForPass: true,
+    passDirection: 'left',
+    humanPassIndices: [],
+    heartsTakenCount: 0,
+    queenSpadesTaken: false,
+    waitingForEarlyEnd: false,
+    scoringFrozen: false,
+    earlyEndOffered: false
+  };
+  return vs ? { ...defaults, ...vs } : defaults;
 }
 
 function passDirectionForRound(round: number): PassDirection {
@@ -219,10 +234,17 @@ export class HeartsGame extends BaseGameAdapter {
           roundPoints: [0, 0, 0, 0],
           waitingForPass: passDirection !== 'hold',
           passDirection,
-          humanPassIndices: []
+          humanPassIndices: [],
+          heartsTakenCount: 0,
+          queenSpadesTaken: false,
+          waitingForEarlyEnd: false,
+          scoringFrozen: false,
+          earlyEndOffered: false
         }
       }
     };
+
+    applyHandSortToState(state);
 
     if (passDirection === 'hold') {
       const twoClubs = players.findIndex((pl) =>
@@ -241,6 +263,7 @@ export class HeartsGame extends BaseGameAdapter {
     const s = this.state!;
     const hearts = getHeartsState(s);
     if (hearts.waitingForPass || s.waitingForRoundStart) return false;
+    if (hearts.waitingForEarlyEnd) return false;
     const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
     if (playerIndex !== s.currentPlayerIndex) return false;
@@ -303,9 +326,18 @@ export class HeartsGame extends BaseGameAdapter {
     if (!s.waitingForTrickEnd) return;
 
     const winner = s.nextTrickLeader ?? s.lastTrickWinner ?? 0;
-    const points = trickPoints(s.currentTrick);
     const hearts = getHeartsState(s);
-    hearts.roundPoints[winner] += points;
+
+    if (!hearts.scoringFrozen) {
+      const points = trickPoints(s.currentTrick);
+      hearts.roundPoints[winner] += points;
+    }
+
+    hearts.heartsTakenCount += countHeartsInTrick(s.currentTrick);
+    if (trickHasQueenSpades(s.currentTrick)) {
+      hearts.queenSpadesTaken = true;
+    }
+
     s.variantState = { ...s.variantState, hearts };
 
     s.waitingForTrickEnd = false;
@@ -316,7 +348,36 @@ export class HeartsGame extends BaseGameAdapter {
 
     if (s.players[0].hand.length === 0) {
       this.endRound(s);
+      return;
     }
+
+    if (
+      !hearts.scoringFrozen &&
+      !hearts.earlyEndOffered &&
+      canHeartsEndRoundEarly(hearts.heartsTakenCount, hearts.queenSpadesTaken)
+    ) {
+      hearts.earlyEndOffered = true;
+      hearts.waitingForEarlyEnd = true;
+      s.variantState = { ...s.variantState, hearts };
+    }
+  }
+
+  acceptEarlyEnd(): void {
+    const s = this.state!;
+    const hearts = getHeartsState(s);
+    if (!hearts.waitingForEarlyEnd) return;
+    hearts.waitingForEarlyEnd = false;
+    s.variantState = { ...s.variantState, hearts };
+    this.endRound(s);
+  }
+
+  declineEarlyEnd(): void {
+    const s = this.state!;
+    const hearts = getHeartsState(s);
+    if (!hearts.waitingForEarlyEnd) return;
+    hearts.waitingForEarlyEnd = false;
+    hearts.scoringFrozen = true;
+    s.variantState = { ...s.variantState, hearts };
   }
 
   private endRound(s: GameState): void {

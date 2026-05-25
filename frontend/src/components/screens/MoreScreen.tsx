@@ -4,6 +4,13 @@ import { useLanguage } from '../../i18n/useLanguage';
 import { loadLastConfig } from '../../services/gameSessionStorage';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
 import { STORAGE_KEYS } from '../../constants/gameConstants';
+import {
+  loadHandPreferences,
+  saveHandPreferences,
+  SUIT_ORDER_PRESETS,
+  SuitOrderPresetId,
+  TrumpPosition
+} from '../../constants/handPreferences';
 import './MoreScreen.css';
 
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -34,6 +41,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
   const [soundEnabled, setSoundEnabled] = useState(
     () => localStorage.getItem('sueca-sound-enabled') !== 'false'
   );
+  const [handPrefs, setHandPrefs] = useState(() => loadHandPreferences());
 
   const savePlayerName = () => {
     const trimmed = playerName.trim() || 'Player 1';
@@ -60,6 +68,16 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
     onDarkModeChange(next);
     localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(next));
   };
+
+  const updateHandPrefs = (patch: Parameters<typeof saveHandPreferences>[0]) => {
+    saveHandPreferences(patch);
+    setHandPrefs(loadHandPreferences());
+  };
+
+  const suitPresetOptions = Object.entries(SUIT_ORDER_PRESETS) as [
+    SuitOrderPresetId,
+    (typeof SUIT_ORDER_PRESETS)[SuitOrderPresetId]
+  ][];
 
   return (
     <div className="screen-more">
@@ -117,6 +135,50 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
             </button>
           </div>
         </div>
+      </section>
+
+      <section className="more-section dobo-panel">
+        <h2 className="more-section-title">{t.moreScreen.handSort}</h2>
+        <label className="more-toggle">
+          <input
+            type="checkbox"
+            checked={handPrefs.sortEnabled}
+            onChange={() => updateHandPrefs({ sortEnabled: !handPrefs.sortEnabled })}
+          />
+          <span>{t.moreScreen.sortHand}</span>
+        </label>
+        <label className="more-field" htmlFor="more-suit-order">
+          <span>{t.moreScreen.suitOrder}</span>
+          <select
+            id="more-suit-order"
+            className="more-select form-input"
+            value={handPrefs.suitOrderPreset}
+            onChange={(e) =>
+              updateHandPrefs({ suitOrderPreset: e.target.value as SuitOrderPresetId })
+            }
+          >
+            {suitPresetOptions.map(([id, preset]) => (
+              <option key={id} value={id}>
+                {language === 'pt' ? preset.labelPt : preset.labelEn}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="more-field" htmlFor="more-trump-position">
+          <span>{t.moreScreen.trumpPosition}</span>
+          <select
+            id="more-trump-position"
+            className="more-select form-input"
+            value={handPrefs.trumpPosition}
+            onChange={(e) =>
+              updateHandPrefs({ trumpPosition: e.target.value as TrumpPosition })
+            }
+          >
+            <option value="left">{t.moreScreen.trumpLeft}</option>
+            <option value="right">{t.moreScreen.trumpRight}</option>
+            <option value="natural">{t.moreScreen.trumpNatural}</option>
+          </select>
+        </label>
       </section>
 
       <section className="more-section dobo-panel">

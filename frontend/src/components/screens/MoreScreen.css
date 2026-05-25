@@ -59,6 +59,21 @@
   color: #e9eef7;
 }
 
+.more-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  color: #e9eef7;
+  font-size: 0.85rem;
+}
+
+.more-select {
+  width: 100%;
+  min-height: var(--sueca-touch-min, 48px);
+  box-sizing: border-box;
+}
+
 .language-selector {
   display: flex;
   gap: 8px;

@@ -90,6 +90,14 @@ export class KingGame extends BaseGameAdapter {
     if (this.impl && isPtGame(this.impl)) this.impl.dismissScorePopup();
   }
 
+  acceptEarlyEnd(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.acceptEarlyEnd();
+  }
+
+  declineEarlyEnd(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.declineEarlyEnd();
+  }
+
   tickFestaAi(): boolean {
     if (this.impl && isPtGame(this.impl)) return this.impl.tickFestaAi();
     return false;

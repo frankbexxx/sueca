@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState, Card, GameVariant } from '../types/game';
-import { MAX_CARDS_IN_HAND, SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
+import { SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
 import { useMobileLayout } from '../hooks/useMobileLayout';
 
 interface PlayerHandProps {
@@ -11,6 +11,7 @@ interface PlayerHandProps {
   canPlayCard: (cardIndex: number) => boolean;
   onCardClick: (cardIndex: number) => void;
   getCardImage: (card: Card) => string;
+  readOnly?: boolean;
 }
 
 /**
@@ -24,24 +25,30 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   selectedCard,
   canPlayCard,
   onCardClick,
-  getCardImage
+  getCardImage,
+  readOnly = false
 }) => {
   const player = gameState.players[localPlayerIndex];
-  const { isNarrow, cardSpacing, handMinWidth } = useMobileLayout();
+  const cardCount = player?.hand.length ?? 0;
+  const { isNarrow, cardSpacing, handMinWidth, useScrollLayout } = useMobileLayout(cardCount);
   if (!player) return null;
 
   return (
     <div className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}`}>
-      <div className="hand-row" style={{ minWidth: handMinWidth }}>
+      <div
+        className={`hand-row${useScrollLayout ? ' hand-row--scroll' : ''}`}
+        style={{ minWidth: useScrollLayout ? handMinWidth : undefined }}
+      >
         {player.hand.map((card: Card, cardIndex: number) => {
-          const CENTER_OFFSET = ((MAX_CARDS_IN_HAND - 1) * cardSpacing) / 2;
-          const cardPosition = cardIndex * cardSpacing;
-          const translateX = cardPosition - CENTER_OFFSET;
-          const fixedTransform = `translateX(${translateX}px)`;
-
-          // Card state for UI feedback
-          const isPlayable = canPlayCard(cardIndex);
+          const isPlayable = !readOnly && canPlayCard(cardIndex);
           const isSelected = selectedCard === cardIndex;
+
+          let fixedTransform: string | undefined;
+          if (!useScrollLayout) {
+            const centerOffset = ((Math.max(cardCount, 1) - 1) * cardSpacing) / 2;
+            const cardPosition = cardIndex * cardSpacing;
+            fixedTransform = `translateX(${cardPosition - centerOffset}px)`;
+          }
 
           return (
             <img
@@ -53,10 +60,10 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                 transform: fixedTransform,
                 zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1
               }}
-              onClick={() => onCardClick(cardIndex)}
-              role="button"
-              tabIndex={isPlayable ? 0 : -1}
-              aria-disabled={!isPlayable}
+              onClick={readOnly ? undefined : () => onCardClick(cardIndex)}
+              role={readOnly ? 'presentation' : 'button'}
+              tabIndex={readOnly ? -1 : isPlayable ? 0 : -1}
+              aria-disabled={readOnly || !isPlayable}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}

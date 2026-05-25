@@ -138,6 +138,20 @@ export interface Translations {
     language: string;
     editName: string;
     saveName: string;
+    handSort: string;
+    sortHand: string;
+    suitOrder: string;
+    trumpPosition: string;
+    trumpLeft: string;
+    trumpRight: string;
+    trumpNatural: string;
+  };
+
+  earlyRoundEnd: {
+    title: string;
+    body: string;
+    accept: string;
+    decline: string;
   };
 
   inGame: {
@@ -274,7 +288,20 @@ export const translations: Record<Language, Translations> = {
       sound: 'Som',
       language: 'Idioma',
       editName: 'Editar nome',
-      saveName: 'Guardar'
+      saveName: 'Guardar',
+      handSort: 'Mão',
+      sortHand: 'Ordenar mão automaticamente',
+      suitOrder: 'Ordem dos naipes',
+      trumpPosition: 'Trunfo (Sueca)',
+      trumpLeft: 'À esquerda',
+      trumpRight: 'À direita',
+      trumpNatural: 'No grupo natural'
+    },
+    earlyRoundEnd: {
+      title: 'Terminar ronda?',
+      body: 'As penalizações já estão definidas. Queres terminar a ronda agora? Se recusares, podes continuar a jogar mas os pontos deixam de mudar.',
+      accept: 'Terminar ronda',
+      decline: 'Continuar a jogar'
     },
     inGame: {
       exit: 'Sair',
@@ -454,7 +481,20 @@ export const translations: Record<Language, Translations> = {
       sound: 'Sound',
       language: 'Language',
       editName: 'Edit name',
-      saveName: 'Save'
+      saveName: 'Save',
+      handSort: 'Hand',
+      sortHand: 'Sort hand automatically',
+      suitOrder: 'Suit order',
+      trumpPosition: 'Trump (Sueca)',
+      trumpLeft: 'On the left',
+      trumpRight: 'On the right',
+      trumpNatural: 'In natural group'
+    },
+    earlyRoundEnd: {
+      title: 'End round early?',
+      body: 'Penalties are already decided. End the round now? If you decline, you can keep playing but scores will no longer change.',
+      accept: 'End round',
+      decline: 'Keep playing'
     },
     inGame: {
       exit: 'Exit',
