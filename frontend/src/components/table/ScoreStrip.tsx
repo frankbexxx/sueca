@@ -2,6 +2,7 @@ import React from 'react';
 import { GameState, GameVariant } from '../../types/game';
 import { GameScores } from '../GameScores';
 import { GameInfo } from '../GameInfo';
+import { UnifiedGameStatusPanel } from './UnifiedGameStatusPanel';
 import { useLanguage } from '../../i18n/useLanguage';
 
 export interface ScoreStripProps {
@@ -20,12 +21,22 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
   rulesPresetId
 }) => {
   const { t } = useLanguage();
-  const isKing = variant === 'king';
+
+  if (variant === 'king' || variant === 'hearts') {
+    return (
+      <UnifiedGameStatusPanel
+        gameState={gameState}
+        variant={variant}
+        rulesPresetId={rulesPresetId}
+      />
+    );
+  }
+
   return (
-    <div className={`top-strip${isKing ? ' top-strip--king' : ''}`}>
+    <div className="top-strip">
       <GameScores gameState={gameState} variant={variant} usTeam={usTeam} themTeam={themTeam} />
-      <div className={`round-block${isKing ? ' round-block--king' : ''}`}>
-        {!isKing && <div>{t.gameBoard.game} {gameState.round}</div>}
+      <div className="round-block">
+        <div>{t.gameBoard.game} {gameState.round}</div>
         <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>
     </div>

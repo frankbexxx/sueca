@@ -33,17 +33,85 @@
   color: white;
 }
 
-.top-strip--king {
-  grid-template-columns: auto 1fr;
+.top-strip--unified {
+  display: block;
+  padding: 8px 12px;
 }
 
-.top-strip--king .round-block--king {
-  grid-column: 2;
-  justify-self: stretch;
+.game-status-panel {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.game-status-panel__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px 12px;
+}
+
+.game-status-panel__col {
   min-width: 0;
-  max-width: none;
-  text-align: left;
-  padding: 6px 12px;
+}
+
+.game-status-panel__divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.game-status-panel__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.72;
+  margin-bottom: 4px;
+}
+
+.game-status-panel__scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.game-status-panel__score-item {
+  white-space: nowrap;
+}
+
+.game-status-panel__contract {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.game-status-panel__contract-title {
+  font-weight: 700;
+}
+
+.game-status-panel__contract-sep {
+  opacity: 0.65;
+}
+
+.game-status-panel__contract-hint {
+  opacity: 0.88;
+}
+
+.game-status-panel .king-null-start-note {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
+.game-status-panel .king-history-panel {
+  margin-top: 6px;
 }
 
 .game-scores--teams .score-block .label {
@@ -611,6 +679,13 @@
     padding: 10px 12px;
     gap: 10px;
   }
+  .game-status-panel {
+    padding: 7px 10px;
+  }
+  .game-status-panel__scores,
+  .game-status-panel__contract {
+    font-size: 0.72rem;
+  }
   .player-seat.player-north { top: -24px; }
   .player-seat.player-south { bottom: -24px; }
   .player-seat.player-east { right: -40px; }
@@ -645,6 +720,21 @@
     justify-items: stretch;
     text-align: center;
     gap: 8px;
+  }
+  .top-strip--unified {
+    display: block;
+    grid-template-columns: none;
+    text-align: left;
+  }
+  .game-status-panel__grid {
+    gap: 8px 10px;
+  }
+  .game-status-panel__label {
+    font-size: 0.62rem;
+  }
+  .game-status-panel__scores,
+  .game-status-panel__contract {
+    font-size: 0.7rem;
   }
   .score-block { padding: 4px 6px; }
   .round-block { padding: 5px 7px; min-width: 105px; }
