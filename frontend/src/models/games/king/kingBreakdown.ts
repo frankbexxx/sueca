@@ -23,6 +23,8 @@ export interface KingRoundBreakdown {
   menTaken: number[];
   kingTakenBy: number | null;
   lastTwoWinners: number[];
+  /** Face-up penalty cards taken by each player (contract-relevant only). */
+  penaltyCardsTaken: Card[][];
   contractLabel: string | null;
   festaMode: KingFestaMode | null;
   nullTransfer: { beneficiary: number; bidder: number; amount: number } | null;
@@ -45,6 +47,7 @@ export function emptyBreakdown(): KingRoundBreakdown {
     menTaken: [0, 0, 0, 0],
     kingTakenBy: null,
     lastTwoWinners: [],
+    penaltyCardsTaken: [[], [], [], []],
     contractLabel: null,
     festaMode: null,
     nullTransfer: null,

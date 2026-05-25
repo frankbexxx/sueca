@@ -159,7 +159,7 @@ export const PlaySetup: React.FC<PlaySetupProps> = ({ onStartGame, initialVarian
 
         {error && <div className="play-setup-error">{error}</div>}
 
-        <button type="button" className="play-start-btn dobo-btn" onClick={handleStart}>
+        <button type="button" className="play-start-btn sueca-btn sueca-btn--primary sueca-btn--block" onClick={handleStart}>
           {t.startMenu.startGame}
         </button>
       </div>

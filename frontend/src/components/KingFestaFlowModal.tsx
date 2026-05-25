@@ -67,7 +67,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet>
         <h2>Leilão · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint">
+        <p className="variant-modal-hint king-auction-current-bid">
           {king.bestBid
             ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
             : 'Ainda sem ofertas.'}

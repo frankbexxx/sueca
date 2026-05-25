@@ -17,6 +17,22 @@ export function hasKingHearts(trick: Card[]): boolean {
   return trick.some((c) => c.rank === 'K' && c.suit === 'hearts');
 }
 
+export function heartsInTrick(trick: Card[]): Card[] {
+  return trick.filter((c) => c.suit === 'hearts');
+}
+
+export function queensInTrick(trick: Card[]): Card[] {
+  return trick.filter((c) => c.rank === 'Q');
+}
+
+export function menInTrick(trick: Card[]): Card[] {
+  return trick.filter((c) => c.rank === 'K' || c.rank === 'J');
+}
+
+export function kingHeartsInTrick(trick: Card[]): Card[] {
+  return trick.filter((c) => c.rank === 'K' && c.suit === 'hearts');
+}
+
 /** Penalty points assigned to trick winner for negative contracts. */
 export function negativeTrickPenalty(
   contract: KingNegativeContract,

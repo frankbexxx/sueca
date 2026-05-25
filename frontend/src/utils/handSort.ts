@@ -1,5 +1,6 @@
-import { Card, CARD_HIERARCHY, GameState, GameVariant, Suit } from '../types/game';
+import { Card, GameState, GameVariant, Suit } from '../types/game';
 import { loadHandPreferences, TrumpPosition } from '../constants/handPreferences';
+import { handSortRankValue } from './handSortRanks';
 
 export interface HandSortOptions {
   enabled: boolean;
@@ -10,7 +11,7 @@ export interface HandSortOptions {
 }
 
 function rankValue(card: Card, variant: GameVariant): number {
-  return CARD_HIERARCHY[card.rank] ?? 0;
+  return handSortRankValue(card.rank, variant);
 }
 
 function compareCards(a: Card, b: Card, variant: GameVariant): number {

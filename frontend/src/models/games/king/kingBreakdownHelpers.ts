@@ -3,7 +3,11 @@ import {
   countHearts,
   countMen,
   countQueens,
-  hasKingHearts
+  hasKingHearts,
+  heartsInTrick,
+  kingHeartsInTrick,
+  menInTrick,
+  queensInTrick
 } from './kingScoring';
 import {
   emptyBreakdown,
@@ -68,15 +72,21 @@ export function accumulateTrickBreakdown(
 
   if (contract === 'no_hearts' || contract === 'no_king_hearts') {
     breakdown.heartsTaken[winner] += countHearts(trick);
+    if (contract === 'no_hearts') {
+      breakdown.penaltyCardsTaken[winner].push(...heartsInTrick(trick));
+    }
   }
   if (contract === 'no_queens') {
     breakdown.queensTaken[winner] += countQueens(trick);
+    breakdown.penaltyCardsTaken[winner].push(...queensInTrick(trick));
   }
   if (contract === 'no_men') {
     breakdown.menTaken[winner] += countMen(trick);
+    breakdown.penaltyCardsTaken[winner].push(...menInTrick(trick));
   }
   if (contract === 'no_king_hearts' && hasKingHearts(trick)) {
     breakdown.kingTakenBy = winner;
+    breakdown.penaltyCardsTaken[winner].push(...kingHeartsInTrick(trick));
   }
   if (contract === 'no_last_two' && trickNumber >= 12) {
     breakdown.lastTwoWinners.push(winner);

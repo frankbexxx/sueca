@@ -48,19 +48,3 @@
   gap: 6px;
   flex-shrink: 0;
 }
-
-.in-game-bar-btn {
-  min-height: var(--sueca-touch-min, 40px);
-  padding: 6px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.in-game-bar-btn-exit {
-  background: rgba(220, 53, 69, 0.35);
-  border-color: rgba(220, 53, 69, 0.5);
-}

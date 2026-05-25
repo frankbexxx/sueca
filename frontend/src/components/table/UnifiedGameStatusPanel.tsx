@@ -1,14 +1,17 @@
 import React from 'react';
-import { GameState, GameVariant } from '../../types/game';
+import { Card, GameState, GameVariant } from '../../types/game';
 import { useLanguage } from '../../i18n/useLanguage';
 import { getKingPtState } from '../../models/games/KingPtGame';
 import {
   kingGameTitle,
-  KING_NEGATIVE_GAMES
+  KING_NEGATIVE_GAMES,
+  KingNegativeContract
 } from '../../models/games/king/kingContracts';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { getKingRulesHint } from '../KingRulesHelper';
 import { KingGameHistoryPanel } from '../KingGameHistoryPanel';
+import { getCardImagePath } from '../../constants/cardAssets';
+import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
 
 export interface UnifiedGameStatusPanelProps {
   gameState: GameState;
@@ -16,9 +19,23 @@ export interface UnifiedGameStatusPanelProps {
   rulesPresetId?: string;
 }
 
+const PENALTY_CARD_CONTRACTS: KingNegativeContract[] = [
+  'no_hearts',
+  'no_queens',
+  'no_men',
+  'no_king_hearts'
+];
+
 function truncateHint(text: string, maxLength = 48): string {
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 1).trim()}…`;
+}
+
+function penaltyCardImage(card: { rank: string; suit: string }): string {
+  const rankName = RANK_TO_IMAGE_NAME[card.rank as keyof typeof RANK_TO_IMAGE_NAME];
+  const suitName = SUIT_TO_NAME[card.suit as keyof typeof SUIT_TO_NAME];
+  if (!rankName || !suitName) return '';
+  return getCardImagePath(rankName, suitName);
 }
 
 export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
@@ -44,11 +61,15 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
 
   let contractLine = '';
   let ruleLine = '';
+  let kingContract: KingNegativeContract | null = null;
+  let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
 
   if (variant === 'king') {
     const preset = resolvePresetId('king', rulesPresetId);
     if (preset === 'king-pt-normal') {
       const king = getKingPtState(gameState);
+      kingContract = king.contract;
+      penaltyCardsByPlayer = king.roundBreakdown.penaltyCardsTaken;
       const ownerName = gameState.players[king.festaOwnerIndex]?.name ?? '';
       const title =
         king.phase === 'koh_reveal'
@@ -74,6 +95,11 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
     ruleLine = isPt ? 'Individual · evita pontos' : 'Individual · avoid points';
   }
 
+  const showPenaltyCards =
+    variant === 'king' &&
+    kingContract !== null &&
+    PENALTY_CARD_CONTRACTS.includes(kingContract);
+
   return (
     <div className="top-strip top-strip--unified">
       <div className="game-status-panel">
@@ -82,9 +108,27 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
             <div className="game-status-panel__label">{pointsLabel}</div>
             <div className="game-status-panel__scores">
               {gameState.players.map((player, index) => (
-                <span key={player.id} className="game-status-panel__score-item">
-                  P{index + 1}: {scores[index] ?? 0}
-                </span>
+                <div key={player.id} className="game-status-panel__score-row">
+                  <span className="game-status-panel__score-item">
+                    P{index + 1}: {scores[index] ?? 0}
+                  </span>
+                  {showPenaltyCards && penaltyCardsByPlayer[index]?.length > 0 && (
+                    <div className="game-status-panel__penalty-cards">
+                      {penaltyCardsByPlayer[index].map((card) => {
+                        const src = penaltyCardImage(card);
+                        if (!src) return null;
+                        return (
+                          <img
+                            key={card.id}
+                            src={src}
+                            alt={`${card.rank} ${card.suit}`}
+                            className="game-status-panel__penalty-card"
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

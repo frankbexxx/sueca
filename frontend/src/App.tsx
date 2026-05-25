@@ -12,16 +12,16 @@ import { GameVariant } from './types/game';
 import {
   SavedGameSession,
   loadGameSession,
-  loadLastConfig,
   saveLastConfig,
-  clearGameSession
+  clearGameSession,
+  buildQuickConfigForVariant
 } from './services/gameSessionStorage';
 import { STORAGE_KEYS } from './constants/gameConstants';
 import { playUiClick, preloadSfx } from './services/audioService';
 import './App.css';
 import './styles/app-shell.css';
 
-const UI_CLICK_SELECTOR = '.dobo-btn, .continue-button, .lang-btn';
+const UI_CLICK_SELECTOR = '.sueca-btn, .dobo-btn, .lang-btn';
 
 function App() {
   const [screen, setScreen] = useState<AppScreen>('landing');
@@ -104,15 +104,10 @@ function App() {
               const saved = loadGameSession();
               if (saved) startGame(saved.config, saved);
             }}
-            onPlayLast={() => {
-              const last = loadLastConfig();
-              if (last) startGame(last);
+            onPlayVariant={(variant) => {
+              startGame(buildQuickConfigForVariant(variant));
             }}
-            onChooseGame={() => {
-              setPlayInitialVariant(null);
-              setActiveTab('play');
-            }}
-            onPickVariant={(variant) => {
+            onConfigureVariant={(variant) => {
               setPlayInitialVariant(variant);
               setActiveTab('play');
             }}

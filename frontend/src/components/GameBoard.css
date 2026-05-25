@@ -76,14 +76,39 @@
 
 .game-status-panel__scores {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
+  flex-direction: column;
+  gap: 4px;
   font-size: 0.78rem;
   line-height: 1.3;
 }
 
+.game-status-panel__score-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
 .game-status-panel__score-item {
   white-space: nowrap;
+  font-weight: 600;
+}
+
+.game-status-panel__penalty-cards {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-status-panel__penalty-card {
+  width: 22px;
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
 }
 
 .game-status-panel__contract {
@@ -346,10 +371,23 @@
 
 .action-buttons-group {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: stretch;
   justify-content: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.action-continue-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-auto-pause-btn {
+  flex-shrink: 0;
+  max-width: 42%;
+  white-space: nowrap;
 }
 
 .continue-button {

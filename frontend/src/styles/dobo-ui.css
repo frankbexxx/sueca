@@ -1,4 +1,4 @@
-/* Shared DOBO pack chrome (StartMenu, GameMenu, RulesSheet, Credits) */
+/* Panel texture only — buttons use sueca-btn (sueca-buttons.css) */
 
 .dobo-panel {
   background-color: #2a3a52;
@@ -8,42 +8,32 @@
   background-position: center;
 }
 
-.dobo-btn {
-  background-color: var(--sueca-color-primary, #6c5ce7);
-  background-image: url('../assets/ui/dobo/button_primary.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  border: none;
-  color: #fff;
-  cursor: pointer;
+/* Legacy alias — maps to sueca-btn--primary */
+.dobo-btn,
+.variant-modal-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--sueca-touch-min, 48px);
+  padding: 8px 14px;
+  border: 1px solid rgba(108, 92, 231, 0.65);
+  border-radius: var(--sueca-radius-md, 8px);
+  background: rgba(108, 92, 231, 0.45);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
-.dobo-btn:hover,
-.dobo-btn:active {
-  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
+.dobo-btn:hover:not(:disabled),
+.variant-modal-primary:hover:not(:disabled) {
+  background: rgba(108, 92, 231, 0.58);
 }
 
-/* Override gradient/solid fills when combined with modal / variant buttons */
-.dobo-btn.modal-button,
-.dobo-btn.modal-button-primary,
-.dobo-btn.modal-button-new-game,
-.dobo-btn.variant-modal-primary {
-  background-color: var(--sueca-color-primary, #6c5ce7);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-image: url('../assets/ui/dobo/button_primary.png');
-}
-
-.dobo-btn.modal-button:hover,
-.dobo-btn.modal-button:active,
-.dobo-btn.modal-button-primary:hover,
-.dobo-btn.modal-button-primary:active,
-.dobo-btn.modal-button-new-game:hover,
-.dobo-btn.modal-button-new-game:active,
-.dobo-btn.variant-modal-primary:hover,
-.dobo-btn.variant-modal-primary:active {
-  background-image: url('../assets/ui/dobo/button_primary_pressed.png');
+.dobo-btn:disabled,
+.variant-modal-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }

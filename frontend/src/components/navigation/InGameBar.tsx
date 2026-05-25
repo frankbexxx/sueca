@@ -41,12 +41,16 @@ export const InGameBar: React.FC<InGameBarProps> = ({
       <div className="in-game-bar-actions">
         <button
           type="button"
-          className="in-game-bar-btn"
+          className="sueca-btn sueca-btn--secondary sueca-btn--compact"
           onClick={isPaused ? onResume : onPause}
         >
           {isPaused ? `▶ ${t.gameMenu.resume}` : `⏸ ${t.gameMenu.pause}`}
         </button>
-        <button type="button" className="in-game-bar-btn in-game-bar-btn-exit" onClick={handleExit}>
+        <button
+          type="button"
+          className="sueca-btn sueca-btn--danger sueca-btn--compact"
+          onClick={handleExit}
+        >
           {t.inGame.exit}
         </button>
       </div>

@@ -139,7 +139,11 @@ export function getKingPtState(state: GameState): KingPtVariantState {
   return {
     ...defaultKingState(),
     ...vs,
-    roundBreakdown: vs.roundBreakdown ?? emptyBreakdown(),
+    roundBreakdown: {
+      ...emptyBreakdown(),
+      ...vs.roundBreakdown,
+      penaltyCardsTaken: vs.roundBreakdown?.penaltyCardsTaken ?? [[], [], [], []]
+    },
     gameHistory: vs.gameHistory ?? [],
     showScorePopup
   };

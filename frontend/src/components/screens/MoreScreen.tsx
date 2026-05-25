@@ -11,6 +11,7 @@ import {
   SuitOrderPresetId,
   TrumpPosition
 } from '../../constants/handPreferences';
+import { loadAutoPauseTrick, saveAutoPauseTrick } from '../../utils/trickAutoContinue';
 import './MoreScreen.css';
 
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -42,6 +43,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
     () => localStorage.getItem('sueca-sound-enabled') !== 'false'
   );
   const [handPrefs, setHandPrefs] = useState(() => loadHandPreferences());
+  const [autoPauseTrick, setAutoPauseTrick] = useState(() => loadAutoPauseTrick());
 
   const savePlayerName = () => {
     const trimmed = playerName.trim() || 'Player 1';
@@ -100,7 +102,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
             maxLength={20}
             placeholder={t.moreScreen.playerName}
           />
-          <button type="button" className="more-save-name dobo-btn" onClick={savePlayerName}>
+          <button type="button" className="sueca-btn sueca-btn--primary sueca-btn--block more-save-name" onClick={savePlayerName}>
             {t.moreScreen.saveName}
           </button>
         </div>
@@ -115,6 +117,18 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
         <label className="more-toggle">
           <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
           <span>{t.moreScreen.sound}</span>
+        </label>
+        <label className="more-toggle">
+          <input
+            type="checkbox"
+            checked={autoPauseTrick}
+            onChange={() => {
+              const next = !autoPauseTrick;
+              setAutoPauseTrick(next);
+              saveAutoPauseTrick(next);
+            }}
+          />
+          <span>{t.moreScreen.autoPauseTrick}</span>
         </label>
         <div className="more-lang">
           <span>{t.moreScreen.language}</span>
@@ -182,10 +196,10 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
       </section>
 
       <section className="more-section dobo-panel">
-        <button type="button" className="more-link-btn dobo-btn" onClick={() => setShowCredits(true)}>
+        <button type="button" className="sueca-btn sueca-btn--secondary sueca-btn--block more-link-btn" onClick={() => setShowCredits(true)}>
           {t.moreScreen.credits}
         </button>
-        <a href={FEEDBACK_ISSUE_URL} target="_blank" rel="noopener noreferrer" className="more-feedback-link">
+        <a href={FEEDBACK_ISSUE_URL} target="_blank" rel="noopener noreferrer" className="sueca-btn sueca-btn--ghost sueca-btn--block more-feedback-link">
           Feedback / reportar bug
         </a>
       </section>

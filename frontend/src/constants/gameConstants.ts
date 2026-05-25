@@ -23,6 +23,8 @@ export const SHUFFLE_DELAY_MS = 250;
 // Card layout thresholds
 export const HAND_SCROLL_THRESHOLD = 8;
 
+export const TRICK_AUTO_CONTINUE_SECONDS = 5;
+
 // LocalStorage keys
 export const STORAGE_KEYS = {
   DEALING_METHOD: 'sueca-dealing-method',
@@ -31,7 +33,8 @@ export const STORAGE_KEYS = {
   DARK_MODE: 'sueca-dark-mode',
   SORT_HAND: 'sueca-sort-hand',
   HAND_SUIT_ORDER: 'sueca-hand-suit-order',
-  TRUMP_POSITION: 'sueca-trump-position'
+  TRUMP_POSITION: 'sueca-trump-position',
+  AUTO_PAUSE_TRICK: 'sueca-auto-pause-trick'
 } as const;
 
 // Default values

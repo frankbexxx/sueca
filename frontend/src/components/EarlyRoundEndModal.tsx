@@ -16,10 +16,10 @@ export const EarlyRoundEndModal: React.FC<EarlyRoundEndModalProps> = ({ onAccept
         <h2>{t.earlyRoundEnd.title}</h2>
         <p className="variant-modal-hint">{t.earlyRoundEnd.body}</p>
         <div className="king-festa-actions">
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={onAccept}>
+          <button type="button" className="sueca-btn sueca-btn--primary" onClick={onAccept}>
             {t.earlyRoundEnd.accept}
           </button>
-          <button type="button" className="dobo-btn" onClick={onDecline}>
+          <button type="button" className="sueca-btn sueca-btn--danger" onClick={onDecline}>
             {t.earlyRoundEnd.decline}
           </button>
         </div>

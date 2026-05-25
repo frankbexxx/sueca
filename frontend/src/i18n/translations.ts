@@ -75,6 +75,8 @@ export interface Translations {
     game: string;
     dealing: string;
     continue: string;
+    autoPause: string;
+    autoPauseHint: string;
     aiExternal: string;
     aiLocal: string;
   };
@@ -114,6 +116,8 @@ export interface Translations {
     playedShort: string;
     winsShort: string;
     buildVersion: string;
+    playGame: string;
+    configureGame: (game: string) => string;
   };
 
   playSetup: {
@@ -145,6 +149,7 @@ export interface Translations {
     trumpLeft: string;
     trumpRight: string;
     trumpNatural: string;
+    autoPauseTrick: string;
   };
 
   earlyRoundEnd: {
@@ -267,7 +272,9 @@ export const translations: Record<Language, Translations> = {
       perGameStats: 'Por jogo',
       playedShort: 'J',
       winsShort: 'V',
-      buildVersion: 'Versão'
+      buildVersion: 'Versão',
+      playGame: 'Jogar',
+      configureGame: (game) => `Configurar ${game}`
     },
     playSetup: {
       title: 'Nova partida',
@@ -295,7 +302,8 @@ export const translations: Record<Language, Translations> = {
       trumpPosition: 'Trunfo (Sueca)',
       trumpLeft: 'À esquerda',
       trumpRight: 'À direita',
-      trumpNatural: 'No grupo natural'
+      trumpNatural: 'No grupo natural',
+      autoPauseTrick: 'Pausa auto entre vazas'
     },
     earlyRoundEnd: {
       title: 'Terminar ronda?',
@@ -341,6 +349,8 @@ export const translations: Record<Language, Translations> = {
       game: 'Jogo',
       dealing: 'Dar Cartas',
       continue: 'Continuar',
+      autoPause: 'Pausa auto',
+      autoPauseHint: 'Quando activo, não avança automaticamente entre vazas',
       aiExternal: 'AI Externa (Render)',
       aiLocal: 'AI Local (fallback)'
     },
@@ -460,7 +470,9 @@ export const translations: Record<Language, Translations> = {
       perGameStats: 'By game',
       playedShort: 'P',
       winsShort: 'W',
-      buildVersion: 'Version'
+      buildVersion: 'Version',
+      playGame: 'Play',
+      configureGame: (game) => `Configure ${game}`
     },
     playSetup: {
       title: 'New game',
@@ -488,7 +500,8 @@ export const translations: Record<Language, Translations> = {
       trumpPosition: 'Trump (Sueca)',
       trumpLeft: 'On the left',
       trumpRight: 'On the right',
-      trumpNatural: 'In natural group'
+      trumpNatural: 'In natural group',
+      autoPauseTrick: 'Auto-pause between tricks'
     },
     earlyRoundEnd: {
       title: 'End round early?',
@@ -534,6 +547,8 @@ export const translations: Record<Language, Translations> = {
       game: 'Game',
       dealing: 'Dealing:',
       continue: 'Continue',
+      autoPause: 'Auto-pause',
+      autoPauseHint: 'When on, tricks no longer advance automatically',
       aiExternal: 'External AI (Render)',
       aiLocal: 'Local AI (fallback)'
     },

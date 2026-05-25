@@ -103,12 +103,9 @@
 }
 
 .more-feedback-link {
-  display: block;
+  display: flex;
   text-align: center;
-  min-height: var(--sueca-touch-min, 48px);
-  line-height: 48px;
-  color: #e9eef7;
+  justify-content: center;
   text-decoration: none;
-  border-radius: var(--sueca-radius-md, 10px);
-  background: rgba(108, 92, 231, 0.25);
+  margin-top: 8px;
 }

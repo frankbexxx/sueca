@@ -1,96 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
+import { TRICK_AUTO_CONTINUE_SECONDS } from '../constants/gameConstants';
+import { loadAutoPauseTrick, saveAutoPauseTrick } from '../utils/trickAutoContinue';
 
 interface GameActionsProps {
   gameState: GameState;
   variant: GameVariant;
   onContinueTrick: () => void;
-  onContinueRound?: () => void;
-  onSpecialAction?: () => void;
 }
 
-/**
- * Generic game actions component that displays action buttons based on game state
- * Adapts available actions based on current game variant and state
- */
 export const GameActions: React.FC<GameActionsProps> = ({
   gameState,
   variant,
-  onContinueTrick,
-  onContinueRound,
-  onSpecialAction
+  onContinueTrick
 }) => {
   const { t } = useLanguage();
+  const [autoPause, setAutoPause] = useState(() => loadAutoPauseTrick());
+  const [countdown, setCountdown] = useState(TRICK_AUTO_CONTINUE_SECONDS);
+  const onContinueRef = useRef(onContinueTrick);
+  onContinueRef.current = onContinueTrick;
 
-  const renderSuecaActions = () => (
-    <div className="action-buttons-group">
-      <button
-        className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-        onClick={onContinueTrick}
-        disabled={!gameState.waitingForTrickEnd}
-      >
-        {t.gameBoard.continue}
-      </button>
-    </div>
-  );
+  const waiting = gameState.waitingForTrickEnd;
 
-  const renderSpadesActions = () => (
-    <div className="action-buttons-group">
-      <button
-        className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-        onClick={onContinueTrick}
-        disabled={!gameState.waitingForTrickEnd}
-      >
-        {t.gameBoard.continue}
-      </button>
-      {/* Spades might have additional actions like bidding */}
-    </div>
-  );
-
-  const renderHeartsActions = () => (
-    <div className="action-buttons-group">
-      <button
-        className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-        onClick={onContinueTrick}
-        disabled={!gameState.waitingForTrickEnd}
-      >
-        {t.gameBoard.continue}
-      </button>
-      {/* Hearts might show "Hearts Broken" status */}
-    </div>
-  );
-
-  const renderKingActions = () => (
-    <div className="action-buttons-group">
-      <button
-        className={`continue-button ${gameState.waitingForTrickEnd ? 'enabled' : 'disabled'}`}
-        onClick={onContinueTrick}
-        disabled={!gameState.waitingForTrickEnd}
-      >
-        {t.gameBoard.continue}
-      </button>
-    </div>
-  );
-
-  const renderActions = () => {
-    switch (variant) {
-      case 'sueca':
-        return renderSuecaActions();
-      case 'spades':
-        return renderSpadesActions();
-      case 'hearts':
-        return renderHeartsActions();
-      case 'king':
-        return renderKingActions();
-      default:
-        return renderSuecaActions(); // fallback
+  useEffect(() => {
+    if (!waiting || autoPause) {
+      setCountdown(TRICK_AUTO_CONTINUE_SECONDS);
+      return;
     }
-  };
+
+    setCountdown(TRICK_AUTO_CONTINUE_SECONDS);
+    const timer = window.setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          window.clearInterval(timer);
+          onContinueRef.current();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [waiting, autoPause, variant, gameState.currentTrick.length]);
+
+  const toggleAutoPause = useCallback(() => {
+    setAutoPause((prev) => {
+      const next = !prev;
+      saveAutoPauseTrick(next);
+      return next;
+    });
+  }, []);
+
+  const continueLabel =
+    waiting && !autoPause
+      ? `${t.gameBoard.continue} (${countdown})`
+      : t.gameBoard.continue;
 
   return (
     <div className="action-buttons-bar">
-      {renderActions()}
+      <div className="action-buttons-group">
+        <button
+          type="button"
+          className={`sueca-btn sueca-btn--primary sueca-btn--block action-continue-btn${
+            waiting ? '' : ' sueca-btn--disabled'
+          }`}
+          onClick={onContinueTrick}
+          disabled={!waiting}
+        >
+          {continueLabel}
+        </button>
+        <button
+          type="button"
+          className={`sueca-btn sueca-btn--compact action-auto-pause-btn${
+            autoPause ? ' sueca-btn--toggle-on' : ' sueca-btn--secondary'
+          }`}
+          onClick={toggleAutoPause}
+          aria-pressed={autoPause}
+          title={t.gameBoard.autoPauseHint}
+        >
+          {t.gameBoard.autoPause}
+        </button>
+      </div>
     </div>
   );
 };

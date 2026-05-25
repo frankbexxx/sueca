@@ -1,0 +1,98 @@
+/* Unified button system — matches InGameBar Pausar/Sair style */
+
+.sueca-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--sueca-touch-min, 48px);
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--sueca-radius-md, 8px);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sueca-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.sueca-btn:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sueca-btn:disabled,
+.sueca-btn.sueca-btn--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sueca-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.sueca-btn--primary {
+  background: rgba(108, 92, 231, 0.45);
+  border-color: rgba(108, 92, 231, 0.65);
+}
+
+.sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(108, 92, 231, 0.58);
+  border-color: rgba(108, 92, 231, 0.8);
+}
+
+.sueca-btn--danger {
+  background: rgba(220, 53, 69, 0.35);
+  border-color: rgba(220, 53, 69, 0.5);
+}
+
+.sueca-btn--danger:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.48);
+  border-color: rgba(220, 53, 69, 0.65);
+}
+
+.sueca-btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.sueca-btn--ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+  font-weight: 500;
+}
+
+.sueca-btn--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sueca-btn--toggle-on {
+  background: rgba(108, 92, 231, 0.35);
+  border-color: rgba(108, 92, 231, 0.55);
+}
+
+.sueca-btn--compact {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.sueca-btn--block {
+  width: 100%;
+}
+
+.sueca-btn--icon {
+  min-width: var(--sueca-touch-min, 48px);
+  padding-left: 10px;
+  padding-right: 10px;
+}

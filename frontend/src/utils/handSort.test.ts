@@ -36,6 +36,18 @@ describe('handSort', () => {
     expect(sorted.map((card) => card.id)).toEqual(['ca', 'h7', 'dk']);
   });
 
+  it('sorts Sueca hand with J before Q within suit', () => {
+    const hand = [c('Q', 'clubs', 'cq'), c('J', 'clubs', 'cj'), c('K', 'clubs', 'ck')];
+    const sorted = sortHand(hand, {
+      enabled: true,
+      suitOrder: DEFAULT_SUIT_ORDER,
+      trumpPosition: 'natural',
+      variant: 'sueca',
+      trumpSuit: null
+    });
+    expect(sorted.map((card) => card.rank)).toEqual(['K', 'J', 'Q']);
+  });
+
   it('sorts 52-card hands by preset suit order', () => {
     const hand = [
       c('A', 'spades', '1'),
