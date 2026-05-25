@@ -11,8 +11,8 @@
 | Import Hazmat | `frontend/public/assets/cards-pack-import/hazmat/` | Flat staging; `node tools/stage-hazmat.mjs` |
 | UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
 | UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
+| SFX | `frontend/public/assets/sfx/*.ogg` | Kenney CC0 — ver secção abaixo |
 | Ícones app | `image/ico/buga_ico_draw/` | Usado no Capacitor |
-| SFX | `frontend/public/assets/sfx/` | Opcional — licença documentada ao adicionar |
 
 ## Critérios para pack de cartas (compra)
 
@@ -51,10 +51,25 @@
 - [ ] `npm run build` sem 404 de assets
 - [x] Licença registada neste ficheiro (secção abaixo)
 
+## SFX (Kenney CC0)
+
+| Ficheiro | Origem | Uso |
+|----------|--------|-----|
+| `card-play-1.ogg` | Casino Audio · card-place-2 | Jogar carta |
+| `card-play-2.ogg` | Casino Audio · card-place-1 | Variação |
+| `card-play-3.ogg` | Casino Audio · card-slide-3 | Variação |
+| `card-shuffle.ogg` | Casino Audio · card-shuffle | Baralhar / deal |
+| `trick-win.ogg` | Interface Sounds · confirmation_001 | Vaza completa |
+| `error.ogg` | Interface Sounds · error_001 | Jogada ilegal |
+| `ui-click.ogg` | Interface Sounds · click_002 | Cliques UI |
+
+Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen). Código: `frontend/src/services/audioService.ts`.
+
 ## Licenças
 
 | Asset | Licença | Notas |
 |-------|---------|-------|
 | Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — crédito opcional |
 | DOBO Vector UI Pack | Comercial OK; no resell/redistribute | [dobo-ui.itch.io](https://dobo-ui.itch.io/vector-ui-pack) — crédito recomendado |
+| Kenney Casino Audio + Interface Sounds | CC0 | [kenney.nl](https://kenney.nl) — crédito opcional |
 | Placeholder SVG (removido) | — | Substituído por Hazmat PNG Maio 2026 |

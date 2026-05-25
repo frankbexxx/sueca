@@ -80,6 +80,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
               <h3 className="credits-ack-title">{t.credits.assetsTitle}</h3>
               <p className="credits-ack-text">{t.credits.assetsCards}</p>
               <p className="credits-ack-text">{t.credits.assetsUi}</p>
+              <p className="credits-ack-text">{t.credits.assetsAudio}</p>
             </div>
             <div className="credits-copyright">
               {t.credits.copyright}

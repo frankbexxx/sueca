@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, Card, Suit } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
@@ -107,8 +107,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   });
   // UI state
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
-  const { playCardSound, playErrorSound } = useSound();
+  const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const showGridOverlay = false;
+  const prevWaitingRoundStartRef = useRef<boolean | null>(null);
+  const prevWaitingTrickEndRef = useRef<boolean | null>(null);
 
   const gameLabel =
     getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
@@ -144,6 +146,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       gameState
     );
   }, [gameAdapter, gameStarted, gameState, config, playerNames, aiDifficulty, dealingMethod, gameVariant]);
+
+  useEffect(() => {
+    if (!gameStarted) return;
+    const wasWaiting = prevWaitingRoundStartRef.current;
+    if (wasWaiting === true && !gameState.waitingForRoundStart) {
+      const hasHands = gameState.players.length > 0 && gameState.players.every((p) => p.hand.length > 0);
+      if (hasHands) playShuffleSound();
+    }
+    prevWaitingRoundStartRef.current = gameState.waitingForRoundStart;
+  }, [gameStarted, gameState.waitingForRoundStart, gameState.players, playShuffleSound]);
+
+  useEffect(() => {
+    if (!gameStarted) return;
+    const wasWaiting = prevWaitingTrickEndRef.current;
+    if (wasWaiting === false && gameState.waitingForTrickEnd) {
+      playTrickWinSound();
+    }
+    prevWaitingTrickEndRef.current = gameState.waitingForTrickEnd;
+  }, [gameStarted, gameState.waitingForTrickEnd, playTrickWinSound]);
 
   /**
    * Converts a Card object to a string code (e.g., "AS" for Ace of Spades)

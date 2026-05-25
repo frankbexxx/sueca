@@ -187,6 +187,7 @@ export interface Translations {
     assetsTitle: string;
     assetsCards: string;
     assetsUi: string;
+    assetsAudio: string;
     copyright: string;
     close: string;
     imageAlt: string;
@@ -372,6 +373,7 @@ export const translations: Record<Language, Translations> = {
       assetsTitle: 'Assets gráficos',
       assetsCards: 'Cartas: Hand Drawn Playing Cards por Hazmat Game Studios (itch.io).',
       assetsUi: 'Interface: Vector UI Pack por dobo_ui (itch.io).',
+      assetsAudio: 'Sons: Kenney.nl — Casino Audio e Interface Sounds (CC0).',
       copyright: '© 2025 Todos os direitos reservados.',
       close: 'Fechar',
       imageAlt: 'SUECÃO - Capa do Jogo'
@@ -551,6 +553,7 @@ export const translations: Record<Language, Translations> = {
       assetsTitle: 'Graphic assets',
       assetsCards: 'Playing cards: Hand Drawn Playing Cards by Hazmat Game Studios (itch.io).',
       assetsUi: 'UI chrome: Vector UI Pack by dobo_ui (itch.io).',
+      assetsAudio: 'Sound effects: Kenney.nl — Casino Audio and Interface Sounds (CC0).',
       copyright: '© 2025 All rights reserved.',
       close: 'Close',
       imageAlt: 'SUECÃO - Game Cover'

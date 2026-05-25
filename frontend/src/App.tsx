@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { GameBoard } from './components/GameBoard';
 import { BottomNav } from './components/navigation/BottomNav';
@@ -17,8 +17,11 @@ import {
   clearGameSession
 } from './services/gameSessionStorage';
 import { STORAGE_KEYS } from './constants/gameConstants';
+import { playUiClick, preloadSfx } from './services/audioService';
 import './App.css';
 import './styles/app-shell.css';
+
+const UI_CLICK_SELECTOR = '.dobo-btn, .continue-button, .lang-btn';
 
 function App() {
   const [screen, setScreen] = useState<AppScreen>('landing');
@@ -30,6 +33,19 @@ function App() {
     const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
     return saved ? saved === 'true' : false;
   });
+
+  useEffect(() => {
+    preloadSfx();
+    const onClick = (event: MouseEvent) => {
+      const target = (event.target as Element | null)?.closest(UI_CLICK_SELECTOR);
+      if (!target) return;
+      if (target instanceof HTMLButtonElement && target.disabled) return;
+      if (target.classList.contains('disabled')) return;
+      playUiClick();
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
 
   const enterShell = useCallback(() => {
     setScreen('shell');
