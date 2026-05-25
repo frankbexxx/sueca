@@ -8,7 +8,12 @@ const outPath = path.join(__dirname, '../src/generated/buildInfo.ts');
 
 let version = 'dev';
 try {
-  version = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  const vercelSha = process.env.VERCEL_GIT_COMMIT_SHA;
+  if (vercelSha) {
+    version = vercelSha.slice(0, 7);
+  } else {
+    version = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  }
 } catch {
   /* not a git checkout */
 }
