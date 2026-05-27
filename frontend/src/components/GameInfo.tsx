@@ -9,6 +9,8 @@ import {
 import { resolvePresetId } from '../constants/rulesPresets';
 import { getKingRulesHint } from './KingRulesHelper';
 import { KingGameHistoryPanel } from './KingGameHistoryPanel';
+import { getCardImagePath } from '../constants/cardAssets';
+import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../utils/cardMappings';
 
 interface GameInfoProps {
   gameState: GameState;
@@ -80,10 +82,23 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
   }
 
   if (variant === 'sueca' && gameState.trumpCard && gameState.trumpSuit) {
+    const rankName = RANK_TO_IMAGE_NAME[gameState.trumpCard.rank as keyof typeof RANK_TO_IMAGE_NAME];
+    const suitName = SUIT_TO_NAME[gameState.trumpCard.suit as keyof typeof SUIT_TO_NAME];
+    const trumpSrc = rankName && suitName ? getCardImagePath(rankName, suitName) : '';
+    const dealerName = gameState.players[gameState.dealerIndex]?.name ?? '';
     return (
       <div className="game-info trump-info-in-team">
-        <span className="dealer-name">{gameState.players[gameState.dealerIndex]?.name}</span>
-        <span className="trump-minimal">{gameState.trumpCard.rank}</span>
+        <span className="dealer-name">{dealerName}</span>
+        {trumpSrc ? (
+          <img
+            src={trumpSrc}
+            alt={`Trunfo ${gameState.trumpCard.rank} ${gameState.trumpCard.suit}`}
+            className="trump-card-mini"
+            draggable={false}
+          />
+        ) : (
+          <span className="trump-minimal">{gameState.trumpCard.rank}</span>
+        )}
       </div>
     );
   }

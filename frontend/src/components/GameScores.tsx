@@ -1,6 +1,54 @@
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
+
+interface TeamScoreBlockProps {
+  gameState: GameState;
+  variant: 'sueca' | 'spades';
+  team: 'us' | 'them';
+  usTeam: number;
+  themTeam: number;
+}
+
+export const TeamScoreBlock: React.FC<TeamScoreBlockProps> = ({
+  gameState,
+  variant,
+  team,
+  usTeam,
+  themTeam
+}) => {
+  const { t } = useLanguage();
+  const isUs = team === 'us';
+  const teamNum = isUs ? usTeam : themTeam;
+  const scoreKey = teamNum === 1 ? 'team1' : 'team2';
+
+  if (variant === 'spades') {
+    const spades = gameState.variantState?.spades as
+      | { team1Bid?: number; team2Bid?: number }
+      | undefined;
+    const bid = teamNum === 1 ? spades?.team1Bid : spades?.team2Bid;
+    return (
+      <div className={`score-block ${isUs ? 'us' : 'them'}`}>
+        <div className="label">{isUs ? t.gameBoard.us : t.gameBoard.them}</div>
+        <div className="line">Bid: {bid ?? 0}</div>
+        <div className="line">Score: {gameState.gameScore[scoreKey]}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`score-block ${isUs ? 'us' : 'them'}`}>
+      <div className="label">{isUs ? t.gameBoard.us : t.gameBoard.them}</div>
+      <div className="line">
+        {t.gameBoard.points} {gameState.scores[scoreKey]}
+      </div>
+      <div className="line">
+        {t.gameBoard.games} {gameState.gameScore[scoreKey]}
+      </div>
+    </div>
+  );
+};
+
 interface GameScoresProps {
   gameState: GameState;
   variant: GameVariant;
@@ -10,49 +58,6 @@ interface GameScoresProps {
 
 export const GameScores: React.FC<GameScoresProps> = ({ gameState, variant, usTeam, themTeam }) => {
   const { t } = useLanguage();
-
-  const renderSuecaScores = () => (
-    <>
-      <div className="score-block us">
-        <div className="label">{t.gameBoard.us}</div>
-        <div className="line">
-          {t.gameBoard.points} {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}
-        </div>
-        <div className="line">
-          {t.gameBoard.games} {gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
-        </div>
-      </div>
-      <div className="score-block them">
-        <div className="label">{t.gameBoard.them}</div>
-        <div className="line">
-          {t.gameBoard.points} {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}
-        </div>
-        <div className="line">
-          {t.gameBoard.games} {gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
-        </div>
-      </div>
-    </>
-  );
-
-  const renderSpadesScores = () => {
-    const spades = gameState.variantState?.spades as
-      | { team1Bid?: number; team2Bid?: number; playerBids?: number[] }
-      | undefined;
-    return (
-      <>
-        <div className="score-block us">
-          <div className="label">Equipa 1</div>
-          <div className="line">Bid: {spades?.team1Bid ?? 0}</div>
-          <div className="line">Score: {gameState.gameScore.team1}</div>
-        </div>
-        <div className="score-block them">
-          <div className="label">Equipa 2</div>
-          <div className="line">Bid: {spades?.team2Bid ?? 0}</div>
-          <div className="line">Score: {gameState.gameScore.team2}</div>
-        </div>
-      </>
-    );
-  };
 
   const renderIndividualScores = (label: string) => {
     const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
@@ -76,15 +81,28 @@ export const GameScores: React.FC<GameScoresProps> = ({ gameState, variant, usTe
   };
 
   switch (variant) {
-    case 'sueca':
-      return <div className="game-scores game-scores--teams">{renderSuecaScores()}</div>;
-    case 'spades':
-      return <div className="game-scores game-scores--teams">{renderSpadesScores()}</div>;
     case 'hearts':
       return <div className="game-scores">{renderIndividualScores('Hearts')}</div>;
     case 'king':
       return <div className="game-scores">{renderIndividualScores('King')}</div>;
     default:
-      return <div className="game-scores game-scores--teams">{renderSuecaScores()}</div>;
+      return (
+        <div className="game-scores game-scores--teams">
+          <TeamScoreBlock
+            gameState={gameState}
+            variant="sueca"
+            team="us"
+            usTeam={usTeam}
+            themTeam={themTeam}
+          />
+          <TeamScoreBlock
+            gameState={gameState}
+            variant="sueca"
+            team="them"
+            usTeam={usTeam}
+            themTeam={themTeam}
+          />
+        </div>
+      );
   }
 };

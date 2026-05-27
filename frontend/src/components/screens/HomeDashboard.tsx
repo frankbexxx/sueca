@@ -106,7 +106,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </ul>
       </section>
 
-      <section className="dashboard-stats dobo-panel">
+      <section className="dashboard-stats">
         <h2 className="dashboard-section-title">{t.dashboard.statsTitle}</h2>
         <div className="dashboard-stats-grid">
           <div className="dashboard-stat">

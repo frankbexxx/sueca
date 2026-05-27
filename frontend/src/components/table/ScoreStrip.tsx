@@ -1,7 +1,7 @@
 import React from 'react';
 import { GameState, GameVariant } from '../../types/game';
-import { GameScores } from '../GameScores';
 import { GameInfo } from '../GameInfo';
+import { TeamScoreBlock } from '../GameScores';
 import { UnifiedGameStatusPanel } from './UnifiedGameStatusPanel';
 import { useLanguage } from '../../i18n/useLanguage';
 
@@ -32,13 +32,30 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
     );
   }
 
+  const teamVariant = variant === 'spades' ? 'spades' : 'sueca';
+
   return (
-    <div className="top-strip">
-      <GameScores gameState={gameState} variant={variant} usTeam={usTeam} themTeam={themTeam} />
-      <div className="round-block">
-        <div>{t.gameBoard.game} {gameState.round}</div>
+    <div className="top-strip top-strip--teams">
+      <TeamScoreBlock
+        gameState={gameState}
+        variant={teamVariant}
+        team="us"
+        usTeam={usTeam}
+        themTeam={themTeam}
+      />
+      <div className="round-block round-block--center">
+        <div className="round-block__game">
+          {t.gameBoard.game} {gameState.round}
+        </div>
         <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>
+      <TeamScoreBlock
+        gameState={gameState}
+        variant={teamVariant}
+        team="them"
+        usTeam={usTeam}
+        themTeam={themTeam}
+      />
     </div>
   );
 };

@@ -33,6 +33,26 @@
   color: white;
 }
 
+.top-strip--teams {
+  grid-template-columns: minmax(0, 1fr) minmax(84px, 1.05fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+}
+
+.top-strip--teams > .score-block.us {
+  align-self: stretch;
+}
+
+.top-strip--teams > .score-block.them {
+  align-self: stretch;
+  text-align: right;
+}
+
+.top-strip--teams > .score-block.them .label,
+.top-strip--teams > .score-block.them .line {
+  text-align: right;
+}
+
 .top-strip--unified {
   display: block;
   padding: 8px 12px;
@@ -261,21 +281,48 @@
   gap: 4px;
 }
 
+.round-block--center {
+  min-width: 0;
+  padding: 5px 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.round-block__game {
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.2;
+}
+
 .trump-info-in-team {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 3px;
   font-size: 1em;
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  width: 100%;
 }
 
 .dealer-name {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1em;
+  font-size: 0.72em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trump-card-mini {
+  width: 38px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
 }
 
 .trump-minimal {
@@ -782,6 +829,10 @@
     padding: 10px 12px;
     gap: 10px;
   }
+  .top-strip--teams {
+    grid-template-columns: minmax(0, 1fr) minmax(76px, 1fr) minmax(0, 1fr);
+    gap: 6px;
+  }
   .game-status-panel {
     padding: 7px 10px;
   }
@@ -826,6 +877,13 @@
     text-align: center;
     gap: 8px;
   }
+  .top-strip--teams {
+    grid-template-columns: minmax(0, 1fr) minmax(72px, 0.95fr) minmax(0, 1fr);
+    gap: 6px;
+  }
+  .top-strip--teams > .score-block.them {
+    text-align: right;
+  }
   .top-strip--unified {
     display: block;
     grid-template-columns: none;
@@ -845,7 +903,8 @@
   }
   .score-block { padding: 4px 6px; }
   .round-block { padding: 5px 7px; min-width: 105px; }
-  .round-block { min-width: auto; }
+  .round-block--center { min-width: 0; padding: 4px 5px; }
+  .trump-card-mini { width: 34px; }
   .top-actions { padding: 6px 12px 0; justify-content: flex-end; }
   .ui-corner { gap: 8px; }
   .ui-corner.top-right,
@@ -890,13 +949,14 @@
   .top-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     padding: 8px 10px;
-    gap: 8px;
+    gap: 6px;
+  }
+  .top-strip--teams {
+    grid-template-columns: minmax(0, 1fr) minmax(68px, 0.9fr) minmax(0, 1fr);
   }
   .score-block { padding: 4px 6px; }
-  .round-block { padding: 4px 6px; min-width: 100px; }
-  .score-block .label { font-size: 0.95em; }
-  .score-block .line { font-size: 0.9em; }
-  .round-block { font-size: 0.95em; }
+  .round-block { padding: 4px 6px; min-width: 0; font-size: 0.95em; }
+  .trump-card-mini { width: 32px; }
   .top-actions { padding: 6px 10px 0; justify-content: center; }
   .action-buttons-group {
     align-items: center;
