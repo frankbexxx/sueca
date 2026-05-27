@@ -57,8 +57,6 @@ interface GameScoresProps {
 }
 
 export const GameScores: React.FC<GameScoresProps> = ({ gameState, variant, usTeam, themTeam }) => {
-  const { t } = useLanguage();
-
   const renderIndividualScores = (label: string) => {
     const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
     const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
