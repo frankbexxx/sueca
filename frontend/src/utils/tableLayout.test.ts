@@ -1,4 +1,4 @@
-import { getTablePosition, truncatePlayerName, isMobileDevice } from './tableLayout';
+import { getTablePosition, getTablePositionForPlayer, truncatePlayerName, isMobileDevice } from './tableLayout';
 
 describe('tableLayout', () => {
   it('maps player indices to compass positions', () => {
@@ -6,6 +6,12 @@ describe('tableLayout', () => {
     expect(getTablePosition(1)).toBe('east');
     expect(getTablePosition(2)).toBe('north');
     expect(getTablePosition(3)).toBe('west');
+  });
+
+  it('rotates compass relative to local player', () => {
+    expect(getTablePositionForPlayer(2, 0)).toBe('north');
+    expect(getTablePositionForPlayer(0, 2)).toBe('north');
+    expect(getTablePositionForPlayer(2, 2)).toBe('south');
   });
 
   it('truncates long player names', () => {

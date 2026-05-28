@@ -65,6 +65,13 @@ export interface Translations {
     finalGames: string;
     dealingMethodNext: string;
     newGame: string;
+    heartsRoundTitle: string;
+    heartsRoundPoints: string;
+    heartsTotalScores: string;
+    heartsGameOverTitle: string;
+    heartsWinner: (name: string) => string;
+    heartsLoser: (name: string) => string;
+    heartsFinalScores: string;
   };
 
   gameBoard: {
@@ -79,11 +86,16 @@ export interface Translations {
     autoPauseHint: string;
     aiExternal: string;
     aiLocal: string;
+    roundPointsShort: (points: number) => string;
   };
 
   heartsPass: {
     title: string;
     passTo: string;
+    passToPlayer: (name: string, direction: string) => string;
+    receiveFromPlayer: (name: string) => string;
+    holdRound: string;
+    confirmHold: string;
     selectOnHand: string;
     confirm: (count: number) => string;
   };
@@ -494,11 +506,16 @@ export const translations: Record<Language, Translations> = {
       autoPause: 'Pausa auto',
       autoPauseHint: 'Quando activo, não avança automaticamente entre vazas',
       aiExternal: 'AI Externa (Render)',
-      aiLocal: 'AI Local (fallback)'
+      aiLocal: 'AI Local (fallback)',
+      roundPointsShort: (points) => `Ronda: ${points}`
     },
     heartsPass: {
       title: 'Copas — passar 3 cartas',
       passTo: 'Passar para:',
+      passToPlayer: (name, direction) => `Passas 3 cartas para ${name} (${direction})`,
+      receiveFromPlayer: (name) => `Recebes 3 cartas de ${name}`,
+      holdRound: 'Esta ronda não se passam cartas.',
+      confirmHold: 'Continuar',
       selectOnHand: 'Selecciona 3 cartas na tua mão (cartas coloridas).',
       confirm: (count) => `Passar cartas (${count}/3)`
     },
@@ -517,7 +534,14 @@ export const translations: Record<Language, Translations> = {
       won: 'Venceu!',
       finalGames: 'Jogos Finais:',
       dealingMethodNext: 'Método de Distribuição para o Próximo Jogo:',
-      newGame: 'Novo Jogo'
+      newGame: 'Novo Jogo',
+      heartsRoundTitle: 'Fim da ronda',
+      heartsRoundPoints: 'Pontos desta ronda',
+      heartsTotalScores: 'Total acumulado',
+      heartsGameOverTitle: 'Fim do jogo',
+      heartsWinner: (name) => `${name} venceu (menos pontos)`,
+      heartsLoser: (name) => `${name} perdeu (100+ pontos)`,
+      heartsFinalScores: 'Pontuação final'
     },
     gameMenu: {
       title: '🃏 Sueca',
@@ -762,11 +786,16 @@ export const translations: Record<Language, Translations> = {
       autoPause: 'Auto-pause',
       autoPauseHint: 'When on, tricks no longer advance automatically',
       aiExternal: 'External AI (Render)',
-      aiLocal: 'Local AI (fallback)'
+      aiLocal: 'Local AI (fallback)',
+      roundPointsShort: (points) => `Round: ${points}`
     },
     heartsPass: {
       title: 'Hearts — pass 3 cards',
       passTo: 'Pass to:',
+      passToPlayer: (name, direction) => `Pass 3 cards to ${name} (${direction})`,
+      receiveFromPlayer: (name) => `Receive 3 cards from ${name}`,
+      holdRound: 'No passing this round.',
+      confirmHold: 'Continue',
       selectOnHand: 'Select 3 cards from your hand below.',
       confirm: (count) => `Pass cards (${count}/3)`
     },
@@ -785,7 +814,14 @@ export const translations: Record<Language, Translations> = {
       won: 'Won!',
       finalGames: 'Final Games:',
       dealingMethodNext: 'Dealing Method for Next Game:',
-      newGame: 'Start New Game'
+      newGame: 'Start New Game',
+      heartsRoundTitle: 'Round complete',
+      heartsRoundPoints: 'Points this round',
+      heartsTotalScores: 'Total score',
+      heartsGameOverTitle: 'Game over',
+      heartsWinner: (name) => `${name} wins (lowest score)`,
+      heartsLoser: (name) => `${name} lost (100+ points)`,
+      heartsFinalScores: 'Final scores'
     },
     gameMenu: {
       title: '🃏 Sueca',

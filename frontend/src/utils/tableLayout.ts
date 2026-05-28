@@ -7,6 +7,14 @@ const POSITION_MAP: Record<number, TableCompass> = {
   3: 'west'
 };
 
+export function getTablePositionForPlayer(
+  playerIndex: number,
+  localPlayerIndex: number
+): TableCompass {
+  const offset = (playerIndex - localPlayerIndex + 4) % 4;
+  return getTablePosition(offset);
+}
+
 export function getTablePosition(playerIndex: number): TableCompass {
   return POSITION_MAP[playerIndex] || 'south';
 }

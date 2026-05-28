@@ -440,18 +440,48 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       recordGameFinished();
       void showInterstitialIfDue();
       const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
-      const us = gameState.players[localIdx]?.team;
-      const playerWon = us === gameState.winner;
-      recordGameResult(gameVariant, playerWon);
-      const winnerLabel =
-        gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
-      const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
-      recordFinishedGame({
-        variant: gameVariant,
-        finishedAt: Date.now(),
-        playerWon,
-        summary: `${winnerLabel} · ${scoreSummary}`
-      });
+
+      if (gameVariant === 'hearts') {
+        const hearts = gameState.variantState?.hearts as { playerScores?: number[] } | undefined;
+        const scores = hearts?.playerScores ?? [0, 0, 0, 0];
+        const winnerIndex = scores.indexOf(Math.min(...scores));
+        const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
+        const playerWon = winnerIndex === localIdx;
+        recordGameResult(gameVariant, playerWon);
+        recordFinishedGame({
+          variant: gameVariant,
+          finishedAt: Date.now(),
+          playerWon,
+          summary: `${winnerName} · ${scores.join('/')}`
+        });
+      } else if (gameVariant === 'king') {
+        const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
+        const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
+        const scores = kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
+        const winnerIndex = scores.indexOf(Math.max(...scores));
+        const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
+        const playerWon = winnerIndex === localIdx;
+        recordGameResult(gameVariant, playerWon);
+        recordFinishedGame({
+          variant: gameVariant,
+          finishedAt: Date.now(),
+          playerWon,
+          summary: `${winnerName} · ${scores.join('/')}`
+        });
+      } else {
+        const us = gameState.players[localIdx]?.team;
+        const playerWon = us === gameState.winner;
+        recordGameResult(gameVariant, playerWon);
+        const winnerLabel = gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
+        const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
+        recordFinishedGame({
+          variant: gameVariant,
+          finishedAt: Date.now(),
+          playerWon,
+          summary: `${winnerLabel} · ${scoreSummary}`
+        });
+      }
+
       clearGameSession(gameVariant);
       const timer = setTimeout(() => onExit(), GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
@@ -462,6 +492,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     gameState.winner,
     gameState.players,
     gameState.gameScore,
+    gameState.variantState,
     gameVariant,
     isMultiplayer,
     multiplayerPlayerIndex,
@@ -580,7 +611,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     }
   };
 
-  const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
+  const showTeamLabels = gameVariant === 'sueca';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
   const heartsState = gameState.variantState?.hearts as
     | { waitingForPass?: boolean; humanPassIndices?: number[]; passDirection?: string }
@@ -592,6 +623,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     darkMode ? 'dark-mode' : '',
     festaSheetActive ? 'game-board--festa-sheet' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
+    gameVariant === 'hearts' ? 'game-board--hearts' : '',
     heartsPassActive ? 'game-board--hearts-pass' : ''
   ]
     .filter(Boolean)
@@ -688,8 +720,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         ) && (
         <RoundEndModal
           gameState={gameState}
+          variant={gameVariant}
           usTeam={usTeam}
           themTeam={themTeam}
+          localPlayerIndex={localPlayerIndex}
           onContinue={() => {
             if (gameAdapter) {
               gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
@@ -718,6 +752,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       {heartsPassActive && (
           <HeartsPassModal
             passDirection={heartsState?.passDirection || 'left'}
+            playerNames={gameState.players.map((p) => p.name)}
+            localPlayerIndex={localPlayerIndex}
             selectedCount={heartsState?.humanPassIndices?.length ?? 0}
             onConfirm={() => {
               if (gameAdapter) {
@@ -881,8 +917,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       {gameState.isGameOver && (
         <GameOverModal
           gameState={gameState}
+          variant={gameVariant}
           usTeam={usTeam}
           themTeam={themTeam}
+          localPlayerIndex={localPlayerIndex}
           dealingMethod={dealingMethod}
           getTeamName={getTeamName}
           onDealingMethodChange={() => {}}

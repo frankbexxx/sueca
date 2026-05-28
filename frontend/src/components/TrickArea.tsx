@@ -1,41 +1,34 @@
 import React from 'react';
 import { GameState, Card, GameVariant } from '../types/game';
+import { getTablePositionForPlayer } from '../utils/tableLayout';
 
 interface TrickAreaProps {
   gameState: GameState;
   variant: GameVariant;
+  localPlayerIndex: number;
   getCardImage: (card: Card) => string;
-  getTablePosition: (playerIndex: number) => string;
 }
 
-/**
- * Generic trick area component that displays current trick cards
- * Adapts layout based on game variant and number of cards
- */
 export const TrickArea: React.FC<TrickAreaProps> = ({
   gameState,
   variant,
-  getCardImage,
-  getTablePosition
+  localPlayerIndex,
+  getCardImage
 }) => {
-  // For now, use cross formation for all games
-  // This can be extended to support different layouts per game
   const renderCrossFormation = () => {
     if (gameState.currentTrick.length === 0) return null;
 
     return (
       <div className="trick-cards-cross">
         {gameState.currentTrick.map((card: Card, index: number) => {
-          // Calculate which player played this card (based on trick leader + order)
           const playerIndex = (gameState.trickLeader + index) % 4;
-          const position = getTablePosition(playerIndex);
-          // Highlight winning card if this is the last card and player won
+          const position = getTablePositionForPlayer(playerIndex, localPlayerIndex);
           const isWinning =
             gameState.lastTrickWinner === playerIndex &&
             index === gameState.currentTrick.length - 1;
           return (
             <div
-              key={index}
+              key={`${card.id}-${index}`}
               className={`trick-card-cross trick-from-${position} ${isWinning ? 'winning' : ''}`}
             >
               <img
@@ -54,7 +47,7 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
   };
 
   return (
-    <div className="trick-area-center">
+    <div className={`trick-area-center${variant === 'hearts' ? ' trick-area-center--hearts' : ''}`}>
       {renderCrossFormation()}
     </div>
   );

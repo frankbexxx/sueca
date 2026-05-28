@@ -24,6 +24,23 @@ export function getHeartsRulesHint(locale: 'pt' | 'en'): HeartsRulesHint {
   };
 }
 
+export type PassDirection = 'left' | 'right' | 'across' | 'hold';
+
+export function passTargetIndex(from: number, direction: PassDirection): number {
+  if (direction === 'hold') return from;
+  if (direction === 'left') return (from + 1) % 4;
+  if (direction === 'right') return (from + 3) % 4;
+  return (from + 2) % 4;
+}
+
+/** Player index who passes cards to `to` for this direction. */
+export function passSourceIndex(to: number, direction: PassDirection): number {
+  if (direction === 'hold') return to;
+  if (direction === 'left') return (to + 3) % 4;
+  if (direction === 'right') return (to + 1) % 4;
+  return (to + 2) % 4;
+}
+
 export function passDirectionLabel(direction: string, locale: 'pt' | 'en'): string {
   const mapPt: Record<string, string> = {
     left: 'esquerda',

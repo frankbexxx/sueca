@@ -1,16 +1,24 @@
 import React from 'react';
-import { GameState } from '../../types/game';
+import { GameState, GameVariant } from '../../types/game';
+import { useLanguage } from '../../i18n/useLanguage';
+import {
+  getPlayerSeatTeamClass,
+  shouldShowTeamLabel
+} from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
-import { getTablePosition, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
+import { getTablePositionForPlayer, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
+import { Card } from '../../types/game';
 import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
 
 export interface PlayerSeatsProps {
   gameState: GameState;
+  variant?: GameVariant;
   localPlayerIndex: number;
   usTeam: 1 | 2;
   showTeamLabels?: boolean;
   getTeamName: (team: 1 | 2) => string;
+  getCardImage?: (card: Card) => string;
   showAuctionBadges?: boolean;
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
@@ -18,15 +26,34 @@ export interface PlayerSeatsProps {
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   gameState,
+  variant,
   localPlayerIndex,
   usTeam,
   showTeamLabels = true,
   getTeamName,
+  getCardImage,
   showAuctionBadges = false,
   auctionActions,
   auctionLocale = 'pt'
 }) => {
+  const { t } = useLanguage();
   const useMobileLayout = isMobileDevice();
+  const showTeamLabel = shouldShowTeamLabel(variant, showTeamLabels);
+  const heartsRoundPoints =
+    variant === 'hearts'
+      ? ((gameState.variantState?.hearts as { roundPoints?: number[] } | undefined)
+          ?.roundPoints ?? [0, 0, 0, 0])
+      : null;
+
+  const renderSecondaryLine = (playerIndex: number) => {
+    if (heartsRoundPoints) {
+      return t.gameBoard.roundPointsShort(heartsRoundPoints[playerIndex] ?? 0);
+    }
+    if (showTeamLabel) {
+      return getTeamName(gameState.players[playerIndex].team);
+    }
+    return null;
+  };
 
   const renderAuctionBadge = (playerIndex: number) => {
     if (!showAuctionBadges || !auctionActions) return null;
@@ -40,10 +67,30 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   return (
     <div className="seats-layer">
       {gameState.players.map((player, index) => {
-        const position = getTablePosition(index);
+        const position = getTablePositionForPlayer(index, localPlayerIndex);
         const isDealer = index === gameState.dealerIndex;
         const isCurrentPlayer = index === gameState.currentPlayerIndex;
         const isHuman = index === localPlayerIndex;
+
+        const trickCardIndex = gameState.currentTrick.findIndex(
+          (_, trickIdx) => (gameState.trickLeader + trickIdx) % 4 === index
+        );
+        const trickCard =
+          trickCardIndex >= 0 ? gameState.currentTrick[trickCardIndex] : null;
+
+        const renderPlayedCard = () => {
+          if (!trickCard || !getCardImage || position !== 'south') return null;
+          return (
+            <div className="player-trick-card">
+              <img
+                src={getCardImage(trickCard)}
+                alt={`${trickCard.rank} of ${trickCard.suit}`}
+                className="trick-card-img"
+                draggable={false}
+              />
+            </div>
+          );
+        };
 
         const renderAICards = () => {
           if (isHuman) return null;
@@ -63,7 +110,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         return (
           <div
             key={player.id}
-            className={`player-seat player-${position} ${player.team === usTeam ? 'team-us' : 'team-them'}`}
+            className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}`}
           >
             <div className={`player-info ${useMobileLayout ? 'mobile-layout' : ''}`}>
               {useMobileLayout ? (
@@ -73,7 +120,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                     {isDealer && <span className="dealer-badge">🃏</span>}
                   </div>
                   <div className="player-name-line-2">
-                    {showTeamLabels && getTeamName(player.team)}
+                    {renderSecondaryLine(index)}
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                     {renderAuctionBadge(index)}
                   </div>
@@ -85,11 +132,12 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                     {isDealer && <span className="dealer-badge">🃏</span>}
                     {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                   </h3>
-                  <div className="team-badge">{showTeamLabels ? getTeamName(player.team) : null}</div>
+                  <div className="team-badge">{renderSecondaryLine(index)}</div>
                   {renderAuctionBadge(index)}
                 </>
               )}
             </div>
+            {renderPlayedCard()}
             {position === 'south' ? null : renderAICards()}
           </div>
         );

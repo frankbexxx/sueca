@@ -3,7 +3,6 @@ import { Card, GameState, GameVariant } from '../../types/game';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { TrickArea } from '../TrickArea';
 import { PlayerSeats } from './PlayerSeats';
-import { getTablePosition } from '../../utils/tableLayout';
 
 export interface TableSurfaceProps {
   gameState: GameState;
@@ -39,15 +38,17 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
         <TrickArea
           gameState={gameState}
           variant={variant}
+          localPlayerIndex={localPlayerIndex}
           getCardImage={getCardImage}
-          getTablePosition={getTablePosition}
         />
         <PlayerSeats
           gameState={gameState}
+          variant={variant}
           localPlayerIndex={localPlayerIndex}
           usTeam={usTeam}
           showTeamLabels={showTeamLabels}
           getTeamName={getTeamName}
+          getCardImage={getCardImage}
           showAuctionBadges={showAuctionBadges}
           auctionActions={auctionActions}
           auctionLocale={auctionLocale}

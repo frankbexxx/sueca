@@ -114,7 +114,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
               {gameState.players.map((player, index) => (
                 <div key={player.id} className="game-status-panel__score-row">
                   <span className="game-status-panel__score-item">
-                    P{index + 1}: {scores[index] ?? 0}
+                    {variant === 'hearts' ? player.name : `P${index + 1}`}: {scores[index] ?? 0}
                   </span>
                   {showPenaltyCards && penaltyCardsByPlayer[index]?.length > 0 && (
                     <div className="game-status-panel__penalty-cards">
