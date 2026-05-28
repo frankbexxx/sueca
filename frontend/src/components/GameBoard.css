@@ -61,16 +61,16 @@
   pointer-events: none;
 }
 
-.game-board--hearts-pass .player-seat .player-info,
-.game-board--hearts-pass .player-seat .player-info.mobile-layout {
+.game-board--hearts-pass .player-info,
+.game-board--hearts-pass .player-info.mobile-layout {
   min-width: 56px;
   max-width: 64px;
   width: 64px;
   padding: 2px 4px;
 }
 
-.game-board--hearts-pass .player-seat .player-name,
-.game-board--hearts-pass .player-seat .player-name-line-1 {
+.game-board--hearts-pass .player-name,
+.game-board--hearts-pass .player-name-line-1 {
   font-size: 0.58rem;
   line-height: 1.1;
   font-weight: 600;
@@ -97,9 +97,6 @@
   left: -18px;
 }
 
-.game-board--hearts-pass .game-status-panel__contract-rules {
-  display: none;
-}
 
 .player-seat.player-seat--bidding .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);

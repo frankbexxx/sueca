@@ -638,7 +638,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     }
   };
 
-  const showTeamLabels = gameVariant === 'sueca';
+  const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
   const heartsState = gameVariant === 'hearts' ? getHeartsState(gameState) : undefined;
   const heartsPassActive = gameVariant === 'hearts' && Boolean(heartsState?.waitingForPass);
