@@ -537,11 +537,44 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   };
 
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
+  const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
+  const heartsState = gameState.variantState?.hearts as
+    | { waitingForPass?: boolean; humanPassIndices?: number[]; passDirection?: string }
+    | undefined;
+  const heartsPassActive = gameVariant === 'hearts' && Boolean(heartsState?.waitingForPass);
+
+  const boardClassName = [
+    'game-board',
+    darkMode ? 'dark-mode' : '',
+    festaSheetActive ? 'game-board--festa-sheet' : '',
+    isTeamTableLayout ? 'game-board--team-table' : '',
+    heartsPassActive ? 'game-board--hearts-pass' : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const tableSurface = (
+    <TableSurface
+      gameState={gameState}
+      variant={gameVariant}
+      localPlayerIndex={localPlayerIndex}
+      usTeam={usTeam}
+      showGridOverlay={showGridOverlay}
+      getCardImage={getCardImage}
+      getTeamName={getTeamName}
+      showTeamLabels={showTeamLabels}
+      showAuctionBadges={
+        gameVariant === 'king' &&
+        resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+        kingPtState?.festaPhase === 'auction'
+      }
+      auctionActions={kingPtState?.auctionPlayerActions}
+      auctionLocale={language === 'pt' ? 'pt' : 'en'}
+    />
+  );
 
   return (
-    <div
-      className={`game-board ${darkMode ? 'dark-mode' : ''}${festaSheetActive ? ' game-board--festa-sheet' : ''}`}
-    >
+    <div className={boardClassName}>
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}
@@ -567,23 +600,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         </div>
       )}
 
-      <TableSurface
-        gameState={gameState}
-        variant={gameVariant}
-        localPlayerIndex={localPlayerIndex}
-        usTeam={usTeam}
-        showGridOverlay={showGridOverlay}
-        getCardImage={getCardImage}
-        getTeamName={getTeamName}
-        showTeamLabels={showTeamLabels}
-        showAuctionBadges={
-          gameVariant === 'king' &&
-          resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
-          kingPtState?.festaPhase === 'auction'
-        }
-        auctionActions={kingPtState?.auctionPlayerActions}
-        auctionLocale={language === 'pt' ? 'pt' : 'en'}
-      />
+      {isTeamTableLayout ? <div className="game-table-zone">{tableSurface}</div> : tableSurface}
 
       {/* Human player's hand (South position) - displayed below table */}
       {gameAdapter && gameState.players[localPlayerIndex] && (
@@ -592,10 +609,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           variant={gameVariant}
           localPlayerIndex={localPlayerIndex}
           selectedCard={selectedCard}
-          readOnly={festaSheetActive}
-          canPlayCard={(cardIndex: number) =>
-            gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex)
-          }
+          readOnly={festaSheetActive && !heartsPassActive}
+          selectedPassIndices={heartsPassActive ? heartsState?.humanPassIndices : undefined}
+          canPlayCard={(cardIndex: number) => {
+            if (heartsPassActive) return true;
+            return gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex);
+          }}
           onCardClick={handleCardClick}
           getCardImage={getCardImage}
         />
@@ -650,24 +669,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           />
         )}
 
-      {gameVariant === 'hearts' &&
-        (gameState.variantState?.hearts as { waitingForPass?: boolean; passDirection?: string; humanPassIndices?: number[] } | undefined)
-          ?.waitingForPass && (
+      {heartsPassActive && (
           <HeartsPassModal
-            gameState={gameState}
-            localPlayerIndex={localPlayerIndex}
-            passDirection={
-              (gameState.variantState?.hearts as { passDirection?: string }).passDirection || 'left'
-            }
-            selectedIndices={
-              (gameState.variantState?.hearts as { humanPassIndices?: number[] }).humanPassIndices || []
-            }
-            onToggleCard={(index) => {
-              if (gameAdapter) {
-                (gameAdapter as HeartsGame).togglePassCard(index, localPlayerIndex);
-                setGameState(gameAdapter.getCurrentState());
-              }
-            }}
+            passDirection={heartsState?.passDirection || 'left'}
+            selectedCount={heartsState?.humanPassIndices?.length ?? 0}
             onConfirm={() => {
               if (gameAdapter) {
                 (gameAdapter as HeartsGame).confirmPass(localPlayerIndex);

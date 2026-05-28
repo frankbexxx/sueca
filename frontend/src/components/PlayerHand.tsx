@@ -12,6 +12,7 @@ interface PlayerHandProps {
   onCardClick: (cardIndex: number) => void;
   getCardImage: (card: Card) => string;
   readOnly?: boolean;
+  selectedPassIndices?: number[];
 }
 
 /**
@@ -26,7 +27,8 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   canPlayCard,
   onCardClick,
   getCardImage,
-  readOnly = false
+  readOnly = false,
+  selectedPassIndices
 }) => {
   const player = gameState.players[localPlayerIndex];
   const cardCount = player?.hand.length ?? 0;
@@ -39,6 +41,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
         {player.hand.map((card: Card, cardIndex: number) => {
           const isPlayable = !readOnly && canPlayCard(cardIndex);
           const isSelected = selectedCard === cardIndex;
+          const isPassSelected = selectedPassIndices?.includes(cardIndex) ?? false;
 
           let fixedTransform: string | undefined;
           if (!useScrollLayout) {
@@ -52,7 +55,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               key={card.id}
               src={getCardImage(card)}
               alt={`${card.rank} of ${card.suit}`}
-              className={`card-hand ${isSelected ? 'selected' : ''} ${!isPlayable ? 'not-playable' : ''}`}
+              className={`card-hand ${isSelected ? 'selected' : ''} ${isPassSelected ? 'card-hand--pass-selected' : ''} ${!isPlayable && !isPassSelected ? 'not-playable' : ''}`}
               style={{
                 transform: fixedTransform,
                 zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1

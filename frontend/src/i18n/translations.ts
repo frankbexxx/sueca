@@ -81,6 +81,13 @@ export interface Translations {
     aiLocal: string;
   };
 
+  heartsPass: {
+    title: string;
+    passTo: string;
+    selectOnHand: string;
+    confirm: (count: number) => string;
+  };
+
   menu: {
     selectGame: string;
   };
@@ -354,6 +361,12 @@ export const translations: Record<Language, Translations> = {
       aiExternal: 'AI Externa (Render)',
       aiLocal: 'AI Local (fallback)'
     },
+    heartsPass: {
+      title: 'Copas — passar 3 cartas',
+      passTo: 'Passar para:',
+      selectOnHand: 'Selecciona 3 cartas na tua mão (cartas coloridas).',
+      confirm: (count) => `Passar cartas (${count}/3)`
+    },
     modals: {
       roundComplete: 'Jogo {round} Completo!',
       gamePoints: 'Pontos do Jogo:',
@@ -551,6 +564,12 @@ export const translations: Record<Language, Translations> = {
       autoPauseHint: 'When on, tricks no longer advance automatically',
       aiExternal: 'External AI (Render)',
       aiLocal: 'Local AI (fallback)'
+    },
+    heartsPass: {
+      title: 'Hearts — pass 3 cards',
+      passTo: 'Pass to:',
+      selectOnHand: 'Select 3 cards from your hand below.',
+      confirm: (count) => `Pass cards (${count}/3)`
     },
     modals: {
       roundComplete: 'Game {round} Complete!',

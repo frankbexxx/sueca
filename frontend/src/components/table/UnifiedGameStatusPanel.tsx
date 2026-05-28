@@ -9,6 +9,7 @@ import {
 } from '../../models/games/king/kingContracts';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { getKingRulesHint } from '../KingRulesHelper';
+import { getHeartsRulesHint } from '../HeartsRulesHelper';
 import { KingGameHistoryPanel } from '../KingGameHistoryPanel';
 import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
@@ -61,6 +62,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
 
   let contractLine = '';
   let ruleLine = '';
+  let heartsRuleLines: string[] = [];
   let kingContract: KingNegativeContract | null = null;
   let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
   const kingPreset = variant === 'king' ? resolvePresetId('king', rulesPresetId) : null;
@@ -92,8 +94,9 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       ruleLine = `${gameState.round}/10 · ${simplified?.handType ?? '…'}`;
     }
   } else if (variant === 'hearts') {
-    contractLine = isPt ? 'Copas' : 'Hearts';
-    ruleLine = isPt ? 'Individual · evita pontos' : 'Individual · avoid points';
+    const heartsHint = getHeartsRulesHint(locale);
+    contractLine = heartsHint.title;
+    heartsRuleLines = heartsHint.lines;
   }
 
   const showPenaltyCards =
@@ -138,11 +141,21 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
             <div className="game-status-panel__label">{contractHeader}</div>
             <div className="game-status-panel__contract">
               <span className="game-status-panel__contract-title">{contractLine}</span>
-              {ruleLine && (
-                <>
-                  <span className="game-status-panel__contract-sep"> · </span>
-                  <span className="game-status-panel__contract-hint">{ruleLine}</span>
-                </>
+              {variant === 'hearts' && heartsRuleLines.length > 0 ? (
+                <div className="game-status-panel__contract-rules">
+                  {heartsRuleLines.map((line) => (
+                    <div key={line} className="game-status-panel__contract-rule-line">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                ruleLine && (
+                  <>
+                    <span className="game-status-panel__contract-sep"> · </span>
+                    <span className="game-status-panel__contract-hint">{ruleLine}</span>
+                  </>
+                )
               )}
             </div>
             {showKingPtExtras && kingPtState?.nullAuctionStartNote && (

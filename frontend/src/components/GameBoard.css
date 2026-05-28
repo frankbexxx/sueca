@@ -24,6 +24,42 @@
   color: #e0e0e0;
 }
 
+.game-board--team-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-board--team-table .game-table-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+.game-board--team-table .top-strip--teams {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  gap: 6px;
+}
+
+.game-board--team-table .table-layout {
+  margin: 4px auto 10px;
+  padding: 8px;
+}
+
+.game-board--hearts-pass .player-hand-bar {
+  position: relative;
+  z-index: 2100;
+  pointer-events: auto;
+}
+
+.game-board--hearts-pass .game-table-zone,
+.game-board--hearts-pass .table-layout {
+  pointer-events: none;
+}
+
 .top-strip {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -160,6 +196,19 @@
 .game-status-panel__contract-hint {
   opacity: 0.88;
   font-size: 0.58rem;
+}
+
+.game-status-panel__contract-rules {
+  margin-top: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.game-status-panel__contract-rule-line {
+  font-size: 0.56rem;
+  line-height: 1.25;
+  opacity: 0.9;
 }
 
 .game-status-panel__col--contract .king-null-start-note {
@@ -779,6 +828,14 @@
   z-index: 1000;
 }
 
+.card-hand--pass-selected {
+  outline: 3px solid #6fcf97;
+  outline-offset: 2px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.48);
+  transform: translateY(-8px);
+  z-index: 1000;
+}
+
 .card-hand.not-playable {
   filter: grayscale(0.4);
   opacity: 0.8;
@@ -870,6 +927,10 @@
     --card-h: 83px;
     --hand-row-h: 90px;
     --button-min-w: 140px;
+  }
+  .game-board--team-table .table-layout {
+    margin: 2px auto 8px;
+    padding: 6px;
   }
   .top-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
