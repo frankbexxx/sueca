@@ -5,14 +5,21 @@ import {
   setActiveTheme
 } from '../../services/billingService';
 import { useLanguage } from '../../i18n/useLanguage';
+import { ShellHeader } from '../navigation/ShellHeader';
 import '../../styles/shell-screens.css';
 import './ThemesScreen.css';
 
 interface ThemesScreenProps {
+  showBack?: boolean;
+  onBack?: () => void;
   onThemeChange?: (theme: ThemeId) => void;
 }
 
-export const ThemesScreen: React.FC<ThemesScreenProps> = ({ onThemeChange }) => {
+export const ThemesScreen: React.FC<ThemesScreenProps> = ({
+  showBack = false,
+  onBack,
+  onThemeChange
+}) => {
   const { t, language } = useLanguage();
   const [active, setActive] = useState<ThemeId>(() => getActiveTheme());
 
@@ -30,10 +37,12 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({ onThemeChange }) => 
 
   return (
     <div className="shell-screen screen-themes">
-      <header className="shell-screen-header">
-        <h1 className="screen-title">{t.themesScreen.title}</h1>
-        <p className="screen-subtitle">{t.themesScreen.subtitle}</p>
-      </header>
+      <ShellHeader
+        title={t.themesScreen.title}
+        subtitle={t.themesScreen.subtitle}
+        showBack={showBack}
+        onBack={onBack}
+      />
 
       <ul className="shell-list">
         {themes.map((theme) => (

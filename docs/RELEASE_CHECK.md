@@ -47,8 +47,8 @@ vercel --prod
 
 > **Gate:** complete [plan/PRODUCT_ESSENTIALS.md](plan/PRODUCT_ESSENTIALS.md) must-have checklist first.
 
-- [ ] Bottom nav 7 tabs (Início · Estatísticas · Histórico · Temas · Regras · Configurações · Perfil)
-- [ ] Histórico: Continuar (4 variants) + fixar + últimas 3 terminadas
+- [ ] Bottom nav 7 tabs + back stack (Início raiz → submenus → Voltar)
+- [ ] Voltar: Config → Mão → Voltar ×2 → Início; Regras → jogo → Voltar; browser/Android back
 - [ ] Perfil: Sair da aplicação → landing + refresh
 - [ ] Configurações: som, idioma, pausa auto, ordenar mão, trunfo Sueca
 - [ ] Regras + testes verdes (Sueca, Hearts, Spades, King)

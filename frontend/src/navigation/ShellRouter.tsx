@@ -1,5 +1,10 @@
 import React from 'react';
-import { AppTab, HomeSubScreen, HOME_LIST } from '../types/navigation';
+import {
+  AppTab,
+  homeSetup,
+  HOME_LIST,
+  ShellRoute
+} from '../types/navigation';
 import { GameConfig } from '../types/gameConfig';
 import { GameVariant } from '../types/game';
 import { SavedGameSession } from '../services/gameSessionStorage';
@@ -7,16 +12,24 @@ import { ThemeId } from '../services/billingService';
 import { HomeDashboard } from '../components/screens/HomeDashboard';
 import { GameSetupScreen } from '../components/screens/GameSetupScreen';
 import { StatsScreen } from '../components/screens/StatsScreen';
-import { HistoryScreen } from '../components/screens/HistoryScreen';
+import { HistoryHubScreen, HistoryListScreen } from '../components/screens/HistoryScreens';
 import { ThemesScreen } from '../components/screens/ThemesScreen';
-import { RulesHub } from '../components/screens/RulesHub';
-import { SettingsScreen } from '../components/screens/SettingsScreen';
-import { ProfileScreen } from '../components/screens/ProfileScreen';
+import { RulesHubScreen } from '../components/screens/RulesHubScreen';
+import { RulesDetailScreen } from '../components/screens/RulesDetailScreen';
+import {
+  SettingsGeneralScreen,
+  SettingsHandScreen,
+  SettingsHubScreen
+} from '../components/screens/SettingsScreens';
+import { ProfileHubScreen } from '../components/screens/ProfileHubScreen';
+import { ProfileNameScreen } from '../components/screens/ProfileNameScreen';
+import { ProfileCreditsScreen } from '../components/screens/ProfileCreditsScreen';
 
 export interface ShellRouterProps {
-  activeTab: AppTab;
-  homeSubScreen: HomeSubScreen;
-  onHomeSubScreenChange: (sub: HomeSubScreen) => void;
+  route: ShellRoute;
+  canGoBack: boolean;
+  onBack: () => void;
+  onPush: (route: ShellRoute) => void;
   darkMode: boolean;
   onDarkModeChange: (value: boolean) => void;
   onThemeChange: (theme: ThemeId) => void;
@@ -26,9 +39,10 @@ export interface ShellRouterProps {
 }
 
 export const ShellRouter: React.FC<ShellRouterProps> = ({
-  activeTab,
-  homeSubScreen,
-  onHomeSubScreenChange,
+  route,
+  canGoBack,
+  onBack,
+  onPush,
   darkMode,
   onDarkModeChange,
   onThemeChange,
@@ -36,14 +50,19 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
   onContinue,
   onPlayVariant
 }) => {
-  if (activeTab === 'home') {
-    if (homeSubScreen.type === 'setup') {
+  const pushTab = (tab: AppTab, screen: ShellRoute['screen']) => {
+    onPush({ tab, screen } as ShellRoute);
+  };
+
+  if (route.tab === 'home') {
+    if (route.screen.type === 'setup') {
       return (
         <GameSetupScreen
-          key={homeSubScreen.variant}
-          initialVariant={homeSubScreen.variant}
+          key={route.screen.variant}
+          initialVariant={route.screen.variant}
           lockVariant
-          onBack={() => onHomeSubScreenChange(HOME_LIST)}
+          showBack={canGoBack}
+          onBack={onBack}
           onStartGame={(config) => onStartGame(config)}
         />
       );
@@ -53,25 +72,105 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
         onContinue={(variant) => onContinue(variant)}
         onPlayVariant={onPlayVariant}
         onConfigureVariant={(variant) =>
-          onHomeSubScreenChange({ type: 'setup', variant })
+          onPush({ tab: 'home', screen: homeSetup(variant) })
         }
       />
     );
   }
 
-  if (activeTab === 'stats') return <StatsScreen />;
-  if (activeTab === 'history') {
+  if (route.tab === 'stats') {
+    return <StatsScreen showBack={canGoBack} onBack={onBack} />;
+  }
+
+  if (route.tab === 'history') {
+    if (route.screen === 'hub') {
+      return (
+        <HistoryHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenSection={(section) => pushTab('history', section)}
+        />
+      );
+    }
     return (
-      <HistoryScreen
-        onContinue={(variant, session) => onContinue(variant, session)}
+      <HistoryListScreen
+        section={route.screen}
+        showBack={canGoBack}
+        onBack={onBack}
+        onContinue={onContinue}
       />
     );
   }
-  if (activeTab === 'themes') return <ThemesScreen onThemeChange={onThemeChange} />;
-  if (activeTab === 'rules') return <RulesHub />;
-  if (activeTab === 'settings') {
-    return <SettingsScreen darkMode={darkMode} onDarkModeChange={onDarkModeChange} />;
+
+  if (route.tab === 'themes') {
+    return (
+      <ThemesScreen showBack={canGoBack} onBack={onBack} onThemeChange={onThemeChange} />
+    );
   }
-  if (activeTab === 'profile') return <ProfileScreen darkMode={darkMode} />;
+
+  if (route.tab === 'rules') {
+    if (route.screen === 'hub') {
+      return (
+        <RulesHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenGame={(variant) =>
+            onPush({ tab: 'rules', screen: { type: 'detail', variant } })
+          }
+        />
+      );
+    }
+    return (
+      <RulesDetailScreen
+        variant={route.screen.variant}
+        showBack={canGoBack}
+        onBack={onBack}
+      />
+    );
+  }
+
+  if (route.tab === 'settings') {
+    if (route.screen === 'hub') {
+      return (
+        <SettingsHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenSection={(section) => pushTab('settings', section)}
+        />
+      );
+    }
+    if (route.screen === 'general') {
+      return (
+        <SettingsGeneralScreen
+          darkMode={darkMode}
+          onDarkModeChange={onDarkModeChange}
+          showBack={canGoBack}
+          onBack={onBack}
+        />
+      );
+    }
+    return <SettingsHandScreen showBack={canGoBack} onBack={onBack} />;
+  }
+
+  if (route.tab === 'profile') {
+    if (route.screen === 'hub') {
+      return (
+        <ProfileHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenSection={(section) => pushTab('profile', section)}
+        />
+      );
+    }
+    if (route.screen === 'name') {
+      return <ProfileNameScreen showBack={canGoBack} onBack={onBack} />;
+    }
+    return (
+      <ProfileCreditsScreen darkMode={darkMode} showBack={canGoBack} onBack={onBack} />
+    );
+  }
+
   return null;
 };
+
+export { HOME_LIST };

@@ -2,10 +2,16 @@ import React from 'react';
 import { useLanguage } from '../../i18n/useLanguage';
 import { getAvailableGames } from '../../constants/gameMetadata';
 import { loadLocalStats, formatRelativeTime, getWinRate } from '../../services/gameSessionStorage';
+import { ShellHeader } from '../navigation/ShellHeader';
 import './HomeDashboard.css';
 import '../../styles/shell-screens.css';
 
-export const StatsScreen: React.FC = () => {
+interface StatsScreenProps {
+  showBack?: boolean;
+  onBack?: () => void;
+}
+
+export const StatsScreen: React.FC<StatsScreenProps> = ({ showBack = false, onBack }) => {
   const { t, language } = useLanguage();
   const stats = loadLocalStats();
   const games = getAvailableGames();
@@ -13,10 +19,12 @@ export const StatsScreen: React.FC = () => {
 
   return (
     <div className="shell-screen screen-stats">
-      <header className="shell-screen-header">
-        <h1 className="screen-title">{t.statsScreen.title}</h1>
-        <p className="screen-subtitle">{t.statsScreen.subtitle}</p>
-      </header>
+      <ShellHeader
+        title={t.statsScreen.title}
+        subtitle={t.statsScreen.subtitle}
+        showBack={showBack}
+        onBack={onBack}
+      />
 
       <section className="shell-panel">
         <div className="dashboard-stats-grid">

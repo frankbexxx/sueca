@@ -8,11 +8,13 @@ import { MULTIPLAYER_ENABLED } from '../../config/features';
 import { saveLastConfig } from '../../services/gameSessionStorage';
 import { getAvailableGames } from '../../constants/gameMetadata';
 import '../screens/PlaySetup.css';
+import { ShellHeader } from '../navigation/ShellHeader';
 
 interface GameSetupScreenProps {
   onStartGame: (config: GameConfig) => void;
   initialVariant?: GameVariant | null;
   lockVariant?: boolean;
+  showBack?: boolean;
   onBack?: () => void;
 }
 
@@ -20,6 +22,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
   onStartGame,
   initialVariant,
   lockVariant = false,
+  showBack = false,
   onBack
 }) => {
   const { t } = useLanguage();
@@ -42,19 +45,14 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
 
   return (
     <div className="screen-play shell-screen">
-      <header className="shell-screen-header shell-screen-header--row">
-        {onBack && (
-          <button type="button" className="sueca-btn sueca-btn--ghost shell-back-btn" onClick={onBack}>
-            ← {t.shell.back}
-          </button>
-        )}
-        <div>
-          <h1 className="screen-title">{lockVariant ? gameName : t.playSetup.title}</h1>
-          <p className="screen-subtitle">
-            {lockVariant ? t.playSetup.subtitleVariant(gameName) : t.playSetup.subtitle}
-          </p>
-        </div>
-      </header>
+      <ShellHeader
+        title={lockVariant ? gameName : t.playSetup.title}
+        subtitle={
+          lockVariant ? t.playSetup.subtitleVariant(gameName) : t.playSetup.subtitle
+        }
+        showBack={showBack}
+        onBack={onBack}
+      />
 
       <div className="play-setup-card shell-panel">
         {!lockVariant && (

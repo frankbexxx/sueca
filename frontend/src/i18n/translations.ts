@@ -118,11 +118,19 @@ export interface Translations {
   settingsScreen: {
     title: string;
     subtitle: string;
+    hubGeneral: string;
+    hubGeneralHint: string;
+    hubHand: string;
+    hubHandHint: string;
   };
 
   profileScreen: {
     title: string;
     subtitle: string;
+    hubName: string;
+    hubNameHint: string;
+    hubCreditsHint: string;
+    feedback: string;
     exitApp: string;
     exitConfirm: string;
   };
@@ -139,6 +147,9 @@ export interface Translations {
     pinCopy: string;
     pinnedAt: (time: string) => string;
     unpin: string;
+    hubContinueHint: (count: number) => string;
+    hubPinnedHint: (count: number) => string;
+    hubFinishedHint: (count: number) => string;
   };
 
   themesScreen: {
@@ -190,6 +201,7 @@ export interface Translations {
     title: string;
     subtitle: string;
     openRules: string;
+    detailTitle: (game: string) => string;
   };
 
   moreScreen: {
@@ -327,11 +339,19 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Configurações',
-      subtitle: 'Som, idioma, mão e pausa automática'
+      subtitle: 'Som, idioma, mão e pausa automática',
+      hubGeneral: 'Geral',
+      hubGeneralHint: 'Som, modo escuro, idioma e pausa',
+      hubHand: 'Mão',
+      hubHandHint: 'Ordenar cartas, naipes e trunfo Sueca'
     },
     profileScreen: {
       title: 'Perfil',
       subtitle: 'Nome local, créditos e sair da app',
+      hubName: 'Nome',
+      hubNameHint: 'Editar o teu nome local',
+      hubCreditsHint: 'Autores, assets e agradecimentos',
+      feedback: 'Feedback / reportar bug',
       exitApp: 'Sair da aplicação',
       exitConfirm: 'Voltar ao ecrã inicial? A app será recarregada.'
     },
@@ -346,7 +366,13 @@ export const translations: Record<Language, Translations> = {
       emptyFinished: 'Ainda não terminaste partidas.',
       pinCopy: 'Fixar partida',
       pinnedAt: (time) => `fixada ${time}`,
-      unpin: 'Desfixar'
+      unpin: 'Desfixar',
+      hubContinueHint: (count) =>
+        count === 0 ? 'Nenhuma partida guardada' : `${count} partida(s) guardada(s)`,
+      hubPinnedHint: (count) =>
+        count === 0 ? 'Nenhuma fixada' : `${count} partida(s) fixada(s)`,
+      hubFinishedHint: (count) =>
+        count === 0 ? 'Nenhuma terminada' : `${count} última(s) terminada(s)`
     },
     themesScreen: {
       title: 'Temas',
@@ -393,7 +419,8 @@ export const translations: Record<Language, Translations> = {
     rulesHub: {
       title: 'Regras',
       subtitle: 'Consulta as regras de cada jogo',
-      openRules: 'Ver regras'
+      openRules: 'Ver regras',
+      detailTitle: (game) => `Regras — ${game}`
     },
     moreScreen: {
       title: 'Mais',
@@ -580,11 +607,19 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Settings',
-      subtitle: 'Sound, language, hand sorting and auto-pause'
+      subtitle: 'Sound, language, hand sorting and auto-pause',
+      hubGeneral: 'General',
+      hubGeneralHint: 'Sound, dark mode, language and pause',
+      hubHand: 'Hand',
+      hubHandHint: 'Sort cards, suits and Sueca trump'
     },
     profileScreen: {
       title: 'Profile',
       subtitle: 'Local name, credits and exit app',
+      hubName: 'Name',
+      hubNameHint: 'Edit your local name',
+      hubCreditsHint: 'Authors, assets and thanks',
+      feedback: 'Feedback / report a bug',
       exitApp: 'Exit app',
       exitConfirm: 'Return to the start screen? The app will reload.'
     },
@@ -599,7 +634,13 @@ export const translations: Record<Language, Translations> = {
       emptyFinished: 'No finished games yet.',
       pinCopy: 'Pin game',
       pinnedAt: (time) => `pinned ${time}`,
-      unpin: 'Unpin'
+      unpin: 'Unpin',
+      hubContinueHint: (count) =>
+        count === 0 ? 'No saved games' : `${count} saved game(s)`,
+      hubPinnedHint: (count) =>
+        count === 0 ? 'None pinned' : `${count} pinned game(s)`,
+      hubFinishedHint: (count) =>
+        count === 0 ? 'None finished' : `${count} last finished`
     },
     themesScreen: {
       title: 'Themes',
@@ -646,7 +687,8 @@ export const translations: Record<Language, Translations> = {
     rulesHub: {
       title: 'Rules',
       subtitle: 'Browse rules for each game',
-      openRules: 'View rules'
+      openRules: 'View rules',
+      detailTitle: (game) => `Rules — ${game}`
     },
     moreScreen: {
       title: 'More',

@@ -1,0 +1,76 @@
+import React from 'react';
+import { useLanguage } from '../../i18n/useLanguage';
+import { ShellHeader } from '../navigation/ShellHeader';
+import '../../styles/shell-screens.css';
+import '../CreditsModal.css';
+
+interface ProfileCreditsScreenProps {
+  darkMode: boolean;
+  showBack: boolean;
+  onBack: () => void;
+}
+
+export const ProfileCreditsScreen: React.FC<ProfileCreditsScreenProps> = ({
+  darkMode,
+  showBack,
+  onBack
+}) => {
+  const { t } = useLanguage();
+
+  return (
+    <div className={`shell-screen screen-profile-credits ${darkMode ? 'dark-mode' : ''}`}>
+      <ShellHeader title={t.moreScreen.credits} showBack={showBack} onBack={onBack} />
+      <div className="credits-inline shell-panel">
+        <main className="credits-main">
+          <div className="credits-title-block">
+            <h2 className="credits-title">{t.credits.title}</h2>
+          </div>
+          <div className="credits-media-and-text">
+            <div className="credits-media">
+              <div className="credits-media-frame">
+                <img
+                  src={`${process.env.PUBLIC_URL || ''}/image/Buga Bark Sueca 2.gif`}
+                  alt={t.credits.imageAlt}
+                  className="credits-cover-image"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const placeholder = target.nextElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+                <div className="credits-media-placeholder" style={{ display: 'none' }}>
+                  <span className="credits-media-label">{t.credits.imagePlaceholderLabel}</span>
+                  <span className="credits-media-format">{t.credits.imagePlaceholderFormat}</span>
+                </div>
+              </div>
+            </div>
+            <div className="credits-description">
+              <p className="credits-intro">{t.credits.subtitle}</p>
+              <p className="credits-description-text">{t.credits.description}</p>
+              <div className="credits-meta-list">
+                <div className="credits-meta-item">{t.credits.metaPlayers}</div>
+                <div className="credits-meta-item">{t.credits.metaTeams}</div>
+                <div className="credits-meta-item">{t.credits.metaCards}</div>
+                <div className="credits-meta-item">{t.credits.metaGames}</div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <footer className="credits-footer">
+          <div className="credits-acknowledgments">
+            <h3 className="credits-ack-title">{t.credits.acknowledgmentsTitle}</h3>
+            <p className="credits-ack-text">{t.credits.acknowledgmentsText}</p>
+          </div>
+          <div className="credits-assets">
+            <h3 className="credits-ack-title">{t.credits.assetsTitle}</h3>
+            <p className="credits-ack-text">{t.credits.assetsCards}</p>
+            <p className="credits-ack-text">{t.credits.assetsUi}</p>
+            <p className="credits-ack-text">{t.credits.assetsAudio}</p>
+          </div>
+          <div className="credits-copyright">{t.credits.copyright}</div>
+        </footer>
+      </div>
+    </div>
+  );
+};
