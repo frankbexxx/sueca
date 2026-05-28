@@ -10,7 +10,6 @@ import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { formatSpadesBidLabel } from '../../models/games/spades/spadesRules';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import { getTablePositionForPlayer, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
-import { Card } from '../../types/game';
 import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
 
 export interface PlayerSeatsProps {
@@ -20,7 +19,6 @@ export interface PlayerSeatsProps {
   usTeam: 1 | 2;
   showTeamLabels?: boolean;
   getTeamName: (team: 1 | 2) => string;
-  getCardImage?: (card: Card) => string;
   showAuctionBadges?: boolean;
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
@@ -36,7 +34,6 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   usTeam,
   showTeamLabels = true,
   getTeamName,
-  getCardImage,
   showAuctionBadges = false,
   auctionActions,
   auctionLocale = 'pt',
@@ -87,26 +84,6 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         const isDealer = index === gameState.dealerIndex;
         const isCurrentPlayer = index === gameState.currentPlayerIndex;
         const isHuman = index === localPlayerIndex;
-
-        const trickCardIndex = gameState.currentTrick.findIndex(
-          (_, trickIdx) => (gameState.trickLeader + trickIdx) % 4 === index
-        );
-        const trickCard =
-          trickCardIndex >= 0 ? gameState.currentTrick[trickCardIndex] : null;
-
-        const renderPlayedCard = () => {
-          if (!trickCard || !getCardImage || position !== 'south') return null;
-          return (
-            <div className="player-trick-card">
-              <img
-                src={getCardImage(trickCard)}
-                alt={`${trickCard.rank} of ${trickCard.suit}`}
-                className="trick-card-img"
-                draggable={false}
-              />
-            </div>
-          );
-        };
 
         const renderAICards = () => {
           if (isHuman || compactSeats) return null;
@@ -171,7 +148,6 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                 </>
               )}
             </div>
-            {renderPlayedCard()}
             {position === 'south' ? null : renderAICards()}
           </div>
         );

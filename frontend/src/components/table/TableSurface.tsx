@@ -55,7 +55,6 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           usTeam={usTeam}
           showTeamLabels={showTeamLabels}
           getTeamName={getTeamName}
-          getCardImage={getCardImage}
           showAuctionBadges={showAuctionBadges}
           auctionActions={auctionActions}
           auctionLocale={auctionLocale}

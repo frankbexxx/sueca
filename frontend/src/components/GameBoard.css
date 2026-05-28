@@ -129,31 +129,6 @@
   margin-top: 2px;
 }
 
-.game-board--hearts .trick-area-center {
-  z-index: 1200;
-}
-
-.game-board--hearts .player-trick-card,
-.game-board--team-table .player-trick-card {
-  margin-top: 4px;
-}
-
-.game-board--hearts .player-trick-card .trick-card-img,
-.game-board--team-table .player-trick-card .trick-card-img {
-  width: var(--card-w);
-  height: var(--card-h);
-  border-radius: 6px;
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.38);
-}
-
-.game-board--hearts .player-seat.player-south {
-  z-index: 1150;
-}
-
-.game-board--team-table .player-seat.player-south {
-  z-index: 1150;
-}
-
 .top-strip {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -653,7 +628,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 60;
+  z-index: 1200;
 }
 
 .trick-cards-cross {
