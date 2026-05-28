@@ -8,6 +8,8 @@ import {
 } from '../models/games/king/kingContracts';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { getKingRulesHint } from './KingRulesHelper';
+import { SpadesVariantState } from '../models/games/SpadesGame';
+import { partialTeamBids } from '../models/games/spades/spadesRules';
 import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 import { getCardImagePath } from '../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../utils/cardMappings';
@@ -19,7 +21,7 @@ interface GameInfoProps {
 }
 
 export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPresetId }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
 
   if (variant === 'king') {
@@ -61,9 +63,19 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
   }
 
   if (variant === 'spades') {
-    const spades = gameState.variantState?.spades as
-      | { team1Bid?: number; team2Bid?: number; playerBids?: number[] }
-      | undefined;
+    const spades = gameState.variantState?.spades as SpadesVariantState | undefined;
+    if (spades?.waitingForBids) {
+      const currentName = gameState.players[spades.currentBidderIndex]?.name ?? '…';
+      const partial = partialTeamBids(spades.playerBids, spades.playerBidTypes);
+      return (
+        <div className="game-info spades-info">
+          <span>{t.spadesBid.biddingNow(currentName)}</span>
+          <span className="spades-info__partial">
+            ♠ {partial.team1} vs {partial.team2}
+          </span>
+        </div>
+      );
+    }
     return (
       <div className="game-info spades-info">
         <span>

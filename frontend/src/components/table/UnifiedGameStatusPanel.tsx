@@ -50,7 +50,9 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
   const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
-  const hearts = gameState.variantState?.hearts as { playerScores?: number[] } | undefined;
+  const hearts = gameState.variantState?.hearts as
+    | { playerScores?: number[]; penaltyCardsTaken?: Card[][] }
+    | undefined;
 
   const scores =
     variant === 'hearts'
@@ -97,12 +99,14 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
     const heartsHint = getHeartsRulesHint(locale);
     contractLine = heartsHint.title;
     heartsRuleLines = heartsHint.lines;
+    penaltyCardsByPlayer = hearts?.penaltyCardsTaken ?? [[], [], [], []];
   }
 
   const showPenaltyCards =
-    variant === 'king' &&
-    kingContract !== null &&
-    PENALTY_CARD_CONTRACTS.includes(kingContract);
+    (variant === 'king' &&
+      kingContract !== null &&
+      PENALTY_CARD_CONTRACTS.includes(kingContract)) ||
+    variant === 'hearts';
 
   return (
     <div className="top-strip top-strip--unified">

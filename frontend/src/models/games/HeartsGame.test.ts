@@ -56,4 +56,40 @@ describe('HeartsGame', () => {
     expect(game.canPlayCard(s, 1, 0)).toBe(false);
     expect(game.canPlayCard(s, 1, 1)).toBe(true);
   });
+
+  it('tracks penalty cards taken by trick winner', () => {
+    const game = new HeartsGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as { state: ReturnType<HeartsGame['getCurrentState']> };
+    const s = internal.state;
+    s.waitingForTrickEnd = true;
+    s.nextTrickLeader = 2;
+    s.currentTrick = [
+      { id: '1', rank: '5', suit: 'hearts' },
+      { id: '2', rank: 'Q', suit: 'spades' },
+      { id: '3', rank: '3', suit: 'clubs' },
+      { id: '4', rank: '4', suit: 'diamonds' }
+    ];
+    game.finishTrick(s);
+    const hearts = s.variantState?.hearts as { penaltyCardsTaken: { id: string }[][] };
+    expect(hearts.penaltyCardsTaken[2]).toHaveLength(2);
+    expect(hearts.penaltyCardsTaken[2].map((c) => c.id)).toEqual(['1', '2']);
+  });
+
+  it('resets penalty cards on new round', () => {
+    const game = new HeartsGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as {
+      state: ReturnType<HeartsGame['getCurrentState']>;
+      createRoundState: (
+        names: string[],
+        opts: Record<string, unknown> | undefined,
+        round: number,
+        scores: number[]
+      ) => ReturnType<HeartsGame['getCurrentState']>;
+    };
+    internal.state = internal.createRoundState(['A', 'B', 'C', 'D'], {}, 2, [0, 0, 0, 0]);
+    const hearts = internal.state.variantState?.hearts as { penaltyCardsTaken: unknown[][] };
+    expect(hearts.penaltyCardsTaken).toEqual([[], [], [], []]);
+  });
 });

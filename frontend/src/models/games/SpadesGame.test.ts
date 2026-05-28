@@ -1,8 +1,25 @@
-import { SpadesGame } from './SpadesGame';
+import { SpadesGame, SpadesVariantState } from './SpadesGame';
 import { trickWinnerIndex } from './trickUtils';
 import { Card } from '../../types/game';
 
 const names = ['A', 'B', 'C', 'D'];
+
+function getSpades(state: ReturnType<SpadesGame['getCurrentState']>): SpadesVariantState {
+  return state.variantState?.spades as SpadesVariantState;
+}
+
+function submitAllBidsInOrder(
+  game: SpadesGame,
+  bids: Array<{ bid: number; bidType?: 'normal' | 'nil' | 'blindNil' }>
+): void {
+  const state = game.getCurrentState();
+  const leader = getSpades(state).bidLeaderIndex;
+  for (let step = 0; step < 4; step++) {
+    const playerIndex = (leader + step) % 4;
+    const entry = bids[playerIndex];
+    game.submitBid(playerIndex, entry.bid, entry.bidType ?? 'normal');
+  }
+}
 
 describe('SpadesGame', () => {
   it('follows suit when possible', () => {
@@ -16,7 +33,8 @@ describe('SpadesGame', () => {
     state.currentTrick = [{ id: '3', rank: 'A', suit: 'clubs' }];
     state.currentPlayerIndex = 0;
     state.waitingForRoundStart = false;
-    (state.variantState as { spades: { waitingForBids: boolean } }).spades.waitingForBids = false;
+    getSpades(state).waitingForBids = false;
+    getSpades(state).playerBids = [4, 4, 4, 4];
     (game as unknown as { state: typeof state }).state = state;
 
     expect(game.canPlayCard(state, 0, 0)).toBe(false);
@@ -49,8 +67,8 @@ describe('SpadesGame', () => {
       { id: '4', rank: '5', suit: 'clubs' }
     ];
     game.finishTrick(s);
-    const spades = s.variantState?.spades as { team1Tricks: number };
-    expect(spades.team1Tricks).toBe(1);
+    expect(getSpades(s).team1Tricks).toBe(1);
+    expect(getSpades(s).playerTricks[0]).toBe(1);
   });
 
   it('allows leading spades after spades are broken', () => {
@@ -59,8 +77,9 @@ describe('SpadesGame', () => {
     const internal = game as unknown as { state: ReturnType<SpadesGame['getCurrentState']> };
     const s = internal.state;
     s.waitingForRoundStart = false;
-    (s.variantState?.spades as { waitingForBids: boolean }).waitingForBids = false;
-    (s.variantState?.spades as { spadesBroken: boolean }).spadesBroken = true;
+    getSpades(s).waitingForBids = false;
+    getSpades(s).playerBids = [4, 4, 4, 4];
+    getSpades(s).spadesBroken = true;
     s.players[0].hand = [
       { id: '1', rank: '2', suit: 'spades' },
       { id: '2', rank: '5', suit: 'clubs' }
@@ -70,15 +89,50 @@ describe('SpadesGame', () => {
     expect(game.canPlayCard(s, 0, 0)).toBe(true);
   });
 
-  it('sums individual bids into team totals', () => {
+  it('completes bidding sequentially in bid order', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const leader = getSpades(game.getCurrentState()).bidLeaderIndex;
+    submitAllBidsInOrder(game, [
+      { bid: 3 },
+      { bid: 2 },
+      { bid: 4 },
+      { bid: 1 }
+    ]);
+    const spades = getSpades(game.getCurrentState());
+    expect(spades.waitingForBids).toBe(false);
+    expect(spades.playerBids).toEqual([3, 2, 4, 1]);
+    expect(spades.team1Bid).toBe(7);
+    expect(spades.team2Bid).toBe(3);
+    expect(game.getCurrentState().currentPlayerIndex).toBe(
+      (game.getCurrentState().dealerIndex + 1) % 4
+    );
+    expect(leader).toBeGreaterThanOrEqual(0);
+    expect(leader).toBeLessThan(4);
+  });
+
+  it('rotates first bidder each round', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const leader1 = getSpades(game.getCurrentState()).bidLeaderIndex;
+    submitAllBidsInOrder(game, [
+      { bid: 2 },
+      { bid: 2 },
+      { bid: 2 },
+      { bid: 2 }
+    ]);
+    const internal = game as unknown as { state: ReturnType<SpadesGame['getCurrentState']> };
+    internal.state.waitingForRoundEnd = true;
+    game.continueToNextRound(internal.state);
+    const leader2 = getSpades(game.getCurrentState()).bidLeaderIndex;
+    expect(leader2).toBe((leader1 + 1) % 4);
+  });
+
+  it('sums individual bids into team totals via applyBids helper', () => {
     const game = new SpadesGame();
     game.initialize(names, {});
     game.applyBids([3, 2, 4, 1]);
-    const spades = game.getCurrentState().variantState?.spades as {
-      team1Bid: number;
-      team2Bid: number;
-      playerBids: number[];
-    };
+    const spades = getSpades(game.getCurrentState());
     expect(spades.playerBids).toEqual([3, 2, 4, 1]);
     expect(spades.team1Bid).toBe(7);
     expect(spades.team2Bid).toBe(3);
@@ -93,9 +147,45 @@ describe('SpadesGame', () => {
       endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
     };
     const s = internal.state;
-    (s.variantState?.spades as { team1Tricks: number; team1Bid: number }).team1Tricks = 6;
-    (s.variantState?.spades as { team2Tricks: number }).team2Tricks = 7;
+    getSpades(s).team1Tricks = 6;
+    getSpades(s).team1Bid = 4;
+    getSpades(s).team2Tricks = 7;
     internal.endRound(s);
     expect(s.gameScore.team1).toBeGreaterThan(0);
+  });
+
+  it('applies nil bonus when nil player takes zero tricks', () => {
+    const game = new SpadesGame();
+    game.initialize(names, { rulesPresetId: 'spades-pt-nil' });
+    submitAllBidsInOrder(game, [
+      { bid: 0, bidType: 'nil' },
+      { bid: 3, bidType: 'normal' },
+      { bid: 3, bidType: 'normal' },
+      { bid: 3, bidType: 'normal' }
+    ]);
+    const internal = game as unknown as {
+      state: ReturnType<SpadesGame['getCurrentState']>;
+      endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+    };
+    const s = internal.state;
+    const spades = getSpades(s);
+    spades.team1Bid = 3;
+    spades.team2Bid = 6;
+    spades.team1Tricks = 4;
+    spades.team2Tricks = 9;
+    spades.playerTricks = [0, 2, 2, 5];
+    internal.endRound(s);
+    expect(s.scores.team1).toBeGreaterThanOrEqual(100);
+  });
+
+  it('tickBidAi submits for current AI bidder', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const internal = game as unknown as { state: ReturnType<SpadesGame['getCurrentState']> };
+    const spades = getSpades(internal.state);
+    spades.currentBidderIndex = 1;
+    internal.state.players[1].type = 'ai';
+    game.tickBidAi();
+    expect(getSpades(game.getCurrentState()).playerBids[1]).not.toBeNull();
   });
 });

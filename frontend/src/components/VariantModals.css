@@ -108,6 +108,69 @@
   color: #c4b5fd;
 }
 
+.variant-modal--spades-bid {
+  padding: 0.5rem 0.65rem;
+  gap: 0.35rem;
+  max-height: 20vh;
+}
+
+.variant-modal-overlay--spades-bid {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 45%,
+    rgba(0, 0, 0, 0.5) 45%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+.spades-bid-title {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.spades-bid-hint {
+  margin: 0;
+  font-size: 0.58rem;
+  line-height: 1.15;
+  color: rgba(233, 238, 247, 0.92);
+}
+
+.spades-bid-hint--primary {
+  font-weight: 700;
+  color: #c4b5fd;
+}
+
+.spades-bid-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spades-bid-control__label {
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.spades-bid-select {
+  flex: 1;
+  min-height: 32px;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(15, 22, 35, 0.92);
+  color: #f5f5f5;
+}
+
+.spades-bid-special {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .king-festa-sheet-title {
   margin: 0;
   font-size: 0.82rem;

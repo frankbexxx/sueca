@@ -6,6 +6,8 @@ import {
   shouldShowTeamLabel
 } from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
+import { SpadesVariantState } from '../../models/games/SpadesGame';
+import { formatSpadesBidLabel } from '../../models/games/spades/spadesRules';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import { getTablePositionForPlayer, isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
 import { Card } from '../../types/game';
@@ -23,6 +25,8 @@ export interface PlayerSeatsProps {
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
   compactSeats?: boolean;
+  spadesBidPhase?: boolean;
+  spadesState?: SpadesVariantState;
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -36,7 +40,9 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   showAuctionBadges = false,
   auctionActions,
   auctionLocale = 'pt',
-  compactSeats = false
+  compactSeats = false,
+  spadesBidPhase = false,
+  spadesState
 }) => {
   const { t } = useLanguage();
   const useMobileLayout = isMobileDevice() || compactSeats;
@@ -48,6 +54,13 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
       : null;
 
   const renderSecondaryLine = (playerIndex: number) => {
+    if (spadesBidPhase && spadesState) {
+      const bid = spadesState.playerBids[playerIndex];
+      const bidType = spadesState.playerBidTypes[playerIndex] ?? 'normal';
+      if (bidType === 'nil') return t.spadesBid.badgeNil;
+      if (bidType === 'blindNil') return t.spadesBid.badgeBlind;
+      return formatSpadesBidLabel(bid, bidType, t.spadesBid.pending);
+    }
     if (compactSeats) return null;
     if (heartsRoundPoints) {
       return t.gameBoard.roundPointsShort(heartsRoundPoints[playerIndex] ?? 0);
@@ -113,24 +126,32 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         return (
           <div
             key={player.id}
-            className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}`}
+            className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}${
+              spadesBidPhase && spadesState?.currentBidderIndex === index
+                ? ' player-seat--bidding'
+                : ''
+            }`}
           >
             <div
-              className={`player-info ${useMobileLayout ? 'mobile-layout' : ''}${
+              className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}${
                 compactSeats ? ' player-info--compact' : ''
               }`}
             >
-              {useMobileLayout ? (
+              {useMobileLayout || spadesBidPhase ? (
                 <>
                   <div className="player-name-line-1">
                     {truncatePlayerName(player.name)}
-                    {!compactSeats && isDealer && <span className="dealer-badge">🃏</span>}
+                    {!compactSeats && !spadesBidPhase && isDealer && (
+                      <span className="dealer-badge">🃏</span>
+                    )}
                   </div>
-                  {!compactSeats && (
+                  {(spadesBidPhase || !compactSeats) && (
                     <div className="player-name-line-2">
                       {renderSecondaryLine(index)}
-                      {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
-                      {renderAuctionBadge(index)}
+                      {!compactSeats && !spadesBidPhase && isCurrentPlayer && (
+                        <span className="turn-indicator">⚡</span>
+                      )}
+                      {!spadesBidPhase && renderAuctionBadge(index)}
                     </div>
                   )}
                 </>

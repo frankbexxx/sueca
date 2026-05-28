@@ -3,6 +3,7 @@ import { GameVariant } from '../types/game';
 export type RulesPresetId =
   | 'sueca-pt-normal'
   | 'spades-pt-normal'
+  | 'spades-pt-nil'
   | 'hearts-us-normal'
   | 'king-pt-normal'
   | 'king-simplified';
@@ -53,15 +54,36 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
     isDefault: true,
     bullets: [
       '4 players, 2 teams. Spades always trump; follow suit.',
-      'Individual bids (0–13) summed per team before each round.',
+      'Sequential individual bids (0–13); first bidder drawn at random, then rotates.',
       'Made bid: 10×bid + overtricks (bags). Miss: −10×bid.',
       'Every 10 bags → −100. First team to 500 wins.'
     ],
     bulletsPt: [
       '4 jogadores, 2 equipas. Espadas trunfo; seguir naipe.',
-      'Bids individuais (0–13) somados por equipa antes de cada ronda.',
+      'Bids individuais sequenciais (0–13); 1.º por sorteio, rotação a cada ronda.',
       'Contrato cumprido: 10×bid + overtricks (bags). Falha: −10×bid.',
       'A cada 10 bags → −100. Primeira equipa a 500 ganha.'
+    ]
+  },
+  'spades-pt-nil': {
+    id: 'spades-pt-nil',
+    variant: 'spades',
+    name: 'Spades PT · nil mode',
+    namePt: 'Spades PT · modo nil',
+    description: 'Classic Spades with nil and blind nil bids, race to 500.',
+    descriptionPt: 'Spades clássico com nil e blind nil, corrida a 500.',
+    isDefault: false,
+    bullets: [
+      'Same as normal mode plus nil (+100/−100) and blind nil (+200/−200).',
+      'Sequential bidding; first bidder drawn at random, then rotates each round.',
+      'Nil bids add 0 to team contract; bonus scored individually per player.',
+      'Made bid: 10×bid + bags. Every 10 bags → −100. First team to 500 wins.'
+    ],
+    bulletsPt: [
+      'Igual ao modo normal mais nil (+100/−100) e blind nil (+200/−200).',
+      'Bids sequenciais; 1.º bidder por sorteio, rotação a cada ronda.',
+      'Nil conta 0 no contrato de equipa; bónus individual por jogador.',
+      'Contrato: 10×bid + bags. A cada 10 bags → −100. Primeira equipa a 500 ganha.'
     ]
   },
   'hearts-us-normal': {
@@ -131,7 +153,7 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
 
 const PRESETS_BY_VARIANT: Record<GameVariant, RulesPresetId[]> = {
   sueca: ['sueca-pt-normal'],
-  spades: ['spades-pt-normal'],
+  spades: ['spades-pt-normal', 'spades-pt-nil'],
   hearts: ['hearts-us-normal'],
   king: ['king-pt-normal', 'king-simplified']
 };

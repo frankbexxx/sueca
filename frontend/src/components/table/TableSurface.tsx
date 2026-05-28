@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, GameState, GameVariant } from '../../types/game';
 import { KingBid } from '../../models/games/king/kingContracts';
+import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { TrickArea } from '../TrickArea';
 import { PlayerSeats } from './PlayerSeats';
 
@@ -17,6 +18,8 @@ export interface TableSurfaceProps {
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
   compactSeats?: boolean;
+  spadesBidPhase?: boolean;
+  spadesState?: SpadesVariantState;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -31,7 +34,9 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   showAuctionBadges = false,
   auctionActions,
   auctionLocale = 'pt',
-  compactSeats = false
+  compactSeats = false,
+  spadesBidPhase = false,
+  spadesState
 }) => {
   return (
     <div className="table-layout">
@@ -55,6 +60,8 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           auctionActions={auctionActions}
           auctionLocale={auctionLocale}
           compactSeats={compactSeats}
+          spadesBidPhase={spadesBidPhase}
+          spadesState={spadesState}
         />
       </div>
     </div>

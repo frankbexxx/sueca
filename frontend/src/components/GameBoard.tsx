@@ -22,14 +22,14 @@ import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
-import { SpadesBidModal } from './SpadesBidModal';
+import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
 import { EarlyRoundEndModal } from './EarlyRoundEndModal';
-import { SpadesGame } from '../models/games/SpadesGame';
+import { SpadesGame, SpadesVariantState } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
 import { SuecaGame } from '../models/games/SuecaGame';
@@ -546,6 +546,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     // kingPtFestaKey tracks festa state; full gameState would retrigger on unrelated clones
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameAdapter, gameVariant, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
+
+  const spadesState = gameState.variantState?.spades as SpadesVariantState | undefined;
+  const spadesBidActive = gameVariant === 'spades' && Boolean(spadesState?.waitingForBids);
+  const spadesLocalBidTurn =
+    spadesBidActive && spadesState?.currentBidderIndex === localPlayerIndex;
+
+  useEffect(() => {
+    if (!gameAdapter || !gameStarted || gameVariant !== 'spades') return;
+    if (!spadesBidActive) return;
+
+    const bidderIndex = spadesState?.currentBidderIndex ?? 0;
+    const bidder = gameState.players[bidderIndex];
+    const isLocalBidTurn = bidderIndex === localPlayerIndex;
+    if (!bidder || bidder.type === 'human' || isLocalBidTurn) return;
+
+    const timer = window.setTimeout(() => {
+      (gameAdapter as SpadesGame).tickBidAi();
+      setGameState(gameAdapter.getCurrentState());
+    }, AI_PLAY_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [
+    gameAdapter,
+    gameStarted,
+    gameVariant,
+    spadesBidActive,
+    spadesState?.currentBidderIndex,
+    localPlayerIndex,
+    gameState.players
+  ]);
+
   const usTeam = gameState.players[localPlayerIndex]?.team || 1;
   const themTeam = usTeam === 1 ? 2 : 1;
 
@@ -624,7 +654,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     festaSheetActive ? 'game-board--festa-sheet' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
     gameVariant === 'hearts' ? 'game-board--hearts' : '',
-    heartsPassActive ? 'game-board--hearts-pass' : ''
+    heartsPassActive ? 'game-board--hearts-pass' : '',
+    spadesBidActive ? 'game-board--spades-bid' : ''
   ]
     .filter(Boolean)
     .join(' ');
@@ -647,6 +678,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       auctionActions={kingPtState?.auctionPlayerActions}
       auctionLocale={language === 'pt' ? 'pt' : 'en'}
       compactSeats={heartsPassActive}
+      spadesBidPhase={spadesBidActive}
+      spadesState={spadesState}
     />
   );
 
@@ -737,18 +770,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         />
       )}
 
-      {gameVariant === 'spades' &&
-        (gameState.variantState?.spades as { waitingForBids?: boolean } | undefined)?.waitingForBids && (
-          <SpadesBidModal
-            playerNames={gameState.players.map((p) => p.name)}
-            onConfirm={(playerBids) => {
-              if (gameAdapter) {
-                (gameAdapter as SpadesGame).applyBids(playerBids);
-                setGameState(gameAdapter.getCurrentState());
-              }
-            }}
-          />
-        )}
+      {spadesLocalBidTurn && spadesState && (
+        <SpadesBidMinibox
+          currentBidderName={gameState.players[localPlayerIndex]?.name ?? 'Player'}
+          nilEnabled={spadesState.nilEnabled}
+          blindNilEnabled={spadesState.blindNilEnabled}
+          onConfirm={(bid, bidType) => {
+            if (gameAdapter) {
+              (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
+              setGameState(gameAdapter.getCurrentState());
+            }
+          }}
+        />
+      )}
 
       {heartsPassActive && (
           <HeartsPassModal

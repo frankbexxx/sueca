@@ -100,6 +100,22 @@ export interface Translations {
     confirm: (count: number) => string;
   };
 
+  spadesBid: {
+    title: string;
+    yourTurn: (name: string) => string;
+    biddingNow: (name: string) => string;
+    selectBid: string;
+    nil: string;
+    blindNil: string;
+    normalBid: string;
+    nilSelected: string;
+    blindNilSelected: string;
+    confirm: string;
+    pending: string;
+    badgeNil: string;
+    badgeBlind: string;
+  };
+
   menu: {
     selectGame: string;
   };
@@ -519,6 +535,21 @@ export const translations: Record<Language, Translations> = {
       selectOnHand: 'Selecciona 3 cartas na tua mão (cartas coloridas).',
       confirm: (count) => `Passar cartas (${count}/3)`
     },
+    spadesBid: {
+      title: 'Spades — bids',
+      yourTurn: (name) => `A tua vez, ${name}`,
+      biddingNow: (name) => `A bidar: ${name}`,
+      selectBid: 'Bid (0–13)',
+      nil: 'Nil',
+      blindNil: 'Blind nil',
+      normalBid: 'Bid normal',
+      nilSelected: 'Nil (0 vazas)',
+      blindNilSelected: 'Blind nil (0 vazas)',
+      confirm: 'Confirmar bid',
+      pending: '…',
+      badgeNil: 'Nil',
+      badgeBlind: 'Blind'
+    },
     modals: {
       roundComplete: 'Jogo {round} Completo!',
       gamePoints: 'Pontos do Jogo:',
@@ -798,6 +829,21 @@ export const translations: Record<Language, Translations> = {
       confirmHold: 'Continue',
       selectOnHand: 'Select 3 cards from your hand below.',
       confirm: (count) => `Pass cards (${count}/3)`
+    },
+    spadesBid: {
+      title: 'Spades — bids',
+      yourTurn: (name) => `Your turn, ${name}`,
+      biddingNow: (name) => `Bidding: ${name}`,
+      selectBid: 'Bid (0–13)',
+      nil: 'Nil',
+      blindNil: 'Blind nil',
+      normalBid: 'Normal bid',
+      nilSelected: 'Nil (0 tricks)',
+      blindNilSelected: 'Blind nil (0 tricks)',
+      confirm: 'Confirm bid',
+      pending: '…',
+      badgeNil: 'Nil',
+      badgeBlind: 'Blind'
     },
     modals: {
       roundComplete: 'Game {round} Complete!',

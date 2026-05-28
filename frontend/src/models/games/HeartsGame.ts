@@ -22,9 +22,20 @@ interface HeartsVariantState {
   humanPassIndices: number[];
   heartsTakenCount: number;
   queenSpadesTaken: boolean;
+  penaltyCardsTaken: Card[][];
   waitingForEarlyEnd: boolean;
   scoringFrozen: boolean;
   earlyEndOffered: boolean;
+}
+
+function emptyPenaltyCardsTaken(): Card[][] {
+  return [[], [], [], []];
+}
+
+function penaltyCardsFromTrick(trick: Card[]): Card[] {
+  return trick.filter(
+    (card) => card.suit === 'hearts' || (card.rank === 'Q' && card.suit === 'spades')
+  );
 }
 
 function getHeartsState(state: GameState): HeartsVariantState {
@@ -38,6 +49,7 @@ function getHeartsState(state: GameState): HeartsVariantState {
     humanPassIndices: [],
     heartsTakenCount: 0,
     queenSpadesTaken: false,
+    penaltyCardsTaken: emptyPenaltyCardsTaken(),
     waitingForEarlyEnd: false,
     scoringFrozen: false,
     earlyEndOffered: false
@@ -237,6 +249,7 @@ export class HeartsGame extends BaseGameAdapter {
           humanPassIndices: [],
           heartsTakenCount: 0,
           queenSpadesTaken: false,
+          penaltyCardsTaken: emptyPenaltyCardsTaken(),
           waitingForEarlyEnd: false,
           scoringFrozen: false,
           earlyEndOffered: false
@@ -336,6 +349,10 @@ export class HeartsGame extends BaseGameAdapter {
     hearts.heartsTakenCount += countHeartsInTrick(s.currentTrick);
     if (trickHasQueenSpades(s.currentTrick)) {
       hearts.queenSpadesTaken = true;
+    }
+    const penaltyCards = penaltyCardsFromTrick(s.currentTrick);
+    if (penaltyCards.length > 0) {
+      hearts.penaltyCardsTaken[winner].push(...penaltyCards);
     }
 
     s.variantState = { ...s.variantState, hearts };

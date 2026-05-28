@@ -113,6 +113,34 @@
   display: none;
 }
 
+.game-board--spades-bid .player-hand-bar {
+  position: relative;
+  z-index: 2100;
+  pointer-events: auto;
+  margin-bottom: calc(20vh + 6px);
+}
+
+.game-board--spades-bid .game-table-zone,
+.game-board--spades-bid .table-layout {
+  pointer-events: none;
+}
+
+.player-seat.player-seat--bidding .player-info {
+  outline: 2px solid rgba(196, 181, 253, 0.75);
+  outline-offset: 1px;
+}
+
+.player-seat.player-seat--bidding .player-name-line-2 {
+  color: #e9d5ff;
+}
+
+.spades-info__partial {
+  display: block;
+  font-size: 0.72em;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
 .game-board--hearts .trick-area-center {
   z-index: 1200;
 }

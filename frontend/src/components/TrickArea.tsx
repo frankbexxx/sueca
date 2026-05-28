@@ -23,6 +23,7 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
         {gameState.currentTrick.map((card: Card, index: number) => {
           const playerIndex = (gameState.trickLeader + index) % 4;
           const position = getTablePositionForPlayer(playerIndex, localPlayerIndex);
+          if (variant === 'hearts' && position === 'south') return null;
           const isWinning =
             gameState.lastTrickWinner === playerIndex &&
             index === gameState.currentTrick.length - 1;
