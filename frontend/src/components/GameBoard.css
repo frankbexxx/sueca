@@ -123,6 +123,17 @@
   box-sizing: border-box;
 }
 
+.local-player-dock .player-info.mobile-layout {
+  min-width: 108px;
+  max-width: 128px;
+  width: auto;
+}
+
+.local-player-dock .player-name-line-2 {
+  white-space: nowrap;
+  font-size: 0.78em;
+}
+
 .local-player-dock--bidding .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);
   outline-offset: 1px;
