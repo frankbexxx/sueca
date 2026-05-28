@@ -8,27 +8,41 @@ interface BottomNavProps {
   onChange: (tab: AppTab) => void;
 }
 
-const TABS: AppTab[] = ['home', 'play', 'rules', 'more'];
+const TABS: AppTab[] = [
+  'home',
+  'stats',
+  'history',
+  'themes',
+  'rules',
+  'settings',
+  'profile'
+];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChange }) => {
   const { t } = useLanguage();
 
   const labels: Record<AppTab, string> = {
     home: t.nav.home,
-    play: t.nav.play,
+    stats: t.nav.stats,
+    history: t.nav.history,
+    themes: t.nav.themes,
     rules: t.nav.rules,
-    more: t.nav.more
+    settings: t.nav.settings,
+    profile: t.nav.profile
   };
 
   const icons: Record<AppTab, string> = {
     home: '🏠',
-    play: '🃏',
+    stats: '📊',
+    history: '🕘',
+    themes: '🎨',
     rules: '📖',
-    more: '⚙️'
+    settings: '⚙',
+    profile: '👤'
   };
 
   return (
-    <nav className="bottom-nav" aria-label="Main navigation">
+    <nav className="bottom-nav bottom-nav--compact" aria-label="Main navigation">
       {TABS.map((tab) => (
         <button
           key={tab}
@@ -36,11 +50,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChange }) => 
           className={`bottom-nav-item ${activeTab === tab ? 'active' : ''}`}
           onClick={() => onChange(tab)}
           aria-current={activeTab === tab ? 'page' : undefined}
+          aria-label={labels[tab]}
+          title={labels[tab]}
+          data-tooltip={labels[tab]}
         >
           <span className="bottom-nav-icon" aria-hidden>
             {icons[tab]}
           </span>
-          <span className="bottom-nav-label">{labels[tab]}</span>
         </button>
       ))}
     </nav>

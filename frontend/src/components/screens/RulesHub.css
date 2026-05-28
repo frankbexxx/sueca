@@ -18,11 +18,18 @@
   width: 100%;
   min-height: var(--sueca-touch-min, 48px);
   padding: 16px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--sueca-radius-md, 12px);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  color: #fff;
+  color: #e9eef7;
   text-align: left;
+  transition: background 0.2s;
+}
+
+.rules-hub-card:hover,
+.rules-hub-card:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .rules-hub-name {

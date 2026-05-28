@@ -94,9 +94,58 @@ export interface Translations {
 
   nav: {
     home: string;
-    play: string;
+    stats: string;
+    history: string;
+    themes: string;
     rules: string;
-    more: string;
+    settings: string;
+    profile: string;
+    /** @deprecated legacy 4-tab shell */
+    play?: string;
+    /** @deprecated legacy 4-tab shell */
+    more?: string;
+  };
+
+  shell: {
+    back: string;
+  };
+
+  statsScreen: {
+    title: string;
+    subtitle: string;
+  };
+
+  settingsScreen: {
+    title: string;
+    subtitle: string;
+  };
+
+  profileScreen: {
+    title: string;
+    subtitle: string;
+    exitApp: string;
+    exitConfirm: string;
+  };
+
+  historyScreen: {
+    title: string;
+    subtitle: string;
+    continueSection: string;
+    pinnedSection: string;
+    finishedSection: string;
+    emptyContinue: string;
+    emptyPinned: string;
+    emptyFinished: string;
+    pinCopy: string;
+    pinnedAt: (time: string) => string;
+    unpin: string;
+  };
+
+  themesScreen: {
+    title: string;
+    subtitle: string;
+    active: string;
+    iapNote: string;
   };
 
   dashboard: {
@@ -133,6 +182,7 @@ export interface Translations {
   playSetup: {
     title: string;
     subtitle: string;
+    subtitleVariant: (game: string) => string;
     rulesPreset: string;
   };
 
@@ -175,6 +225,9 @@ export interface Translations {
     newGame: string;
     leaveConfirm: string;
     newGameConfirm: string;
+    pinGame: string;
+    pinConfirm: string;
+    pinnedToast: string;
   };
   
   // Game Menu
@@ -258,9 +311,48 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       home: 'Início',
-      play: 'Jogar',
+      stats: 'Estatísticas',
+      history: 'Histórico',
+      themes: 'Temas',
       rules: 'Regras',
-      more: 'Mais'
+      settings: 'Configurações',
+      profile: 'Perfil'
+    },
+    shell: {
+      back: 'Voltar'
+    },
+    statsScreen: {
+      title: 'Estatísticas',
+      subtitle: 'Resumo das tuas partidas locais'
+    },
+    settingsScreen: {
+      title: 'Configurações',
+      subtitle: 'Som, idioma, mão e pausa automática'
+    },
+    profileScreen: {
+      title: 'Perfil',
+      subtitle: 'Nome local, créditos e sair da app',
+      exitApp: 'Sair da aplicação',
+      exitConfirm: 'Voltar ao ecrã inicial? A app será recarregada.'
+    },
+    historyScreen: {
+      title: 'Histórico',
+      subtitle: 'Continuar, partidas fixadas e últimas terminadas',
+      continueSection: 'Continuar',
+      pinnedSection: 'Fixadas',
+      finishedSection: 'Últimas terminadas',
+      emptyContinue: 'Nenhuma partida guardada.',
+      emptyPinned: 'Nenhuma partida fixada.',
+      emptyFinished: 'Ainda não terminaste partidas.',
+      pinCopy: 'Fixar partida',
+      pinnedAt: (time) => `fixada ${time}`,
+      unpin: 'Desfixar'
+    },
+    themesScreen: {
+      title: 'Temas',
+      subtitle: 'Aparência visual da app',
+      active: 'Activo',
+      iapNote: 'Temas premium disponíveis em breve na Play Store.'
     },
     dashboard: {
       greeting: 'Olá',
@@ -295,6 +387,7 @@ export const translations: Record<Language, Translations> = {
     playSetup: {
       title: 'Nova partida',
       subtitle: 'Escolhe o jogo e os adversários',
+      subtitleVariant: (game) => `Configurar ${game}`,
       rulesPreset: 'Modo de regras'
     },
     rulesHub: {
@@ -332,7 +425,10 @@ export const translations: Record<Language, Translations> = {
       exitConfirm: 'Abandonar a partida actual?',
       newGame: 'Novo jogo',
       leaveConfirm: 'Voltar ao início? A partida fica guardada.',
-      newGameConfirm: 'Abandonar a partida actual e começar uma nova?'
+      newGameConfirm: 'Abandonar a partida actual e começar uma nova?',
+      pinGame: 'Fixar',
+      pinConfirm: 'Fixar esta partida no histórico?',
+      pinnedToast: 'Partida fixada.'
     },
     startMenu: {
       title: '🃏 Sueca',
@@ -468,9 +564,48 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       home: 'Home',
-      play: 'Play',
+      stats: 'Stats',
+      history: 'History',
+      themes: 'Themes',
       rules: 'Rules',
-      more: 'More'
+      settings: 'Settings',
+      profile: 'Profile'
+    },
+    shell: {
+      back: 'Back'
+    },
+    statsScreen: {
+      title: 'Statistics',
+      subtitle: 'Summary of your local games'
+    },
+    settingsScreen: {
+      title: 'Settings',
+      subtitle: 'Sound, language, hand sorting and auto-pause'
+    },
+    profileScreen: {
+      title: 'Profile',
+      subtitle: 'Local name, credits and exit app',
+      exitApp: 'Exit app',
+      exitConfirm: 'Return to the start screen? The app will reload.'
+    },
+    historyScreen: {
+      title: 'History',
+      subtitle: 'Continue, pinned games and last finished',
+      continueSection: 'Continue',
+      pinnedSection: 'Pinned',
+      finishedSection: 'Last finished',
+      emptyContinue: 'No saved games.',
+      emptyPinned: 'No pinned games.',
+      emptyFinished: 'No finished games yet.',
+      pinCopy: 'Pin game',
+      pinnedAt: (time) => `pinned ${time}`,
+      unpin: 'Unpin'
+    },
+    themesScreen: {
+      title: 'Themes',
+      subtitle: 'Visual appearance of the app',
+      active: 'Active',
+      iapNote: 'Premium themes coming soon on the Play Store.'
     },
     dashboard: {
       greeting: 'Hello',
@@ -505,6 +640,7 @@ export const translations: Record<Language, Translations> = {
     playSetup: {
       title: 'New game',
       subtitle: 'Pick a game and opponents',
+      subtitleVariant: (game) => `Configure ${game}`,
       rulesPreset: 'Rules mode'
     },
     rulesHub: {
@@ -542,7 +678,10 @@ export const translations: Record<Language, Translations> = {
       exitConfirm: 'Leave the current game?',
       newGame: 'New game',
       leaveConfirm: 'Return to home? Your game will be saved.',
-      newGameConfirm: 'Abandon the current game and start a new one?'
+      newGameConfirm: 'Abandon the current game and start a new one?',
+      pinGame: 'Pin',
+      pinConfirm: 'Pin this game to history?',
+      pinnedToast: 'Game pinned.'
     },
     startMenu: {
       title: '🃏 Sueca',

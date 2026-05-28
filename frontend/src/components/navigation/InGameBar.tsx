@@ -10,6 +10,7 @@ interface InGameBarProps {
   onPause: () => void;
   onResume: () => void;
   onNewGame: () => void;
+  onPinGame?: () => void;
   onExit: () => void;
 }
 
@@ -21,6 +22,7 @@ export const InGameBar: React.FC<InGameBarProps> = ({
   onPause,
   onResume,
   onNewGame,
+  onPinGame,
   onExit
 }) => {
   const { t } = useLanguage();
@@ -54,6 +56,17 @@ export const InGameBar: React.FC<InGameBarProps> = ({
         >
           {isPaused ? `▶ ${t.gameMenu.resume}` : `⏸ ${t.gameMenu.pause}`}
         </button>
+        {onPinGame && (
+          <button
+            type="button"
+            className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"
+            onClick={onPinGame}
+            title={t.inGame.pinGame}
+            aria-label={t.inGame.pinGame}
+          >
+            📌
+          </button>
+        )}
         <button
           type="button"
           className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"

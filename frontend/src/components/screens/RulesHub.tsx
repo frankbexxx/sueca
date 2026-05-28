@@ -4,6 +4,7 @@ import { getAvailableGames } from '../../constants/gameMetadata';
 import { getDefaultPresetId } from '../../constants/rulesPresets';
 import { RulesSheet } from '../RulesSheet';
 import { useLanguage } from '../../i18n/useLanguage';
+import '../../styles/shell-screens.css';
 import './RulesHub.css';
 
 export const RulesHub: React.FC = () => {
@@ -23,7 +24,7 @@ export const RulesHub: React.FC = () => {
           <button
             key={game.variant}
             type="button"
-            className="rules-hub-card dobo-panel"
+            className="rules-hub-card shell-panel"
             onClick={() => setOpenVariant(game.variant)}
           >
             <span className="rules-hub-name">{game.name}</span>

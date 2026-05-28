@@ -11,19 +11,18 @@ import {
 import { GameVariant } from '../../types/game';
 import { BUILD_VERSION } from '../../generated/buildInfo';
 import './HomeDashboard.css';
+import '../../styles/shell-screens.css';
 
 interface HomeDashboardProps {
   onContinue: (variant: GameVariant) => void;
   onPlayVariant: (variant: GameVariant) => void;
   onConfigureVariant: (variant: GameVariant) => void;
-  onOpenProfile: () => void;
 }
 
 export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onContinue,
   onPlayVariant,
-  onConfigureVariant,
-  onOpenProfile
+  onConfigureVariant
 }) => {
   const { t, language } = useLanguage();
   const lastConfig = loadLastConfig();
@@ -31,7 +30,6 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const games = getAvailableGames();
   const lastVariant = lastConfig?.gameVariant ?? stats.lastPlayedVariant ?? 'sueca';
   const playerName = lastConfig?.playerNames[0] || 'Player 1';
-  const avatarInitial = playerName.trim().charAt(0).toUpperCase() || 'P';
   const winRate = getWinRate(stats);
 
   return (
@@ -43,67 +41,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             {t.dashboard.greeting}, {playerName}
           </p>
         </div>
-        <button
-          type="button"
-          className="sueca-btn sueca-btn--ghost dashboard-profile-btn"
-          onClick={onOpenProfile}
-          aria-label={t.dashboard.viewProfile}
-        >
-          <span className="dashboard-profile-avatar" aria-hidden>
-            {avatarInitial}
-          </span>
-          <span className="dashboard-profile-label">{t.dashboard.viewProfile}</span>
-        </button>
       </header>
 
-      <section className="dashboard-game-list">
-        <h2 className="dashboard-section-title">{t.dashboard.quickPickTitle}</h2>
-        <ul className="dashboard-game-rows">
-          {games.map((game) => {
-            const saved = loadGameSession(game.variant);
-            return (
-            <li
-              key={game.variant}
-              className={`dashboard-game-row${
-                lastVariant === game.variant ? ' dashboard-game-row--active' : ''
-              }`}
-            >
-              <span className="dashboard-game-row-name">{game.name}</span>
-              <div className="dashboard-game-row-actions">
-                {saved && (
-                  <button
-                    type="button"
-                    className="sueca-btn sueca-btn--secondary sueca-btn--compact"
-                    onClick={() => onContinue(game.variant)}
-                    title={t.dashboard.savedAgo(formatRelativeTime(saved.savedAt, language))}
-                  >
-                    {t.dashboard.continueShort}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="sueca-btn sueca-btn--primary sueca-btn--compact"
-                  onClick={() => onPlayVariant(game.variant)}
-                >
-                  {t.dashboard.playGame}
-                </button>
-                <button
-                  type="button"
-                  className="sueca-btn sueca-btn--secondary sueca-btn--icon"
-                  onClick={() => onConfigureVariant(game.variant)}
-                  aria-label={t.dashboard.configureGame(game.name)}
-                  title={t.dashboard.configureGame(game.name)}
-                >
-                  ⚙
-                </button>
-              </div>
-            </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      <section className="dashboard-stats">
+      <section className="dashboard-stats-summary shell-panel">
         <h2 className="dashboard-section-title">{t.dashboard.statsTitle}</h2>
         <div className="dashboard-stats-grid">
           <div className="dashboard-stat">
@@ -119,18 +59,49 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <span className="dashboard-stat-label">{t.dashboard.winRate}</span>
           </div>
         </div>
+      </section>
 
-        <h3 className="dashboard-subsection-title">{t.dashboard.perGameStats}</h3>
-        <ul className="dashboard-per-game-list">
+      <section className="dashboard-game-list">
+        <h2 className="dashboard-section-title">{t.dashboard.quickPickTitle}</h2>
+        <ul className="dashboard-game-rows">
           {games.map((game) => {
-            const variantStats = stats.byVariant[game.variant];
+            const saved = loadGameSession(game.variant);
             return (
-              <li key={game.variant} className="dashboard-per-game-row">
-                <span className="dashboard-per-game-name">{game.name}</span>
-                <span className="dashboard-per-game-counts">
-                  {t.dashboard.playedShort}: {variantStats.played} · {t.dashboard.winsShort}:{' '}
-                  {variantStats.wins}
-                </span>
+              <li
+                key={game.variant}
+                className={`dashboard-game-row${
+                  lastVariant === game.variant ? ' dashboard-game-row--active' : ''
+                }`}
+              >
+                <span className="dashboard-game-row-name">{game.name}</span>
+                <div className="dashboard-game-row-actions">
+                  {saved && (
+                    <button
+                      type="button"
+                      className="sueca-btn sueca-btn--secondary sueca-btn--compact"
+                      onClick={() => onContinue(game.variant)}
+                      title={t.dashboard.savedAgo(formatRelativeTime(saved.savedAt, language))}
+                    >
+                      {t.dashboard.continueShort}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="sueca-btn sueca-btn--primary sueca-btn--compact"
+                    onClick={() => onPlayVariant(game.variant)}
+                  >
+                    {t.dashboard.playGame}
+                  </button>
+                  <button
+                    type="button"
+                    className="sueca-btn sueca-btn--secondary sueca-btn--icon"
+                    onClick={() => onConfigureVariant(game.variant)}
+                    aria-label={t.dashboard.configureGame(game.name)}
+                    title={t.dashboard.configureGame(game.name)}
+                  >
+                    ⚙
+                  </button>
+                </div>
               </li>
             );
           })}

@@ -34,7 +34,7 @@ vercel --prod
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
-- [ ] MoreScreen: ordenar mão on/off; ordem naipes; trunfo Sueca; som on/off
+- [ ] MoreScreen / Configurações: ordenar mão on/off; ordem naipes; trunfo Sueca; som on/off
 - [ ] Sueca: 10 cartas + trunfo à esquerda (se configurado)
 - [x] Selector mostra Sueca, Spades, Hearts e King
 - [ ] Smoke King PT: viragem K♥ automática · folha 10×4 · festa 13 cartas scroll + bottom sheet · aceitar 1 positiva · sem NÓS/ELES na mesa
@@ -47,7 +47,10 @@ vercel --prod
 
 > **Gate:** complete [plan/PRODUCT_ESSENTIALS.md](plan/PRODUCT_ESSENTIALS.md) must-have checklist first.
 
-- [ ] App shell 4 tabs (Início · Jogar · Regras · Mais)
+- [ ] Bottom nav 7 tabs (Início · Estatísticas · Histórico · Temas · Regras · Configurações · Perfil)
+- [ ] Histórico: Continuar (4 variants) + fixar + últimas 3 terminadas
+- [ ] Perfil: Sair da aplicação → landing + refresh
+- [ ] Configurações: som, idioma, pausa auto, ordenar mão, trunfo Sueca
 - [ ] Regras + testes verdes (Sueca, Hearts, Spades, King)
 - [ ] `npm run release:android` (build mobile + `cap sync android`) — ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 - [ ] Ou manual: `npm run build:android` depois `npx cap sync android`

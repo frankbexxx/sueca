@@ -6,6 +6,10 @@
   overflow-x: hidden;
 }
 
+.dashboard-stats-summary {
+  margin-bottom: 16px;
+}
+
 .dashboard-header {
   display: flex;
   align-items: flex-start;

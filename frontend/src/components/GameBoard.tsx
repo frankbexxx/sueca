@@ -36,6 +36,7 @@ import { SuecaGame } from '../models/games/SuecaGame';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
+import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -440,12 +441,34 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       void showInterstitialIfDue();
       const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
       const us = gameState.players[localIdx]?.team;
-      recordGameResult(gameVariant, us === gameState.winner);
+      const playerWon = us === gameState.winner;
+      recordGameResult(gameVariant, playerWon);
+      const winnerLabel =
+        gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
+      const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
+      recordFinishedGame({
+        variant: gameVariant,
+        finishedAt: Date.now(),
+        playerWon,
+        summary: `${winnerLabel} · ${scoreSummary}`
+      });
       clearGameSession(gameVariant);
       const timer = setTimeout(() => onExit(), GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameState.isGameOver, gameState.winner, gameState.players, gameVariant, isMultiplayer, multiplayerPlayerIndex, onExit]);
+  }, [
+    gameAdapter,
+    gameState.isGameOver,
+    gameState.winner,
+    gameState.players,
+    gameState.gameScore,
+    gameVariant,
+    isMultiplayer,
+    multiplayerPlayerIndex,
+    onExit,
+    t.gameBoard.them,
+    t.gameBoard.us
+  ]);
 
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
 
@@ -547,6 +570,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     restartFreshGame();
   };
 
+  const handlePinGame = () => {
+    if (gameState.isGameOver) return;
+    if (window.confirm(t.inGame.pinConfirm)) {
+      pinGameSession(
+        { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
+        gameState
+      );
+    }
+  };
+
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
   const heartsState = gameState.variantState?.hearts as
@@ -594,6 +627,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         onPause={handlePause}
         onResume={handleResume}
         onNewGame={handleNewGame}
+        onPinGame={handlePinGame}
         onExit={handleLeaveScreen}
       />
 

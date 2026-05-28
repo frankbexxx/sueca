@@ -2,6 +2,18 @@
 
 **Plano:** [PLAN_GLOBAL.md](../PLAN_GLOBAL.md) · **Estado:** [STATUS.md](../../STATUS.md)
 
+## Ordem activa — Shell navigation (N1–N7)
+
+| Etapa | Ficheiro | Prioridade |
+|-------|----------|------------|
+| N1 | [N1-shell-nav.md](N1-shell-nav.md) | **Agora** — 7 tabs, ShellRouter |
+| N2 | [N2-screen-split.md](N2-screen-split.md) | Stats/Settings/Profile |
+| N3 | [N3-game-setup.md](N3-game-setup.md) | GameSetup + Voltar |
+| N4 | [N4-history.md](N4-history.md) | Histórico + fixar |
+| N5 | [N5-themes.md](N5-themes.md) | Temas visuais |
+| N6 | [N6-exit-app.md](N6-exit-app.md) | Sair APP |
+| N7 | [N7-shell-qa.md](N7-shell-qa.md) | QA + RELEASE_CHECK |
+
 ## Ordem activa (Play Store + P5)
 
 | Etapa | Ficheiro | Prioridade |
