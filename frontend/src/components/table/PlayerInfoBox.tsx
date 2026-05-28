@@ -7,7 +7,7 @@ import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { getHeartsState } from '../../models/games/HeartsGame';
 import { formatSpadesBidLabel } from '../../models/games/spades/spadesRules';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
-import { isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
+import { truncatePlayerName } from '../../utils/tableLayout';
 import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
 
 export interface PlayerInfoBoxProps {
@@ -44,10 +44,7 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
 }) => {
   const { t } = useLanguage();
   const player = gameState.players[playerIndex];
-  const useMobileLayout =
-    forceMobileLayout ||
-    compactSeats ||
-    (layoutSnapshot ? layoutSnapshot.isMobileLayout : isMobileDevice());
+  const useMobileLayout = true;
   const showTeamLabel = shouldShowTeamLabel(variant, showTeamLabels);
   const isDealer = playerIndex === gameState.dealerIndex;
   const isCurrentPlayer = playerIndex === gameState.currentPlayerIndex;
