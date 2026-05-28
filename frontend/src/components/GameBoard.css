@@ -77,16 +77,32 @@
 
 .top-strip--teams > .score-block.us {
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+
+.top-strip--teams > .score-block.us .label,
+.top-strip--teams > .score-block.us .line {
+  text-align: left;
+  width: 100%;
 }
 
 .top-strip--teams > .score-block.them {
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
   text-align: right;
 }
 
 .top-strip--teams > .score-block.them .label,
 .top-strip--teams > .score-block.them .line {
   text-align: right;
+  width: 100%;
 }
 
 .top-strip--unified {
@@ -345,21 +361,24 @@
 
 .trump-info-in-team {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 6px;
   font-size: 1em;
   margin-top: 0;
   padding-top: 0;
   border-top: none;
   width: 100%;
+  min-width: 0;
 }
 
 .dealer-name {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.72em;
+  flex-shrink: 1;
+  min-width: 0;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1041,7 +1060,7 @@
   .trick-from-east { top: 68px; left: 158px; }
   .trick-from-west { top: 68px; left: 0px; }
   .hand-row { padding: 6px 8px; }
-  .trump-info-in-team { font-size: 0.85em; gap: 4px; flex-wrap: wrap; }
+  .trump-info-in-team { font-size: 0.85em; gap: 4px; }
   .trump-minimal { font-size: 1em; padding: 2px 5px; }
   .dealer-name { font-size: 0.85em; }
 }

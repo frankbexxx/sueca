@@ -102,6 +102,7 @@ export interface Translations {
   dashboard: {
     greeting: string;
     continueGame: string;
+    continueShort: string;
     continueHint: string;
     playNow: string;
     lastGame: string;
@@ -259,6 +260,7 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       greeting: 'Olá',
       continueGame: 'Continuar partida',
+      continueShort: 'Continuar',
       continueHint: 'Retoma a última partida guardada',
       playNow: 'Jogar agora',
       lastGame: 'Último jogo',
@@ -463,6 +465,7 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       greeting: 'Hello',
       continueGame: 'Continue game',
+      continueShort: 'Continue',
       continueHint: 'Resume your saved game',
       playNow: 'Play now',
       lastGame: 'Last game',

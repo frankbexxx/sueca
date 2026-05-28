@@ -58,27 +58,6 @@
   font-weight: 500;
 }
 
-.dashboard-context {
-  margin-bottom: 16px;
-}
-
-.dashboard-continue-btn {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  text-align: left;
-}
-
-.dashboard-continue-title {
-  font-size: 1rem;
-}
-
-.dashboard-continue-hint {
-  font-size: 0.8rem;
-  font-weight: 500;
-  opacity: 0.85;
-}
-
 .dashboard-game-list {
   margin-bottom: 16px;
 }
@@ -115,6 +94,8 @@
 }
 
 .dashboard-game-row-name {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
   color: #e9eef7;
   font-size: 0.95rem;
@@ -122,8 +103,10 @@
 
 .dashboard-game-row-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 0.4rem;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .dashboard-stats {
@@ -217,6 +200,31 @@
   .screen-home {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  .dashboard-game-row {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .dashboard-game-row-name {
+    font-size: 0.88rem;
+  }
+
+  .dashboard-game-row-actions {
+    gap: 0.3rem;
+  }
+
+  .dashboard-game-row-actions .sueca-btn--compact {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .dashboard-game-row-actions .sueca-btn--icon {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
   }
 
   .dashboard-stats-grid {

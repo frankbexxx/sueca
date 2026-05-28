@@ -57,21 +57,6 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </button>
       </header>
 
-      {saved && (
-        <section className="dashboard-context">
-          <button
-            type="button"
-            className="sueca-btn sueca-btn--primary sueca-btn--block dashboard-continue-btn"
-            onClick={onContinue}
-          >
-            <span className="dashboard-continue-title">{t.dashboard.continueGame}</span>
-            <span className="dashboard-continue-hint">
-              {t.dashboard.savedAgo(formatRelativeTime(saved.savedAt, language))}
-            </span>
-          </button>
-        </section>
-      )}
-
       <section className="dashboard-game-list">
         <h2 className="dashboard-section-title">{t.dashboard.quickPickTitle}</h2>
         <ul className="dashboard-game-rows">
@@ -84,6 +69,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             >
               <span className="dashboard-game-row-name">{game.name}</span>
               <div className="dashboard-game-row-actions">
+                {saved?.config.gameVariant === game.variant && (
+                  <button
+                    type="button"
+                    className="sueca-btn sueca-btn--secondary sueca-btn--compact"
+                    onClick={onContinue}
+                    title={t.dashboard.savedAgo(formatRelativeTime(saved.savedAt, language))}
+                  >
+                    {t.dashboard.continueShort}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="sueca-btn sueca-btn--primary sueca-btn--compact"

@@ -4,8 +4,8 @@
  */
 export const CARD_ASSETS_DIR = '/assets/cards2';
 
-/** Prefer .png from commercial pack; fall back to repo placeholder .svg */
-const CARD_EXT = process.env.REACT_APP_CARD_EXT === 'png' ? 'png' : 'svg';
+/** PNG pack in public/assets/cards2; override via REACT_APP_CARD_EXT if needed */
+const CARD_EXT = process.env.REACT_APP_CARD_EXT === 'svg' ? 'svg' : 'png';
 
 export const CARD_BACK_PATH = `${CARD_ASSETS_DIR}/card_back.${CARD_EXT}`;
 
