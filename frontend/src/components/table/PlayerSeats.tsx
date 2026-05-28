@@ -8,6 +8,7 @@ import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { getTablePositionForPlayer } from '../../utils/tableLayout';
 import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
 import { PlayerInfoBox } from './PlayerInfoBox';
+import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
 
 export interface PlayerSeatsProps {
   gameState: GameState;
@@ -22,6 +23,7 @@ export interface PlayerSeatsProps {
   compactSeats?: boolean;
   spadesBidPhase?: boolean;
   spadesState?: SpadesVariantState;
+  layoutSnapshot?: LayoutSnapshot;
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -36,7 +38,8 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   auctionLocale = 'pt',
   compactSeats = false,
   spadesBidPhase = false,
-  spadesState
+  spadesState,
+  layoutSnapshot
 }) => {
   return (
     <div className="seats-layer">
@@ -81,6 +84,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
               showAuctionBadges={showAuctionBadges}
               auctionActions={auctionActions}
               auctionLocale={auctionLocale}
+              layoutSnapshot={layoutSnapshot}
             />
             {renderAICards()}
           </div>

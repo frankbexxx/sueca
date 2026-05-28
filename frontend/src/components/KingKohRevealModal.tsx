@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { getTablePosition } from '../utils/tableLayout';
+import { handleCardImageError } from '../utils/cardImageError';
 import './VariantModals.css';
 
 const KOH_DEAL_MS = 480;
@@ -61,6 +62,7 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
                     alt=""
                     className={`king-koh-card-img${current?.playerIndex === index && !isLast ? ' king-koh-card-img--latest' : ''}`}
                     draggable={false}
+                    onError={(event) => handleCardImageError(event, 'king-koh-pile')}
                   />
                   {pile.count > 1 && <span className="king-koh-pile-count">{pile.count}</span>}
                 </div>

@@ -4,9 +4,11 @@ import { useLanguage } from '../../i18n/useLanguage';
 import { shouldShowTeamLabel } from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
+import { getHeartsState } from '../../models/games/HeartsGame';
 import { formatSpadesBidLabel } from '../../models/games/spades/spadesRules';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import { isMobileDevice, truncatePlayerName } from '../../utils/tableLayout';
+import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
 
 export interface PlayerInfoBoxProps {
   gameState: GameState;
@@ -22,6 +24,7 @@ export interface PlayerInfoBoxProps {
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
   forceMobileLayout?: boolean;
+  layoutSnapshot?: LayoutSnapshot;
 }
 
 export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
@@ -36,19 +39,20 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   showAuctionBadges = false,
   auctionActions,
   auctionLocale = 'pt',
-  forceMobileLayout = false
+  forceMobileLayout = false,
+  layoutSnapshot
 }) => {
   const { t } = useLanguage();
   const player = gameState.players[playerIndex];
-  const useMobileLayout = forceMobileLayout || isMobileDevice() || compactSeats;
+  const useMobileLayout =
+    forceMobileLayout ||
+    compactSeats ||
+    (layoutSnapshot ? layoutSnapshot.isMobileLayout : isMobileDevice());
   const showTeamLabel = shouldShowTeamLabel(variant, showTeamLabels);
   const isDealer = playerIndex === gameState.dealerIndex;
   const isCurrentPlayer = playerIndex === gameState.currentPlayerIndex;
   const heartsRoundPoints =
-    !compactSeats && variant === 'hearts'
-      ? ((gameState.variantState?.hearts as { roundPoints?: number[] } | undefined)
-          ?.roundPoints ?? [0, 0, 0, 0])
-      : null;
+    !compactSeats && variant === 'hearts' ? getHeartsState(gameState).roundPoints : null;
 
   const renderSecondaryLine = () => {
     if (spadesBidPhase && spadesState) {
@@ -79,9 +83,7 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
 
   return (
     <div
-      className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}${
-        compactSeats ? ' player-info--compact' : ''
-      }`}
+      className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}`}
     >
       {useMobileLayout || spadesBidPhase ? (
         <>

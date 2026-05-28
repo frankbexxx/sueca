@@ -53,7 +53,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 
 // 2. Internal components & hooks
-import { GameMenu } from './GameMenu';
+import { InGameBar } from './navigation/InGameBar';
 import { useLanguage } from '../hooks/useLanguage';
 
 // 3. Types & constants

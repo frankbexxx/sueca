@@ -11,9 +11,9 @@ import {
 
 const TARGET_SCORE = 100;
 
-type PassDirection = 'left' | 'right' | 'across' | 'hold';
+export type PassDirection = 'left' | 'right' | 'across' | 'hold';
 
-interface HeartsVariantState {
+export interface HeartsVariantState {
   heartsBroken: boolean;
   playerScores: number[];
   roundPoints: number[];
@@ -38,7 +38,7 @@ function penaltyCardsFromTrick(trick: Card[]): Card[] {
   );
 }
 
-function getHeartsState(state: GameState): HeartsVariantState {
+export function getHeartsState(state: GameState): HeartsVariantState {
   const vs = state.variantState?.hearts as HeartsVariantState | undefined;
   const defaults: HeartsVariantState = {
     heartsBroken: false,

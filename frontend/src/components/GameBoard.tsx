@@ -23,6 +23,7 @@ import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
 import { LocalPlayerDock } from './table/LocalPlayerDock';
+import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
@@ -30,8 +31,8 @@ import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
 import { EarlyRoundEndModal } from './EarlyRoundEndModal';
-import { SpadesGame, SpadesVariantState } from '../models/games/SpadesGame';
-import { HeartsGame } from '../models/games/HeartsGame';
+import { SpadesGame, getSpadesState } from '../models/games/SpadesGame';
+import { HeartsGame, getHeartsState } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
 import { SuecaGame } from '../models/games/SuecaGame';
 import { getKingPtState } from '../models/games/KingPtGame';
@@ -67,9 +68,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const multiplayerPlayerIndex = 0;
-  const multiplayerStatus = 'disconnected' as const;
-  const multiplayerSessionId: string | null = config.multiplayerSessionId ?? null;
-  const multiplayerError: string | null = null;
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   
@@ -113,7 +111,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   // UI state
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
-  const showGridOverlay = false;
+  const layoutSnapshot = useLayoutSnapshot();
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
   const shuffleTimerRef = useRef<number | null>(null);
@@ -134,10 +132,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       Boolean(kingPtState?.waitingForEarlyEnd) ||
       Boolean(
         gameVariant === 'hearts' &&
-          (gameState.variantState?.hearts as { waitingForEarlyEnd?: boolean } | undefined)
-            ?.waitingForEarlyEnd
+          getHeartsState(gameState).waitingForEarlyEnd
       ),
-    [kingPtState, gameVariant, gameState.variantState]
+    [kingPtState, gameVariant, gameState]
   );
 
   const festaSheetActive = useMemo(
@@ -371,8 +368,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     if (!gameAdapter) return;
 
     if (gameVariant === 'hearts') {
-      const hearts = gameState.variantState?.hearts as { waitingForPass?: boolean } | undefined;
-      if (hearts?.waitingForPass) {
+      if (getHeartsState(gameState).waitingForPass) {
         (gameAdapter as HeartsGame).togglePassCard(cardIndex, localPlayerIndex);
         setGameState(gameAdapter.getCurrentState());
         return;
@@ -443,8 +439,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
 
       if (gameVariant === 'hearts') {
-        const hearts = gameState.variantState?.hearts as { playerScores?: number[] } | undefined;
-        const scores = hearts?.playerScores ?? [0, 0, 0, 0];
+        const scores = getHeartsState(gameState).playerScores;
         const winnerIndex = scores.indexOf(Math.min(...scores));
         const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
         const playerWon = winnerIndex === localIdx;
@@ -489,6 +484,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     }
   }, [
     gameAdapter,
+    gameState,
     gameState.isGameOver,
     gameState.winner,
     gameState.players,
@@ -548,7 +544,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameAdapter, gameVariant, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
 
-  const spadesState = gameState.variantState?.spades as SpadesVariantState | undefined;
+  const spadesState = gameVariant === 'spades' ? getSpadesState(gameState) : undefined;
   const spadesBidActive = gameVariant === 'spades' && Boolean(spadesState?.waitingForBids);
   const spadesLocalBidTurn =
     spadesBidActive && spadesState?.currentBidderIndex === localPlayerIndex;
@@ -644,9 +640,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
 
   const showTeamLabels = gameVariant === 'sueca';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
-  const heartsState = gameState.variantState?.hearts as
-    | { waitingForPass?: boolean; humanPassIndices?: number[]; passDirection?: string }
-    | undefined;
+  const heartsState = gameVariant === 'hearts' ? getHeartsState(gameState) : undefined;
   const heartsPassActive = gameVariant === 'hearts' && Boolean(heartsState?.waitingForPass);
 
   const boardClassName = [
@@ -654,9 +648,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     darkMode ? 'dark-mode' : '',
     festaSheetActive ? 'game-board--festa-sheet' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
-    gameVariant === 'hearts' ? 'game-board--hearts' : '',
-    heartsPassActive ? 'game-board--hearts-pass' : '',
-    spadesBidActive ? 'game-board--spades-bid' : ''
+    heartsPassActive ? 'game-board--hearts-pass' : ''
   ]
     .filter(Boolean)
     .join(' ');
@@ -667,7 +659,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       variant={gameVariant}
       localPlayerIndex={localPlayerIndex}
       usTeam={usTeam}
-      showGridOverlay={showGridOverlay}
       getCardImage={getCardImage}
       getTeamName={getTeamName}
       showTeamLabels={showTeamLabels}
@@ -681,6 +672,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       compactSeats={heartsPassActive}
       spadesBidPhase={spadesBidActive}
       spadesState={spadesState}
+      layoutSnapshot={layoutSnapshot}
     />
   );
 
@@ -705,13 +697,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         themTeam={themTeam}
         rulesPresetId={rulesPresetId}
       />
-      {isMultiplayer && (
-        <div className={`multiplayer-banner multiplayer-${multiplayerStatus}`}>
-          <span>{`Multiplayer: ${multiplayerStatus}`}</span>
-          {multiplayerSessionId && <span>{`Session: ${multiplayerSessionId}`}</span>}
-          {multiplayerError && <span className="error-label">{multiplayerError}</span>}
-        </div>
-      )}
 
       {isTeamTableLayout ? <div className="game-table-zone">{tableSurface}</div> : tableSurface}
 
@@ -738,7 +723,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           />
           <PlayerHand
             gameState={gameState}
-            variant={gameVariant}
             localPlayerIndex={localPlayerIndex}
             selectedCard={selectedCard}
             readOnly={festaSheetActive && !heartsPassActive}
@@ -749,6 +733,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
             }}
             onCardClick={handleCardClick}
             getCardImage={getCardImage}
+            layoutSnapshot={layoutSnapshot}
           />
         </>
       )}

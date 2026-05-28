@@ -1,3 +1,4 @@
+import { getHeartsState } from '../models/games/HeartsGame';
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
 import { PenteVisualization } from './PenteVisualization';
@@ -114,11 +115,9 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   const continueLabel = tReplace('modals.continueToGame', { nextRound: gameState.round + 1 });
 
   if (variant === 'hearts') {
-    const hearts = gameState.variantState?.hearts as
-      | { playerScores?: number[]; roundPoints?: number[] }
-      | undefined;
-    const totals = hearts?.playerScores ?? [0, 0, 0, 0];
-    const roundPts = hearts?.roundPoints ?? [0, 0, 0, 0];
+    const hearts = getHeartsState(gameState);
+    const totals = hearts.playerScores;
+    const roundPts = hearts.roundPoints;
 
     return (
       <IndividualRoundEndModal

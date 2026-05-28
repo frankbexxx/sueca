@@ -1,4 +1,4 @@
-import React from 'react';
+import { getHeartsState } from '../models/games/HeartsGame';
 import { GameState, DealingMethod, GameVariant } from '../types/game';
 import { PenteVisualization } from './PenteVisualization';
 import { useLanguage } from '../i18n/useLanguage';
@@ -18,8 +18,7 @@ interface GameOverModalProps {
 
 function getIndividualFinalScores(gameState: GameState, variant: 'hearts' | 'king'): number[] {
   if (variant === 'hearts') {
-    const hearts = gameState.variantState?.hearts as { playerScores?: number[] } | undefined;
-    return hearts?.playerScores ?? [0, 0, 0, 0];
+    return getHeartsState(gameState).playerScores;
   }
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;

@@ -46,6 +46,7 @@ export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
         isBidding ? ' local-player-dock--bidding' : ''
       }`}
     >
+      {/* forceMobileLayout: dock always compact; layout frozen at session start */}
       <PlayerInfoBox
         gameState={gameState}
         playerIndex={localPlayerIndex}

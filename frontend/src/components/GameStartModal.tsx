@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameState, Card } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
+import { handleCardImageError } from '../utils/cardImageError';
 import './GameBoard.css';
 
 interface GameStartModalProps {
@@ -33,9 +34,7 @@ export const GameStartModal: React.FC<GameStartModalProps> = ({
               src={getCardImage(gameState.trumpCard)}
               alt={`Trump: ${gameState.trumpCard.rank} of ${gameState.trumpCard.suit}`}
               className="modal-trump-card"
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              onError={(event) => handleCardImageError(event, 'trump-card')}
             />
             <p className="modal-trump-suit">
               {getSuitEmoji(gameState.trumpSuit!)} {gameState.trumpSuit!.toUpperCase()}

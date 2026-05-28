@@ -1,11 +1,12 @@
 import React from 'react';
-import { GameState, Card, GameVariant } from '../types/game';
+import { GameState, Card } from '../types/game';
 import { SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
-import { useMobileLayout } from '../hooks/useMobileLayout';
+import { useHandLayout } from '../hooks/useMobileLayout';
+import { LayoutSnapshot } from '../hooks/useLayoutSnapshot';
+import { handleCardImageError } from '../utils/cardImageError';
 
 interface PlayerHandProps {
   gameState: GameState;
-  variant: GameVariant;
   localPlayerIndex: number;
   selectedCard: number | null;
   canPlayCard: (cardIndex: number) => boolean;
@@ -13,6 +14,7 @@ interface PlayerHandProps {
   getCardImage: (card: Card) => string;
   readOnly?: boolean;
   selectedPassIndices?: number[];
+  layoutSnapshot: LayoutSnapshot;
 }
 
 /**
@@ -21,18 +23,18 @@ interface PlayerHandProps {
  */
 export const PlayerHand: React.FC<PlayerHandProps> = ({
   gameState,
-  variant,
   localPlayerIndex,
   selectedCard,
   canPlayCard,
   onCardClick,
   getCardImage,
   readOnly = false,
-  selectedPassIndices
+  selectedPassIndices,
+  layoutSnapshot
 }) => {
   const player = gameState.players[localPlayerIndex];
   const cardCount = player?.hand.length ?? 0;
-  const { isNarrow, cardSpacing, useScrollLayout } = useMobileLayout(cardCount);
+  const { isNarrow, cardSpacing, useScrollLayout } = useHandLayout(cardCount, layoutSnapshot);
   if (!player) return null;
 
   return (
@@ -64,9 +66,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               role={readOnly ? 'presentation' : 'button'}
               tabIndex={readOnly ? -1 : isPlayable ? 0 : -1}
               aria-disabled={readOnly || !isPlayable}
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              onError={(event) =>
+                handleCardImageError(event, `${card.rank}-${card.suit}`)
+              }
             />
           );
         })}

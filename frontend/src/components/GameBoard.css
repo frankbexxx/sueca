@@ -62,14 +62,6 @@
 }
 
 .game-board--hearts-pass .player-seat .player-info,
-.game-board--hearts-pass .player-seat .player-info.player-info--compact {
-  min-width: 56px;
-  max-width: 72px;
-  width: auto;
-  padding: 2px 4px;
-  border-radius: 6px;
-}
-
 .game-board--hearts-pass .player-seat .player-info.mobile-layout {
   min-width: 56px;
   max-width: 64px;
@@ -377,15 +369,6 @@
   min-height: 0;
 }
 
-.ai-source-banner {
-  text-align: center;
-  font-size: 0.9em;
-  color: #cfdffc;
-  margin-top: -6px;
-  margin-bottom: 6px;
-  opacity: 0.85;
-}
-
 .score-block {
   padding: 4px 6px;
   border-radius: 10px;
@@ -524,22 +507,6 @@
   margin-top: 2px;
 }
 
-.debug-grid-toggle {
-  margin: 8px 16px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
-
-.debug-grid-toggle:hover {
-  background: rgba(255,255,255,0.25);
-}
-
 .table-layout {
   position: relative;
   width: 100%;
@@ -562,30 +529,6 @@
   overflow: visible;
   padding: 10px; /* 70% of 14px */
 }
-
-.grid-overlay {
-  pointer-events: none;
-  position: absolute;
-  inset: -40px;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
-  background-size: 80px 80px;
-  z-index: 50;
-}
-
-.ui-corner {
-  position: absolute;
-  z-index: 120;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.ui-corner.top-left { top: 12px; left: 12px; }
-.ui-corner.top-right { top: 12px; right: 12px; align-items: flex-end; }
-.ui-corner.bottom-right { bottom: 12px; right: 12px; align-items: flex-end; }
-.ui-corner.bottom-left { bottom: 12px; left: 12px; }
 
 /* Trump card display removed - now shown minimalistically in round-block */
 
@@ -626,6 +569,7 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
   min-width: var(--button-min-w);
+  min-height: var(--sueca-touch-min);
   color: white;
   font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
 }
@@ -644,9 +588,6 @@
 .continue-button.enabled:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 2px;
-}
-.continue-button {
-  min-height: var(--sueca-touch-min);
 }
 
 .trick-area-center {
@@ -901,7 +842,8 @@
   overflow: visible;
 }
 
-.hand-row--scroll {
+.hand-row--scroll,
+.player-hand-bar--narrow .hand-row {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -918,7 +860,8 @@
   box-sizing: border-box;
 }
 
-.hand-row--scroll .card-hand {
+.hand-row--scroll .card-hand,
+.player-hand-bar--narrow .card-hand {
   position: relative;
   transform: none !important;
   flex-shrink: 0;
@@ -1035,7 +978,6 @@
   .dealer-name { font-size: 0.95em; }
 }
 
-/* Mobile: East and West info boxes positioned closer to table edge */
 @media (max-width: 768px) {
   .player-seat.player-east {
     right: -10px !important; /* Encostado à lateral, pode sobrepor borda */
@@ -1043,9 +985,7 @@
   .player-seat.player-west {
     left: -10px !important; /* Encostado à lateral, pode sobrepor borda */
   }
-}
 
-@media (max-width: 768px) {
   .game-board {
     --table-size: min(94vw, 620px);
     --trick-size: 260px;
@@ -1092,16 +1032,8 @@
   .round-block { padding: 5px 7px; min-width: 105px; }
   .round-block--center { min-width: 0; padding: 4px 5px; }
   .trump-card-mini { width: 34px; }
-  .top-actions { padding: 6px 12px 0; justify-content: flex-end; }
-  .ui-corner { gap: 8px; }
-  .ui-corner.top-right,
-  .ui-corner.bottom-right { right: 8px; }
-  .ui-corner.top-left,
-  .ui-corner.bottom-left { left: 8px; }
   .player-seat.player-north { top: -12px; }
   .player-seat.player-south { bottom: -12px; }
-  .player-seat.player-east { right: -10px !important; } /* Mobile: Encostado à lateral, pode sobrepor borda */
-  .player-seat.player-west { left: -10px !important; } /* Mobile: Encostado à lateral, pode sobrepor borda */
   .player-info { min-width: 120px; }
   .hand-row { padding: 8px 10px; }
   .trump-info-in-team { font-size: 0.9em; gap: 5px; }
@@ -1144,7 +1076,6 @@
   .score-block { padding: 4px 6px; }
   .round-block { padding: 4px 6px; min-width: 0; font-size: 0.95em; }
   .trump-card-mini { width: 32px; }
-  .top-actions { padding: 6px 10px 0; justify-content: center; }
   .action-buttons-group {
     align-items: center;
     flex-wrap: wrap;
@@ -1156,8 +1087,6 @@
   }
   .action-buttons-bar { padding: 6px 6px 12px; }
   .table-layout { margin: 8px 0 20px; padding: 6px; }
-  .player-seat.player-east { right: -10px !important; } /* Encostado à lateral */
-  .player-seat.player-west { left: -10px !important; } /* Encostado à lateral */
   .player-seat.player-north { top: -4px; }
   .player-seat.player-south { bottom: -4px; }
   .trick-cards-cross { width: 210px; height: 210px; }
@@ -1211,26 +1140,11 @@
     min-width: 0;
   }
   .player-hand-bar--narrow .hand-row {
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     padding: 6px 8px;
-    justify-content: flex-start;
-    display: flex;
-    flex-wrap: nowrap;
-    height: auto;
-    min-height: var(--hand-row-h);
   }
   .player-hand-bar--narrow .card-hand {
-    position: relative;
-    transform: none !important;
-    flex-shrink: 0;
-    margin-right: 4px;
     min-width: 44px;
     min-height: 48px;
-    object-fit: contain;
   }
   .trick-cards-cross { width: var(--trick-size); height: var(--trick-size); }
   .continue-button {

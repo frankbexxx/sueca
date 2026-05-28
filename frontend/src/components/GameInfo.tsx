@@ -8,7 +8,7 @@ import {
 } from '../models/games/king/kingContracts';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { getKingRulesHint } from './KingRulesHelper';
-import { SpadesVariantState } from '../models/games/SpadesGame';
+import { getSpadesState } from '../models/games/SpadesGame';
 import { partialTeamBids } from '../models/games/spades/spadesRules';
 import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 import { getCardImagePath } from '../constants/cardAssets';
@@ -63,7 +63,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
   }
 
   if (variant === 'spades') {
-    const spades = gameState.variantState?.spades as SpadesVariantState | undefined;
+    const spades = getSpadesState(gameState);
     if (spades?.waitingForBids) {
       const currentName = gameState.players[spades.currentBidderIndex]?.name ?? '…';
       const partial = partialTeamBids(spades.playerBids, spades.playerBidTypes);

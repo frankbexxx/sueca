@@ -4,13 +4,13 @@ import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { TrickArea } from '../TrickArea';
 import { PlayerSeats } from './PlayerSeats';
+import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
 
 export interface TableSurfaceProps {
   gameState: GameState;
   variant: GameVariant;
   localPlayerIndex: number;
   usTeam: 1 | 2;
-  showGridOverlay: boolean;
   getCardImage: (card: Card) => string;
   getTeamName: (team: 1 | 2) => string;
   showTeamLabels?: boolean;
@@ -20,6 +20,7 @@ export interface TableSurfaceProps {
   compactSeats?: boolean;
   spadesBidPhase?: boolean;
   spadesState?: SpadesVariantState;
+  layoutSnapshot?: LayoutSnapshot;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -27,7 +28,6 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   variant,
   localPlayerIndex,
   usTeam,
-  showGridOverlay,
   getCardImage,
   getTeamName,
   showTeamLabels = true,
@@ -36,15 +36,14 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   auctionLocale = 'pt',
   compactSeats = false,
   spadesBidPhase = false,
-  spadesState
+  spadesState,
+  layoutSnapshot
 }) => {
   return (
     <div className="table-layout">
       <div className="table-surface">
-        {showGridOverlay && <div className="grid-overlay" />}
         <TrickArea
           gameState={gameState}
-          variant={variant}
           localPlayerIndex={localPlayerIndex}
           getCardImage={getCardImage}
         />
@@ -61,6 +60,7 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           compactSeats={compactSeats}
           spadesBidPhase={spadesBidPhase}
           spadesState={spadesState}
+          layoutSnapshot={layoutSnapshot}
         />
       </div>
     </div>

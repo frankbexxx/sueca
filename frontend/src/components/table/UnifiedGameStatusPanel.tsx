@@ -11,6 +11,7 @@ import { resolvePresetId } from '../../constants/rulesPresets';
 import { getKingRulesHint } from '../KingRulesHelper';
 import { getHeartsRulesHint } from '../HeartsRulesHelper';
 import { KingGameHistoryPanel } from '../KingGameHistoryPanel';
+import { getHeartsState } from '../../models/games/HeartsGame';
 import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
 
@@ -50,13 +51,10 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
   const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
-  const hearts = gameState.variantState?.hearts as
-    | { playerScores?: number[]; penaltyCardsTaken?: Card[][] }
-    | undefined;
 
   const scores =
     variant === 'hearts'
-      ? hearts?.playerScores ?? [0, 0, 0, 0]
+      ? getHeartsState(gameState).playerScores
       : kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
 
   const pointsLabel = isPt ? 'Pontos' : 'Points';
@@ -96,10 +94,11 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       ruleLine = `${gameState.round}/10 · ${simplified?.handType ?? '…'}`;
     }
   } else if (variant === 'hearts') {
+    const heartsState = getHeartsState(gameState);
     const heartsHint = getHeartsRulesHint(locale);
     contractLine = heartsHint.title;
     heartsRuleLines = heartsHint.lines;
-    penaltyCardsByPlayer = hearts?.penaltyCardsTaken ?? [[], [], [], []];
+    penaltyCardsByPlayer = heartsState.penaltyCardsTaken;
   }
 
   const showPenaltyCards =

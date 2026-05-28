@@ -35,7 +35,7 @@ function emptyBidTypes(): SpadesBidType[] {
   return ['normal', 'normal', 'normal', 'normal'];
 }
 
-function getSpadesState(state: GameState): SpadesVariantState {
+export function getSpadesState(state: GameState): SpadesVariantState {
   const vs = state.variantState?.spades as SpadesVariantState | undefined;
   return (
     vs ?? {
