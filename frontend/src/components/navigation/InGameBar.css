@@ -45,6 +45,27 @@
 
 .in-game-bar-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.in-game-bar-actions .in-game-bar-btn {
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .in-game-bar {
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 6px;
+  }
+
+  .in-game-bar-actions .in-game-bar-btn {
+    padding: 5px 6px;
+    font-size: 0.68rem;
+  }
 }

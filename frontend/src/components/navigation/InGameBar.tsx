@@ -9,6 +9,7 @@ interface InGameBarProps {
   isPaused: boolean;
   onPause: () => void;
   onResume: () => void;
+  onNewGame: () => void;
   onExit: () => void;
 }
 
@@ -19,12 +20,19 @@ export const InGameBar: React.FC<InGameBarProps> = ({
   isPaused,
   onPause,
   onResume,
+  onNewGame,
   onExit
 }) => {
   const { t } = useLanguage();
 
+  const handleNewGame = () => {
+    if (window.confirm(t.inGame.newGameConfirm)) {
+      onNewGame();
+    }
+  };
+
   const handleExit = () => {
-    if (window.confirm(t.inGame.exitConfirm)) {
+    if (window.confirm(t.inGame.leaveConfirm)) {
       onExit();
     }
   };
@@ -41,14 +49,21 @@ export const InGameBar: React.FC<InGameBarProps> = ({
       <div className="in-game-bar-actions">
         <button
           type="button"
-          className="sueca-btn sueca-btn--secondary sueca-btn--compact"
+          className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"
           onClick={isPaused ? onResume : onPause}
         >
           {isPaused ? `▶ ${t.gameMenu.resume}` : `⏸ ${t.gameMenu.pause}`}
         </button>
         <button
           type="button"
-          className="sueca-btn sueca-btn--danger sueca-btn--compact"
+          className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"
+          onClick={handleNewGame}
+        >
+          {t.inGame.newGame}
+        </button>
+        <button
+          type="button"
+          className="sueca-btn sueca-btn--danger sueca-btn--compact in-game-bar-btn"
           onClick={handleExit}
         >
           {t.inGame.exit}

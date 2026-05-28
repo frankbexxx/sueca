@@ -4,22 +4,60 @@ import {
   touchLastPlayed,
   getWinRate,
   formatRelativeTime,
-  saveLastConfig
+  saveLastConfig,
+  saveGameSession,
+  loadGameSession,
+  loadAllGameSessions,
+  clearGameSession
 } from './gameSessionStorage';
 import { GameConfig } from '../types/gameConfig';
+import { GameState } from '../types/game';
+import { GameFactory } from '../models/games/GameFactory';
 
 const STATS_KEY = 'sueca-local-stats';
 const LAST_CONFIG_KEY = 'sueca-last-config';
+const SESSIONS_KEY = 'sueca-saved-sessions-v1';
+const LEGACY_SESSION_KEY = 'sueca-saved-session';
 
-const mockConfig = (): GameConfig => ({
+const mockConfig = (variant: GameConfig['gameVariant'] = 'hearts'): GameConfig => ({
   playerNames: ['Alice', 'Bot 2', 'Bot 3', 'Bot 4'],
   aiDifficulty: 'medium',
   dealingMethod: 'A',
   multiplayerEnabled: false,
   multiplayerJoinMode: false,
-  gameVariant: 'hearts',
-  rulesPresetId: 'hearts-us-normal'
+  gameVariant: variant,
+  rulesPresetId: variant === 'hearts' ? 'hearts-us-normal' : 'sueca-pt-normal'
 });
+
+const mockState = (variant: GameConfig['gameVariant'], isGameOver = false): GameState =>
+  ({
+    players: [],
+    currentPlayerIndex: 0,
+    dealerIndex: 0,
+    trumpSuit: null,
+    trumpCard: null,
+    currentTrick: [],
+    trickLeader: 0,
+    scores: { team1: 0, team2: 0 },
+    gameScore: { team1: 0, team2: 0 },
+    round: 1,
+    isGameOver,
+    winner: null,
+    lastTrickWinner: null,
+    waitingForTrickEnd: false,
+    nextTrickLeader: null,
+    isFirstTrick: true,
+    dealingMethod: 'A',
+    waitingForRoundStart: false,
+    waitingForRoundEnd: false,
+    waitingForGameStart: false,
+    playedCards: [],
+    isPaused: false,
+    playerName: 'Alice',
+    aiDifficulty: 'medium',
+    partnerSignals: [],
+    variantState: variant === 'hearts' ? { hearts: {} } : undefined
+  }) as GameState;
 
 describe('gameSessionStorage', () => {
   beforeEach(() => {
@@ -66,6 +104,63 @@ describe('gameSessionStorage', () => {
     const stats = loadLocalStats();
     expect(stats.lastPlayedVariant).toBe('hearts');
     expect(localStorage.getItem(LAST_CONFIG_KEY)).toBeTruthy();
+  });
+
+  it('saveGameSession stores one slot per variant', () => {
+    saveGameSession(mockConfig('sueca'), mockState('sueca'));
+    saveGameSession(mockConfig('hearts'), mockState('hearts'));
+    expect(loadGameSession('sueca')?.config.gameVariant).toBe('sueca');
+    expect(loadGameSession('hearts')?.config.gameVariant).toBe('hearts');
+    const all = loadAllGameSessions();
+    expect(all.sueca).toBeTruthy();
+    expect(all.hearts).toBeTruthy();
+  });
+
+  it('clearGameSession removes only the requested variant', () => {
+    saveGameSession(mockConfig('sueca'), mockState('sueca'));
+    saveGameSession(mockConfig('spades'), mockState('spades'));
+    clearGameSession('sueca');
+    expect(loadGameSession('sueca')).toBeNull();
+    expect(loadGameSession('spades')?.config.gameVariant).toBe('spades');
+  });
+
+  it('saveGameSession clears slot when game is over', () => {
+    saveGameSession(mockConfig('king'), mockState('king'));
+    saveGameSession(mockConfig('king'), mockState('king', true));
+    expect(loadGameSession('king')).toBeNull();
+  });
+
+  it('migrates legacy single session key into variant slot', () => {
+    const legacy = {
+      config: mockConfig('sueca'),
+      state: mockState('sueca'),
+      savedAt: Date.now()
+    };
+    localStorage.setItem(LEGACY_SESSION_KEY, JSON.stringify(legacy));
+    expect(loadGameSession('sueca')?.config.gameVariant).toBe('sueca');
+    expect(localStorage.getItem(LEGACY_SESSION_KEY)).toBeNull();
+  });
+
+  it('loadGameSession without variant returns most recent save', () => {
+    jest.setSystemTime(new Date('2026-05-20T10:00:00Z'));
+    saveGameSession(mockConfig('sueca'), mockState('sueca'));
+    jest.setSystemTime(new Date('2026-05-20T12:00:00Z'));
+    saveGameSession(mockConfig('hearts'), mockState('hearts'));
+    expect(loadGameSession()?.config.gameVariant).toBe('hearts');
+  });
+
+  it('saved sueca session round-trips through adapter restoreState', () => {
+    const adapter = GameFactory.getAdapter('sueca');
+    const state = adapter.initialize(['P1', 'P2', 'P3', 'P4'], {
+      dealingMethod: 'A',
+      aiDifficulty: 'medium'
+    });
+    saveGameSession(mockConfig('sueca'), state);
+    const loaded = loadGameSession('sueca');
+    expect(loaded).toBeTruthy();
+    const restored = adapter.restoreState(loaded!.state);
+    expect(restored.players).toHaveLength(4);
+    expect(restored.round).toBe(state.round);
   });
 
   it('getWinRate returns null when no games played', () => {

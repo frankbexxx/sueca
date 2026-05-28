@@ -2,15 +2,20 @@ import { GameConfig } from '../types/gameConfig';
 import { GameState, GameVariant } from '../types/game';
 import { resolvePresetId, getDefaultPresetId } from '../constants/rulesPresets';
 
-const SESSION_KEY = 'sueca-saved-session';
+const SESSIONS_KEY = 'sueca-saved-sessions-v1';
+const LEGACY_SESSION_KEY = 'sueca-saved-session';
 const LAST_CONFIG_KEY = 'sueca-last-config';
 const STATS_KEY = 'sueca-local-stats';
+
+const ALL_VARIANTS: GameVariant[] = ['sueca', 'hearts', 'spades', 'king'];
 
 export interface SavedGameSession {
   config: GameConfig;
   state: GameState;
   savedAt: number;
 }
+
+export type SavedGameSessions = Partial<Record<GameVariant, SavedGameSession>>;
 
 export interface LocalStats {
   gamesPlayed: number;
@@ -30,6 +35,65 @@ const emptyStats = (): LocalStats => ({
     king: { played: 0, wins: 0 }
   }
 });
+
+function isValidSession(session: SavedGameSession | undefined): session is SavedGameSession {
+  return Boolean(session && session.config?.gameVariant && session.state && !session.state.isGameOver);
+}
+
+function readSessionsRaw(): SavedGameSessions {
+  migrateLegacySession();
+  const raw = localStorage.getItem(SESSIONS_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as SavedGameSessions;
+    if (!parsed || typeof parsed !== 'object') return {};
+    const cleaned: SavedGameSessions = {};
+    for (const variant of ALL_VARIANTS) {
+      const session = parsed[variant];
+      if (isValidSession(session)) {
+        cleaned[variant] = session;
+      }
+    }
+    return cleaned;
+  } catch {
+    return {};
+  }
+}
+
+function writeSessions(sessions: SavedGameSessions): void {
+  const hasAny = ALL_VARIANTS.some((variant) => isValidSession(sessions[variant]));
+  if (!hasAny) {
+    localStorage.removeItem(SESSIONS_KEY);
+    return;
+  }
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+}
+
+function migrateLegacySession(): void {
+  const legacyRaw = localStorage.getItem(LEGACY_SESSION_KEY);
+  if (!legacyRaw) return;
+  try {
+    const legacy = JSON.parse(legacyRaw) as SavedGameSession;
+    if (isValidSession(legacy)) {
+      const sessions = readSessionsWithoutMigration();
+      sessions[legacy.config.gameVariant] = legacy;
+      writeSessions(sessions);
+    }
+  } catch {
+    /* ignore corrupt legacy */
+  }
+  localStorage.removeItem(LEGACY_SESSION_KEY);
+}
+
+function readSessionsWithoutMigration(): SavedGameSessions {
+  const raw = localStorage.getItem(SESSIONS_KEY);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as SavedGameSessions;
+  } catch {
+    return {};
+  }
+}
 
 export function touchLastPlayed(variant: GameVariant): void {
   const stats = loadLocalStats();
@@ -78,28 +142,46 @@ export function buildQuickConfigForVariant(variant: GameVariant): GameConfig {
 }
 
 export function saveGameSession(config: GameConfig, state: GameState): void {
+  const variant = config.gameVariant;
+  const sessions = readSessionsRaw();
   if (state.isGameOver) {
-    clearGameSession();
+    delete sessions[variant];
+    writeSessions(sessions);
     return;
   }
-  const session: SavedGameSession = { config, state, savedAt: Date.now() };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  sessions[variant] = { config, state, savedAt: Date.now() };
+  writeSessions(sessions);
 }
 
-export function loadGameSession(): SavedGameSession | null {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (!raw) return null;
-  try {
-    const session = JSON.parse(raw) as SavedGameSession;
-    if (session.state?.isGameOver) return null;
-    return session;
-  } catch {
-    return null;
+export function loadGameSession(variant?: GameVariant): SavedGameSession | null {
+  const sessions = readSessionsRaw();
+  if (variant) {
+    const session = sessions[variant];
+    return isValidSession(session) ? session : null;
   }
+  let latest: SavedGameSession | null = null;
+  for (const v of ALL_VARIANTS) {
+    const session = sessions[v];
+    if (isValidSession(session) && (!latest || session.savedAt > latest.savedAt)) {
+      latest = session;
+    }
+  }
+  return latest;
 }
 
-export function clearGameSession(): void {
-  localStorage.removeItem(SESSION_KEY);
+export function loadAllGameSessions(): SavedGameSessions {
+  return readSessionsRaw();
+}
+
+export function clearGameSession(variant?: GameVariant): void {
+  if (!variant) {
+    localStorage.removeItem(SESSIONS_KEY);
+    localStorage.removeItem(LEGACY_SESSION_KEY);
+    return;
+  }
+  const sessions = readSessionsRaw();
+  delete sessions[variant];
+  writeSessions(sessions);
 }
 
 export function loadLocalStats(): LocalStats {

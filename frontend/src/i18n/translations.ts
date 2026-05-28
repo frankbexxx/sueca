@@ -126,6 +126,8 @@ export interface Translations {
     buildVersion: string;
     playGame: string;
     configureGame: (game: string) => string;
+    playSavedConfirm: string;
+    playNewConfirm: string;
   };
 
   playSetup: {
@@ -170,6 +172,9 @@ export interface Translations {
   inGame: {
     exit: string;
     exitConfirm: string;
+    newGame: string;
+    leaveConfirm: string;
+    newGameConfirm: string;
   };
   
   // Game Menu
@@ -283,7 +288,9 @@ export const translations: Record<Language, Translations> = {
       winsShort: 'V',
       buildVersion: 'Versão',
       playGame: 'Jogar',
-      configureGame: (game) => `Configurar ${game}`
+      configureGame: (game) => `Configurar ${game}`,
+      playSavedConfirm: 'Tens uma partida guardada. Continuar?',
+      playNewConfirm: 'Começar novo jogo e apagar a partida guardada?'
     },
     playSetup: {
       title: 'Nova partida',
@@ -322,7 +329,10 @@ export const translations: Record<Language, Translations> = {
     },
     inGame: {
       exit: 'Sair',
-      exitConfirm: 'Abandonar a partida actual?'
+      exitConfirm: 'Abandonar a partida actual?',
+      newGame: 'Novo jogo',
+      leaveConfirm: 'Voltar ao início? A partida fica guardada.',
+      newGameConfirm: 'Abandonar a partida actual e começar uma nova?'
     },
     startMenu: {
       title: '🃏 Sueca',
@@ -488,7 +498,9 @@ export const translations: Record<Language, Translations> = {
       winsShort: 'W',
       buildVersion: 'Version',
       playGame: 'Play',
-      configureGame: (game) => `Configure ${game}`
+      configureGame: (game) => `Configure ${game}`,
+      playSavedConfirm: 'You have a saved game. Continue?',
+      playNewConfirm: 'Start a new game and delete the saved one?'
     },
     playSetup: {
       title: 'New game',
@@ -527,7 +539,10 @@ export const translations: Record<Language, Translations> = {
     },
     inGame: {
       exit: 'Exit',
-      exitConfirm: 'Leave the current game?'
+      exitConfirm: 'Leave the current game?',
+      newGame: 'New game',
+      leaveConfirm: 'Return to home? Your game will be saved.',
+      newGameConfirm: 'Abandon the current game and start a new one?'
     },
     startMenu: {
       title: '🃏 Sueca',

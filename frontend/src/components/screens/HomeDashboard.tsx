@@ -13,7 +13,7 @@ import { BUILD_VERSION } from '../../generated/buildInfo';
 import './HomeDashboard.css';
 
 interface HomeDashboardProps {
-  onContinue: () => void;
+  onContinue: (variant: GameVariant) => void;
   onPlayVariant: (variant: GameVariant) => void;
   onConfigureVariant: (variant: GameVariant) => void;
   onOpenProfile: () => void;
@@ -26,7 +26,6 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onOpenProfile
 }) => {
   const { t, language } = useLanguage();
-  const saved = loadGameSession();
   const lastConfig = loadLastConfig();
   const stats = loadLocalStats();
   const games = getAvailableGames();
@@ -60,7 +59,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       <section className="dashboard-game-list">
         <h2 className="dashboard-section-title">{t.dashboard.quickPickTitle}</h2>
         <ul className="dashboard-game-rows">
-          {games.map((game) => (
+          {games.map((game) => {
+            const saved = loadGameSession(game.variant);
+            return (
             <li
               key={game.variant}
               className={`dashboard-game-row${
@@ -69,11 +70,11 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             >
               <span className="dashboard-game-row-name">{game.name}</span>
               <div className="dashboard-game-row-actions">
-                {saved?.config.gameVariant === game.variant && (
+                {saved && (
                   <button
                     type="button"
                     className="sueca-btn sueca-btn--secondary sueca-btn--compact"
-                    onClick={onContinue}
+                    onClick={() => onContinue(game.variant)}
                     title={t.dashboard.savedAgo(formatRelativeTime(saved.savedAt, language))}
                   >
                     {t.dashboard.continueShort}
@@ -97,7 +98,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 </button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
 

@@ -116,6 +116,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
   const shuffleTimerRef = useRef<number | null>(null);
   const trickWinTimerRef = useRef<number | null>(null);
+  const freshStartRef = useRef(false);
+  const [gameInitKey, setGameInitKey] = useState(0);
 
   const kingPtState = useMemo(
     () =>
@@ -159,7 +161,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
     try {
       const adapter = GameFactory.getAdapter(config.gameVariant);
       let initialState: GameState;
-      if (resumeSession?.state && resumeSession.config.gameVariant === config.gameVariant) {
+      const shouldResume =
+        !freshStartRef.current &&
+        resumeSession?.state &&
+        resumeSession.config.gameVariant === config.gameVariant;
+      if (shouldResume) {
         initialState = adapter.restoreState(resumeSession.state);
       } else {
         initialState = adapter.initialize(config.playerNames, {
@@ -169,6 +175,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
           rulesPresetId: config.rulesPresetId
         });
       }
+      freshStartRef.current = false;
       setGameAdapter(adapter);
       setGameState(initialState);
       setGameStarted(true);
@@ -177,7 +184,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       alert(t.startMenu.errorStartingGame);
       onExit();
     }
-  }, [config, resumeSession, onExit, t.startMenu.errorStartingGame]);
+  }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame]);
 
   useEffect(() => {
     if (!gameAdapter || !gameStarted || gameState.isGameOver) return;
@@ -434,7 +441,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
       const us = gameState.players[localIdx]?.team;
       recordGameResult(gameVariant, us === gameState.winner);
-      clearGameSession();
+      clearGameSession(gameVariant);
       const timer = setTimeout(() => onExit(), GAME_OVER_DELAY_MS);
       return () => clearTimeout(timer);
     }
@@ -519,21 +526,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
   };
 
   /**
-   * Quits the current game and returns to StartMenu
-   * Shows confirmation dialog before quitting
+   * Leaves the game screen and keeps the saved session for Continue.
    */
-  const handleQuit = () => {
-    clearGameSession();
-    if (gameAdapter) {
-      const current = gameAdapter.getCurrentState();
-      gameAdapter.quitGame(current);
-    }
+  const handleLeaveScreen = () => {
+    saveGameSession(
+      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
+      gameState
+    );
     onExit();
   };
 
+  const restartFreshGame = () => {
+    clearGameSession(gameVariant);
+    freshStartRef.current = true;
+    setSelectedCard(null);
+    setGameInitKey((key) => key + 1);
+  };
+
   const handleNewGame = () => {
-    clearGameSession();
-    onExit();
+    restartFreshGame();
   };
 
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
@@ -582,7 +593,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}
-        onExit={handleQuit}
+        onNewGame={handleNewGame}
+        onExit={handleLeaveScreen}
       />
 
       <ScoreStrip

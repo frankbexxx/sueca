@@ -16,6 +16,7 @@ import {
   clearGameSession,
   buildQuickConfigForVariant
 } from './services/gameSessionStorage';
+import { useLanguage } from './i18n/useLanguage';
 import { STORAGE_KEYS } from './constants/gameConstants';
 import { playUiClick, preloadAmbiance, preloadSfx, startAmbiance } from './services/audioService';
 import './App.css';
@@ -24,6 +25,7 @@ import './styles/app-shell.css';
 const UI_CLICK_SELECTOR = '.sueca-btn, .dobo-btn, .lang-btn';
 
 function App() {
+  const { t } = useLanguage();
   const [screen, setScreen] = useState<AppScreen>('landing');
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
@@ -62,12 +64,30 @@ function App() {
   }, []);
 
   const exitGame = useCallback(() => {
-    clearGameSession();
     setGameConfig(null);
     setResumeSession(null);
     setScreen('shell');
     setActiveTab('home');
   }, []);
+
+  const handlePlayVariant = useCallback(
+    (variant: GameVariant) => {
+      const saved = loadGameSession(variant);
+      if (saved) {
+        if (window.confirm(t.dashboard.playSavedConfirm)) {
+          startGame(saved.config, saved);
+          return;
+        }
+        if (window.confirm(t.dashboard.playNewConfirm)) {
+          clearGameSession(variant);
+          startGame(buildQuickConfigForVariant(variant));
+        }
+        return;
+      }
+      startGame(buildQuickConfigForVariant(variant));
+    },
+    [startGame, t.dashboard.playNewConfirm, t.dashboard.playSavedConfirm]
+  );
 
   const handleTabChange = useCallback((tab: AppTab) => {
     setActiveTab(tab);
@@ -102,13 +122,11 @@ function App() {
       <main className="app-shell-content">
         {activeTab === 'home' && (
           <HomeDashboard
-            onContinue={() => {
-              const saved = loadGameSession();
+            onContinue={(variant) => {
+              const saved = loadGameSession(variant);
               if (saved) startGame(saved.config, saved);
             }}
-            onPlayVariant={(variant) => {
-              startGame(buildQuickConfigForVariant(variant));
-            }}
+            onPlayVariant={handlePlayVariant}
             onConfigureVariant={(variant) => {
               setPlayInitialVariant(variant);
               setActiveTab('play');
