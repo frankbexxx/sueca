@@ -53,11 +53,64 @@
   position: relative;
   z-index: 2100;
   pointer-events: auto;
+  margin-bottom: calc(22vh + 6px);
 }
 
 .game-board--hearts-pass .game-table-zone,
 .game-board--hearts-pass .table-layout {
   pointer-events: none;
+}
+
+.game-board--hearts-pass .player-info,
+.game-board--hearts-pass .player-info.player-info--compact {
+  min-width: 56px;
+  max-width: 72px;
+  width: auto;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+
+.game-board--hearts-pass .player-info.mobile-layout {
+  min-width: 56px;
+  max-width: 64px;
+  width: 64px;
+  padding: 2px 4px;
+}
+
+.game-board--hearts-pass .player-name,
+.game-board--hearts-pass .player-name-line-1 {
+  font-size: 0.58rem;
+  line-height: 1.1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-board--hearts-pass .player-name-line-2,
+.game-board--hearts-pass .team-badge,
+.game-board--hearts-pass .hand-back-stack {
+  display: none;
+}
+
+.game-board--hearts-pass .player-seat.player-north {
+  top: -8px;
+}
+
+.game-board--hearts-pass .player-seat.player-south {
+  bottom: -8px;
+}
+
+.game-board--hearts-pass .player-seat.player-east {
+  right: -18px;
+}
+
+.game-board--hearts-pass .player-seat.player-west {
+  left: -18px;
+}
+
+.game-board--hearts-pass .game-status-panel__contract-rules {
+  display: none;
 }
 
 .game-board--hearts .trick-area-center {

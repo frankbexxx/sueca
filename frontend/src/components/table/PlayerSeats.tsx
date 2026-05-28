@@ -22,6 +22,7 @@ export interface PlayerSeatsProps {
   showAuctionBadges?: boolean;
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
+  compactSeats?: boolean;
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -34,18 +35,20 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   getCardImage,
   showAuctionBadges = false,
   auctionActions,
-  auctionLocale = 'pt'
+  auctionLocale = 'pt',
+  compactSeats = false
 }) => {
   const { t } = useLanguage();
-  const useMobileLayout = isMobileDevice();
+  const useMobileLayout = isMobileDevice() || compactSeats;
   const showTeamLabel = shouldShowTeamLabel(variant, showTeamLabels);
   const heartsRoundPoints =
-    variant === 'hearts'
+    !compactSeats && variant === 'hearts'
       ? ((gameState.variantState?.hearts as { roundPoints?: number[] } | undefined)
           ?.roundPoints ?? [0, 0, 0, 0])
       : null;
 
   const renderSecondaryLine = (playerIndex: number) => {
+    if (compactSeats) return null;
     if (heartsRoundPoints) {
       return t.gameBoard.roundPointsShort(heartsRoundPoints[playerIndex] ?? 0);
     }
@@ -93,7 +96,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         };
 
         const renderAICards = () => {
-          if (isHuman) return null;
+          if (isHuman || compactSeats) return null;
           return (
             <div className="hand-back-stack">
               <img
@@ -112,28 +115,38 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
             key={player.id}
             className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}`}
           >
-            <div className={`player-info ${useMobileLayout ? 'mobile-layout' : ''}`}>
+            <div
+              className={`player-info ${useMobileLayout ? 'mobile-layout' : ''}${
+                compactSeats ? ' player-info--compact' : ''
+              }`}
+            >
               {useMobileLayout ? (
                 <>
                   <div className="player-name-line-1">
                     {truncatePlayerName(player.name)}
-                    {isDealer && <span className="dealer-badge">🃏</span>}
+                    {!compactSeats && isDealer && <span className="dealer-badge">🃏</span>}
                   </div>
-                  <div className="player-name-line-2">
-                    {renderSecondaryLine(index)}
-                    {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
-                    {renderAuctionBadge(index)}
-                  </div>
+                  {!compactSeats && (
+                    <div className="player-name-line-2">
+                      {renderSecondaryLine(index)}
+                      {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
+                      {renderAuctionBadge(index)}
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
                   <h3 className="player-name">
-                    {player.name}
-                    {isDealer && <span className="dealer-badge">🃏</span>}
-                    {isCurrentPlayer && <span className="turn-indicator">⚡</span>}
+                    {truncatePlayerName(player.name)}
+                    {!compactSeats && isDealer && <span className="dealer-badge">🃏</span>}
+                    {!compactSeats && isCurrentPlayer && <span className="turn-indicator">⚡</span>}
                   </h3>
-                  <div className="team-badge">{renderSecondaryLine(index)}</div>
-                  {renderAuctionBadge(index)}
+                  {!compactSeats && (
+                    <>
+                      <div className="team-badge">{renderSecondaryLine(index)}</div>
+                      {renderAuctionBadge(index)}
+                    </>
+                  )}
                 </>
               )}
             </div>

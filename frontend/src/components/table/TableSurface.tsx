@@ -16,6 +16,7 @@ export interface TableSurfaceProps {
   showAuctionBadges?: boolean;
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
+  compactSeats?: boolean;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -29,7 +30,8 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   showTeamLabels = true,
   showAuctionBadges = false,
   auctionActions,
-  auctionLocale = 'pt'
+  auctionLocale = 'pt',
+  compactSeats = false
 }) => {
   return (
     <div className="table-layout">
@@ -52,6 +54,7 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           showAuctionBadges={showAuctionBadges}
           auctionActions={auctionActions}
           auctionLocale={auctionLocale}
+          compactSeats={compactSeats}
         />
       </div>
     </div>

@@ -35,26 +35,25 @@ export const HeartsPassModal: React.FC<HeartsPassModalProps> = ({
   return (
     <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet variant-modal-overlay--hearts-pass">
       <div className="variant-modal variant-modal--bottom-sheet variant-modal--hearts-pass shell-panel">
-        <h2 className="king-festa-sheet-title">{t.heartsPass.title}</h2>
+        <h2 className="hearts-pass-title">{t.heartsPass.title}</h2>
         {direction === 'hold' ? (
-          <p className="variant-modal-hint">{t.heartsPass.holdRound}</p>
+          <p className="hearts-pass-hint">{t.heartsPass.holdRound}</p>
         ) : (
           <>
-            <p className="variant-modal-hint king-auction-current-bid">
+            <p className="hearts-pass-hint hearts-pass-hint--primary">
               {t.heartsPass.passToPlayer(
                 targetName,
                 passDirectionLabel(direction, locale)
               )}
             </p>
-            <p className="variant-modal-hint">
-              {t.heartsPass.receiveFromPlayer(sourceName)}
+            <p className="hearts-pass-hint">
+              {t.heartsPass.receiveFromPlayer(sourceName)} · {t.heartsPass.selectOnHand}
             </p>
-            <p className="variant-modal-hint">{t.heartsPass.selectOnHand}</p>
           </>
         )}
         <button
           type="button"
-          className="sueca-btn sueca-btn--primary sueca-btn--block"
+          className="sueca-btn sueca-btn--primary sueca-btn--block sueca-btn--compact"
           disabled={!ready}
           onClick={onConfirm}
         >

@@ -646,6 +646,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
       }
       auctionActions={kingPtState?.auctionPlayerActions}
       auctionLocale={language === 'pt' ? 'pt' : 'en'}
+      compactSeats={heartsPassActive}
     />
   );
 
