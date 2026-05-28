@@ -22,6 +22,7 @@ import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
+import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
@@ -714,22 +715,42 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
 
       {isTeamTableLayout ? <div className="game-table-zone">{tableSurface}</div> : tableSurface}
 
-      {/* Human player's hand (South position) - displayed below table */}
+      {/* Human player dock + hand (South position) - displayed below table */}
       {gameAdapter && gameState.players[localPlayerIndex] && (
-        <PlayerHand
-          gameState={gameState}
-          variant={gameVariant}
-          localPlayerIndex={localPlayerIndex}
-          selectedCard={selectedCard}
-          readOnly={festaSheetActive && !heartsPassActive}
-          selectedPassIndices={heartsPassActive ? heartsState?.humanPassIndices : undefined}
-          canPlayCard={(cardIndex: number) => {
-            if (heartsPassActive) return true;
-            return gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex);
-          }}
-          onCardClick={handleCardClick}
-          getCardImage={getCardImage}
-        />
+        <>
+          <LocalPlayerDock
+            gameState={gameState}
+            variant={gameVariant}
+            localPlayerIndex={localPlayerIndex}
+            usTeam={usTeam}
+            getTeamName={getTeamName}
+            showTeamLabels={showTeamLabels}
+            compactSeats={heartsPassActive}
+            spadesBidPhase={spadesBidActive}
+            spadesState={spadesState}
+            showAuctionBadges={
+              gameVariant === 'king' &&
+              resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+              kingPtState?.festaPhase === 'auction'
+            }
+            auctionActions={kingPtState?.auctionPlayerActions}
+            auctionLocale={language === 'pt' ? 'pt' : 'en'}
+          />
+          <PlayerHand
+            gameState={gameState}
+            variant={gameVariant}
+            localPlayerIndex={localPlayerIndex}
+            selectedCard={selectedCard}
+            readOnly={festaSheetActive && !heartsPassActive}
+            selectedPassIndices={heartsPassActive ? heartsState?.humanPassIndices : undefined}
+            canPlayCard={(cardIndex: number) => {
+              if (heartsPassActive) return true;
+              return gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex);
+            }}
+            onCardClick={handleCardClick}
+            getCardImage={getCardImage}
+          />
+        </>
       )}
 
       {spadesLocalBidTurn && spadesState && (

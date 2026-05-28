@@ -61,8 +61,8 @@
   pointer-events: none;
 }
 
-.game-board--hearts-pass .player-info,
-.game-board--hearts-pass .player-info.player-info--compact {
+.game-board--hearts-pass .player-seat .player-info,
+.game-board--hearts-pass .player-seat .player-info.player-info--compact {
   min-width: 56px;
   max-width: 72px;
   width: auto;
@@ -70,15 +70,15 @@
   border-radius: 6px;
 }
 
-.game-board--hearts-pass .player-info.mobile-layout {
+.game-board--hearts-pass .player-seat .player-info.mobile-layout {
   min-width: 56px;
   max-width: 64px;
   width: 64px;
   padding: 2px 4px;
 }
 
-.game-board--hearts-pass .player-name,
-.game-board--hearts-pass .player-name-line-1 {
+.game-board--hearts-pass .player-seat .player-name,
+.game-board--hearts-pass .player-seat .player-name-line-1 {
   font-size: 0.58rem;
   line-height: 1.1;
   font-weight: 600;
@@ -87,18 +87,14 @@
   text-overflow: ellipsis;
 }
 
-.game-board--hearts-pass .player-name-line-2,
-.game-board--hearts-pass .team-badge,
-.game-board--hearts-pass .hand-back-stack {
+.game-board--hearts-pass .player-seat .player-name-line-2,
+.game-board--hearts-pass .player-seat .team-badge,
+.game-board--hearts-pass .player-seat .hand-back-stack {
   display: none;
 }
 
 .game-board--hearts-pass .player-seat.player-north {
   top: -8px;
-}
-
-.game-board--hearts-pass .player-seat.player-south {
-  bottom: -8px;
 }
 
 .game-board--hearts-pass .player-seat.player-east {
@@ -116,6 +112,24 @@
 .player-seat.player-seat--bidding .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);
   outline-offset: 1px;
+}
+
+.local-player-dock {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 4px auto 6px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.local-player-dock--bidding .player-info {
+  outline: 2px solid rgba(196, 181, 253, 0.75);
+  outline-offset: 1px;
+}
+
+.local-player-dock--bidding .player-name-line-2 {
+  color: #e9d5ff;
 }
 
 .player-seat.player-seat--bidding .player-name-line-2 {
@@ -519,7 +533,7 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  margin: 14px auto 28px;
+  margin: 14px auto 16px;
   padding: 11px;
   display: flex;
   justify-content: center;
@@ -757,15 +771,18 @@
   width: 100%;
 }
 
-.player-seat.team-us .player-name-line-2 {
+.player-seat.team-us .player-name-line-2,
+.local-player-dock.team-us .player-name-line-2 {
   color: #b3d9ff; /* Pale blue for US/NÓS */
 }
 
-.player-seat.team-them .player-name-line-2 {
+.player-seat.team-them .player-name-line-2,
+.local-player-dock.team-them .player-name-line-2 {
   color: #ffcccc; /* Pale pink/red for THEM/ELES */
 }
 
-.player-seat.player-seat--individual .player-name-line-2 {
+.player-seat.player-seat--individual .player-name-line-2,
+.local-player-dock.player-seat--individual .player-name-line-2 {
   color: rgba(255, 255, 255, 0.82);
 }
 
@@ -916,7 +933,7 @@
   box-sizing: border-box;
   display: flex;
   justify-content: center;
-  margin-top: -8px;
+  margin-top: 4px;
   margin-bottom: 12px;
 }
 
