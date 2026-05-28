@@ -732,6 +732,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
         />
       )}
 
+      {spadesLocalBidTurn && spadesState && (
+        <SpadesBidMinibox
+          currentBidderName={gameState.players[localPlayerIndex]?.name ?? 'Player'}
+          nilEnabled={spadesState.nilEnabled}
+          blindNilEnabled={spadesState.blindNilEnabled}
+          onConfirm={(bid, bidType) => {
+            if (gameAdapter) {
+              (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
+              setGameState(gameAdapter.getCurrentState());
+            }
+          }}
+        />
+      )}
+
       {/* Action button - continue to next trick */}
       <GameActions
         gameState={gameState}
@@ -764,20 +778,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
               if (gameVariant === 'king') {
                 (gameAdapter as KingGame).tickFestaAi();
               }
-              setGameState(gameAdapter.getCurrentState());
-            }
-          }}
-        />
-      )}
-
-      {spadesLocalBidTurn && spadesState && (
-        <SpadesBidMinibox
-          currentBidderName={gameState.players[localPlayerIndex]?.name ?? 'Player'}
-          nilEnabled={spadesState.nilEnabled}
-          blindNilEnabled={spadesState.blindNilEnabled}
-          onConfirm={(bid, bidType) => {
-            if (gameAdapter) {
-              (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
               setGameState(gameAdapter.getCurrentState());
             }
           }}

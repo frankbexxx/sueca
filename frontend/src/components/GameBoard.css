@@ -113,18 +113,6 @@
   display: none;
 }
 
-.game-board--spades-bid .player-hand-bar {
-  position: relative;
-  z-index: 2100;
-  pointer-events: auto;
-  margin-bottom: calc(20vh + 6px);
-}
-
-.game-board--spades-bid .game-table-zone,
-.game-board--spades-bid .table-layout {
-  pointer-events: none;
-}
-
 .player-seat.player-seat--bidding .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);
   outline-offset: 1px;
@@ -145,11 +133,13 @@
   z-index: 1200;
 }
 
-.game-board--hearts .player-trick-card {
+.game-board--hearts .player-trick-card,
+.game-board--team-table .player-trick-card {
   margin-top: 4px;
 }
 
-.game-board--hearts .player-trick-card .trick-card-img {
+.game-board--hearts .player-trick-card .trick-card-img,
+.game-board--team-table .player-trick-card .trick-card-img {
   width: var(--card-w);
   height: var(--card-h);
   border-radius: 6px;
@@ -157,6 +147,10 @@
 }
 
 .game-board--hearts .player-seat.player-south {
+  z-index: 1150;
+}
+
+.game-board--team-table .player-seat.player-south {
   z-index: 1150;
 }
 
