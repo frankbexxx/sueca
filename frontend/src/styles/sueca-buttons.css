@@ -42,23 +42,23 @@
 }
 
 .sueca-btn--primary {
-  background: rgba(108, 92, 231, 0.45);
-  border-color: rgba(108, 92, 231, 0.65);
+  background: rgba(var(--sueca-rgb-primary), 0.45);
+  border-color: rgba(var(--sueca-rgb-primary), 0.65);
 }
 
 .sueca-btn--primary:hover:not(:disabled) {
-  background: rgba(108, 92, 231, 0.58);
-  border-color: rgba(108, 92, 231, 0.8);
+  background: rgba(var(--sueca-rgb-primary), 0.58);
+  border-color: rgba(var(--sueca-rgb-primary), 0.8);
 }
 
 .sueca-btn--danger {
-  background: rgba(220, 53, 69, 0.35);
-  border-color: rgba(220, 53, 69, 0.5);
+  background: rgba(var(--sueca-rgb-danger), 0.35);
+  border-color: rgba(var(--sueca-rgb-danger), 0.5);
 }
 
 .sueca-btn--danger:hover:not(:disabled) {
-  background: rgba(220, 53, 69, 0.48);
-  border-color: rgba(220, 53, 69, 0.65);
+  background: rgba(var(--sueca-rgb-danger), 0.48);
+  border-color: rgba(var(--sueca-rgb-danger), 0.65);
 }
 
 .sueca-btn--secondary {
@@ -77,8 +77,8 @@
 }
 
 .sueca-btn--toggle-on {
-  background: rgba(108, 92, 231, 0.35);
-  border-color: rgba(108, 92, 231, 0.55);
+  background: rgba(var(--sueca-rgb-primary), 0.35);
+  border-color: rgba(var(--sueca-rgb-primary), 0.55);
 }
 
 .sueca-btn--compact {

@@ -10,8 +10,8 @@
 }
 
 .themes-card--active {
-  border-color: rgba(108, 92, 231, 0.55);
-  background: rgba(108, 92, 231, 0.12);
+  border-color: rgba(var(--sueca-rgb-primary), 0.55);
+  background: rgba(var(--sueca-rgb-primary), 0.12);
 }
 
 .themes-card-name {

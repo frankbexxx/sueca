@@ -57,7 +57,7 @@
 .variant-modal-hint {
   margin: 0;
   font-size: 0.9rem;
-  color: #e9eef7;
+  color: var(--sueca-color-text);
 }
 
 .king-auction-current-bid {
@@ -273,7 +273,7 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.9rem;
-  color: #e9eef7;
+  color: var(--sueca-color-text);
 }
 
 .variant-modal input {
@@ -480,7 +480,7 @@
 }
 
 .king-score-sheet-row--active {
-  background: rgba(52, 132, 234, 0.18);
+  background: rgba(var(--sueca-rgb-us), 0.18);
 }
 
 .king-score-sheet-total {

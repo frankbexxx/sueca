@@ -34,7 +34,7 @@
   margin: 0 0 10px;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #e9eef7;
+  color: var(--sueca-color-text);
 }
 
 .shell-list {
@@ -87,7 +87,7 @@
   border-radius: var(--sueca-radius-md, 12px);
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  color: #e9eef7;
+  color: var(--sueca-color-text);
   text-align: left;
   transition: background 0.2s;
 }

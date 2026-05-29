@@ -1,10 +1,25 @@
 :root {
+  /* Base colours */
   --sueca-color-primary: #6c5ce7;
   --sueca-color-primary-dark: #5a4fd6;
   --sueca-color-us: #3484ea;
   --sueca-color-them: #e25c5c;
+  --sueca-color-danger: #dc3545;
   --sueca-color-surface: rgba(255, 255, 255, 0.08);
   --sueca-color-text: #e9eef7;
+
+  /* RGB channels — use with rgba(var(--sueca-rgb-*), alpha) */
+  --sueca-rgb-primary: 108, 92, 231;
+  --sueca-rgb-us: 52, 132, 234;
+  --sueca-rgb-them: 226, 92, 92;
+  --sueca-rgb-danger: 220, 53, 69;
+
+  /* Aliases expected by legacy VariantModals/RulesSheet */
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-text: #e9eef7;
+  --color-primary: #6c5ce7;
+
+  /* Spacing & shape */
   --sueca-radius-md: 10px;
   --sueca-radius-lg: 12px;
   --sueca-space-sm: 6px;
