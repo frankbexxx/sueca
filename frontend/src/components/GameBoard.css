@@ -1208,13 +1208,6 @@
   padding: 20px 16px 24px;
 }
 
-.modal-container--flat {
-  background: rgba(20, 28, 40, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 20px 16px;
-  max-width: 420px;
-  width: calc(100% - 32px);
-}
 
 .hearts-modal-scores {
   list-style: none;

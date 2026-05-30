@@ -1,6 +1,5 @@
 import { getHeartsState } from '../models/games/HeartsGame';
 import { GameState, DealingMethod, GameVariant } from '../types/game';
-import { PenteVisualization } from './PenteVisualization';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 
@@ -53,7 +52,7 @@ function IndividualGameOverModal({
 }) {
   return (
     <div className="modal-overlay modal-overlay-game-over">
-      <div className="modal-container modal-container-large shell-panel modal-container--flat">
+      <div className="modal-container modal-container-large dobo-panel">
         <h2 className="modal-title modal-title-large">{title}</h2>
         <p className="modal-winner-text">{winnerName}</p>
         {showLoser && <p className="modal-section-title">{loserName}</p>}
@@ -147,6 +146,9 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     return null;
   }
 
+  const usGames = gameState.gameScore[usTeam === 1 ? 'team1' : 'team2'];
+  const themGames = gameState.gameScore[themTeam === 1 ? 'team1' : 'team2'];
+
   return (
     <div className="modal-overlay modal-overlay-game-over">
       <div className="modal-container modal-container-large dobo-panel">
@@ -155,21 +157,17 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           {getTeamName(gameState.winner!)} {t.modals.won}
         </p>
 
-        <div className="modal-content">
-          <p className="modal-section-title">{t.modals.finalGames}</p>
-          <div className="modal-games-content">
-            <PenteVisualization
-              team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
-              team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
-              team1Name={t.gameBoard.us}
-              team2Name={t.gameBoard.them}
-              pentes={gameState.completedPentes.map((pente) => ({
-                team1: usTeam === 1 ? pente.team1 : pente.team2,
-                team2: themTeam === 1 ? pente.team1 : pente.team2
-              }))}
-            />
-          </div>
-        </div>
+        <p className="modal-section-title">{t.modals.finalGames}</p>
+        <ul className="hearts-modal-scores">
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.us}</span>
+            <span>{usGames}/4</span>
+          </li>
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.them}</span>
+            <span>{themGames}/4</span>
+          </li>
+        </ul>
 
         <div className="modal-new-game-options">
           <label className="modal-select-label">
@@ -188,7 +186,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         <button
           type="button"
           onClick={onNewGame}
-          className="modal-button modal-button-new-game dobo-btn"
+          className="sueca-btn sueca-btn--primary sueca-btn--block modal-button-new-game"
         >
           {t.modals.newGame}
         </button>

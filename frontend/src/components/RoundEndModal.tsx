@@ -1,7 +1,6 @@
 import { getHeartsState } from '../models/games/HeartsGame';
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
-import { PenteVisualization } from './PenteVisualization';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 
@@ -61,7 +60,7 @@ function IndividualRoundEndModal({
 
   return (
     <div className="modal-overlay modal-overlay-round-end">
-      <div className="modal-container modal-container-large shell-panel modal-container--flat">
+      <div className="modal-container modal-container-large dobo-panel">
         <h2 className="modal-title">{title}</h2>
         {roundSectionTitle && (
           <>
@@ -157,51 +156,45 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
     return null;
   }
 
+  const usScore = gameState.scores[usTeam === 1 ? 'team1' : 'team2'];
+  const themScore = gameState.scores[themTeam === 1 ? 'team1' : 'team2'];
+  const usGames = gameState.gameScore[usTeam === 1 ? 'team1' : 'team2'];
+  const themGames = gameState.gameScore[themTeam === 1 ? 'team1' : 'team2'];
+  const pts = t.gameBoard.points.toLowerCase().replace(':', '');
+
   return (
     <div className="modal-overlay modal-overlay-round-end">
       <div className="modal-container modal-container-large dobo-panel">
         <h2 className="modal-title">{tReplace('modals.roundComplete', { round: gameState.round })}</h2>
 
-        <div className="modal-content">
-          <p className="modal-section-title">{t.modals.gamePoints}</p>
-          <div className="modal-scores-grid">
-            <div className="modal-score-box modal-score-us">
-              <strong className="modal-score-label">{t.gameBoard.us}</strong>
-              <p className="modal-score-value">
-                {gameState.scores[usTeam === 1 ? 'team1' : 'team2']}{' '}
-                {t.gameBoard.points.toLowerCase().replace(':', '')}
-              </p>
-            </div>
-            <div className="modal-score-box modal-score-them">
-              <strong className="modal-score-label">{t.gameBoard.them}</strong>
-              <p className="modal-score-value">
-                {gameState.scores[themTeam === 1 ? 'team1' : 'team2']}{' '}
-                {t.gameBoard.points.toLowerCase().replace(':', '')}
-              </p>
-            </div>
-          </div>
+        <p className="modal-section-title">{t.modals.gamePoints}</p>
+        <ul className="hearts-modal-scores">
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.us}</span>
+            <span>{usScore} {pts}</span>
+          </li>
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.them}</span>
+            <span>{themScore} {pts}</span>
+          </li>
+        </ul>
 
-          <div className="modal-games-section">
-            <p className="modal-section-title">{t.modals.games}</p>
-            <div className="modal-games-content">
-              <PenteVisualization
-                team1Score={gameState.gameScore[usTeam === 1 ? 'team1' : 'team2']}
-                team2Score={gameState.gameScore[themTeam === 1 ? 'team1' : 'team2']}
-                team1Name={t.gameBoard.us}
-                team2Name={t.gameBoard.them}
-                pentes={gameState.completedPentes.map((pente) => ({
-                  team1: usTeam === 1 ? pente.team1 : pente.team2,
-                  team2: themTeam === 1 ? pente.team1 : pente.team2
-                }))}
-              />
-            </div>
-          </div>
-        </div>
+        <p className="modal-section-title">{t.modals.games}</p>
+        <ul className="hearts-modal-scores">
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.us}</span>
+            <span>{usGames}/4</span>
+          </li>
+          <li className="hearts-modal-score-row">
+            <span>{t.gameBoard.them}</span>
+            <span>{themGames}/4</span>
+          </li>
+        </ul>
 
         <button
           type="button"
           onClick={onContinue}
-          className="modal-button modal-button-primary dobo-btn"
+          className="sueca-btn sueca-btn--primary sueca-btn--block modal-button-primary"
         >
           {continueLabel}
         </button>
