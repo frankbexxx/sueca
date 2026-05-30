@@ -1,6 +1,8 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { Game } from '../Game';
 import { AIDifficulty, DealingMethod, GameState } from '../../types/game';
+import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
+import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
 
 export class SuecaGame extends BaseGameAdapter {
   variant = 'sueca' as const;
@@ -44,8 +46,18 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.startRound();
   }
 
-  chooseAICard(_state: GameState, playerIndex: number): number {
-    return this.game?.chooseAICard(playerIndex) ?? -1;
+  chooseAICard(state: GameState, playerIndex: number): number {
+    if (!this.game) return -1;
+    const legalIndices = new Set(getLegalIndices(this, state, playerIndex));
+    const ctx: SuecaStrategyContext = {
+      getValidCards: (idx) => {
+        const p = state.players[idx];
+        return (p?.hand ?? [])
+          .map((card, i) => ({ card, index: i }))
+          .filter(({ index }) => legalIndices.has(index));
+      },
+    };
+    return chooseSuecaCard(state, playerIndex, ctx);
   }
 
   pauseGame(_state: GameState): void {

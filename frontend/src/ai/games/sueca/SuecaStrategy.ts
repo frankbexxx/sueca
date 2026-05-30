@@ -1,4 +1,5 @@
 import { GameState, Card, Suit, AIDifficulty, CARD_HIERARCHY } from '../../../types/game';
+import { getDifficultyProfile } from '../../core/DifficultyProfile';
 
 /**
  * Context supplied by Game.ts to avoid coupling the strategy to the class.
@@ -122,6 +123,7 @@ export function chooseSuecaCard(
   const trick = state.currentTrick;
   const trumpSuit = state.trumpSuit!;
   const difficulty: AIDifficulty = state.aiDifficulty;
+  const profile = getDifficultyProfile(difficulty);
 
   const validCards = ctx.getValidCards(playerIndex);
   if (validCards.length === 0) return -1;
@@ -137,7 +139,7 @@ export function chooseSuecaCard(
 
   // --- Medium + Hard ---
   const isCardLikelyToWin = (card: Card, suit: Suit): boolean => {
-    if (difficulty === 'hard') {
+    if (profile.usesCardTracking) {
       return calculateWinProbability(state, card, suit, trumpSuit) > 0.5;
     }
     if (card.suit === trumpSuit) {
@@ -155,7 +157,7 @@ export function chooseSuecaCard(
     const suitCounts: Record<Suit, number> = { clubs: 0, diamonds: 0, hearts: 0, spades: 0 };
     player.hand.forEach((card) => { suitCounts[card.suit]++; });
 
-    if (difficulty === 'hard') {
+    if (profile.usesPartnerSignals) {
       const partnerSignal = getPartnerSignal(state, playerIndex);
       if (partnerSignal === 'need_trump') {
         const trumpCards = validCards.filter((v) => v.card.suit === trumpSuit);
@@ -178,7 +180,7 @@ export function chooseSuecaCard(
       if (score > bestScore) { bestScore = score; bestCard = v; }
     }
 
-    if (difficulty === 'hard' && bestCard.card.suit === trumpSuit && suitCounts[trumpSuit] > 3) {
+    if (profile.usesPartnerSignals && bestCard.card.suit === trumpSuit && suitCounts[trumpSuit] > 3) {
       sendPartnerSignal(state, playerIndex, 'leading_trumps');
     }
     return bestCard.index;
@@ -204,7 +206,7 @@ export function chooseSuecaCard(
     (v) => v.card.suit !== leadSuit && v.card.suit !== trumpSuit
   );
 
-  if (difficulty === 'hard' && isPartnerLeading && cardsOfLeadSuit.length > 0) {
+  if (profile.usesPartnerSignals && isPartnerLeading && cardsOfLeadSuit.length > 0) {
     const winningCards = cardsOfLeadSuit.filter(
       (v) => CARD_HIERARCHY[v.card.rank] > leadValue && !isLeadTrump
     );
