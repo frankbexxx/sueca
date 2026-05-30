@@ -3,12 +3,15 @@
  * Implement with @capacitor-community/in-app-purchases or native plugin.
  */
 
-export type ThemeId = 'classic' | 'forest' | 'midnight';
+export type ThemeId = 'classic' | 'forest' | 'midnight' | 'thebes' | 'tikal' | 'thule';
 
 export const THEME_PRODUCTS: { id: string; theme: ThemeId; label: string }[] = [
-  { id: 'theme_forest', theme: 'forest', label: 'Forest theme' },
+  { id: 'theme_forest',   theme: 'forest',   label: 'Forest theme' },
   { id: 'theme_midnight', theme: 'midnight', label: 'Midnight theme' },
-  { id: 'tip_small', theme: 'classic', label: 'Support developer ☕' }
+  { id: 'theme_thebes',   theme: 'thebes',   label: 'Thebes theme' },
+  { id: 'theme_tikal',    theme: 'tikal',    label: 'Tikal theme' },
+  { id: 'theme_thule',    theme: 'thule',    label: 'Thule theme' },
+  { id: 'tip_small',      theme: 'classic',  label: 'Support developer ☕' }
 ];
 
 export async function purchaseProduct(_productId: string): Promise<boolean> {

@@ -23,6 +23,7 @@ import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useSh
 import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
+import './styles/themes.css';
 
 const UI_CLICK_SELECTOR = '.sueca-btn, .dobo-btn, .lang-btn';
 

@@ -1,0 +1,139 @@
+/* ===================================================================
+   Shell themes — Tebas · Tikal · Thule
+   Scope: .app-shell only. Game board unaffected.
+   =================================================================== */
+
+/* ------------------------------------------------------------------
+   TEBAS — areia quente, ouro egípcio, noite do deserto
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="thebes"] {
+  background: linear-gradient(160deg, #1a1208 0%, #0d0a06 100%);
+}
+
+.app-shell[data-theme="thebes"] .shell-panel {
+  background: rgba(200, 160, 80, 0.06);
+  border-color: rgba(200, 160, 80, 0.15);
+}
+
+.app-shell[data-theme="thebes"] .shell-section-title,
+.app-shell[data-theme="thebes"] .screen-title,
+.app-shell[data-theme="thebes"] .dashboard-section-title,
+.app-shell[data-theme="thebes"] .shell-hub-item {
+  color: #f5e8c8;
+}
+
+.app-shell[data-theme="thebes"] .bottom-nav-item.active {
+  background: rgba(200, 160, 80, 0.2);
+  color: #f5e8c8;
+}
+
+.app-shell[data-theme="thebes"] .sueca-btn--primary {
+  background: rgba(200, 160, 80, 0.45);
+  border-color: rgba(200, 160, 80, 0.65);
+}
+
+.app-shell[data-theme="thebes"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(200, 160, 80, 0.58);
+  border-color: rgba(200, 160, 80, 0.8);
+}
+
+.app-shell[data-theme="thebes"] .themes-card--active {
+  border-color: rgba(200, 160, 80, 0.55);
+  background: rgba(200, 160, 80, 0.12);
+}
+
+.app-shell[data-theme="thebes"] .dashboard-game-row--active {
+  border-color: rgba(200, 160, 80, 0.55);
+  background: rgba(200, 160, 80, 0.12);
+}
+
+/* ------------------------------------------------------------------
+   TIKAL — selva profunda, jade maia, ruína
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="tikal"] {
+  background: linear-gradient(160deg, #091a0e 0%, #040d07 100%);
+}
+
+.app-shell[data-theme="tikal"] .shell-panel {
+  background: rgba(80, 168, 120, 0.06);
+  border-color: rgba(80, 168, 120, 0.15);
+}
+
+.app-shell[data-theme="tikal"] .shell-section-title,
+.app-shell[data-theme="tikal"] .screen-title,
+.app-shell[data-theme="tikal"] .dashboard-section-title,
+.app-shell[data-theme="tikal"] .shell-hub-item {
+  color: #d4edda;
+}
+
+.app-shell[data-theme="tikal"] .bottom-nav-item.active {
+  background: rgba(80, 168, 120, 0.2);
+  color: #d4edda;
+}
+
+.app-shell[data-theme="tikal"] .sueca-btn--primary {
+  background: rgba(80, 168, 120, 0.45);
+  border-color: rgba(80, 168, 120, 0.65);
+}
+
+.app-shell[data-theme="tikal"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(80, 168, 120, 0.58);
+  border-color: rgba(80, 168, 120, 0.8);
+}
+
+.app-shell[data-theme="tikal"] .themes-card--active {
+  border-color: rgba(80, 168, 120, 0.55);
+  background: rgba(80, 168, 120, 0.12);
+}
+
+.app-shell[data-theme="tikal"] .dashboard-game-row--active {
+  border-color: rgba(80, 168, 120, 0.55);
+  background: rgba(80, 168, 120, 0.12);
+}
+
+/* ------------------------------------------------------------------
+   THULE — noite ártica, gelo, azul-prata
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="thule"] {
+  background: linear-gradient(160deg, #0a1628 0%, #050d1a 100%);
+}
+
+.app-shell[data-theme="thule"] .shell-panel {
+  background: rgba(150, 200, 255, 0.06);
+  border-color: rgba(150, 200, 255, 0.15);
+}
+
+.app-shell[data-theme="thule"] .shell-section-title,
+.app-shell[data-theme="thule"] .screen-title,
+.app-shell[data-theme="thule"] .dashboard-section-title,
+.app-shell[data-theme="thule"] .shell-hub-item {
+  color: #d0e8ff;
+}
+
+.app-shell[data-theme="thule"] .bottom-nav-item.active {
+  background: rgba(74, 144, 217, 0.2);
+  color: #d0e8ff;
+}
+
+.app-shell[data-theme="thule"] .sueca-btn--primary {
+  background: rgba(74, 144, 217, 0.45);
+  border-color: rgba(74, 144, 217, 0.65);
+}
+
+.app-shell[data-theme="thule"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(74, 144, 217, 0.58);
+  border-color: rgba(74, 144, 217, 0.8);
+}
+
+.app-shell[data-theme="thule"] .themes-card--active {
+  border-color: rgba(74, 144, 217, 0.55);
+  background: rgba(74, 144, 217, 0.12);
+}
+
+.app-shell[data-theme="thule"] .dashboard-game-row--active {
+  border-color: rgba(74, 144, 217, 0.55);
+  background: rgba(74, 144, 217, 0.12);
+}

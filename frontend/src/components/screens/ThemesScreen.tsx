@@ -30,9 +30,12 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
   };
 
   const themes: { id: ThemeId; labelPt: string; labelEn: string }[] = [
-    { id: 'classic', labelPt: 'Clássico', labelEn: 'Classic' },
-    { id: 'forest', labelPt: 'Floresta', labelEn: 'Forest' },
-    { id: 'midnight', labelPt: 'Meia-noite', labelEn: 'Midnight' }
+    { id: 'classic',  labelPt: 'Clássico',   labelEn: 'Classic'   },
+    { id: 'forest',   labelPt: 'Floresta',   labelEn: 'Forest'    },
+    { id: 'midnight', labelPt: 'Meia-noite', labelEn: 'Midnight'  },
+    { id: 'thebes',   labelPt: 'Tebas',      labelEn: 'Thebes'    },
+    { id: 'tikal',    labelPt: 'Tikal',      labelEn: 'Tikal'     },
+    { id: 'thule',    labelPt: 'Thule',      labelEn: 'Thule'     },
   ];
 
   return (
