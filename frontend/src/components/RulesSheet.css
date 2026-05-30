@@ -11,7 +11,7 @@
 }
 
 .rules-sheet {
-  background: var(--color-surface, #1e2d24);
+  background: var(--theme-panel-modal, #2a3a52);
   color: var(--color-text, #fff);
   width: 100%;
   max-width: 480px;
