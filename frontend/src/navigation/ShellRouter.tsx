@@ -30,8 +30,6 @@ export interface ShellRouterProps {
   canGoBack: boolean;
   onBack: () => void;
   onPush: (route: ShellRoute) => void;
-  darkMode: boolean;
-  onDarkModeChange: (value: boolean) => void;
   onThemeChange: (theme: ThemeId) => void;
   onStartGame: (config: GameConfig, session?: SavedGameSession | null) => void;
   onContinue: (variant: GameVariant, session?: SavedGameSession | null) => void;
@@ -43,8 +41,6 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
   canGoBack,
   onBack,
   onPush,
-  darkMode,
-  onDarkModeChange,
   onThemeChange,
   onStartGame,
   onContinue,
@@ -142,8 +138,6 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
     if (route.screen === 'general') {
       return (
         <SettingsGeneralScreen
-          darkMode={darkMode}
-          onDarkModeChange={onDarkModeChange}
           showBack={canGoBack}
           onBack={onBack}
         />
@@ -166,7 +160,7 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
       return <ProfileNameScreen showBack={canGoBack} onBack={onBack} />;
     }
     return (
-      <ProfileCreditsScreen darkMode={darkMode} showBack={canGoBack} onBack={onBack} />
+      <ProfileCreditsScreen showBack={canGoBack} onBack={onBack} />
     );
   }
 

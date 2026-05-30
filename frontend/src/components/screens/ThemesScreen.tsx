@@ -53,13 +53,13 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
       id: 'forest',
       labelPt: 'Floresta',
       labelEn: 'Forest',
-      lorePt: '',
+      lorePt: 'A floresta escura guarda segredos em cada raiz e sombra de carvalho.\nEntre copas entreabertas, a luz filtra-se em raios verdes e distantes.\nO musgo, o orvalho e o silêncio compõem um ritual mais antigo que qualquer cidade.\nÉ um tema orgânico, vivo, húmido e ancestral.\nUma mesa de jogo na clareira, onde a floresta espreita de todos os lados.',
     },
     {
       id: 'midnight',
       labelPt: 'Meia-noite',
       labelEn: 'Midnight',
-      lorePt: '',
+      lorePt: 'À meia-noite, o céu perde o azul e ganha uma profundidade sem fundo.\nAs estrelas surgem uma a uma, como números num código que poucos sabem ler.\nO silêncio da noite não é ausência — é presença de algo maior e mais calmo.\nÉ um tema índigo, mineral, silencioso e concentrado.\nUma mesa onde cada carta brilha mais por contraste com o escuro à volta.',
     },
     {
       id: 'thebes',
@@ -129,6 +129,52 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
     },
   ];
 
+  const groups: { labelPt: string; labelEn: string; ids: ThemeId[] }[] = [
+    { labelPt: 'Base',                      labelEn: 'Base',                       ids: ['classic'] },
+    { labelPt: 'Natureza',                  labelEn: 'Nature',                     ids: ['forest', 'midnight', 'thule'] },
+    { labelPt: 'Mediterrâneo & Oriente',    labelEn: 'Mediterranean & Near East',  ids: ['knossos', 'thebes', 'babylon', 'ur'] },
+    { labelPt: 'Ásia',                      labelEn: 'Asia',                       ids: ['xanadu', 'yamatai', 'shambhala'] },
+    { labelPt: 'Américas & Pacífico',       labelEn: 'Americas & Pacific',         ids: ['tikal', 'rapanui', 'nanmadol'] },
+  ];
+
+  const themeMap = Object.fromEntries(themes.map((th) => [th.id, th]));
+
+  const renderCard = (theme: ThemeEntry) => (
+    <li key={theme.id} className="themes-list-item">
+      <div className={`themes-card shell-panel ${active === theme.id ? 'themes-card--active' : ''}`}>
+        <button
+          type="button"
+          className="themes-card-select"
+          onClick={() => applyTheme(theme.id)}
+        >
+          <span className="themes-card-name">
+            {language === 'pt' ? theme.labelPt : theme.labelEn}
+          </span>
+          {active === theme.id && (
+            <span className="themes-card-badge">{t.themesScreen.active}</span>
+          )}
+        </button>
+        {theme.lorePt && (
+          <button
+            type="button"
+            className={`themes-card-info ${expandedId === theme.id ? 'themes-card-info--open' : ''}`}
+            onClick={(e) => toggleLore(theme.id, e)}
+            aria-label="Lore"
+          >
+            ℹ
+          </button>
+        )}
+      </div>
+      {expandedId === theme.id && theme.lorePt && (
+        <p className="themes-card-lore">
+          {theme.lorePt.split('\n').map((line, i) => (
+            <span key={i}>{line}<br /></span>
+          ))}
+        </p>
+      )}
+    </li>
+  );
+
   return (
     <div className="shell-screen screen-themes">
       <ShellHeader
@@ -139,40 +185,13 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
       />
 
       <ul className="shell-list">
-        {themes.map((theme) => (
-          <li key={theme.id} className="themes-list-item">
-            <div className={`themes-card shell-panel ${active === theme.id ? 'themes-card--active' : ''}`}>
-              <button
-                type="button"
-                className="themes-card-select"
-                onClick={() => applyTheme(theme.id)}
-              >
-                <span className="themes-card-name">
-                  {language === 'pt' ? theme.labelPt : theme.labelEn}
-                </span>
-                {active === theme.id && (
-                  <span className="themes-card-badge">{t.themesScreen.active}</span>
-                )}
-              </button>
-              {theme.lorePt && (
-                <button
-                  type="button"
-                  className={`themes-card-info ${expandedId === theme.id ? 'themes-card-info--open' : ''}`}
-                  onClick={(e) => toggleLore(theme.id, e)}
-                  aria-label="Lore"
-                >
-                  ℹ
-                </button>
-              )}
-            </div>
-            {expandedId === theme.id && theme.lorePt && (
-              <p className="themes-card-lore">
-                {theme.lorePt.split('\n').map((line, i) => (
-                  <span key={i}>{line}<br /></span>
-                ))}
-              </p>
-            )}
-          </li>
+        {groups.map((group) => (
+          <React.Fragment key={group.labelEn}>
+            <li className="themes-group-header">
+              {language === 'pt' ? group.labelPt : group.labelEn}
+            </li>
+            {group.ids.map((id) => themeMap[id] && renderCard(themeMap[id]))}
+          </React.Fragment>
         ))}
       </ul>
 

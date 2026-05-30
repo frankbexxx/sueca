@@ -125,8 +125,3 @@
 .app-shell[data-theme='midnight'] {
   background: linear-gradient(160deg, #0a0a1a 0%, #050508 100%);
 }
-
-.app-shell[data-theme='forest'].dark-mode,
-.app-shell[data-theme='midnight'].dark-mode {
-  filter: none;
-}

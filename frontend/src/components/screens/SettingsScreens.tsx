@@ -9,7 +9,6 @@ import {
 } from '../../constants/handPreferences';
 import { loadAutoPauseTrick, saveAutoPauseTrick } from '../../utils/trickAutoContinue';
 import { isSoundEnabled, setSoundEnabled } from '../../services/audioService';
-import { STORAGE_KEYS } from '../../constants/gameConstants';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
 import '../../styles/shell-screens.css';
@@ -57,15 +56,11 @@ export const SettingsHubScreen: React.FC<SettingsHubScreenProps> = ({
 };
 
 interface SettingsGeneralScreenProps {
-  darkMode: boolean;
-  onDarkModeChange: (value: boolean) => void;
   showBack: boolean;
   onBack: () => void;
 }
 
 export const SettingsGeneralScreen: React.FC<SettingsGeneralScreenProps> = ({
-  darkMode,
-  onDarkModeChange,
   showBack,
   onBack
 }) => {
@@ -79,12 +74,6 @@ export const SettingsGeneralScreen: React.FC<SettingsGeneralScreenProps> = ({
     setSoundEnabled(next);
   };
 
-  const toggleDark = () => {
-    const next = !darkMode;
-    onDarkModeChange(next);
-    localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(next));
-  };
-
   return (
     <div className="shell-screen screen-settings">
       <ShellHeader
@@ -93,10 +82,6 @@ export const SettingsGeneralScreen: React.FC<SettingsGeneralScreenProps> = ({
         onBack={onBack}
       />
       <section className="shell-panel">
-        <label className="more-toggle">
-          <input type="checkbox" checked={darkMode} onChange={toggleDark} />
-          <span>{t.startMenu.darkMode}</span>
-        </label>
         <label className="more-toggle">
           <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
           <span>{t.moreScreen.sound}</span>

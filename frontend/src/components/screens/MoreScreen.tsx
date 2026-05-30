@@ -17,8 +17,7 @@ import './MoreScreen.css';
 const LAST_CONFIG_KEY = 'sueca-last-config';
 
 interface MoreScreenProps {
-  darkMode: boolean;
-  onDarkModeChange: (value: boolean) => void;
+  // dark mode removed
 }
 
 function loadPlayerNames(): string[] {
@@ -35,7 +34,7 @@ function loadPlayerNames(): string[] {
   return last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
 }
 
-export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChange: _onDarkModeChange }) => {
+export const MoreScreen: React.FC<MoreScreenProps> = () => {
   const { language, setLanguage, t } = useLanguage();
   const [showCredits, setShowCredits] = useState(false);
   const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
@@ -192,7 +191,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
         </a>
       </section>
 
-      {showCredits && <CreditsModal onClose={() => setShowCredits(false)} darkMode={darkMode} />}
+      {showCredits && <CreditsModal onClose={() => setShowCredits(false)} />}
     </div>
   );
 };

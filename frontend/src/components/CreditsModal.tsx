@@ -4,10 +4,9 @@ import './CreditsModal.css';
 
 interface CreditsModalProps {
   onClose: () => void;
-  darkMode: boolean;
 }
 
-export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode }) => {
+export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose }) => {
   const { t } = useLanguage();
   
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -18,7 +17,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, darkMode })
 
   return (
     <div 
-      className={`credits-modal-overlay ${darkMode ? 'dark-mode' : ''}`}
+      className="credits-modal-overlay"
       onClick={handleBackdropClick}
     >
       <div className="credits-modal-content" onClick={(e) => e.stopPropagation()}>

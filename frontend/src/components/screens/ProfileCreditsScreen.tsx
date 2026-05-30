@@ -5,20 +5,18 @@ import '../../styles/shell-screens.css';
 import '../CreditsModal.css';
 
 interface ProfileCreditsScreenProps {
-  darkMode: boolean;
   showBack: boolean;
   onBack: () => void;
 }
 
 export const ProfileCreditsScreen: React.FC<ProfileCreditsScreenProps> = ({
-  darkMode,
   showBack,
   onBack
 }) => {
   const { t } = useLanguage();
 
   return (
-    <div className={`shell-screen screen-profile-credits ${darkMode ? 'dark-mode' : ''}`}>
+    <div className="shell-screen screen-profile-credits">
       <ShellHeader title={t.moreScreen.credits} showBack={showBack} onBack={onBack} />
       <div className="credits-inline shell-panel">
         <main className="credits-main">

@@ -30,7 +30,6 @@ export const STORAGE_KEYS = {
   DEALING_METHOD: 'sueca-dealing-method',
   PLAYER_NAMES: 'sueca-player-names',
   AI_DIFFICULTY: 'sueca-ai-difficulty',
-  DARK_MODE: 'sueca-dark-mode',
   SORT_HAND: 'sueca-sort-hand',
   HAND_SUIT_ORDER: 'sueca-hand-suit-order',
   TRUMP_POSITION: 'sueca-trump-position',

@@ -81,16 +81,6 @@
   text-align: center;
 }
 
-/* Dark mode support */
-.dark-mode .pente-container-simple {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.dark-mode .pente-score-item,
-.dark-mode .pente-total-item {
-  background: rgba(0, 0, 0, 0.25);
-}
 
 /* Mobile responsive */
 @media (max-width: 768px) {

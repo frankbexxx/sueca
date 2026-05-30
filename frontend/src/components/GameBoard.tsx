@@ -50,7 +50,6 @@ import {
 export interface GameBoardProps {
   config: GameConfig;
   resumeSession?: SavedGameSession | null;
-  darkMode: boolean;
   onExit: () => void;
 }
 
@@ -58,7 +57,7 @@ export interface GameBoardProps {
  * Main game board component - renders the entire Sueca game interface
  * Manages game state, player interactions, AI moves, and UI rendering
  */
-export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, darkMode, onExit }) => {
+export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onExit }) => {
   const { t, language } = useLanguage();
   const [gameStarted, setGameStarted] = useState(false);
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
@@ -645,7 +644,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, dar
 
   const boardClassName = [
     'game-board',
-    darkMode ? 'dark-mode' : '',
     festaSheetActive ? 'game-board--festa-sheet' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
     heartsPassActive ? 'game-board--hearts-pass' : ''

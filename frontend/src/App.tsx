@@ -16,7 +16,6 @@ import {
 import { consumeLandingReturnFlag } from './services/appLifecycle';
 import { getActiveTheme, ThemeId } from './services/billingService';
 import { useLanguage } from './i18n/useLanguage';
-import { STORAGE_KEYS } from './constants/gameConstants';
 import { playUiClick, preloadAmbiance, preloadSfx, startAmbiance } from './services/audioService';
 import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
@@ -36,10 +35,6 @@ function App() {
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [resumeSession, setResumeSession] = useState<SavedGameSession | null>(null);
   const [activeTheme, setActiveTheme] = useState<ThemeId>(() => getActiveTheme());
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
-    return saved ? saved === 'true' : false;
-  });
 
   useEffect(() => {
     consumeLandingReturnFlag();
@@ -166,13 +161,12 @@ function App() {
   if (screen === 'game' && gameConfig) {
     return (
       <div
-        className={`App app-shell app-shell--game ${darkMode ? 'dark-mode' : ''}`}
+        className="App app-shell app-shell--game"
         data-theme={activeTheme}
       >
         <GameBoard
           config={gameConfig}
           resumeSession={resumeSession}
-          darkMode={darkMode}
           onExit={exitGame}
         />
       </div>
@@ -181,7 +175,7 @@ function App() {
 
   return (
     <div
-      className={`App app-shell ${darkMode ? 'dark-mode' : ''}`}
+      className="App app-shell"
       data-theme={activeTheme}
     >
       <main className="app-shell-content">
@@ -190,8 +184,6 @@ function App() {
           canGoBack={canGoBack}
           onBack={handleShellBack}
           onPush={push}
-          darkMode={darkMode}
-          onDarkModeChange={setDarkMode}
           onThemeChange={handleThemeChange}
           onStartGame={startGame}
           onContinue={handleContinue}

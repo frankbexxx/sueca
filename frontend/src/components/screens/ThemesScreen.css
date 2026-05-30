@@ -1,3 +1,13 @@
+.themes-group-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  padding: 16px 4px 4px;
+  list-style: none;
+}
+
 .themes-list-item {
   display: flex;
   flex-direction: column;

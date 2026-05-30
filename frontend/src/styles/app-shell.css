@@ -6,9 +6,6 @@
   color: #e9eef7;
 }
 
-.app-shell.dark-mode {
-  background: linear-gradient(160deg, #0d1117 0%, #050608 100%);
-}
 
 .app-shell-content {
   flex: 1;

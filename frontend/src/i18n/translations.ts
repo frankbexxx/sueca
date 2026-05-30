@@ -37,7 +37,6 @@ export interface Translations {
     methodB: string;
     startGame: string;
     advancedSettings: string;
-    darkMode: string;
     multiplayerMode: string;
     enableMultiplayer: string;
     createSession: string;
@@ -283,7 +282,6 @@ export interface Translations {
     aiDifficulty: string;
     dealingMethod: string;
     showGrid: string;
-    darkMode: string;
     credits: string;
     quitConfirm: string;
     difficultyChangeNote: string;
@@ -501,7 +499,6 @@ export const translations: Record<Language, Translations> = {
       methodB: 'Método B (Dealer First)',
       startGame: 'Iniciar Jogo',
       advancedSettings: 'Configurações Avançadas',
-      darkMode: 'Modo Escuro',
       multiplayerMode: 'Multiplayer',
       enableMultiplayer: 'Ativar multiplayer',
       createSession: 'Criar nova sessão',
@@ -586,7 +583,6 @@ export const translations: Record<Language, Translations> = {
       aiDifficulty: 'Dificuldade da AI:',
       dealingMethod: 'Método de Distribuição:',
       showGrid: 'Mostrar grelha (debug)',
-      darkMode: 'Modo Escuro',
       credits: 'Créditos',
       quitConfirm: 'Tem certeza que deseja sair do jogo atual?',
       difficultyChangeNote: '⚠️ Alterar dificuldade e método apenas no menu inicial',
@@ -796,7 +792,6 @@ export const translations: Record<Language, Translations> = {
       methodB: 'Method B (Dealer First)',
       startGame: 'Start Game',
       advancedSettings: 'Advanced Settings',
-      darkMode: 'Dark Mode',
       multiplayerMode: 'Multiplayer',
       enableMultiplayer: 'Enable multiplayer',
       createSession: 'Create new session',
@@ -881,7 +876,6 @@ export const translations: Record<Language, Translations> = {
       aiDifficulty: 'AI Difficulty:',
       dealingMethod: 'Dealing Method:',
       showGrid: 'Show grid (debug)',
-      darkMode: 'Dark Mode',
       credits: 'Credits',
       quitConfirm: 'Are you sure you want to quit the current game?',
       difficultyChangeNote: '⚠️ Change difficulty and method only in the initial menu',
