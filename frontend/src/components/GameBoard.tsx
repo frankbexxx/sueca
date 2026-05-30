@@ -289,9 +289,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         };
         const play = await requestAiPlay(payload);
         const idx = player.hand.findIndex((c) => cardToCode(c) === play);
+        if (idx === -1) {
+          console.warn(`[AI external] card "${play}" not found in hand (player ${playerIndex})`);
+          setAiSource('local');
+          return -1;
+        }
+        const currentStateForValidation = gameAdapter.getCurrentState();
+        if (!gameAdapter.canPlayCard(currentStateForValidation, playerIndex, idx)) {
+          console.warn(`[AI external] card "${play}" (idx ${idx}) is illegal for player ${playerIndex} — falling back to local AI`);
+          setAiSource('local');
+          return -1;
+        }
         setAiSource('external');
         return idx;
       } catch (err) {
+        console.warn(`[AI external] request failed for player ${playerIndex}:`, err instanceof Error ? err.message : err);
         setAiSource('local');
         return -1;
       }
@@ -314,10 +326,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         playCardSound();
         setGameState(gameAdapter.getCurrentState());
       } else {
+        if (cardIndex >= 0) {
+          console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
+        }
         const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
         if (fallbackIdx >= 0) {
           playCardSound();
           setGameState(gameAdapter.getCurrentState());
+        } else {
+          console.error(
+            `[AI fallback] playFirstLegal returned -1 — turn may be stuck`,
+            {
+              variant: gameAdapter.variant,
+              playerIndex,
+              hand: currentState.players[playerIndex]?.hand.map(cardToCode) ?? [],
+              trick: currentState.currentTrick.map(cardToCode),
+            }
+          );
         }
       }
     };
