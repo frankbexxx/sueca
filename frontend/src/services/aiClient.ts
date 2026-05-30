@@ -21,27 +21,39 @@ export interface AiPlayPayload {
 }
 
 /**
- * Requests a card play from external AI service
- * Sends POST request to /play endpoint with game state
- * Returns the card code (e.g., "AS") that AI wants to play
- * Throws error if service is unavailable or response is invalid
+ * Requests a card play from external AI service.
+ * Sends POST request to /play endpoint with game state.
+ * Returns the card code (e.g., "AS") that AI wants to play.
+ * Throws error if service is unavailable, times out (3s), or response is invalid.
  */
 export async function requestAiPlay(payload: AiPlayPayload): Promise<string> {
   if (USE_LOCAL_AI_ONLY) {
     throw new Error('External AI disabled (local-only mode)');
   }
-  const res = await fetch(`${DEFAULT_AI_URL}/play`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    throw new Error(`AI service error: ${res.status}`);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const res = await fetch(`${DEFAULT_AI_URL}/play`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      throw new Error(`AI service error: ${res.status}`);
+    }
+    const data = await res.json();
+    if (!data.play || typeof data.play !== 'string') {
+      throw new Error('AI service response invalid');
+    }
+    return data.play;
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-  const data = await res.json();
-  if (!data.play || typeof data.play !== 'string') {
-    throw new Error('AI service response invalid');
-  }
-  return data.play;
 }
 

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sueca-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    rootDir: sueca-ai
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://frontend-mu-five-18.vercel.app
+      - key: LOG_LEVEL
+        value: INFO

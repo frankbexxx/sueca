@@ -265,10 +265,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     }
 
     /**
-     * Attempts to get card play from external AI service
-     * Returns card index if successful, -1 if service unavailable
+     * Attempts to get card play from external AI service.
+     * Only used for Sueca on hard difficulty; all other variants/difficulties use local AI.
+     * Returns card index if successful, -1 if skipped, unavailable, or timed out.
      */
     const tryExternal = async (): Promise<number> => {
+      if (
+        gameAdapter.variant !== 'sueca' ||
+        gameState.aiDifficulty !== 'hard'
+      ) {
+        return -1;
+      }
       try {
         const allPlayed = [
           ...gameState.currentTrick,
