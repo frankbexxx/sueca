@@ -115,7 +115,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
           </select>
           {!USE_LOCAL_AI_ONLY && setup.gameVariant === 'sueca' && setup.aiDifficulty === 'hard' && (
             <p className="play-setup-ai-hint">
-              IA Externa activa (Render) — modo Difícil usa servidor externo com fallback local.
+              ★ Hard — Dedicated AI
             </p>
           )}
         </div>
