@@ -12,15 +12,70 @@ function playEasy(valid: number[]): number {
 }
 
 /**
- * Medium (original behaviour):
- * Leading: avoid leading spades unless necessary; lead high if we need tricks.
- * Following: prefer to follow suit; play a spade if trumps already in trick.
+ * Returns true if the player's partner is currently winning the trick.
+ * Partners sit at positions (playerIndex + 2) % 4 — indices 0&2 vs 1&3.
+ * "Winning" means the partner played the last card before the current player
+ * and that card is leading the trick.
+ */
+function partnerIsWinning(
+  playerIndex: number,
+  state: GameState
+): boolean {
+  const trick = state.currentTrick;
+  if (trick.length === 0) return false;
+
+  const leader = state.trickLeader ?? 0;
+  // Who played each card: leader played trick[0], (leader+1)%4 played trick[1], etc.
+  let currentWinnerSeat = leader;
+  let currentHighRank = CARD_HIERARCHY[trick[0].rank];
+  let trumpPresent = trick[0].suit === 'spades';
+  const ledSuit = trick[0].suit;
+
+  for (let i = 1; i < trick.length; i++) {
+    const seat = (leader + i) % 4;
+    const c = trick[i];
+    if (c.suit === 'spades') {
+      if (!trumpPresent || CARD_HIERARCHY[c.rank] > currentHighRank) {
+        trumpPresent = true;
+        currentHighRank = CARD_HIERARCHY[c.rank];
+        currentWinnerSeat = seat;
+      }
+    } else if (!trumpPresent && c.suit === ledSuit) {
+      if (CARD_HIERARCHY[c.rank] > currentHighRank) {
+        currentHighRank = CARD_HIERARCHY[c.rank];
+        currentWinnerSeat = seat;
+      }
+    }
+  }
+
+  const partnerIndex = (playerIndex + 2) % 4;
+  return currentWinnerSeat === partnerIndex;
+}
+
+/**
+ * Returns the lowest card index from a list.
+ */
+function lowestCard(
+  indices: number[],
+  player: GameState['players'][number]
+): number {
+  return indices.reduce((best, i) =>
+    CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+    indices[0]
+  );
+}
+
+/**
+ * Medium: avoid leading spades unless necessary; lead high if we need tricks.
+ * Following: only "win" if rank actually beats current trick high.
+ * If partner is winning, play low to let partner take the trick.
  */
 function playMedium(
   valid: number[],
   player: GameState['players'][number],
   state: GameState,
-  spades: SpadesVariantState
+  spades: SpadesVariantState,
+  playerIndex: number
 ): number {
   const team = player.team ?? 1;
   const teamTricks = team === 1 ? spades.team1Tricks : spades.team2Tricks;
@@ -33,26 +88,49 @@ function playMedium(
     return pool[needTricks ? pool.length - 1 : 0];
   }
 
+  // Partner winning — play low to not steal the trick
+  if (partnerIsWinning(playerIndex, state)) {
+    return lowestCard(valid, player);
+  }
+
   const ledSuit = state.currentTrick[0].suit;
   const trumpPlayed = state.currentTrick.some((c) => c.suit === 'spades');
-  const winning = valid.find((i) => {
-    const c = player.hand[i];
-    if (trumpPlayed && c.suit === 'spades') return true;
-    return c.suit === ledSuit;
-  });
-  return winning ?? valid[0];
+
+  if (trumpPlayed) {
+    const currentHigh = Math.max(
+      ...state.currentTrick.filter((c) => c.suit === 'spades').map((c) => CARD_HIERARCHY[c.rank])
+    );
+    const spadesInHand = valid.filter(
+      (i) => player.hand[i].suit === 'spades' && CARD_HIERARCHY[player.hand[i].rank] > currentHigh
+    );
+    if (spadesInHand.length > 0) return spadesInHand[0];
+    const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
+    return inSuit.length > 0 ? lowestCard(inSuit, player) : lowestCard(valid, player);
+  }
+
+  const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
+  if (inSuit.length > 0) {
+    const currentHigh = Math.max(
+      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => CARD_HIERARCHY[c.rank])
+    );
+    const winners = inSuit.filter((i) => CARD_HIERARCHY[player.hand[i].rank] > currentHigh);
+    if (winners.length > 0 && needTricks) return winners[0];
+    return lowestCard(inSuit, player);
+  }
+
+  return lowestCard(valid, player);
 }
 
 /**
- * Hard: same as medium but when following and winning is possible,
- * prefers the lowest winning card (economy of high cards).
- * When leading and we need tricks, leads highest non-spade.
+ * Hard: economy of high cards when following; leads highest non-spade when needing tricks.
+ * Partner-winning awareness: plays low to let partner keep the trick.
  */
 function playHard(
   valid: number[],
   player: GameState['players'][number],
   state: GameState,
-  spades: SpadesVariantState
+  spades: SpadesVariantState,
+  playerIndex: number
 ): number {
   const team = player.team ?? 1;
   const teamTricks = team === 1 ? spades.team1Tricks : spades.team2Tricks;
@@ -68,10 +146,12 @@ function playHard(
         pool[0]
       );
     }
-    return pool.reduce((best, i) =>
-      CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
-      pool[0]
-    );
+    return lowestCard(pool, player);
+  }
+
+  // Partner winning — play low to not steal the trick
+  if (partnerIsWinning(playerIndex, state)) {
+    return lowestCard(valid, player);
   }
 
   const ledSuit = state.currentTrick[0].suit;
@@ -90,26 +170,17 @@ function playHard(
         winners[0]
       );
     }
-    return inSuit.reduce((best, i) =>
-      CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
-      inSuit[0]
-    );
+    return lowestCard(inSuit, player);
   }
 
   if (needTricks) {
     const spadesInHand = valid.filter((i) => player.hand[i].suit === 'spades');
     if (spadesInHand.length > 0) {
-      return spadesInHand.reduce((best, i) =>
-        CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
-        spadesInHand[0]
-      );
+      return lowestCard(spadesInHand, player);
     }
   }
 
-  return valid.reduce((best, i) =>
-    CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
-    valid[0]
-  );
+  return lowestCard(valid, player);
 }
 
 /**
@@ -129,6 +200,6 @@ export function chooseSpadesCard(
   if (valid.length === 0) return -1;
 
   if (shouldPlayRandom(difficulty)) return playEasy(valid);
-  if (difficulty === 'hard') return playHard(valid, player, state, spades);
-  return playMedium(valid, player, state, spades);
+  if (difficulty === 'hard') return playHard(valid, player, state, spades, playerIndex);
+  return playMedium(valid, player, state, spades, playerIndex);
 }

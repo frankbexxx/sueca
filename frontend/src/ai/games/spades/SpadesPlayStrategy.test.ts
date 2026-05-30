@@ -13,10 +13,16 @@ function makeAdapter(allLegal = true): GameAdapter {
   } as unknown as GameAdapter;
 }
 
-function makeState(hand: Card[], trick: Card[] = [], team = 1): GameState {
+function makeState(hand: Card[], trick: Card[] = [], team = 1, trickLeader = 0): GameState {
   return {
-    players: [{ hand, name: 'P0', score: 0, team }],
+    players: [
+      { hand, name: 'P0', score: 0, team },
+      { hand: [], name: 'P1', score: 0, team: 2 },
+      { hand: [], name: 'P2', score: 0, team: 1 },
+      { hand: [], name: 'P3', score: 0, team: 2 },
+    ],
     currentTrick: trick,
+    trickLeader,
   } as unknown as GameState;
 }
 
@@ -79,6 +85,46 @@ describe('SpadesPlayStrategy', () => {
       const state = makeState(hand);
       const idx = chooseSpadesCard(makeAdapter(false), state, 0, makeSpades(), 'medium');
       expect(idx).toBe(-1);
+    });
+  });
+
+  describe('medium — winning detection fix: 4♥ does not "win" against 8♥', () => {
+    it('plays lowest in-suit when no card can beat the current trick', () => {
+      // Trick led 8♥ (hierarchy=6); player has 4♥ (hierarchy=3) and 5♥ (hierarchy=4) — neither beats 8
+      // (Note: 7 has hierarchy=12 in Sueca/Spades, so we avoid using 7 here)
+      const hand = [makeCard('5', 'hearts'), makeCard('4', 'hearts')];
+      const trick = [makeCard('8', 'hearts')];
+      const state = makeState(hand, trick, 1, 1); // trickLeader=1 (not player 0)
+      const spades = makeSpades(3, 0); // needs tricks — but can't win
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'medium');
+      // Neither card beats 8♥ so no winners — plays lowest in-suit (4♥)
+      expect(hand[idx].rank).toBe('4');
+    });
+  });
+
+  describe('medium — partner winning: plays low to let partner take the trick', () => {
+    it('plays lowest card when partner (P2) is currently winning', () => {
+      // P0 is playerIndex=0, partner=P2 (index 2)
+      // trickLeader=2, so P2 led the trick with A♥ — P2 is winning
+      const hand = [makeCard('K', 'hearts'), makeCard('2', 'hearts')];
+      // trick[0] was played by trickLeader=2 (partner), trick is led by partner with A♥
+      const trick = [makeCard('A', 'hearts')];
+      const state = makeState(hand, trick, 1, 2); // trickLeader=2 = partner
+      const spades = makeSpades(3, 0);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'medium');
+      // Partner is winning — play lowest
+      expect(hand[idx].rank).toBe('2');
+    });
+  });
+
+  describe('hard — partner winning: plays low to let partner keep the trick', () => {
+    it('plays lowest card when partner (P2) is winning', () => {
+      const hand = [makeCard('K', 'hearts'), makeCard('2', 'hearts')];
+      const trick = [makeCard('A', 'hearts')];
+      const state = makeState(hand, trick, 1, 2); // partner led with A♥
+      const spades = makeSpades(3, 0);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'hard');
+      expect(hand[idx].rank).toBe('2');
     });
   });
 });

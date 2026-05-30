@@ -90,6 +90,135 @@ function chooseKingPtHard(
 }
 
 /**
+ * Medium positive (festa) lead: lead the highest card.
+ */
+function mediumPositiveLead(
+  valid: number[],
+  player: GameState['players'][number]
+): number {
+  return valid.reduce(
+    (best, i) =>
+      CARD_HIERARCHY[player.hand[i].rank] > CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+    valid[0]
+  );
+}
+
+/**
+ * Medium positive (festa) follow: win with the cheapest winner, or play lowest.
+ */
+function mediumPositiveFollow(
+  valid: number[],
+  player: GameState['players'][number],
+  state: GameState
+): number {
+  const ledSuit = state.currentTrick[0].suit;
+  const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
+  if (inSuit.length > 0) {
+    const currentHigh = Math.max(
+      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => CARD_HIERARCHY[c.rank])
+    );
+    const winners = inSuit.filter((i) => CARD_HIERARCHY[player.hand[i].rank] > currentHigh);
+    if (winners.length > 0) {
+      return winners.reduce(
+        (best, i) =>
+          CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+        winners[0]
+      );
+    }
+    return inSuit.reduce(
+      (best, i) =>
+        CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+      inSuit[0]
+    );
+  }
+  return valid.reduce(
+    (best, i) =>
+      CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+    valid[0]
+  );
+}
+
+/**
+ * Medium negative dump, with contract-aware in-suit safe play.
+ * For no_tricks: always plays the lowest in-suit card to avoid accidental tricks.
+ * For no_last_two in early tricks: plays freely (lowest card).
+ */
+function mediumNegativeDump(
+  valid: number[],
+  player: GameState['players'][number],
+  state: GameState,
+  king: KingPtVariantState
+): number {
+  // no_last_two: early tricks (0-7) play freely; tricks 8-9 play full defensive
+  if (king.contract === 'no_last_two') {
+    if (king.trickNumber < 8) {
+      if (state.currentTrick.length === 0) {
+        const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
+        const pool = nonHeart.length ? nonHeart : valid;
+        return pool.reduce(
+          (best, i) =>
+            RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+              ? i
+              : best,
+          pool[0]
+        );
+      }
+      // Follow with lowest in-suit, or lowest overall
+      const led = state.currentTrick[0].suit;
+      const inSuit = valid.filter((i) => player.hand[i].suit === led);
+      const pool = inSuit.length ? inSuit : valid;
+      return pool.reduce(
+        (best, i) =>
+          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+            ? i
+            : best,
+        pool[0]
+      );
+    }
+    // Tricks 9-10: play lowest possible card to avoid winning
+    if (state.currentTrick.length > 0) {
+      const led = state.currentTrick[0].suit;
+      const inSuit = valid.filter((i) => player.hand[i].suit === led);
+      const pool = inSuit.length ? inSuit : valid;
+      return pool.reduce(
+        (best, i) =>
+          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+            ? i
+            : best,
+        pool[0]
+      );
+    }
+    // Leading in last 2 tricks: lead lowest non-heart
+    const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
+    const pool = nonHeart.length ? nonHeart : valid;
+    return pool.reduce(
+      (best, i) =>
+        RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+          ? i
+          : best,
+      pool[0]
+    );
+  }
+
+  // no_tricks: when following in-suit, play lowest to avoid winning
+  if (king.contract === 'no_tricks' && state.currentTrick.length > 0) {
+    const led = state.currentTrick[0].suit;
+    const inSuit = valid.filter((i) => player.hand[i].suit === led);
+    if (inSuit.length > 0) {
+      return inSuit.reduce(
+        (best, i) =>
+          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+            ? i
+            : best,
+        inSuit[0]
+      );
+    }
+  }
+
+  return ptNegativeDump(valid, player, state, king);
+}
+
+/**
  * Play strategy for King PT (both negative and positive/festa phases).
  */
 export function chooseKingPtCard(
@@ -113,27 +242,32 @@ export function chooseKingPtCard(
     return chooseKingPtHard(valid, player, state, king);
   }
 
-  // Medium (original)
+  // Medium
   const avoid =
     king.gameIndex < KING_NEGATIVE_GAMES || king.festaMode === 'negative_festa';
 
-  if (state.currentTrick.length === 0) {
-    if (avoid) {
-      const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
-      const pool = nonHeart.length ? nonHeart : valid;
-      return pool.reduce(
-        (best, i) =>
-          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank) ? i : best,
-        pool[0]
-      );
+  if (!avoid) {
+    // Positive / festa phase
+    if (state.currentTrick.length === 0) {
+      return mediumPositiveLead(valid, player);
     }
-    return valid[valid.length - 1];
+    return mediumPositiveFollow(valid, player, state);
   }
 
-  if (avoid) {
-    return ptNegativeDump(valid, player, state, king);
+  // Negative phase
+  if (state.currentTrick.length === 0) {
+    const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
+    const pool = nonHeart.length ? nonHeart : valid;
+    return pool.reduce(
+      (best, i) =>
+        RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
+          ? i
+          : best,
+      pool[0]
+    );
   }
-  return valid[0];
+
+  return mediumNegativeDump(valid, player, state, king);
 }
 
 // ---------------------------------------------------------------------------

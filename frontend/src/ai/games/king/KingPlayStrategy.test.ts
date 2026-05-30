@@ -81,4 +81,48 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
       expect(idx).toBe(-1);
     });
   });
+
+  describe('medium — positive phase when leading: chooses highest card', () => {
+    it('leads with A over 2 in positive game', () => {
+      const hand = [makeCard('2', 'clubs'), makeCard('A', 'clubs')];
+      const state = makeState(hand, []);
+      const king = makeKing(6, null); // positive phase
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].rank).toBe('A');
+    });
+  });
+
+  describe('medium — no_last_two: tricks 1-8 play freely, tricks 9-10 defensive', () => {
+    it('trick 8 (trickNumber=7): leads low non-heart without full defensive', () => {
+      const hand = [makeCard('K', 'clubs'), makeCard('2', 'clubs'), makeCard('A', 'hearts')];
+      const state = makeState(hand, []);
+      const king = { ...makeKing(0, 'no_last_two'), trickNumber: 7 };
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king as KingPtVariantState, 'medium');
+      // Should avoid hearts and lead lowest non-heart (2♣ not K♣)
+      expect(hand[idx].suit).not.toBe('hearts');
+      expect(hand[idx].rank).toBe('2');
+    });
+
+    it('trick 9 (trickNumber=8): switches to defensive — avoids winning in-suit', () => {
+      // Following with 3♥ and K♥ against a led 4♥ trick; defensive → plays 3♥ (lowest)
+      const hand = [makeCard('K', 'hearts'), makeCard('3', 'hearts')];
+      const trick = [makeCard('4', 'hearts')];
+      const state = makeState(hand, trick);
+      const king = { ...makeKing(0, 'no_last_two'), trickNumber: 8 };
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king as KingPtVariantState, 'medium');
+      expect(hand[idx].rank).toBe('3');
+    });
+  });
+
+  describe('medium — no_tricks: follows in-suit with lowest card', () => {
+    it('plays lowest in-suit card to avoid winning trick', () => {
+      // Led 5♠; player has 7♠ and A♠ — should play 7 (lowest), not A
+      const hand = [makeCard('A', 'spades'), makeCard('7', 'spades')];
+      const trick = [makeCard('5', 'spades')];
+      const state = makeState(hand, trick);
+      const king = makeKing(0, 'no_tricks');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].rank).toBe('7');
+    });
+  });
 });
