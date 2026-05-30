@@ -616,7 +616,7 @@ export class KingPtGame extends BaseGameAdapter {
         name,
         hand: [],
         team: (index % 2 === 0 ? 1 : 2) as 1 | 2,
-        type: isHuman ? 'human' : 'ai'
+        type: isHuman ? 'human' : (localPlayerIndex !== undefined ? 'remote' : 'ai')
       };
     });
   }

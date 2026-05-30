@@ -215,7 +215,7 @@ export class SpadesGame extends BaseGameAdapter {
         localPlayerIndex !== undefined
           ? isLocalHuman
             ? 'human'
-            : 'ai'
+            : 'remote'
           : isLocalHuman
             ? 'human'
             : 'ai';

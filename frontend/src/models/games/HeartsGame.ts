@@ -187,7 +187,7 @@ export class HeartsGame extends BaseGameAdapter {
         localPlayerIndex !== undefined
           ? isLocalHuman
             ? 'human'
-            : 'ai'
+            : 'remote'
           : isLocalHuman
             ? 'human'
             : 'ai';

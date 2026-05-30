@@ -88,3 +88,34 @@
   color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.65);
   line-height: 1.4;
 }
+
+/* Multiplayer lobby */
+.mp-lobby {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--sueca-radius-md, 12px);
+  padding: 12px;
+}
+
+.mp-lobby-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mp-room-code {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  color: #7ec8f7;
+  padding: 8px 0;
+  user-select: all;
+}
+
+.mp-lobby-hint {
+  font-size: 0.88rem;
+  color: rgba(233, 238, 247, 0.7);
+  margin: 0;
+  text-align: center;
+}

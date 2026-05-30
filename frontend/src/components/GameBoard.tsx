@@ -40,6 +40,7 @@ import { getKingPtState } from '../models/games/KingPtGame';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
+import { useMultiplayer } from '../hooks/useMultiplayer';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -67,7 +68,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const [roundDealingMethod, setRoundDealingMethod] = useState(dealingMethod);
   const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
   const isMultiplayer = Boolean(config.multiplayerEnabled);
-  const multiplayerPlayerIndex = 0;
+  const multiplayerPlayerIndex = config.localPlayerIndex ?? 0;
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   
@@ -112,6 +113,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const layoutSnapshot = useLayoutSnapshot();
+
+  const { publishAfterPlay } = useMultiplayer({
+    enabled: isMultiplayer,
+    sessionCode: config.multiplayerSessionId ?? '',
+    localPlayerIndex: multiplayerPlayerIndex,
+    onRemoteState: setGameState,
+  });
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
   const shuffleTimerRef = useRef<number | null>(null);
@@ -170,7 +178,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         initialState = adapter.initialize(config.playerNames, {
           dealingMethod: config.dealingMethod,
           aiDifficulty: config.aiDifficulty,
-          localPlayerIndex: config.multiplayerEnabled ? 0 : undefined,
+          localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
           rulesPresetId: config.rulesPresetId
         });
       }
@@ -184,6 +192,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       onExit();
     }
   }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame]);
+
+  // Host publishes initial state so joiners can sync immediately
+  useEffect(() => {
+    if (!isMultiplayer || multiplayerPlayerIndex !== 0 || !gameAdapter || !gameStarted) return;
+    publishAfterPlay(gameState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameStarted, gameAdapter]);
 
   useEffect(() => {
     if (!gameAdapter || !gameStarted || gameState.isGameOver) return;
@@ -436,8 +451,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
           playCardSound();
-          setGameState(gameAdapter.getCurrentState());
+          const newState = gameAdapter.getCurrentState();
+          setGameState(newState);
           setSelectedCard(null);
+          publishAfterPlay(newState);
         } else {
           playErrorSound();
         }
