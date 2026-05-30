@@ -1,6 +1,7 @@
 /* ===================================================================
-   Shell themes — Tebas · Tikal · Thule
-   Scope: .app-shell only. Game board unaffected.
+   Shell + game board themes
+   Each theme defines: bg, panel-modal, panel-shell, table-felt,
+   table-rail, bg-game, and accent (primary).
    =================================================================== */
 
 /* ------------------------------------------------------------------
@@ -9,6 +10,7 @@
 
 .app-shell[data-theme="thebes"] {
   background: linear-gradient(160deg, #1a1208 0%, #0d0a06 100%);
+  --theme-panel-modal: #1e1508;
 }
 
 .app-shell[data-theme="thebes"] .shell-panel {
@@ -54,6 +56,7 @@
 
 .app-shell[data-theme="tikal"] {
   background: linear-gradient(160deg, #091a0e 0%, #040d07 100%);
+  --theme-panel-modal: #0d1e10;
 }
 
 .app-shell[data-theme="tikal"] .shell-panel {
@@ -99,6 +102,7 @@
 
 .app-shell[data-theme="thule"] {
   background: linear-gradient(160deg, #0a1628 0%, #050d1a 100%);
+  --theme-panel-modal: #0d1a2e;
 }
 
 .app-shell[data-theme="thule"] .shell-panel {
@@ -136,4 +140,579 @@
 .app-shell[data-theme="thule"] .dashboard-game-row--active {
   border-color: rgba(74, 144, 217, 0.55);
   background: rgba(74, 144, 217, 0.12);
+}
+
+/* ------------------------------------------------------------------
+   THULE — game board tokens
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="thule"] .game-board {
+  --theme-table-felt: #1a3a5a;
+  --theme-table-felt-dark: #0d2240;
+  --theme-table-rail: #2a4a70;
+  --theme-bg-game: #0d1e3a;
+  --theme-bg-game-alt: #152840;
+  --theme-bg-game-mid: #0f2235;
+  --theme-player-box: rgba(10, 30, 60, 0.45);
+  --theme-turn-indicator: #90ceff;
+}
+
+/* ------------------------------------------------------------------
+   TEBAS — game board tokens
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="thebes"] .game-board {
+  --theme-table-felt: #5a4010;
+  --theme-table-felt-dark: #3a2808;
+  --theme-table-rail: #8b6530;
+  --theme-bg-game: #1a1208;
+  --theme-bg-game-alt: #241808;
+  --theme-bg-game-mid: #1e1508;
+  --theme-player-box: rgba(40, 28, 8, 0.45);
+  --theme-turn-indicator: #f5d080;
+}
+
+/* ------------------------------------------------------------------
+   TIKAL — game board tokens
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="tikal"] .game-board {
+  --theme-table-felt: #0d3a1a;
+  --theme-table-felt-dark: #08250f;
+  --theme-table-rail: #4a6530;
+  --theme-bg-game: #091a0e;
+  --theme-bg-game-alt: #0d2212;
+  --theme-bg-game-mid: #0b1d10;
+  --theme-player-box: rgba(8, 28, 14, 0.45);
+  --theme-turn-indicator: #90d4a0;
+}
+
+/* ------------------------------------------------------------------
+   FOREST — floresta escura, musgo, carvalho
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="forest"] {
+  background: linear-gradient(160deg, #0a1a0a 0%, #050d05 100%);
+  --theme-panel-modal: #0f2010;
+}
+
+.app-shell[data-theme="forest"] .shell-panel {
+  background: rgba(80, 160, 80, 0.06);
+  border-color: rgba(80, 160, 80, 0.15);
+}
+
+.app-shell[data-theme="forest"] .shell-section-title,
+.app-shell[data-theme="forest"] .screen-title,
+.app-shell[data-theme="forest"] .dashboard-section-title,
+.app-shell[data-theme="forest"] .shell-hub-item {
+  color: #c8e8c8;
+}
+
+.app-shell[data-theme="forest"] .bottom-nav-item.active {
+  background: rgba(80, 160, 80, 0.2);
+  color: #c8e8c8;
+}
+
+.app-shell[data-theme="forest"] .sueca-btn--primary {
+  background: rgba(80, 160, 80, 0.45);
+  border-color: rgba(80, 160, 80, 0.65);
+}
+
+.app-shell[data-theme="forest"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(80, 160, 80, 0.58);
+  border-color: rgba(80, 160, 80, 0.8);
+}
+
+.app-shell[data-theme="forest"] .themes-card--active,
+.app-shell[data-theme="forest"] .dashboard-game-row--active {
+  border-color: rgba(80, 160, 80, 0.55);
+  background: rgba(80, 160, 80, 0.12);
+}
+
+.app-shell[data-theme="forest"] .game-board {
+  --theme-table-felt: #1a4a1a;
+  --theme-table-felt-dark: #0f3010;
+  --theme-table-rail: #5a3a20;
+  --theme-bg-game: #0a1a0a;
+  --theme-bg-game-alt: #122012;
+  --theme-bg-game-mid: #0e1c0e;
+  --theme-player-box: rgba(8, 24, 8, 0.45);
+  --theme-turn-indicator: #a0e090;
+}
+
+/* ------------------------------------------------------------------
+   MIDNIGHT — noite profunda, índigo, azul-acizentado
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="midnight"] {
+  background: linear-gradient(160deg, #05081a 0%, #02050e 100%);
+  --theme-panel-modal: #0a0e28;
+}
+
+.app-shell[data-theme="midnight"] .shell-panel {
+  background: rgba(100, 140, 220, 0.06);
+  border-color: rgba(100, 140, 220, 0.15);
+}
+
+.app-shell[data-theme="midnight"] .shell-section-title,
+.app-shell[data-theme="midnight"] .screen-title,
+.app-shell[data-theme="midnight"] .dashboard-section-title,
+.app-shell[data-theme="midnight"] .shell-hub-item {
+  color: #c8d8f8;
+}
+
+.app-shell[data-theme="midnight"] .bottom-nav-item.active {
+  background: rgba(100, 140, 220, 0.2);
+  color: #c8d8f8;
+}
+
+.app-shell[data-theme="midnight"] .sueca-btn--primary {
+  background: rgba(100, 140, 220, 0.45);
+  border-color: rgba(100, 140, 220, 0.65);
+}
+
+.app-shell[data-theme="midnight"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(100, 140, 220, 0.58);
+  border-color: rgba(100, 140, 220, 0.8);
+}
+
+.app-shell[data-theme="midnight"] .themes-card--active,
+.app-shell[data-theme="midnight"] .dashboard-game-row--active {
+  border-color: rgba(100, 140, 220, 0.55);
+  background: rgba(100, 140, 220, 0.12);
+}
+
+.app-shell[data-theme="midnight"] .game-board {
+  --theme-table-felt: #1a2a4a;
+  --theme-table-felt-dark: #101830;
+  --theme-table-rail: #3a3a5a;
+  --theme-bg-game: #050818;
+  --theme-bg-game-alt: #0a0f22;
+  --theme-bg-game-mid: #080c1e;
+  --theme-player-box: rgba(8, 12, 30, 0.45);
+  --theme-turn-indicator: #a0b8f0;
+}
+
+/* ------------------------------------------------------------------
+   KNOSSOS — Creta Minoica, terra-cota, azul egeu
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="knossos"] {
+  background: linear-gradient(160deg, #1a0d08 0%, #0d0605 100%);
+  --theme-panel-modal: #200f0a;
+}
+
+.app-shell[data-theme="knossos"] .shell-panel {
+  background: rgba(196, 108, 60, 0.06);
+  border-color: rgba(196, 108, 60, 0.15);
+}
+
+.app-shell[data-theme="knossos"] .shell-section-title,
+.app-shell[data-theme="knossos"] .screen-title,
+.app-shell[data-theme="knossos"] .dashboard-section-title,
+.app-shell[data-theme="knossos"] .shell-hub-item {
+  color: #f0d8c8;
+}
+
+.app-shell[data-theme="knossos"] .bottom-nav-item.active {
+  background: rgba(196, 108, 60, 0.2);
+  color: #f0d8c8;
+}
+
+.app-shell[data-theme="knossos"] .sueca-btn--primary {
+  background: rgba(196, 108, 60, 0.45);
+  border-color: rgba(196, 108, 60, 0.65);
+}
+
+.app-shell[data-theme="knossos"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(196, 108, 60, 0.58);
+  border-color: rgba(196, 108, 60, 0.8);
+}
+
+.app-shell[data-theme="knossos"] .themes-card--active,
+.app-shell[data-theme="knossos"] .dashboard-game-row--active {
+  border-color: rgba(196, 108, 60, 0.55);
+  background: rgba(196, 108, 60, 0.12);
+}
+
+.app-shell[data-theme="knossos"] .game-board {
+  --theme-table-felt: #2a4a6b;
+  --theme-table-felt-dark: #1a3050;
+  --theme-table-rail: #8b4513;
+  --theme-bg-game: #4a2010;
+  --theme-bg-game-alt: #5a3018;
+  --theme-bg-game-mid: #502818;
+  --theme-player-box: rgba(30, 16, 8, 0.45);
+  --theme-turn-indicator: #f0a868;
+}
+
+/* ------------------------------------------------------------------
+   XANADU — China Imperial, jade, dourado
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="xanadu"] {
+  background: linear-gradient(160deg, #0d1508 0%, #060d04 100%);
+  --theme-panel-modal: #101a0a;
+}
+
+.app-shell[data-theme="xanadu"] .shell-panel {
+  background: rgba(120, 180, 80, 0.06);
+  border-color: rgba(120, 180, 80, 0.15);
+}
+
+.app-shell[data-theme="xanadu"] .shell-section-title,
+.app-shell[data-theme="xanadu"] .screen-title,
+.app-shell[data-theme="xanadu"] .dashboard-section-title,
+.app-shell[data-theme="xanadu"] .shell-hub-item {
+  color: #d8f0b8;
+}
+
+.app-shell[data-theme="xanadu"] .bottom-nav-item.active {
+  background: rgba(120, 180, 80, 0.2);
+  color: #d8f0b8;
+}
+
+.app-shell[data-theme="xanadu"] .sueca-btn--primary {
+  background: rgba(120, 180, 80, 0.45);
+  border-color: rgba(120, 180, 80, 0.65);
+}
+
+.app-shell[data-theme="xanadu"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(120, 180, 80, 0.58);
+  border-color: rgba(120, 180, 80, 0.8);
+}
+
+.app-shell[data-theme="xanadu"] .themes-card--active,
+.app-shell[data-theme="xanadu"] .dashboard-game-row--active {
+  border-color: rgba(120, 180, 80, 0.55);
+  background: rgba(120, 180, 80, 0.12);
+}
+
+.app-shell[data-theme="xanadu"] .game-board {
+  --theme-table-felt: #1a5c2a;
+  --theme-table-felt-dark: #0f3a18;
+  --theme-table-rail: #c8a030;
+  --theme-bg-game: #0d1808;
+  --theme-bg-game-alt: #18280e;
+  --theme-bg-game-mid: #142010;
+  --theme-player-box: rgba(10, 22, 6, 0.45);
+  --theme-turn-indicator: #d0e870;
+}
+
+/* ------------------------------------------------------------------
+   YAMATAI — Japão antigo, vermelho lacado, sakura
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="yamatai"] {
+  background: linear-gradient(160deg, #1a0808 0%, #0d0404 100%);
+  --theme-panel-modal: #200a0a;
+}
+
+.app-shell[data-theme="yamatai"] .shell-panel {
+  background: rgba(210, 60, 60, 0.06);
+  border-color: rgba(210, 60, 60, 0.15);
+}
+
+.app-shell[data-theme="yamatai"] .shell-section-title,
+.app-shell[data-theme="yamatai"] .screen-title,
+.app-shell[data-theme="yamatai"] .dashboard-section-title,
+.app-shell[data-theme="yamatai"] .shell-hub-item {
+  color: #f8d8d8;
+}
+
+.app-shell[data-theme="yamatai"] .bottom-nav-item.active {
+  background: rgba(210, 60, 60, 0.2);
+  color: #f8d8d8;
+}
+
+.app-shell[data-theme="yamatai"] .sueca-btn--primary {
+  background: rgba(210, 60, 60, 0.45);
+  border-color: rgba(210, 60, 60, 0.65);
+}
+
+.app-shell[data-theme="yamatai"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(210, 60, 60, 0.58);
+  border-color: rgba(210, 60, 60, 0.8);
+}
+
+.app-shell[data-theme="yamatai"] .themes-card--active,
+.app-shell[data-theme="yamatai"] .dashboard-game-row--active {
+  border-color: rgba(210, 60, 60, 0.55);
+  background: rgba(210, 60, 60, 0.12);
+}
+
+.app-shell[data-theme="yamatai"] .game-board {
+  --theme-table-felt: #2a1a2a;
+  --theme-table-felt-dark: #1a101a;
+  --theme-table-rail: #8b0000;
+  --theme-bg-game: #2a0808;
+  --theme-bg-game-alt: #381010;
+  --theme-bg-game-mid: #300c0c;
+  --theme-player-box: rgba(28, 8, 8, 0.45);
+  --theme-turn-indicator: #ff9090;
+}
+
+/* ------------------------------------------------------------------
+   SHAMBHALA — Tibet, roxo místico, dourado budista
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="shambhala"] {
+  background: linear-gradient(160deg, #100a1a 0%, #080614 100%);
+  --theme-panel-modal: #160c22;
+}
+
+.app-shell[data-theme="shambhala"] .shell-panel {
+  background: rgba(160, 100, 220, 0.06);
+  border-color: rgba(160, 100, 220, 0.15);
+}
+
+.app-shell[data-theme="shambhala"] .shell-section-title,
+.app-shell[data-theme="shambhala"] .screen-title,
+.app-shell[data-theme="shambhala"] .dashboard-section-title,
+.app-shell[data-theme="shambhala"] .shell-hub-item {
+  color: #e8d0f8;
+}
+
+.app-shell[data-theme="shambhala"] .bottom-nav-item.active {
+  background: rgba(160, 100, 220, 0.2);
+  color: #e8d0f8;
+}
+
+.app-shell[data-theme="shambhala"] .sueca-btn--primary {
+  background: rgba(160, 100, 220, 0.45);
+  border-color: rgba(160, 100, 220, 0.65);
+}
+
+.app-shell[data-theme="shambhala"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(160, 100, 220, 0.58);
+  border-color: rgba(160, 100, 220, 0.8);
+}
+
+.app-shell[data-theme="shambhala"] .themes-card--active,
+.app-shell[data-theme="shambhala"] .dashboard-game-row--active {
+  border-color: rgba(160, 100, 220, 0.55);
+  background: rgba(160, 100, 220, 0.12);
+}
+
+.app-shell[data-theme="shambhala"] .game-board {
+  --theme-table-felt: #2a1a3a;
+  --theme-table-felt-dark: #1a1028;
+  --theme-table-rail: #c8a030;
+  --theme-bg-game: #180a28;
+  --theme-bg-game-alt: #220f38;
+  --theme-bg-game-mid: #1e0d30;
+  --theme-player-box: rgba(18, 10, 30, 0.45);
+  --theme-turn-indicator: #d0a0ff;
+}
+
+/* ------------------------------------------------------------------
+   RAPANUI — Ilha de Páscoa, pedra vulcânica, azul oceano
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="rapanui"] {
+  background: linear-gradient(160deg, #0a0e14 0%, #060810 100%);
+  --theme-panel-modal: #0d1220;
+}
+
+.app-shell[data-theme="rapanui"] .shell-panel {
+  background: rgba(60, 120, 200, 0.06);
+  border-color: rgba(60, 120, 200, 0.15);
+}
+
+.app-shell[data-theme="rapanui"] .shell-section-title,
+.app-shell[data-theme="rapanui"] .screen-title,
+.app-shell[data-theme="rapanui"] .dashboard-section-title,
+.app-shell[data-theme="rapanui"] .shell-hub-item {
+  color: #c8d8f0;
+}
+
+.app-shell[data-theme="rapanui"] .bottom-nav-item.active {
+  background: rgba(60, 120, 200, 0.2);
+  color: #c8d8f0;
+}
+
+.app-shell[data-theme="rapanui"] .sueca-btn--primary {
+  background: rgba(60, 120, 200, 0.45);
+  border-color: rgba(60, 120, 200, 0.65);
+}
+
+.app-shell[data-theme="rapanui"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 120, 200, 0.58);
+  border-color: rgba(60, 120, 200, 0.8);
+}
+
+.app-shell[data-theme="rapanui"] .themes-card--active,
+.app-shell[data-theme="rapanui"] .dashboard-game-row--active {
+  border-color: rgba(60, 120, 200, 0.55);
+  background: rgba(60, 120, 200, 0.12);
+}
+
+.app-shell[data-theme="rapanui"] .game-board {
+  --theme-table-felt: #1a3048;
+  --theme-table-felt-dark: #101e30;
+  --theme-table-rail: #4a3020;
+  --theme-bg-game: #0d1828;
+  --theme-bg-game-alt: #152038;
+  --theme-bg-game-mid: #111c30;
+  --theme-player-box: rgba(10, 18, 30, 0.45);
+  --theme-turn-indicator: #80c0ff;
+}
+
+/* ------------------------------------------------------------------
+   BABYLON — Mesopotâmia, turquesa, ouro
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="babylon"] {
+  background: linear-gradient(160deg, #080e14 0%, #04080a 100%);
+  --theme-panel-modal: #0a1218;
+}
+
+.app-shell[data-theme="babylon"] .shell-panel {
+  background: rgba(60, 180, 180, 0.06);
+  border-color: rgba(60, 180, 180, 0.15);
+}
+
+.app-shell[data-theme="babylon"] .shell-section-title,
+.app-shell[data-theme="babylon"] .screen-title,
+.app-shell[data-theme="babylon"] .dashboard-section-title,
+.app-shell[data-theme="babylon"] .shell-hub-item {
+  color: #c8f0f0;
+}
+
+.app-shell[data-theme="babylon"] .bottom-nav-item.active {
+  background: rgba(60, 180, 180, 0.2);
+  color: #c8f0f0;
+}
+
+.app-shell[data-theme="babylon"] .sueca-btn--primary {
+  background: rgba(60, 180, 180, 0.45);
+  border-color: rgba(60, 180, 180, 0.65);
+}
+
+.app-shell[data-theme="babylon"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 180, 180, 0.58);
+  border-color: rgba(60, 180, 180, 0.8);
+}
+
+.app-shell[data-theme="babylon"] .themes-card--active,
+.app-shell[data-theme="babylon"] .dashboard-game-row--active {
+  border-color: rgba(60, 180, 180, 0.55);
+  background: rgba(60, 180, 180, 0.12);
+}
+
+.app-shell[data-theme="babylon"] .game-board {
+  --theme-table-felt: #0a3040;
+  --theme-table-felt-dark: #061e28;
+  --theme-table-rail: #c8a020;
+  --theme-bg-game: #081418;
+  --theme-bg-game-alt: #101e22;
+  --theme-bg-game-mid: #0c1820;
+  --theme-player-box: rgba(6, 16, 20, 0.45);
+  --theme-turn-indicator: #70e0e0;
+}
+
+/* ------------------------------------------------------------------
+   UR — Suméria, lápis-lazuli, areia dourada
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="ur"] {
+  background: linear-gradient(160deg, #12100a 0%, #0a0806 100%);
+  --theme-panel-modal: #161410;
+}
+
+.app-shell[data-theme="ur"] .shell-panel {
+  background: rgba(60, 100, 180, 0.06);
+  border-color: rgba(60, 100, 180, 0.15);
+}
+
+.app-shell[data-theme="ur"] .shell-section-title,
+.app-shell[data-theme="ur"] .screen-title,
+.app-shell[data-theme="ur"] .dashboard-section-title,
+.app-shell[data-theme="ur"] .shell-hub-item {
+  color: #d8e0f8;
+}
+
+.app-shell[data-theme="ur"] .bottom-nav-item.active {
+  background: rgba(60, 100, 180, 0.2);
+  color: #d8e0f8;
+}
+
+.app-shell[data-theme="ur"] .sueca-btn--primary {
+  background: rgba(60, 100, 180, 0.45);
+  border-color: rgba(60, 100, 180, 0.65);
+}
+
+.app-shell[data-theme="ur"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 100, 180, 0.58);
+  border-color: rgba(60, 100, 180, 0.8);
+}
+
+.app-shell[data-theme="ur"] .themes-card--active,
+.app-shell[data-theme="ur"] .dashboard-game-row--active {
+  border-color: rgba(60, 100, 180, 0.55);
+  background: rgba(60, 100, 180, 0.12);
+}
+
+.app-shell[data-theme="ur"] .game-board {
+  --theme-table-felt: #1a2840;
+  --theme-table-felt-dark: #101828;
+  --theme-table-rail: #b8960a;
+  --theme-bg-game: #14100a;
+  --theme-bg-game-alt: #1e1812;
+  --theme-bg-game-mid: #1a1410;
+  --theme-player-box: rgba(14, 12, 8, 0.45);
+  --theme-turn-indicator: #90a8e8;
+}
+
+/* ------------------------------------------------------------------
+   NANMADOL — Micronésia, verde tropical, coral
+   ------------------------------------------------------------------ */
+
+.app-shell[data-theme="nanmadol"] {
+  background: linear-gradient(160deg, #081410 0%, #04080a 100%);
+  --theme-panel-modal: #0c1a14;
+}
+
+.app-shell[data-theme="nanmadol"] .shell-panel {
+  background: rgba(60, 180, 120, 0.06);
+  border-color: rgba(60, 180, 120, 0.15);
+}
+
+.app-shell[data-theme="nanmadol"] .shell-section-title,
+.app-shell[data-theme="nanmadol"] .screen-title,
+.app-shell[data-theme="nanmadol"] .dashboard-section-title,
+.app-shell[data-theme="nanmadol"] .shell-hub-item {
+  color: #c8f0e0;
+}
+
+.app-shell[data-theme="nanmadol"] .bottom-nav-item.active {
+  background: rgba(60, 180, 120, 0.2);
+  color: #c8f0e0;
+}
+
+.app-shell[data-theme="nanmadol"] .sueca-btn--primary {
+  background: rgba(60, 180, 120, 0.45);
+  border-color: rgba(60, 180, 120, 0.65);
+}
+
+.app-shell[data-theme="nanmadol"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 180, 120, 0.58);
+  border-color: rgba(60, 180, 120, 0.8);
+}
+
+.app-shell[data-theme="nanmadol"] .themes-card--active,
+.app-shell[data-theme="nanmadol"] .dashboard-game-row--active {
+  border-color: rgba(60, 180, 120, 0.55);
+  background: rgba(60, 180, 120, 0.12);
+}
+
+.app-shell[data-theme="nanmadol"] .game-board {
+  --theme-table-felt: #0a3020;
+  --theme-table-felt-dark: #061e14;
+  --theme-table-rail: #8b6040;
+  --theme-bg-game: #081410;
+  --theme-bg-game-alt: #101e18;
+  --theme-bg-game-mid: #0c1814;
+  --theme-player-box: rgba(6, 16, 12, 0.45);
+  --theme-turn-indicator: #70e0b0;
 }

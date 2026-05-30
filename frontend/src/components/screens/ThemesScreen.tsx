@@ -30,12 +30,20 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
   };
 
   const themes: { id: ThemeId; labelPt: string; labelEn: string }[] = [
-    { id: 'classic',  labelPt: 'Clássico',   labelEn: 'Classic'   },
-    { id: 'forest',   labelPt: 'Floresta',   labelEn: 'Forest'    },
-    { id: 'midnight', labelPt: 'Meia-noite', labelEn: 'Midnight'  },
-    { id: 'thebes',   labelPt: 'Tebas',      labelEn: 'Thebes'    },
-    { id: 'tikal',    labelPt: 'Tikal',      labelEn: 'Tikal'     },
-    { id: 'thule',    labelPt: 'Thule',      labelEn: 'Thule'     },
+    { id: 'classic',   labelPt: 'Clássico',   labelEn: 'Classic'   },
+    { id: 'forest',    labelPt: 'Floresta',   labelEn: 'Forest'    },
+    { id: 'midnight',  labelPt: 'Meia-noite', labelEn: 'Midnight'  },
+    { id: 'thebes',    labelPt: 'Tebas',      labelEn: 'Thebes'    },
+    { id: 'tikal',     labelPt: 'Tikal',      labelEn: 'Tikal'     },
+    { id: 'thule',     labelPt: 'Thule',      labelEn: 'Thule'     },
+    { id: 'knossos',   labelPt: 'Knossos',    labelEn: 'Knossos'   },
+    { id: 'xanadu',    labelPt: 'Xanadu',     labelEn: 'Xanadu'    },
+    { id: 'yamatai',   labelPt: 'Yamatai',    labelEn: 'Yamatai'   },
+    { id: 'shambhala', labelPt: 'Shambhala',  labelEn: 'Shambhala' },
+    { id: 'rapanui',   labelPt: 'Rapanui',    labelEn: 'Rapanui'   },
+    { id: 'babylon',   labelPt: 'Babilónia',  labelEn: 'Babylon'   },
+    { id: 'ur',        labelPt: 'Ur',         labelEn: 'Ur'        },
+    { id: 'nanmadol',  labelPt: 'Nan Madol',  labelEn: 'Nan Madol' },
   ];
 
   return (

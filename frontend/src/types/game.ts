@@ -59,20 +59,22 @@ export interface GameState {
   variantState?: Record<string, unknown>;
 }
 
+// Sueca trick-taking order: A > 7 > K > J > Q > 6 > 5 > 4 > 3 > 2
+// (8, 9, 10 are not in the 40-card Sueca deck — values are inert)
 export const CARD_HIERARCHY: Record<Rank, number> = {
   '2': 1,
   '3': 2,
   '4': 3,
   '5': 4,
   '6': 5,
-  '7': 6,
-  '8': 7,
-  '9': 8,
-  '10': 9,
-  'Q': 10,
-  'J': 11,
-  'K': 12,
-  'A': 13
+  '8': 6,
+  '9': 7,
+  '10': 8,
+  'Q': 9,
+  'J': 10,
+  'K': 11,
+  '7': 12,
+  'A': 13,
 };
 
 export const CARD_POINTS: Record<Rank, number> = {

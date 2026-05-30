@@ -1,5 +1,5 @@
 import { Game } from './Game';
-import { CARD_POINTS, GameState } from '../types/game';
+import { CARD_HIERARCHY, CARD_POINTS, Card, GameState, Suit } from '../types/game';
 
 describe('Game Sueca invariants', () => {
   it('deals 10 cards to each of 4 players after startRound', () => {
@@ -102,5 +102,36 @@ describe('Game Sueca invariants', () => {
     internal.endRound();
     expect(internal.state.isGameOver).toBe(true);
     expect(internal.state.winner).toBe(1);
+  });
+
+  it('Sueca hierarchy: A > 7 > K > J > Q > 6 > 2', () => {
+    expect(CARD_HIERARCHY['A']).toBeGreaterThan(CARD_HIERARCHY['7']);
+    expect(CARD_HIERARCHY['7']).toBeGreaterThan(CARD_HIERARCHY['K']);
+    expect(CARD_HIERARCHY['K']).toBeGreaterThan(CARD_HIERARCHY['J']);
+    expect(CARD_HIERARCHY['J']).toBeGreaterThan(CARD_HIERARCHY['Q']);
+    expect(CARD_HIERARCHY['Q']).toBeGreaterThan(CARD_HIERARCHY['6']);
+    expect(CARD_HIERARCHY['6']).toBeGreaterThan(CARD_HIERARCHY['2']);
+  });
+
+  it('7 beats K and J in a trick via evaluateTrick', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as {
+      state: GameState;
+      evaluateTrick: () => void;
+    };
+
+    const suit: Suit = 'clubs';
+    const trumpSuit: Suit = 'spades'; // non-clubs trump so suit comparisons apply
+    const makeCard = (rank: Card['rank']): Card => ({ suit, rank, id: `${rank}-${suit}` });
+
+    // Trick: leader plays K, player 1 plays J, player 2 plays 7 — 7 must win
+    internal.state.currentTrick = [makeCard('K'), makeCard('J'), makeCard('7'), makeCard('2')];
+    internal.state.trickLeader = 0;
+    internal.state.trumpSuit = trumpSuit;
+    internal.evaluateTrick();
+
+    // Winner is player at (trickLeader + winningIndex) % 4 = (0 + 2) % 4 = 2
+    expect(internal.state.lastTrickWinner).toBe(2);
   });
 });

@@ -524,8 +524,8 @@ export class Game {
         const highestSupport = cardsOfLeadSuit.reduce((best, current) => 
           CARD_HIERARCHY[current.card.rank] > CARD_HIERARCHY[best.card.rank] ? current : best
         );
-        // Only support if it's not too valuable
-        if (CARD_HIERARCHY[highestSupport.card.rank] < CARD_HIERARCHY['7']) {
+        // Only support if card is not too valuable (don't waste K, 7, or A)
+        if (CARD_HIERARCHY[highestSupport.card.rank] < CARD_HIERARCHY['K']) {
           return highestSupport.index;
         }
       }

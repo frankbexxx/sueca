@@ -19,6 +19,22 @@
   --color-text: #e9eef7;
   --color-primary: #6c5ce7;
 
+  /* Panel defaults — overridden per theme */
+  --theme-panel-modal: #2a3a52;
+  --theme-panel-shell: rgba(255, 255, 255, 0.06);
+
+  /* Table (game board) defaults — overridden per theme */
+  --theme-table-felt: #2f6d2f;
+  --theme-table-felt-dark: #1f4f1f;
+  --theme-table-rail: #7a5736;
+  --theme-bg-game: #5a6ba8;
+  --theme-bg-game-alt: #6f5f98;
+  --theme-bg-game-mid: #58679d;
+
+  /* HUD defaults — overridden per theme */
+  --theme-player-box: rgba(0, 0, 0, 0.25);
+  --theme-turn-indicator: #ffd700;
+
   /* Spacing & shape */
   --sueca-radius-md: 10px;
   --sueca-radius-lg: 12px;
