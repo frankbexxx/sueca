@@ -4,6 +4,7 @@ import { KingPtVariantState } from '../../../models/games/KingPtGame';
 import { isMen, mustPlayKingOfHearts } from '../../../models/games/KingPtGame';
 import { KING_NEGATIVE_GAMES } from '../../../models/games/king/kingContracts';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
+import { shouldPlayRandom } from '../../core/DifficultyProfile';
 
 const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -104,7 +105,7 @@ export function chooseKingPtCard(
   const valid = getLegalIndices(adapter, state, playerIndex);
   if (valid.length === 0) return -1;
 
-  if (difficulty === 'easy') {
+  if (shouldPlayRandom(difficulty)) {
     return valid[Math.floor(Math.random() * valid.length)];
   }
 
@@ -155,7 +156,7 @@ export function chooseKingSimplifiedCard(
   const valid = getLegalIndices(adapter, state, playerIndex);
   if (valid.length === 0) return -1;
 
-  if (difficulty === 'easy') {
+  if (shouldPlayRandom(difficulty)) {
     return valid[Math.floor(Math.random() * valid.length)];
   }
 

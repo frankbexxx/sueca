@@ -569,6 +569,7 @@ export class Game {
   // Called from UI when user is ready to start the round
   startRound(): void {
     if (this.state.waitingForRoundStart) {
+      this.state.partnerSignals = [];
       if (this.state.players[0].hand.length === 0) {
         const trumpResult = this.dealCards(
           this.state.players,

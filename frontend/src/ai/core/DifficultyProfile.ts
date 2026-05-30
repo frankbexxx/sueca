@@ -34,3 +34,11 @@ export const DIFFICULTY_PROFILES: Record<AIDifficulty, DifficultyProfile> = {
 export function getDifficultyProfile(difficulty: AIDifficulty): DifficultyProfile {
   return DIFFICULTY_PROFILES[difficulty];
 }
+
+/**
+ * Returns true with probability equal to the difficulty's randomnessFactor.
+ * Used by strategies to short-circuit to a random legal card on easy mode.
+ */
+export function shouldPlayRandom(difficulty: AIDifficulty): boolean {
+  return Math.random() < DIFFICULTY_PROFILES[difficulty].randomnessFactor;
+}

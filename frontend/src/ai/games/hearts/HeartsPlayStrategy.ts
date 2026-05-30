@@ -1,6 +1,7 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { AIDifficulty, Card, GameState } from '../../../types/game';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
+import { shouldPlayRandom } from '../../core/DifficultyProfile';
 
 const penaltyScore = (c: Card): number =>
   (c.suit === 'hearts' ? 10 : 0) + (c.rank === 'Q' && c.suit === 'spades' ? 20 : 0);
@@ -78,7 +79,7 @@ export function chooseHeartsCard(
 
   const isLeading = state.currentTrick.length === 0;
 
-  if (difficulty === 'easy') return playEasy(valid);
+  if (shouldPlayRandom(difficulty)) return playEasy(valid);
   if (difficulty === 'hard') return playHard(valid, player, state, isLeading);
   return playMedium(valid, player, isLeading);
 }

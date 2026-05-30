@@ -2,6 +2,7 @@ import { GameAdapter } from '../../../models/games/GameAdapter';
 import { AIDifficulty, GameState, CARD_HIERARCHY } from '../../../types/game';
 import { SpadesVariantState } from '../../../models/games/SpadesGame';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
+import { shouldPlayRandom } from '../../core/DifficultyProfile';
 
 /**
  * Easy: play a random legal card.
@@ -127,7 +128,7 @@ export function chooseSpadesCard(
   const valid = getLegalIndices(adapter, state, playerIndex);
   if (valid.length === 0) return -1;
 
-  if (difficulty === 'easy') return playEasy(valid);
+  if (shouldPlayRandom(difficulty)) return playEasy(valid);
   if (difficulty === 'hard') return playHard(valid, player, state, spades);
   return playMedium(valid, player, state, spades);
 }
