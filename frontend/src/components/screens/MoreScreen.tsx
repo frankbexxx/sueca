@@ -3,7 +3,6 @@ import { CreditsModal } from '../CreditsModal';
 import { useLanguage } from '../../i18n/useLanguage';
 import { loadLastConfig } from '../../services/gameSessionStorage';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
-import { STORAGE_KEYS } from '../../constants/gameConstants';
 import {
   loadHandPreferences,
   saveHandPreferences,
@@ -36,7 +35,7 @@ function loadPlayerNames(): string[] {
   return last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
 }
 
-export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChange }) => {
+export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChange: _onDarkModeChange }) => {
   const { language, setLanguage, t } = useLanguage();
   const [showCredits, setShowCredits] = useState(false);
   const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
@@ -62,12 +61,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
     const next = !soundEnabled;
     setSoundEnabledState(next);
     setSoundEnabled(next);
-  };
-
-  const toggleDark = () => {
-    const next = !darkMode;
-    onDarkModeChange(next);
-    localStorage.setItem(STORAGE_KEYS.DARK_MODE, String(next));
   };
 
   const updateHandPrefs = (patch: Parameters<typeof saveHandPreferences>[0]) => {
@@ -109,10 +102,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ darkMode, onDarkModeChan
 
       <section className="more-section dobo-panel">
         <h2 className="more-section-title">{t.moreScreen.settings}</h2>
-        <label className="more-toggle">
-          <input type="checkbox" checked={darkMode} onChange={toggleDark} />
-          <span>{t.startMenu.darkMode}</span>
-        </label>
         <label className="more-toggle">
           <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
           <span>{t.moreScreen.sound}</span>

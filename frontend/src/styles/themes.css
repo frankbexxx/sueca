@@ -9,8 +9,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="thebes"] {
-  background: linear-gradient(160deg, #1a1208 0%, #0d0a06 100%);
-  --theme-panel-modal: #1e1508;
+  background: linear-gradient(160deg, #6b4a18 0%, #3d2a0c 100%);
+  --theme-panel-modal: #4a3210;
 }
 
 .app-shell[data-theme="thebes"] .shell-panel {
@@ -55,8 +55,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="tikal"] {
-  background: linear-gradient(160deg, #091a0e 0%, #040d07 100%);
-  --theme-panel-modal: #0d1e10;
+  background: linear-gradient(160deg, #103d1a 0%, #08200e 100%);
+  --theme-panel-modal: #0c2c12;
 }
 
 .app-shell[data-theme="tikal"] .shell-panel {
@@ -101,8 +101,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="thule"] {
-  background: linear-gradient(160deg, #0a1628 0%, #050d1a 100%);
-  --theme-panel-modal: #0d1a2e;
+  background: linear-gradient(160deg, #0d2242 0%, #081428 100%);
+  --theme-panel-modal: #0a1a35;
 }
 
 .app-shell[data-theme="thule"] .shell-panel {
@@ -150,9 +150,9 @@
   --theme-table-felt: #1a3a5a;
   --theme-table-felt-dark: #0d2240;
   --theme-table-rail: #2a4a70;
-  --theme-bg-game: #0d1e3a;
-  --theme-bg-game-alt: #152840;
-  --theme-bg-game-mid: #0f2235;
+  --theme-bg-game: #0d2242;
+  --theme-bg-game-alt: #152a50;
+  --theme-bg-game-mid: #102035;
   --theme-player-box: rgba(10, 30, 60, 0.45);
   --theme-turn-indicator: #90ceff;
 }
@@ -162,12 +162,12 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="thebes"] .game-board {
-  --theme-table-felt: #5a4010;
-  --theme-table-felt-dark: #3a2808;
-  --theme-table-rail: #8b6530;
-  --theme-bg-game: #1a1208;
-  --theme-bg-game-alt: #241808;
-  --theme-bg-game-mid: #1e1508;
+  --theme-table-felt: #6a5020;
+  --theme-table-felt-dark: #4a3810;
+  --theme-table-rail: #9b7540;
+  --theme-bg-game: #6b4a18;
+  --theme-bg-game-alt: #7a5820;
+  --theme-bg-game-mid: #5a4015;
   --theme-player-box: rgba(40, 28, 8, 0.45);
   --theme-turn-indicator: #f5d080;
 }
@@ -180,9 +180,9 @@
   --theme-table-felt: #0d3a1a;
   --theme-table-felt-dark: #08250f;
   --theme-table-rail: #4a6530;
-  --theme-bg-game: #091a0e;
-  --theme-bg-game-alt: #0d2212;
-  --theme-bg-game-mid: #0b1d10;
+  --theme-bg-game: #103d1a;
+  --theme-bg-game-alt: #154a20;
+  --theme-bg-game-mid: #0e3516;
   --theme-player-box: rgba(8, 28, 14, 0.45);
   --theme-turn-indicator: #90d4a0;
 }
@@ -192,8 +192,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="forest"] {
-  background: linear-gradient(160deg, #0a1a0a 0%, #050d05 100%);
-  --theme-panel-modal: #0f2010;
+  background: linear-gradient(160deg, #1a3d1a 0%, #0f2410 100%);
+  --theme-panel-modal: #143014;
 }
 
 .app-shell[data-theme="forest"] .shell-panel {
@@ -233,9 +233,9 @@
   --theme-table-felt: #1a4a1a;
   --theme-table-felt-dark: #0f3010;
   --theme-table-rail: #5a3a20;
-  --theme-bg-game: #0a1a0a;
-  --theme-bg-game-alt: #122012;
-  --theme-bg-game-mid: #0e1c0e;
+  --theme-bg-game: #1a3d1a;
+  --theme-bg-game-alt: #204820;
+  --theme-bg-game-mid: #183518;
   --theme-player-box: rgba(8, 24, 8, 0.45);
   --theme-turn-indicator: #a0e090;
 }
@@ -245,8 +245,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="midnight"] {
-  background: linear-gradient(160deg, #05081a 0%, #02050e 100%);
-  --theme-panel-modal: #0a0e28;
+  background: linear-gradient(160deg, #08102e 0%, #04081a 100%);
+  --theme-panel-modal: #060c22;
 }
 
 .app-shell[data-theme="midnight"] .shell-panel {
@@ -286,9 +286,9 @@
   --theme-table-felt: #1a2a4a;
   --theme-table-felt-dark: #101830;
   --theme-table-rail: #3a3a5a;
-  --theme-bg-game: #050818;
-  --theme-bg-game-alt: #0a0f22;
-  --theme-bg-game-mid: #080c1e;
+  --theme-bg-game: #08102e;
+  --theme-bg-game-alt: #0c183a;
+  --theme-bg-game-mid: #0a1428;
   --theme-player-box: rgba(8, 12, 30, 0.45);
   --theme-turn-indicator: #a0b8f0;
 }
@@ -298,8 +298,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="knossos"] {
-  background: linear-gradient(160deg, #1a0d08 0%, #0d0605 100%);
-  --theme-panel-modal: #200f0a;
+  background: linear-gradient(160deg, #5a2810 0%, #321508 100%);
+  --theme-panel-modal: #42200c;
 }
 
 .app-shell[data-theme="knossos"] .shell-panel {
@@ -339,9 +339,9 @@
   --theme-table-felt: #2a4a6b;
   --theme-table-felt-dark: #1a3050;
   --theme-table-rail: #8b4513;
-  --theme-bg-game: #4a2010;
-  --theme-bg-game-alt: #5a3018;
-  --theme-bg-game-mid: #502818;
+  --theme-bg-game: #5a2810;
+  --theme-bg-game-alt: #6a3818;
+  --theme-bg-game-mid: #503014;
   --theme-player-box: rgba(30, 16, 8, 0.45);
   --theme-turn-indicator: #f0a868;
 }
@@ -351,8 +351,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="xanadu"] {
-  background: linear-gradient(160deg, #0d1508 0%, #060d04 100%);
-  --theme-panel-modal: #101a0a;
+  background: linear-gradient(160deg, #183d10 0%, #0e240a 100%);
+  --theme-panel-modal: #122e0c;
 }
 
 .app-shell[data-theme="xanadu"] .shell-panel {
@@ -392,9 +392,9 @@
   --theme-table-felt: #1a5c2a;
   --theme-table-felt-dark: #0f3a18;
   --theme-table-rail: #c8a030;
-  --theme-bg-game: #0d1808;
-  --theme-bg-game-alt: #18280e;
-  --theme-bg-game-mid: #142010;
+  --theme-bg-game: #183d10;
+  --theme-bg-game-alt: #204a18;
+  --theme-bg-game-mid: #163510;
   --theme-player-box: rgba(10, 22, 6, 0.45);
   --theme-turn-indicator: #d0e870;
 }
@@ -404,8 +404,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="yamatai"] {
-  background: linear-gradient(160deg, #1a0808 0%, #0d0404 100%);
-  --theme-panel-modal: #200a0a;
+  background: linear-gradient(160deg, #4a0e0e 0%, #280808 100%);
+  --theme-panel-modal: #380c0c;
 }
 
 .app-shell[data-theme="yamatai"] .shell-panel {
@@ -445,9 +445,9 @@
   --theme-table-felt: #2a1a2a;
   --theme-table-felt-dark: #1a101a;
   --theme-table-rail: #8b0000;
-  --theme-bg-game: #2a0808;
-  --theme-bg-game-alt: #381010;
-  --theme-bg-game-mid: #300c0c;
+  --theme-bg-game: #4a0e0e;
+  --theme-bg-game-alt: #581616;
+  --theme-bg-game-mid: #420c0c;
   --theme-player-box: rgba(28, 8, 8, 0.45);
   --theme-turn-indicator: #ff9090;
 }
@@ -457,8 +457,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="shambhala"] {
-  background: linear-gradient(160deg, #100a1a 0%, #080614 100%);
-  --theme-panel-modal: #160c22;
+  background: linear-gradient(160deg, #1e1030 0%, #100820 100%);
+  --theme-panel-modal: #180c28;
 }
 
 .app-shell[data-theme="shambhala"] .shell-panel {
@@ -498,9 +498,9 @@
   --theme-table-felt: #2a1a3a;
   --theme-table-felt-dark: #1a1028;
   --theme-table-rail: #c8a030;
-  --theme-bg-game: #180a28;
-  --theme-bg-game-alt: #220f38;
-  --theme-bg-game-mid: #1e0d30;
+  --theme-bg-game: #1e1030;
+  --theme-bg-game-alt: #281638;
+  --theme-bg-game-mid: #1c0e2c;
   --theme-player-box: rgba(18, 10, 30, 0.45);
   --theme-turn-indicator: #d0a0ff;
 }
@@ -510,8 +510,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="rapanui"] {
-  background: linear-gradient(160deg, #0a0e14 0%, #060810 100%);
-  --theme-panel-modal: #0d1220;
+  background: linear-gradient(160deg, #0c1a32 0%, #08101e 100%);
+  --theme-panel-modal: #0a1428;
 }
 
 .app-shell[data-theme="rapanui"] .shell-panel {
@@ -551,9 +551,9 @@
   --theme-table-felt: #1a3048;
   --theme-table-felt-dark: #101e30;
   --theme-table-rail: #4a3020;
-  --theme-bg-game: #0d1828;
-  --theme-bg-game-alt: #152038;
-  --theme-bg-game-mid: #111c30;
+  --theme-bg-game: #0c1a32;
+  --theme-bg-game-alt: #12223e;
+  --theme-bg-game-mid: #0e1c2e;
   --theme-player-box: rgba(10, 18, 30, 0.45);
   --theme-turn-indicator: #80c0ff;
 }
@@ -563,8 +563,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="babylon"] {
-  background: linear-gradient(160deg, #080e14 0%, #04080a 100%);
-  --theme-panel-modal: #0a1218;
+  background: linear-gradient(160deg, #0a2030 0%, #061218 100%);
+  --theme-panel-modal: #081826;
 }
 
 .app-shell[data-theme="babylon"] .shell-panel {
@@ -604,9 +604,9 @@
   --theme-table-felt: #0a3040;
   --theme-table-felt-dark: #061e28;
   --theme-table-rail: #c8a020;
-  --theme-bg-game: #081418;
-  --theme-bg-game-alt: #101e22;
-  --theme-bg-game-mid: #0c1820;
+  --theme-bg-game: #0a2030;
+  --theme-bg-game-alt: #10283a;
+  --theme-bg-game-mid: #0c1c2c;
   --theme-player-box: rgba(6, 16, 20, 0.45);
   --theme-turn-indicator: #70e0e0;
 }
@@ -616,8 +616,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="ur"] {
-  background: linear-gradient(160deg, #12100a 0%, #0a0806 100%);
-  --theme-panel-modal: #161410;
+  background: linear-gradient(160deg, #1e1c10 0%, #10100a 100%);
+  --theme-panel-modal: #18160e;
 }
 
 .app-shell[data-theme="ur"] .shell-panel {
@@ -657,9 +657,9 @@
   --theme-table-felt: #1a2840;
   --theme-table-felt-dark: #101828;
   --theme-table-rail: #b8960a;
-  --theme-bg-game: #14100a;
-  --theme-bg-game-alt: #1e1812;
-  --theme-bg-game-mid: #1a1410;
+  --theme-bg-game: #1e1c10;
+  --theme-bg-game-alt: #26221a;
+  --theme-bg-game-mid: #1c1a10;
   --theme-player-box: rgba(14, 12, 8, 0.45);
   --theme-turn-indicator: #90a8e8;
 }
@@ -669,8 +669,8 @@
    ------------------------------------------------------------------ */
 
 .app-shell[data-theme="nanmadol"] {
-  background: linear-gradient(160deg, #081410 0%, #04080a 100%);
-  --theme-panel-modal: #0c1a14;
+  background: linear-gradient(160deg, #0a2820 0%, #061610 100%);
+  --theme-panel-modal: #082018;
 }
 
 .app-shell[data-theme="nanmadol"] .shell-panel {
@@ -710,9 +710,9 @@
   --theme-table-felt: #0a3020;
   --theme-table-felt-dark: #061e14;
   --theme-table-rail: #8b6040;
-  --theme-bg-game: #081410;
-  --theme-bg-game-alt: #101e18;
-  --theme-bg-game-mid: #0c1814;
+  --theme-bg-game: #0a2820;
+  --theme-bg-game-alt: #103028;
+  --theme-bg-game-mid: #0c221c;
   --theme-player-box: rgba(6, 16, 12, 0.45);
   --theme-turn-indicator: #70e0b0;
 }
