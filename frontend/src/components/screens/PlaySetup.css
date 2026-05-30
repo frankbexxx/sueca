@@ -81,3 +81,10 @@
   font-weight: 700;
   border-radius: var(--sueca-radius-md, 10px);
 }
+
+.play-setup-ai-hint {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.65);
+  line-height: 1.4;
+}

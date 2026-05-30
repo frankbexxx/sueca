@@ -4,7 +4,7 @@ import { GameConfig } from '../../types/gameConfig';
 import { GameSelector } from '../GameSelector';
 import { useLanguage } from '../../i18n/useLanguage';
 import { useGameSetup } from '../../hooks/useGameSetup';
-import { MULTIPLAYER_ENABLED } from '../../config/features';
+import { MULTIPLAYER_ENABLED, USE_LOCAL_AI_ONLY } from '../../config/features';
 import { saveLastConfig } from '../../services/gameSessionStorage';
 import { getAvailableGames } from '../../constants/gameMetadata';
 import '../screens/PlaySetup.css';
@@ -113,6 +113,11 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
             <option value="medium">{t.startMenu.difficultyMedium}</option>
             <option value="hard">{t.startMenu.difficultyHard}</option>
           </select>
+          {!USE_LOCAL_AI_ONLY && setup.gameVariant === 'sueca' && setup.aiDifficulty === 'hard' && (
+            <p className="play-setup-ai-hint">
+              IA Externa activa (Render) — modo Difícil usa servidor externo com fallback local.
+            </p>
+          )}
         </div>
 
         {setup.presetOptions.length > 1 && (
