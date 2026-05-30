@@ -25,19 +25,19 @@
 
 .in-game-bar-meta {
   font-size: 0.65rem;
-  color: rgba(233, 238, 247, 0.5);
+  color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.5);
   font-weight: 500;
 }
 
 .in-game-bar-title {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #e9eef7;
+  color: var(--sueca-color-text, #e9eef7);
 }
 
 .in-game-bar-player {
   font-size: 0.75rem;
-  color: rgba(233, 238, 247, 0.65);
+  color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.65);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

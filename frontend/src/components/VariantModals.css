@@ -291,7 +291,7 @@
   font-size: 1rem;
   border: none;
   border-radius: 8px;
-  background: var(--color-primary, #2d6a4f);
+  background: rgba(var(--sueca-rgb-primary), 0.45);
   color: #fff;
   cursor: pointer;
 }
@@ -384,8 +384,8 @@
   width: min(92vw, 360px);
   height: min(92vw, 360px);
   max-height: 42vh;
-  background: radial-gradient(circle at 50% 40%, #2f6d2f, #1f4f1f 70%);
-  border: 8px solid #7a5736;
+  background: radial-gradient(circle at 50% 40%, var(--theme-table-felt, #2f6d2f), var(--theme-table-felt-dark, #1f4f1f) 70%);
+  border: 8px solid var(--theme-table-rail, #7a5736);
   border-radius: 10px;
 }
 

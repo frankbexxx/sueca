@@ -118,10 +118,4 @@
   line-height: 1.45;
 }
 
-.app-shell[data-theme='forest'] {
-  background: linear-gradient(160deg, #1a2e1a 0%, #0f1410 100%);
-}
-
-.app-shell[data-theme='midnight'] {
-  background: linear-gradient(160deg, #0a0a1a 0%, #050508 100%);
-}
+/* forest and midnight backgrounds are defined in themes.css */

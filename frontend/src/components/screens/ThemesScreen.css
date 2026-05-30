@@ -37,7 +37,7 @@
   color: inherit;
   cursor: pointer;
   text-align: left;
-  padding: var(--sueca-spacing-md, 12px) var(--sueca-spacing-md, 12px);
+  padding: var(--sueca-space-md, 12px) var(--sueca-space-md, 12px);
   font-family: inherit;
   min-height: var(--sueca-touch-min, 48px);
 }

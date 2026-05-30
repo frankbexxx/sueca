@@ -13,6 +13,7 @@
   --sueca-rgb-us: 52, 132, 234;
   --sueca-rgb-them: 226, 92, 92;
   --sueca-rgb-danger: 220, 53, 69;
+  --sueca-rgb-text: 233, 238, 247;
 
   /* Aliases expected by legacy VariantModals/RulesSheet */
   --color-surface: rgba(255, 255, 255, 0.06);
