@@ -1,5 +1,7 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, Suit, AIDifficulty, Card } from '../../types/game';
+import { chooseKingPtCard } from '../../ai/games/king/KingPlayStrategy';
+import { runOneAiFestaStep, KingAuctionController } from '../../ai/games/king/KingAuctionStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import {
@@ -7,8 +9,7 @@ import {
   bidAbsoluteValue,
   canBeatBid,
   canUseFourThreeThree,
-  clampBid,
-  minBidToBeat
+  clampBid
 } from './king/kingAuction';
 import {
   emptyBreakdown,
@@ -176,7 +177,7 @@ export function gameLeader(koh: number, gameIndex: number): number {
   return ((koh + 2) % 4 + gameIndex) % 4;
 }
 
-function isMen(card: Card): boolean {
+export function isMen(card: Card): boolean {
   return card.rank === 'K' || card.rank === 'J';
 }
 
@@ -185,7 +186,7 @@ function heartsLeadForbidden(king: KingPtVariantState): boolean {
   return king.contract === 'no_hearts' || king.contract === 'no_king_hearts';
 }
 
-function mustPlayKingOfHearts(player: Player, ledSuit: Suit | null, king: KingPtVariantState): boolean {
+export function mustPlayKingOfHearts(player: Player, ledSuit: Suit | null, king: KingPtVariantState): boolean {
   if (king.gameIndex >= KING_NEGATIVE_GAMES || king.contract !== 'no_king_hearts') return false;
   if (ledSuit && player.hand.some((c) => c.suit === ledSuit)) return false;
   return player.hand.some((c) => c.rank === 'K' && c.suit === 'hearts');
@@ -512,77 +513,17 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private runOneAiFestaStep(king: KingPtVariantState): boolean {
-    if (king.festaPhase === 'auction') {
-      const current = this.getCurrentAuctionPlayer(king);
-      if (current === null) return false;
-      const player = this.state!.players[current];
-      if (player?.type !== 'ai') return false;
-      if (Math.random() < 0.35 && !king.bestBid) {
-        this.submitAuctionPass(current);
-      } else {
-        const min = minBidToBeat(king.bestBid, king.auctionOrder, current);
-        if (min) this.submitAuctionBid(current, min.bidType, min.amount);
-        else this.submitAuctionPass(current);
-      }
-      return true;
-    }
-
-    if (king.festaPhase === 'negotiation_counter') {
-      const bidder = king.bestBid?.bidderIndex;
-      if (bidder === undefined) return false;
-      const player = this.state!.players[bidder];
-      if (player?.type !== 'ai') return false;
-      if (king.requestedBid && Math.random() < 0.55) {
-        this.respondToHigherBid(true, king.requestedBid.bidType, king.requestedBid.amount);
-      } else {
-        this.respondToHigherBid(false);
-      }
-      return true;
-    }
-
-    if (king.festaPhase === 'negotiation') {
-      const owner = this.state!.players[king.festaOwnerIndex];
-      if (king.eightOrNullsPending) {
-        const target = king.eightOrNullsTarget;
-        if (target !== null && this.state!.players[target]?.type === 'ai') {
-          this.respondEightOrNulls(target, Math.random() < 0.25);
-          return true;
-        }
-        return false;
-      }
-      if (owner?.type === 'ai') {
-        this.acceptContract();
-        return true;
-      }
-      return false;
-    }
-
-    if (king.waitingForFallback) {
-      const owner = this.state!.players[king.festaOwnerIndex];
-      if (owner?.type === 'ai') {
-        if (canUseFourThreeThree(king.bestBid) && Math.random() < 0.3) {
-          this.chooseFallback('four_by_three');
-        } else if (Math.random() < 0.4) {
-          this.chooseFallback('nulos');
-        } else {
-          this.chooseFallback('no_trump');
-        }
-        return true;
-      }
-      return false;
-    }
-
-    if (king.waitingForFestaSetup) {
-      const ownerIdx = king.benefitOwnerIndex ?? king.festaOwnerIndex;
-      const owner = this.state!.players[ownerIdx];
-      if (owner?.type === 'ai') {
-        this.confirmFestaSetup();
-        return true;
-      }
-      return false;
-    }
-
-    return false;
+    const controller: KingAuctionController = {
+      getCurrentAuctionPlayer: (k) => this.getCurrentAuctionPlayer(k),
+      submitAuctionPass: (p) => this.submitAuctionPass(p),
+      submitAuctionBid: (p, bt, amt) => this.submitAuctionBid(p, bt, amt),
+      respondToHigherBid: (accept, bt, amt) => this.respondToHigherBid(accept, bt, amt),
+      respondEightOrNulls: (target, accept) => this.respondEightOrNulls(target, accept),
+      acceptContract: () => this.acceptContract(),
+      chooseFallback: (type) => this.chooseFallback(type as Parameters<typeof this.chooseFallback>[0]),
+      confirmFestaSetup: () => this.confirmFestaSetup(),
+    };
+    return runOneAiFestaStep(king, this.state!.players, controller);
   }
 
   private buildState(
@@ -982,48 +923,6 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   chooseAICard(state: GameState, playerIndex: number): number {
-    const king = getKingPtState(this.state!);
-    const player = state.players[playerIndex];
-    if (!player) return -1;
-    const valid: number[] = [];
-    for (let i = 0; i < player.hand.length; i++) {
-      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
-    }
-    if (valid.length === 0) return -1;
-
-    const avoid =
-      king.gameIndex < KING_NEGATIVE_GAMES || king.festaMode === 'negative_festa';
-
-    if (state.currentTrick.length === 0) {
-      if (avoid) {
-        const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
-        const pool = nonHeart.length ? nonHeart : valid;
-        return pool.reduce((best, i) => {
-          const order = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-          return order.indexOf(player.hand[i].rank) < order.indexOf(player.hand[best].rank) ? i : best;
-        }, pool[0]);
-      }
-      return valid[valid.length - 1];
-    }
-
-    if (avoid) {
-      const led = state.currentTrick[0].suit;
-      const inSuit = valid.filter((i) => player.hand[i].suit === led);
-      if (inSuit.length) return inSuit[0];
-      const kingIdx = valid.findIndex(
-        (i) => player.hand[i].rank === 'K' && player.hand[i].suit === 'hearts'
-      );
-      if (kingIdx >= 0 && mustPlayKingOfHearts(player, led, king)) return kingIdx;
-      const dump = valid.find((i) => {
-        const c = player.hand[i];
-        if (king.contract === 'no_hearts' && c.suit === 'hearts') return true;
-        if (king.contract === 'no_queens' && c.rank === 'Q') return true;
-        if (king.contract === 'no_men' && isMen(c)) return true;
-        if (king.contract === 'no_king_hearts' && c.rank === 'K' && c.suit === 'hearts') return true;
-        return false;
-      });
-      return dump ?? valid[0];
-    }
-    return valid[0];
+    return chooseKingPtCard(this, state, playerIndex, getKingPtState(this.state!), this.state!.aiDifficulty);
   }
 }

@@ -1,5 +1,7 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, AIDifficulty } from '../../types/game';
+import { chooseSpadesBid } from '../../ai/games/spades/SpadesBidEstimator';
+import { chooseSpadesCard } from '../../ai/games/spades/SpadesPlayStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import { applyHandSortToState } from '../../utils/handSort';
@@ -78,21 +80,6 @@ function nilRoundBonus(bidType: SpadesBidType, tricksTaken: number): number {
   return 0;
 }
 
-function estimateHandBid(hand: Player['hand']): number {
-  let bid = 0;
-  for (const card of hand) {
-    if (card.suit === 'spades') {
-      if (card.rank === 'A') bid += 1;
-      else if (card.rank === 'K') bid += 1;
-      else if (card.rank === 'Q') bid += 0.5;
-    } else if (card.rank === 'A') {
-      bid += 1;
-    } else if (card.rank === 'K') {
-      bid += 0.5;
-    }
-  }
-  return Math.max(0, Math.min(13, Math.round(bid)));
-}
 
 export class SpadesGame extends BaseGameAdapter {
   variant = 'spades' as const;
@@ -162,16 +149,7 @@ export class SpadesGame extends BaseGameAdapter {
     const s = this.state!;
     const spades = getSpadesState(s);
     const hand = s.players[playerIndex]?.hand ?? [];
-    const estimate = estimateHandBid(hand);
-
-    if (spades.nilEnabled && estimate <= 1 && Math.random() < 0.15) {
-      return { bid: 0, bidType: 'nil' };
-    }
-    if (spades.blindNilEnabled && estimate === 0 && Math.random() < 0.05) {
-      return { bid: 0, bidType: 'blindNil' };
-    }
-
-    return { bid: Math.max(1, estimate), bidType: 'normal' };
+    return chooseSpadesBid(hand, spades.nilEnabled, spades.blindNilEnabled, s.aiDifficulty);
   }
 
   tickBidAi(): void {
@@ -471,33 +449,6 @@ export class SpadesGame extends BaseGameAdapter {
   }
 
   chooseAICard(state: GameState, playerIndex: number): number {
-    const spades = getSpadesState(this.state!);
-    const player = state.players[playerIndex];
-    if (!player) return -1;
-    const valid: number[] = [];
-    for (let i = 0; i < player.hand.length; i++) {
-      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
-    }
-    if (valid.length === 0) return -1;
-
-    const team = player.team ?? 1;
-    const teamTricks = team === 1 ? spades.team1Tricks : spades.team2Tricks;
-    const teamBid = team === 1 ? spades.team1Bid : spades.team2Bid;
-    const needTricks = teamTricks < teamBid;
-
-    if (state.currentTrick.length === 0) {
-      const nonSpades = valid.filter((i) => player.hand[i].suit !== 'spades');
-      const pool = nonSpades.length > 0 ? nonSpades : valid;
-      return pool[needTricks ? pool.length - 1 : 0];
-    }
-
-    const ledSuit = state.currentTrick[0].suit;
-    const trumpPlayed = state.currentTrick.some((c) => c.suit === 'spades');
-    const winning = valid.find((i) => {
-      const c = player.hand[i];
-      if (trumpPlayed && c.suit === 'spades') return true;
-      return c.suit === ledSuit;
-    });
-    return winning ?? valid[0];
+    return chooseSpadesCard(this, state, playerIndex, getSpadesState(this.state!), this.state!.aiDifficulty);
   }
 }

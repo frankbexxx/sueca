@@ -1,5 +1,6 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, Suit, AIDifficulty } from '../../types/game';
+import { chooseKingSimplifiedCard } from '../../ai/games/king/KingPlayStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import { applyHandSortToState } from '../../utils/handSort';
@@ -205,22 +206,6 @@ export class KingSimplifiedGame extends BaseGameAdapter {
   chooseAICard(state: GameState, playerIndex: number): number {
     if (!this.state) return -1;
     const king = getState(this.state);
-    const player = state.players[playerIndex];
-    if (!player) return -1;
-    const valid: number[] = [];
-    for (let i = 0; i < player.hand.length; i++) {
-      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
-    }
-    if (valid.length === 0) return -1;
-    if (king.handType === 'negative') {
-      if (state.currentTrick.length === 0) {
-        return valid.reduce((best, i) => {
-          const order = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-          return order.indexOf(player.hand[i].rank) < order.indexOf(player.hand[best].rank) ? i : best;
-        }, valid[0]);
-      }
-      return valid[0];
-    }
-    return state.currentTrick.length === 0 ? valid[valid.length - 1] : valid[0];
+    return chooseKingSimplifiedCard(this, state, playerIndex, king.handType === 'negative', this.state.aiDifficulty);
   }
 }

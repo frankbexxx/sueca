@@ -1,5 +1,7 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Card, Player, AIDifficulty } from '../../types/game';
+import { pickAIPassCards } from '../../ai/games/hearts/HeartsPassStrategy';
+import { chooseHeartsCard } from '../../ai/games/hearts/HeartsPlayStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import { applyHandSortToState } from '../../utils/handSort';
@@ -164,12 +166,7 @@ export class HeartsGame extends BaseGameAdapter {
   }
 
   private pickAIPassCards(hand: Card[]): Card[] {
-    const sorted = [...hand].sort((a, b) => {
-      const score = (c: Card) =>
-        (c.suit === 'hearts' ? 10 : 0) + (c.rank === 'Q' && c.suit === 'spades' ? 20 : 0);
-      return score(b) - score(a);
-    });
-    return sorted.slice(0, 3);
+    return pickAIPassCards(hand, this.state?.aiDifficulty ?? 'medium');
   }
 
   private createRoundState(
@@ -451,22 +448,7 @@ export class HeartsGame extends BaseGameAdapter {
     return this.getCurrentState();
   }
 
-  chooseAICard(state: GameState, playerIndex: number): number {
-    const player = state.players[playerIndex];
-    if (!player) return -1;
-    const valid: number[] = [];
-    for (let i = 0; i < player.hand.length; i++) {
-      if (this.canPlayCard(state, playerIndex, i)) valid.push(i);
-    }
-    if (valid.length === 0) return -1;
-
-    const score = (idx: number) => {
-      const c = player.hand[idx];
-      return (c.suit === 'hearts' ? 10 : 0) + (c.rank === 'Q' && c.suit === 'spades' ? 20 : 0);
-    };
-
-    valid.sort((a, b) => score(b) - score(a));
-    const leadIdx = state.currentTrick.length === 0 ? valid[valid.length - 1] : valid[0];
-    return leadIdx;
+  chooseAICard(_state: GameState, playerIndex: number): number {
+    return chooseHeartsCard(this, this.state!, playerIndex, this.state!.aiDifficulty);
   }
 }

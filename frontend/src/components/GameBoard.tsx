@@ -8,6 +8,7 @@ import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
+import { playFirstLegal } from '../ai/core/FallbackMoveSelector';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
 import {
@@ -306,12 +307,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         playCardSound();
         setGameState(gameAdapter.getCurrentState());
       } else {
-        for (let i = 0; i < player.hand.length; i++) {
-          if (gameAdapter.playCard(gameAdapter.getCurrentState(), playerIndex, i)) {
-            playCardSound();
-            setGameState(gameAdapter.getCurrentState());
-            break;
-          }
+        const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
+        if (fallbackIdx >= 0) {
+          playCardSound();
+          setGameState(gameAdapter.getCurrentState());
         }
       }
     };
