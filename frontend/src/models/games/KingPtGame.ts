@@ -618,8 +618,8 @@ export class KingPtGame extends BaseGameAdapter {
       const isHuman = index === humanIndex;
       const type = isHuman
         ? 'human'
-        : localPlayerIndex !== undefined
-          ? (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
+        : multiplayerSlots !== undefined
+          ? (multiplayerSlots[index] === 'ai' ? 'ai' : 'remote')
           : 'ai';
       return {
         id: `player_${index}`,

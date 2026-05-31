@@ -213,12 +213,10 @@ export class SpadesGame extends BaseGameAdapter {
       const isTeam1 = index === 0 || index === 2;
       const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
       const playerType =
-        localPlayerIndex !== undefined
-          ? isLocalHuman
-            ? 'human'
-            : (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
-          : isLocalHuman
-            ? 'human'
+        isLocalHuman
+          ? 'human'
+          : multiplayerSlots !== undefined
+            ? (multiplayerSlots[index] === 'ai' ? 'ai' : 'remote')
             : 'ai';
 
       return {

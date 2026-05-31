@@ -67,10 +67,10 @@ export class KingSimplifiedGame extends BaseGameAdapter {
         name,
         hand: [],
         team: (index === 0 || index === 2 ? 1 : 2) as 1 | 2,
-        type: (localPlayerIndex !== undefined ? isLocalHuman : index === 0)
+        type: isLocalHuman
           ? 'human'
-          : localPlayerIndex !== undefined
-            ? (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
+          : multiplayerSlots !== undefined
+            ? (multiplayerSlots[index] === 'ai' ? 'ai' : 'remote')
             : 'ai'
       };
     });
