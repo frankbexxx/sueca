@@ -45,7 +45,15 @@ export function useMultiplayer({
     const unsubscribe = subscribeToState(sessionCode, (remoteState) => {
       // Ignore our own publishes by comparing a lightweight signature
       const sig = stateSignature(remoteState);
-      if (sig === lastPublishedRef.current) return;
+      if (sig === lastPublishedRef.current) {
+        console.log('[MP] subscribe skipped (duplicate sig)', sig);
+        return;
+      }
+      console.log('[MP] subscribe deliver', {
+        sig,
+        waitingForRoundStart: remoteState.waitingForRoundStart,
+        handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
+      });
       onRemoteState(remoteState);
     });
 
@@ -57,6 +65,12 @@ export function useMultiplayer({
       if (!enabled || !sessionCode) return;
       const sig = stateSignature(state);
       lastPublishedRef.current = sig;
+      console.log('[MP] publish', {
+        sig,
+        waitingForRoundStart: state.waitingForRoundStart,
+        handLens: state.players?.map((p) => p.hand?.length ?? 0),
+        session: sessionCode,
+      });
       publishState(sessionCode, state).catch((err) => {
         console.error('[Multiplayer] Failed to publish state:', err);
       });

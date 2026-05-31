@@ -140,19 +140,35 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       const waitingForHostDeal =
         remoteState.waitingForRoundStart ||
         remoteState.players.some((p) => p.hand.length === 0);
+      console.log('[MP] applyRemoteState sueca', {
+        waitingForHostDeal,
+        waitingForRoundStart: remoteState.waitingForRoundStart,
+        handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
+        restored: Boolean(adapter),
+      });
       setWaitingForHost(waitingForHostDeal);
       return;
     }
 
+    console.log('[MP] applyRemoteState', { variant, waitingForHost: false });
     setWaitingForHost(false);
   }, [isJoiner]);
 
   const handleRemoteState = useCallback((remoteState: GameState) => {
     latestRemoteStateRef.current = remoteState;
+    console.log('[MP] remote received', {
+      role: isJoiner ? 'joiner' : 'host',
+      hasAdapter: Boolean(gameAdapterRef.current),
+      waitingForRoundStart: remoteState.waitingForRoundStart,
+      handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
+      variant: remoteState.variant,
+      session: config.multiplayerSessionId,
+      applied: Boolean(gameAdapterRef.current),
+    });
     if (gameAdapterRef.current) {
       applyRemoteState(remoteState);
     }
-  }, [applyRemoteState]);
+  }, [applyRemoteState, isJoiner, config.multiplayerSessionId]);
 
   const { publishAfterPlay } = useMultiplayer({
     enabled: isMultiplayer,
@@ -236,6 +252,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       gameAdapterRef.current = adapter;
 
       const bufferedRemote = latestRemoteStateRef.current;
+      const initPath = isJoiner && bufferedRemote ? 'applyRemote' : 'localInit';
+      console.log('[MP] init', {
+        role: isJoiner ? 'joiner' : 'host',
+        path: initPath,
+        hasBuffered: Boolean(bufferedRemote),
+        bufferedHandLens: bufferedRemote?.players?.map((p) => p.hand?.length ?? 0),
+        bufferedWaitingForRoundStart: bufferedRemote?.waitingForRoundStart,
+      });
       if (isJoiner && bufferedRemote) {
         applyRemoteState(bufferedRemote);
       } else {
@@ -1068,6 +1092,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
               const newState = gameAdapter.getCurrentState();
               setGameState(newState);
               if (isMultiplayer && multiplayerPlayerIndex === 0) {
+                console.log('[MP] host publish deal', {
+                  waitingForRoundStart: newState.waitingForRoundStart,
+                  handLens: newState.players.map((p) => p.hand.length),
+                  variant: newState.variant,
+                  session: config.multiplayerSessionId,
+                });
                 publishAfterPlay(newState);
               }
             }
