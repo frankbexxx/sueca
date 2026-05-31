@@ -34,7 +34,7 @@ export type ShellRoute =
   | { tab: 'home'; screen: HomeSubScreen }
   | { tab: 'stats'; screen: { type: 'main' } }
   | { tab: 'history'; screen: HistoryScreenId }
-  | { tab: 'themes'; screen: { type: 'main' } }
+  | { tab: 'themes'; screen: { type: 'main' } | { type: 'editor'; themeId?: string } }
   | { tab: 'online'; screen: { type: 'main' } }
   | { tab: 'rules'; screen: RulesScreenId }
   | { tab: 'settings'; screen: SettingsScreenId }

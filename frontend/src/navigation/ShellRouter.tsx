@@ -14,6 +14,7 @@ import { GameSetupScreen } from '../components/screens/GameSetupScreen';
 import { StatsScreen } from '../components/screens/StatsScreen';
 import { HistoryHubScreen, HistoryListScreen } from '../components/screens/HistoryScreens';
 import { ThemesScreen } from '../components/screens/ThemesScreen';
+import { ThemeEditorScreen } from '../components/screens/ThemeEditorScreen';
 import { RulesHubScreen } from '../components/screens/RulesHubScreen';
 import { RulesDetailScreen } from '../components/screens/RulesDetailScreen';
 import {
@@ -103,8 +104,26 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
   }
 
   if (route.tab === 'themes') {
+    if (route.screen.type === 'editor') {
+      return (
+        <ThemeEditorScreen
+          themeId={route.screen.themeId}
+          showBack={canGoBack}
+          onBack={onBack}
+          onSaved={(id) => {
+            onThemeChange(id as import('../services/billingService').ThemeId);
+            onBack();
+          }}
+        />
+      );
+    }
     return (
-      <ThemesScreen showBack={canGoBack} onBack={onBack} onThemeChange={onThemeChange} />
+      <ThemesScreen
+        showBack={canGoBack}
+        onBack={onBack}
+        onThemeChange={onThemeChange}
+        onPush={onPush}
+      />
     );
   }
 

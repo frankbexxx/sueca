@@ -1,3 +1,5 @@
+/* Zone header (top-level geographic zone) */
+.themes-zone-header,
 .themes-group-header {
   font-size: 0.7rem;
   font-weight: 700;
@@ -5,6 +7,17 @@
   text-transform: uppercase;
   opacity: 0.5;
   padding: 16px 4px 4px;
+  list-style: none;
+}
+
+/* Sub-zone header (secondary, inside a zone) */
+.themes-subzone-header {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-style: italic;
+  opacity: 0.38;
+  padding: 10px 8px 2px;
   list-style: none;
 }
 
@@ -92,4 +105,65 @@
   margin-left: 4px;
   margin-right: 4px;
   margin-top: 2px;
+}
+
+/* Custom themes group header with create button */
+.themes-group-header--custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.themes-create-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.themes-create-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Edit / delete buttons on custom theme cards */
+.themes-card-edit,
+.themes-card-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.themes-card-edit:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.themes-card-delete:hover {
+  opacity: 1;
+  background: rgba(220, 80, 80, 0.2);
+  border-color: rgba(220, 80, 80, 0.4);
+}
+
+.themes-custom-empty {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  opacity: 0.45;
+  list-style: none;
 }

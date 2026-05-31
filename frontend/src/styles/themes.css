@@ -716,3 +716,547 @@
   --theme-player-box: rgba(6, 16, 12, 0.45);
   --theme-turn-indicator: #70e0b0;
 }
+
+/* ==================================================================
+   HYPERBOREA — azul polar, aurora verde, gelo mítico
+   ================================================================== */
+
+.app-shell[data-theme="hyperborea"] {
+  background: linear-gradient(160deg, #223050 0%, #121830 100%);
+  --theme-panel-modal: #1a2440;
+}
+.app-shell[data-theme="hyperborea"] .shell-panel {
+  background: rgba(110, 210, 170, 0.06);
+  border-color: rgba(110, 210, 170, 0.15);
+}
+.app-shell[data-theme="hyperborea"] .shell-section-title,
+.app-shell[data-theme="hyperborea"] .screen-title,
+.app-shell[data-theme="hyperborea"] .dashboard-section-title,
+.app-shell[data-theme="hyperborea"] .shell-hub-item { color: #d0f0e8; }
+.app-shell[data-theme="hyperborea"] .bottom-nav-item.active {
+  background: rgba(110, 210, 170, 0.2); color: #d0f0e8;
+}
+.app-shell[data-theme="hyperborea"] .sueca-btn--primary {
+  background: rgba(110, 210, 170, 0.45); border-color: rgba(110, 210, 170, 0.65);
+}
+.app-shell[data-theme="hyperborea"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(110, 210, 170, 0.58); border-color: rgba(110, 210, 170, 0.8);
+}
+.app-shell[data-theme="hyperborea"] .themes-card--active,
+.app-shell[data-theme="hyperborea"] .dashboard-game-row--active {
+  border-color: rgba(110, 210, 170, 0.55); background: rgba(110, 210, 170, 0.12);
+}
+.app-shell[data-theme="hyperborea"] .game-board {
+  --theme-table-felt: #182838; --theme-table-felt-dark: #101c28;
+  --theme-table-rail: #304858; --theme-bg-game: #182838; --theme-bg-game-alt: #1e3040;
+}
+
+/* ==================================================================
+   SKARA BRAE — cinza pedra, névoa atlântica, mar frio
+   ================================================================== */
+
+.app-shell[data-theme="skara-brae"] {
+  background: linear-gradient(160deg, #303438 0%, #1a1e22 100%);
+  --theme-panel-modal: #262a2e;
+}
+.app-shell[data-theme="skara-brae"] .shell-panel {
+  background: rgba(140, 168, 176, 0.06);
+  border-color: rgba(140, 168, 176, 0.15);
+}
+.app-shell[data-theme="skara-brae"] .shell-section-title,
+.app-shell[data-theme="skara-brae"] .screen-title,
+.app-shell[data-theme="skara-brae"] .dashboard-section-title,
+.app-shell[data-theme="skara-brae"] .shell-hub-item { color: #d0d8dc; }
+.app-shell[data-theme="skara-brae"] .bottom-nav-item.active {
+  background: rgba(140, 168, 176, 0.2); color: #d0d8dc;
+}
+.app-shell[data-theme="skara-brae"] .sueca-btn--primary {
+  background: rgba(140, 168, 176, 0.45); border-color: rgba(140, 168, 176, 0.65);
+}
+.app-shell[data-theme="skara-brae"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(140, 168, 176, 0.58); border-color: rgba(140, 168, 176, 0.8);
+}
+.app-shell[data-theme="skara-brae"] .themes-card--active,
+.app-shell[data-theme="skara-brae"] .dashboard-game-row--active {
+  border-color: rgba(140, 168, 176, 0.55); background: rgba(140, 168, 176, 0.12);
+}
+.app-shell[data-theme="skara-brae"] .game-board {
+  --theme-table-felt: #202830; --theme-table-felt-dark: #141820;
+  --theme-table-rail: #384858; --theme-bg-game: #202830; --theme-bg-game-alt: #283040;
+}
+
+/* ==================================================================
+   AVALON — prata lunar, verde musgo, lago e névoa
+   ================================================================== */
+
+.app-shell[data-theme="avalon"] {
+  background: linear-gradient(160deg, #22303c 0%, #12181e 100%);
+  --theme-panel-modal: #1a262e;
+}
+.app-shell[data-theme="avalon"] .shell-panel {
+  background: rgba(140, 196, 168, 0.06);
+  border-color: rgba(140, 196, 168, 0.15);
+}
+.app-shell[data-theme="avalon"] .shell-section-title,
+.app-shell[data-theme="avalon"] .screen-title,
+.app-shell[data-theme="avalon"] .dashboard-section-title,
+.app-shell[data-theme="avalon"] .shell-hub-item { color: #d8eae4; }
+.app-shell[data-theme="avalon"] .bottom-nav-item.active {
+  background: rgba(140, 196, 168, 0.2); color: #d8eae4;
+}
+.app-shell[data-theme="avalon"] .sueca-btn--primary {
+  background: rgba(140, 196, 168, 0.45); border-color: rgba(140, 196, 168, 0.65);
+}
+.app-shell[data-theme="avalon"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(140, 196, 168, 0.58); border-color: rgba(140, 196, 168, 0.8);
+}
+.app-shell[data-theme="avalon"] .themes-card--active,
+.app-shell[data-theme="avalon"] .dashboard-game-row--active {
+  border-color: rgba(140, 196, 168, 0.55); background: rgba(140, 196, 168, 0.12);
+}
+.app-shell[data-theme="avalon"] .game-board {
+  --theme-table-felt: #182c28; --theme-table-felt-dark: #101e1c;
+  --theme-table-rail: #304c44; --theme-bg-game: #182c28; --theme-bg-game-alt: #1e3430;
+}
+
+/* ==================================================================
+   CARTAGO — púrpura tíria, bronze fenício, mar escuro
+   ================================================================== */
+
+.app-shell[data-theme="cartago"] {
+  background: linear-gradient(160deg, #3e1638 0%, #200a1e 100%);
+  --theme-panel-modal: #2e0e28;
+}
+.app-shell[data-theme="cartago"] .shell-panel {
+  background: rgba(200, 100, 160, 0.06);
+  border-color: rgba(200, 100, 160, 0.15);
+}
+.app-shell[data-theme="cartago"] .shell-section-title,
+.app-shell[data-theme="cartago"] .screen-title,
+.app-shell[data-theme="cartago"] .dashboard-section-title,
+.app-shell[data-theme="cartago"] .shell-hub-item { color: #f0c8e8; }
+.app-shell[data-theme="cartago"] .bottom-nav-item.active {
+  background: rgba(200, 100, 160, 0.2); color: #f0c8e8;
+}
+.app-shell[data-theme="cartago"] .sueca-btn--primary {
+  background: rgba(200, 100, 160, 0.45); border-color: rgba(200, 100, 160, 0.65);
+}
+.app-shell[data-theme="cartago"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(200, 100, 160, 0.58); border-color: rgba(200, 100, 160, 0.8);
+}
+.app-shell[data-theme="cartago"] .themes-card--active,
+.app-shell[data-theme="cartago"] .dashboard-game-row--active {
+  border-color: rgba(200, 100, 160, 0.55); background: rgba(200, 100, 160, 0.12);
+}
+.app-shell[data-theme="cartago"] .game-board {
+  --theme-table-felt: #1e1a38; --theme-table-felt-dark: #100e22;
+  --theme-table-rail: #3e3060; --theme-bg-game: #1e1a38; --theme-bg-game-alt: #282040;
+}
+
+/* ==================================================================
+   ATLÂNTIDA — abissal, turquesa luminosa, pérola submersa
+   ================================================================== */
+
+.app-shell[data-theme="atlantida"] {
+  background: linear-gradient(160deg, #08244a 0%, #040e26 100%);
+  --theme-panel-modal: #062038;
+}
+.app-shell[data-theme="atlantida"] .shell-panel {
+  background: rgba(60, 200, 196, 0.06);
+  border-color: rgba(60, 200, 196, 0.15);
+}
+.app-shell[data-theme="atlantida"] .shell-section-title,
+.app-shell[data-theme="atlantida"] .screen-title,
+.app-shell[data-theme="atlantida"] .dashboard-section-title,
+.app-shell[data-theme="atlantida"] .shell-hub-item { color: #c8f0ee; }
+.app-shell[data-theme="atlantida"] .bottom-nav-item.active {
+  background: rgba(60, 200, 196, 0.2); color: #c8f0ee;
+}
+.app-shell[data-theme="atlantida"] .sueca-btn--primary {
+  background: rgba(60, 200, 196, 0.45); border-color: rgba(60, 200, 196, 0.65);
+}
+.app-shell[data-theme="atlantida"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 200, 196, 0.58); border-color: rgba(60, 200, 196, 0.8);
+}
+.app-shell[data-theme="atlantida"] .themes-card--active,
+.app-shell[data-theme="atlantida"] .dashboard-game-row--active {
+  border-color: rgba(60, 200, 196, 0.55); background: rgba(60, 200, 196, 0.12);
+}
+.app-shell[data-theme="atlantida"] .game-board {
+  --theme-table-felt: #0c2240; --theme-table-felt-dark: #081628;
+  --theme-table-rail: #1c4060; --theme-bg-game: #0c2240; --theme-bg-game-alt: #102a4a;
+}
+
+/* ==================================================================
+   PETRA — arenito rosa, cobre nabateu, desfiladeiro
+   ================================================================== */
+
+.app-shell[data-theme="petra"] {
+  background: linear-gradient(160deg, #6a3828 0%, #3c201a 100%);
+  --theme-panel-modal: #4e2a1c;
+}
+.app-shell[data-theme="petra"] .shell-panel {
+  background: rgba(220, 140, 80, 0.06);
+  border-color: rgba(220, 140, 80, 0.15);
+}
+.app-shell[data-theme="petra"] .shell-section-title,
+.app-shell[data-theme="petra"] .screen-title,
+.app-shell[data-theme="petra"] .dashboard-section-title,
+.app-shell[data-theme="petra"] .shell-hub-item { color: #f0d0b0; }
+.app-shell[data-theme="petra"] .bottom-nav-item.active {
+  background: rgba(220, 140, 80, 0.2); color: #f0d0b0;
+}
+.app-shell[data-theme="petra"] .sueca-btn--primary {
+  background: rgba(220, 140, 80, 0.45); border-color: rgba(220, 140, 80, 0.65);
+}
+.app-shell[data-theme="petra"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(220, 140, 80, 0.58); border-color: rgba(220, 140, 80, 0.8);
+}
+.app-shell[data-theme="petra"] .themes-card--active,
+.app-shell[data-theme="petra"] .dashboard-game-row--active {
+  border-color: rgba(220, 140, 80, 0.55); background: rgba(220, 140, 80, 0.12);
+}
+.app-shell[data-theme="petra"] .game-board {
+  --theme-table-felt: #3a2018; --theme-table-felt-dark: #221410;
+  --theme-table-rail: #6a4028; --theme-bg-game: #3a2018; --theme-bg-game-alt: #422618;
+}
+
+/* ==================================================================
+   PERSÉPOLIS — azul real, ouro imperial aqueménida
+   ================================================================== */
+
+.app-shell[data-theme="persepolis"] {
+  background: linear-gradient(160deg, #183848 0%, #0a2030 100%);
+  --theme-panel-modal: #102030;
+}
+.app-shell[data-theme="persepolis"] .shell-panel {
+  background: rgba(200, 170, 40, 0.06);
+  border-color: rgba(200, 170, 40, 0.15);
+}
+.app-shell[data-theme="persepolis"] .shell-section-title,
+.app-shell[data-theme="persepolis"] .screen-title,
+.app-shell[data-theme="persepolis"] .dashboard-section-title,
+.app-shell[data-theme="persepolis"] .shell-hub-item { color: #f0e0a0; }
+.app-shell[data-theme="persepolis"] .bottom-nav-item.active {
+  background: rgba(200, 170, 40, 0.2); color: #f0e0a0;
+}
+.app-shell[data-theme="persepolis"] .sueca-btn--primary {
+  background: rgba(200, 170, 40, 0.45); border-color: rgba(200, 170, 40, 0.65);
+}
+.app-shell[data-theme="persepolis"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(200, 170, 40, 0.58); border-color: rgba(200, 170, 40, 0.8);
+}
+.app-shell[data-theme="persepolis"] .themes-card--active,
+.app-shell[data-theme="persepolis"] .dashboard-game-row--active {
+  border-color: rgba(200, 170, 40, 0.55); background: rgba(200, 170, 40, 0.12);
+}
+.app-shell[data-theme="persepolis"] .game-board {
+  --theme-table-felt: #142840; --theme-table-felt-dark: #0a1828;
+  --theme-table-rail: #2c4860; --theme-bg-game: #142840; --theme-bg-game-alt: #1a3048;
+}
+
+/* ==================================================================
+   AXUM — ocre etíope, ouro copto, pedra de altitude
+   ================================================================== */
+
+.app-shell[data-theme="axum"] {
+  background: linear-gradient(160deg, #4a3010 0%, #261804 100%);
+  --theme-panel-modal: #382008;
+}
+.app-shell[data-theme="axum"] .shell-panel {
+  background: rgba(196, 148, 20, 0.06);
+  border-color: rgba(196, 148, 20, 0.15);
+}
+.app-shell[data-theme="axum"] .shell-section-title,
+.app-shell[data-theme="axum"] .screen-title,
+.app-shell[data-theme="axum"] .dashboard-section-title,
+.app-shell[data-theme="axum"] .shell-hub-item { color: #f0d880; }
+.app-shell[data-theme="axum"] .bottom-nav-item.active {
+  background: rgba(196, 148, 20, 0.2); color: #f0d880;
+}
+.app-shell[data-theme="axum"] .sueca-btn--primary {
+  background: rgba(196, 148, 20, 0.45); border-color: rgba(196, 148, 20, 0.65);
+}
+.app-shell[data-theme="axum"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(196, 148, 20, 0.58); border-color: rgba(196, 148, 20, 0.8);
+}
+.app-shell[data-theme="axum"] .themes-card--active,
+.app-shell[data-theme="axum"] .dashboard-game-row--active {
+  border-color: rgba(196, 148, 20, 0.55); background: rgba(196, 148, 20, 0.12);
+}
+.app-shell[data-theme="axum"] .game-board {
+  --theme-table-felt: #3a2810; --theme-table-felt-dark: #221808;
+  --theme-table-rail: #6a5030; --theme-bg-game: #3a2810; --theme-bg-game-alt: #462e12;
+}
+
+/* ==================================================================
+   MEROË — areia núbia, ouro solar, preto mineral, azul do Nilo
+   ================================================================== */
+
+.app-shell[data-theme="meroe"] {
+  background: linear-gradient(160deg, #3a2210 0%, #1e1208 100%);
+  --theme-panel-modal: #2c1808;
+}
+.app-shell[data-theme="meroe"] .shell-panel {
+  background: rgba(220, 176, 56, 0.06);
+  border-color: rgba(220, 176, 56, 0.15);
+}
+.app-shell[data-theme="meroe"] .shell-section-title,
+.app-shell[data-theme="meroe"] .screen-title,
+.app-shell[data-theme="meroe"] .dashboard-section-title,
+.app-shell[data-theme="meroe"] .shell-hub-item { color: #f0d880; }
+.app-shell[data-theme="meroe"] .bottom-nav-item.active {
+  background: rgba(220, 176, 56, 0.2); color: #f0d880;
+}
+.app-shell[data-theme="meroe"] .sueca-btn--primary {
+  background: rgba(220, 176, 56, 0.45); border-color: rgba(220, 176, 56, 0.65);
+}
+.app-shell[data-theme="meroe"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(220, 176, 56, 0.58); border-color: rgba(220, 176, 56, 0.8);
+}
+.app-shell[data-theme="meroe"] .themes-card--active,
+.app-shell[data-theme="meroe"] .dashboard-game-row--active {
+  border-color: rgba(220, 176, 56, 0.55); background: rgba(220, 176, 56, 0.12);
+}
+.app-shell[data-theme="meroe"] .game-board {
+  --theme-table-felt: #1a2a38; --theme-table-felt-dark: #101820;
+  --theme-table-rail: #304858; --theme-bg-game: #1a2a38; --theme-bg-game-alt: #203040;
+}
+
+/* ==================================================================
+   GREAT ZIMBABWE — granito savana, dourado seco, pedra ancestral
+   ================================================================== */
+
+.app-shell[data-theme="great-zimbabwe"] {
+  background: linear-gradient(160deg, #504220 0%, #2a240e 100%);
+  --theme-panel-modal: #3a3010;
+}
+.app-shell[data-theme="great-zimbabwe"] .shell-panel {
+  background: rgba(196, 168, 64, 0.06);
+  border-color: rgba(196, 168, 64, 0.15);
+}
+.app-shell[data-theme="great-zimbabwe"] .shell-section-title,
+.app-shell[data-theme="great-zimbabwe"] .screen-title,
+.app-shell[data-theme="great-zimbabwe"] .dashboard-section-title,
+.app-shell[data-theme="great-zimbabwe"] .shell-hub-item { color: #e8d880; }
+.app-shell[data-theme="great-zimbabwe"] .bottom-nav-item.active {
+  background: rgba(196, 168, 64, 0.2); color: #e8d880;
+}
+.app-shell[data-theme="great-zimbabwe"] .sueca-btn--primary {
+  background: rgba(196, 168, 64, 0.45); border-color: rgba(196, 168, 64, 0.65);
+}
+.app-shell[data-theme="great-zimbabwe"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(196, 168, 64, 0.58); border-color: rgba(196, 168, 64, 0.8);
+}
+.app-shell[data-theme="great-zimbabwe"] .themes-card--active,
+.app-shell[data-theme="great-zimbabwe"] .dashboard-game-row--active {
+  border-color: rgba(196, 168, 64, 0.55); background: rgba(196, 168, 64, 0.12);
+}
+.app-shell[data-theme="great-zimbabwe"] .game-board {
+  --theme-table-felt: #3a4820; --theme-table-felt-dark: #222c14;
+  --theme-table-rail: #5a6830; --theme-bg-game: #3a4820; --theme-bg-game-alt: #445228;
+}
+
+/* ==================================================================
+   MOHENJO-DARO — tijolo cozido, índigo, ordem urbana ancestral
+   ================================================================== */
+
+.app-shell[data-theme="mohenjo-daro"] {
+  background: linear-gradient(160deg, #38221a 0%, #1e120e 100%);
+  --theme-panel-modal: #2c1810;
+}
+.app-shell[data-theme="mohenjo-daro"] .shell-panel {
+  background: rgba(90, 120, 180, 0.06);
+  border-color: rgba(90, 120, 180, 0.15);
+}
+.app-shell[data-theme="mohenjo-daro"] .shell-section-title,
+.app-shell[data-theme="mohenjo-daro"] .screen-title,
+.app-shell[data-theme="mohenjo-daro"] .dashboard-section-title,
+.app-shell[data-theme="mohenjo-daro"] .shell-hub-item { color: #c0d0e0; }
+.app-shell[data-theme="mohenjo-daro"] .bottom-nav-item.active {
+  background: rgba(90, 120, 180, 0.2); color: #c0d0e0;
+}
+.app-shell[data-theme="mohenjo-daro"] .sueca-btn--primary {
+  background: rgba(90, 120, 180, 0.45); border-color: rgba(90, 120, 180, 0.65);
+}
+.app-shell[data-theme="mohenjo-daro"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(90, 120, 180, 0.58); border-color: rgba(90, 120, 180, 0.8);
+}
+.app-shell[data-theme="mohenjo-daro"] .themes-card--active,
+.app-shell[data-theme="mohenjo-daro"] .dashboard-game-row--active {
+  border-color: rgba(90, 120, 180, 0.55); background: rgba(90, 120, 180, 0.12);
+}
+.app-shell[data-theme="mohenjo-daro"] .game-board {
+  --theme-table-felt: #202838; --theme-table-felt-dark: #141820;
+  --theme-table-rail: #364868; --theme-bg-game: #202838; --theme-bg-game-alt: #283040;
+}
+
+/* ==================================================================
+   ANGKOR — selva khmer, verde lótus, pedra húmida
+   ================================================================== */
+
+.app-shell[data-theme="angkor"] {
+  background: linear-gradient(160deg, #163020 0%, #0a1a10 100%);
+  --theme-panel-modal: #102018;
+}
+.app-shell[data-theme="angkor"] .shell-panel {
+  background: rgba(136, 180, 90, 0.06);
+  border-color: rgba(136, 180, 90, 0.15);
+}
+.app-shell[data-theme="angkor"] .shell-section-title,
+.app-shell[data-theme="angkor"] .screen-title,
+.app-shell[data-theme="angkor"] .dashboard-section-title,
+.app-shell[data-theme="angkor"] .shell-hub-item { color: #c8e0a0; }
+.app-shell[data-theme="angkor"] .bottom-nav-item.active {
+  background: rgba(136, 180, 90, 0.2); color: #c8e0a0;
+}
+.app-shell[data-theme="angkor"] .sueca-btn--primary {
+  background: rgba(136, 180, 90, 0.45); border-color: rgba(136, 180, 90, 0.65);
+}
+.app-shell[data-theme="angkor"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(136, 180, 90, 0.58); border-color: rgba(136, 180, 90, 0.8);
+}
+.app-shell[data-theme="angkor"] .themes-card--active,
+.app-shell[data-theme="angkor"] .dashboard-game-row--active {
+  border-color: rgba(136, 180, 90, 0.55); background: rgba(136, 180, 90, 0.12);
+}
+.app-shell[data-theme="angkor"] .game-board {
+  --theme-table-felt: #142010; --theme-table-felt-dark: #0c1408;
+  --theme-table-rail: #2a4020; --theme-bg-game: #142010; --theme-bg-game-alt: #1a2818;
+}
+
+/* ==================================================================
+   TEOTIHUACAN — obsidiana, ouro solar, geometria monumental
+   ================================================================== */
+
+.app-shell[data-theme="teotihuacan"] {
+  background: linear-gradient(160deg, #180e08 0%, #0c0604 100%);
+  --theme-panel-modal: #140a06;
+}
+.app-shell[data-theme="teotihuacan"] .shell-panel {
+  background: rgba(208, 148, 24, 0.06);
+  border-color: rgba(208, 148, 24, 0.15);
+}
+.app-shell[data-theme="teotihuacan"] .shell-section-title,
+.app-shell[data-theme="teotihuacan"] .screen-title,
+.app-shell[data-theme="teotihuacan"] .dashboard-section-title,
+.app-shell[data-theme="teotihuacan"] .shell-hub-item { color: #f0d060; }
+.app-shell[data-theme="teotihuacan"] .bottom-nav-item.active {
+  background: rgba(208, 148, 24, 0.2); color: #f0d060;
+}
+.app-shell[data-theme="teotihuacan"] .sueca-btn--primary {
+  background: rgba(208, 148, 24, 0.45); border-color: rgba(208, 148, 24, 0.65);
+}
+.app-shell[data-theme="teotihuacan"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(208, 148, 24, 0.58); border-color: rgba(208, 148, 24, 0.8);
+}
+.app-shell[data-theme="teotihuacan"] .themes-card--active,
+.app-shell[data-theme="teotihuacan"] .dashboard-game-row--active {
+  border-color: rgba(208, 148, 24, 0.55); background: rgba(208, 148, 24, 0.12);
+}
+.app-shell[data-theme="teotihuacan"] .game-board {
+  --theme-table-felt: #1e1010; --theme-table-felt-dark: #120a08;
+  --theme-table-rail: #3c2820; --theme-bg-game: #1e1010; --theme-bg-game-alt: #261410;
+}
+
+/* ==================================================================
+   TIWANAKU — cinza andino, ciano glacial, Porta do Sol
+   ================================================================== */
+
+.app-shell[data-theme="tiwanaku"] {
+  background: linear-gradient(160deg, #283848 0%, #141e2e 100%);
+  --theme-panel-modal: #1e2e3e;
+}
+.app-shell[data-theme="tiwanaku"] .shell-panel {
+  background: rgba(90, 184, 200, 0.06);
+  border-color: rgba(90, 184, 200, 0.15);
+}
+.app-shell[data-theme="tiwanaku"] .shell-section-title,
+.app-shell[data-theme="tiwanaku"] .screen-title,
+.app-shell[data-theme="tiwanaku"] .dashboard-section-title,
+.app-shell[data-theme="tiwanaku"] .shell-hub-item { color: #c0d8e8; }
+.app-shell[data-theme="tiwanaku"] .bottom-nav-item.active {
+  background: rgba(90, 184, 200, 0.2); color: #c0d8e8;
+}
+.app-shell[data-theme="tiwanaku"] .sueca-btn--primary {
+  background: rgba(90, 184, 200, 0.45); border-color: rgba(90, 184, 200, 0.65);
+}
+.app-shell[data-theme="tiwanaku"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(90, 184, 200, 0.58); border-color: rgba(90, 184, 200, 0.8);
+}
+.app-shell[data-theme="tiwanaku"] .themes-card--active,
+.app-shell[data-theme="tiwanaku"] .dashboard-game-row--active {
+  border-color: rgba(90, 184, 200, 0.55); background: rgba(90, 184, 200, 0.12);
+}
+.app-shell[data-theme="tiwanaku"] .game-board {
+  --theme-table-felt: #1a2a3a; --theme-table-felt-dark: #101a28;
+  --theme-table-rail: #3a5070; --theme-bg-game: #1a2a3a; --theme-bg-game-alt: #203040;
+}
+
+/* ==================================================================
+   CARAL — adobe costeiro, névoa peruana, memória primordial
+   ================================================================== */
+
+.app-shell[data-theme="caral"] {
+  background: linear-gradient(160deg, #5a4438 0%, #362a22 100%);
+  --theme-panel-modal: #402e24;
+}
+.app-shell[data-theme="caral"] .shell-panel {
+  background: rgba(160, 140, 110, 0.06);
+  border-color: rgba(160, 140, 110, 0.15);
+}
+.app-shell[data-theme="caral"] .shell-section-title,
+.app-shell[data-theme="caral"] .screen-title,
+.app-shell[data-theme="caral"] .dashboard-section-title,
+.app-shell[data-theme="caral"] .shell-hub-item { color: #e8d8c0; }
+.app-shell[data-theme="caral"] .bottom-nav-item.active {
+  background: rgba(160, 140, 110, 0.2); color: #e8d8c0;
+}
+.app-shell[data-theme="caral"] .sueca-btn--primary {
+  background: rgba(160, 140, 110, 0.45); border-color: rgba(160, 140, 110, 0.65);
+}
+.app-shell[data-theme="caral"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(160, 140, 110, 0.58); border-color: rgba(160, 140, 110, 0.8);
+}
+.app-shell[data-theme="caral"] .themes-card--active,
+.app-shell[data-theme="caral"] .dashboard-game-row--active {
+  border-color: rgba(160, 140, 110, 0.55); background: rgba(160, 140, 110, 0.12);
+}
+.app-shell[data-theme="caral"] .game-board {
+  --theme-table-felt: #2a3820; --theme-table-felt-dark: #1a2410;
+  --theme-table-rail: #4a5840; --theme-bg-game: #2a3820; --theme-bg-game-alt: #304228;
+}
+
+/* ==================================================================
+   EL DORADO — selva negra, ouro esmeralda, miragem americana
+   ================================================================== */
+
+.app-shell[data-theme="el-dorado"] {
+  background: linear-gradient(160deg, #163020 0%, #080e08 100%);
+  --theme-panel-modal: #122018;
+}
+.app-shell[data-theme="el-dorado"] .shell-panel {
+  background: rgba(200, 168, 24, 0.06);
+  border-color: rgba(200, 168, 24, 0.15);
+}
+.app-shell[data-theme="el-dorado"] .shell-section-title,
+.app-shell[data-theme="el-dorado"] .screen-title,
+.app-shell[data-theme="el-dorado"] .dashboard-section-title,
+.app-shell[data-theme="el-dorado"] .shell-hub-item { color: #f0e060; }
+.app-shell[data-theme="el-dorado"] .bottom-nav-item.active {
+  background: rgba(200, 168, 24, 0.2); color: #f0e060;
+}
+.app-shell[data-theme="el-dorado"] .sueca-btn--primary {
+  background: rgba(200, 168, 24, 0.45); border-color: rgba(200, 168, 24, 0.65);
+}
+.app-shell[data-theme="el-dorado"] .sueca-btn--primary:hover:not(:disabled) {
+  background: rgba(200, 168, 24, 0.58); border-color: rgba(200, 168, 24, 0.8);
+}
+.app-shell[data-theme="el-dorado"] .themes-card--active,
+.app-shell[data-theme="el-dorado"] .dashboard-game-row--active {
+  border-color: rgba(200, 168, 24, 0.55); background: rgba(200, 168, 24, 0.12);
+}
+.app-shell[data-theme="el-dorado"] .game-board {
+  --theme-table-felt: #102018; --theme-table-felt-dark: #081410;
+  --theme-table-rail: #204030; --theme-bg-game: #102018; --theme-bg-game-alt: #143020;
+}

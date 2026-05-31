@@ -19,6 +19,7 @@ import { useLanguage } from './i18n/useLanguage';
 import { playUiClick, preloadAmbiance, preloadSfx, startAmbiance } from './services/audioService';
 import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
+import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
 import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
@@ -141,6 +142,8 @@ function App() {
     },
     [navigateTabRoot, resetToHome, handleHistoryReset]
   );
+
+  useCustomThemeCSS(activeTheme);
 
   const handleThemeChange = useCallback((theme: ThemeId) => {
     setActiveTheme(theme);

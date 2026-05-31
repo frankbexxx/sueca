@@ -1,0 +1,241 @@
+.screen-theme-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.theme-editor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Preview strip */
+.theme-editor-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 12px 0 8px;
+  min-height: 72px;
+  flex-shrink: 0;
+}
+
+.theme-editor-preview-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-editor-preview-chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.theme-editor-preview-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.theme-editor-preview-chip--felt {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Sections */
+.theme-editor-section {
+  margin-top: 20px;
+}
+
+.theme-editor-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin: 0 0 10px;
+}
+
+/* Swatch list */
+.theme-editor-swatches {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-editor-swatch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.theme-editor-swatch-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-editor-swatch-row--active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-editor-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  display: block;
+}
+
+.theme-editor-swatch-label {
+  flex: 1;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.theme-editor-swatch-hex {
+  font-size: 0.78rem;
+  font-family: monospace;
+  opacity: 0.5;
+}
+
+/* Color picker */
+.theme-editor-picker-wrap {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.theme-editor-picker-wrap .react-colorful {
+  width: 100%;
+  max-width: 320px;
+  height: 220px;
+  border-radius: 12px;
+}
+
+.theme-editor-picker-wrap .react-colorful__saturation {
+  border-radius: 10px 10px 0 0;
+}
+
+.theme-editor-picker-wrap .react-colorful__hue {
+  border-radius: 0 0 10px 10px;
+  height: 20px;
+  margin-top: 6px;
+}
+
+/* Contrast indicators */
+.theme-editor-contrast {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.contrast--good {
+  background: rgba(80, 200, 120, 0.15);
+  color: #7de8a0;
+}
+
+.contrast--ok {
+  background: rgba(240, 180, 60, 0.15);
+  color: #f0c84a;
+}
+
+.contrast--bad {
+  background: rgba(220, 80, 80, 0.15);
+  color: #f08080;
+}
+
+/* Form fields */
+.theme-editor-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.theme-editor-chars {
+  font-size: 0.75rem;
+  font-family: monospace;
+  opacity: 0.5;
+}
+
+.theme-editor-input,
+.theme-editor-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.theme-editor-input:focus,
+.theme-editor-textarea:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theme-editor-input--error {
+  border-color: rgba(220, 80, 80, 0.6) !important;
+}
+
+.theme-editor-textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.theme-editor-hint {
+  font-size: 0.78rem;
+  color: #f08080;
+  margin: 4px 0 0;
+}
+
+/* Actions */
+.theme-editor-actions {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.theme-editor-io {
+  display: flex;
+  gap: 10px;
+}
+
+.theme-editor-io .sueca-btn {
+  flex: 1;
+  font-size: 0.85rem;
+}
