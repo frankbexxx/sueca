@@ -9,60 +9,63 @@ function generateCode(): string {
   return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
+export interface SessionSlot {
+  type: 'human' | 'ai';
+  name: string;
+  joined: boolean;
+}
+
 export interface SessionMeta {
   variant: GameVariant;
-  playerNames: string[];
-  playerCount: number;
-  joinedCount: number;
+  slots: SessionSlot[];
+  status: 'waiting' | 'playing';
 }
 
 /**
  * Creates a new multiplayer session. Returns the 5-character session code.
- * The host is always localPlayerIndex 0. State is published separately by GameBoard after init.
+ * Host is always slot 0 (human, joined:true). AI slots are pre-marked joined:true.
  */
 export async function createSession(
   variant: GameVariant,
-  playerNames: string[]
+  slots: SessionSlot[]
 ): Promise<string> {
   const code = generateCode();
-  const sessionRef = ref(db, `sessions/${code}`);
-  const meta: SessionMeta = {
-    variant,
-    playerNames,
-    playerCount: playerNames.length,
-    joinedCount: 1,
-  };
-  await set(sessionRef, meta);
+  const meta: SessionMeta = { variant, slots, status: 'waiting' };
+  await set(ref(db, `sessions/${code}`), meta);
   localStorage.setItem(`${LOCAL_PLAYER_KEY}-${code}`, '0');
   return code;
 }
 
 /**
- * Joins an existing session. Returns the localPlayerIndex assigned to this device,
- * game variant, and player names. State arrives via the Firebase listener.
+ * Joins an existing session. Takes the first available human slot (joined:false).
+ * Returns the slot index assigned, the variant, and the full slots array.
  */
 export async function joinSession(
   code: string
-): Promise<{ localPlayerIndex: number; variant: GameVariant; playerNames: string[] }> {
-  const sessionRef = ref(db, `sessions/${code}`);
-  const snapshot = await get(sessionRef);
-  if (!snapshot.exists()) {
-    throw new Error(`Session ${code} not found`);
-  }
-  const data = snapshot.val() as SessionMeta;
-  const localPlayerIndex = data.joinedCount;
-  if (localPlayerIndex >= data.playerCount) {
-    throw new Error('Session is full');
-  }
+): Promise<{ localPlayerIndex: number; variant: GameVariant; slots: SessionSlot[] }> {
+  const snapshot = await get(ref(db, `sessions/${code}`));
+  if (!snapshot.exists()) throw new Error(`Session "${code}" not found`);
 
-  await set(ref(db, `sessions/${code}/joinedCount`), localPlayerIndex + 1);
-  localStorage.setItem(`${LOCAL_PLAYER_KEY}-${code}`, String(localPlayerIndex));
+  const data = snapshot.val() as SessionMeta;
+  const slotIndex = data.slots.findIndex((s) => s.type === 'human' && !s.joined);
+  if (slotIndex === -1) throw new Error('Session is full — no open human slots');
+
+  // Mark slot as joined
+  await set(ref(db, `sessions/${code}/slots/${slotIndex}/joined`), true);
+  localStorage.setItem(`${LOCAL_PLAYER_KEY}-${code}`, String(slotIndex));
 
   return {
-    localPlayerIndex,
+    localPlayerIndex: slotIndex,
     variant: data.variant,
-    playerNames: data.playerNames,
+    slots: data.slots,
   };
+}
+
+/**
+ * Marks the session as playing (called by host when starting the game).
+ */
+export async function startSession(code: string): Promise<void> {
+  await set(ref(db, `sessions/${code}/status`), 'playing');
 }
 
 /**
@@ -89,26 +92,22 @@ export function subscribeToState(
 ): () => void {
   const stateRef = ref(db, `sessions/${code}/state`);
   onValue(stateRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val() as GameState);
-    }
+    if (snapshot.exists()) callback(snapshot.val() as GameState);
   });
   return () => off(stateRef);
 }
 
 /**
- * Subscribes to the joinedCount field (for lobby waiting).
+ * Subscribes to real-time slot updates (for the lobby).
  * Returns an unsubscribe function.
  */
-export function subscribeToJoinedCount(
+export function subscribeToSlots(
   code: string,
-  callback: (count: number) => void
+  callback: (slots: SessionSlot[]) => void
 ): () => void {
-  const countRef = ref(db, `sessions/${code}/joinedCount`);
-  onValue(countRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val() as number);
-    }
+  const slotsRef = ref(db, `sessions/${code}/slots`);
+  onValue(slotsRef, (snapshot) => {
+    if (snapshot.exists()) callback(snapshot.val() as SessionSlot[]);
   });
-  return () => off(countRef);
+  return () => off(slotsRef);
 }

@@ -5,6 +5,7 @@ export type AppTab =
   | 'stats'
   | 'history'
   | 'themes'
+  | 'online'
   | 'rules'
   | 'settings'
   | 'profile';
@@ -34,6 +35,7 @@ export type ShellRoute =
   | { tab: 'stats'; screen: { type: 'main' } }
   | { tab: 'history'; screen: HistoryScreenId }
   | { tab: 'themes'; screen: { type: 'main' } }
+  | { tab: 'online'; screen: { type: 'main' } }
   | { tab: 'rules'; screen: RulesScreenId }
   | { tab: 'settings'; screen: SettingsScreenId }
   | { tab: 'profile'; screen: ProfileScreenId };

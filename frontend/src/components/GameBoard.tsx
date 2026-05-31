@@ -381,6 +381,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     const isLocalHumanTurn = isMultiplayer
       ? gameState.currentPlayerIndex === multiplayerPlayerIndex
       : gameState.currentPlayerIndex === 0;
+    // In multiplayer, only the host (index 0) runs AI for bot players
+    const isHostOrSolo = !isMultiplayer || multiplayerPlayerIndex === 0;
 
     if (
       !gameState.isGameOver &&
@@ -391,6 +393,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       !gameState.waitingForGameStart &&
       !isRemoteTurn &&
       !isLocalHumanTurn &&
+      isHostOrSolo &&
       !waitingForEarlyEnd
     ) {
       const timer = setTimeout(() => {

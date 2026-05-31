@@ -24,6 +24,7 @@ import {
 import { ProfileHubScreen } from '../components/screens/ProfileHubScreen';
 import { ProfileNameScreen } from '../components/screens/ProfileNameScreen';
 import { ProfileCreditsScreen } from '../components/screens/ProfileCreditsScreen';
+import { OnlineScreen } from '../components/screens/OnlineScreen';
 
 export interface ShellRouterProps {
   route: ShellRoute;
@@ -70,6 +71,9 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
         onConfigureVariant={(variant) =>
           onPush({ tab: 'home', screen: homeSetup(variant) })
         }
+        onViewRules={(variant) =>
+          onPush({ tab: 'rules', screen: { type: 'detail', variant } })
+        }
       />
     );
   }
@@ -101,6 +105,16 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
   if (route.tab === 'themes') {
     return (
       <ThemesScreen showBack={canGoBack} onBack={onBack} onThemeChange={onThemeChange} />
+    );
+  }
+
+  if (route.tab === 'online') {
+    return (
+      <OnlineScreen
+        showBack={canGoBack}
+        onBack={onBack}
+        onStartGame={(config) => onStartGame(config)}
+      />
     );
   }
 

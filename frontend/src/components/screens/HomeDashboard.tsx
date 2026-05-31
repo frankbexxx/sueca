@@ -17,12 +17,14 @@ interface HomeDashboardProps {
   onContinue: (variant: GameVariant) => void;
   onPlayVariant: (variant: GameVariant) => void;
   onConfigureVariant: (variant: GameVariant) => void;
+  onViewRules?: (variant: GameVariant) => void;
 }
 
 export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onContinue,
   onPlayVariant,
-  onConfigureVariant
+  onConfigureVariant,
+  onViewRules,
 }) => {
   const { t, language } = useLanguage();
   const lastConfig = loadLastConfig();
@@ -101,6 +103,17 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   >
                     ⚙
                   </button>
+                  {onViewRules && (
+                    <button
+                      type="button"
+                      className="sueca-btn sueca-btn--ghost sueca-btn--icon"
+                      onClick={() => onViewRules(game.variant)}
+                      aria-label={`Regras de ${game.name}`}
+                      title={`Regras de ${game.name}`}
+                    >
+                      ℹ️
+                    </button>
+                  )}
                 </div>
               </li>
             );

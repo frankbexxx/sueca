@@ -13,7 +13,7 @@ const TABS: AppTab[] = [
   'stats',
   'history',
   'themes',
-  'rules',
+  'online',
   'settings',
   'profile'
 ];
@@ -26,6 +26,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChange }) => 
     stats: t.nav.stats,
     history: t.nav.history,
     themes: t.nav.themes,
+    online: 'Online',
     rules: t.nav.rules,
     settings: t.nav.settings,
     profile: t.nav.profile
@@ -36,6 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChange }) => 
     stats: '📊',
     history: '🕘',
     themes: '🎨',
+    online: '🌐',
     rules: '📖',
     settings: '⚙',
     profile: '👤'

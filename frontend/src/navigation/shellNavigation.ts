@@ -24,6 +24,8 @@ export function tabRootRoute(tab: AppTab): ShellRoute {
       return { tab: 'history', screen: 'hub' };
     case 'themes':
       return { tab: 'themes', screen: { type: 'main' } };
+    case 'online':
+      return { tab: 'online', screen: { type: 'main' } };
     case 'rules':
       return { tab: 'rules', screen: 'hub' };
     case 'settings':
