@@ -24,7 +24,9 @@ export class SuecaGame extends BaseGameAdapter {
     if (!this.game) {
       throw new Error('SuecaGame not initialized');
     }
-    return this.game.getState();
+    const state = this.game.getState();
+    state.variant = 'sueca';
+    return state;
   }
 
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {

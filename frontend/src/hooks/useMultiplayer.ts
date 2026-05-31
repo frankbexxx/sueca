@@ -2,6 +2,18 @@ import { useEffect, useRef, useCallback } from 'react';
 import { publishState, subscribeToState } from '../services/multiplayerClient';
 import { GameState } from '../types/game';
 
+function stateSignature(state: GameState): string {
+  const handsDealt =
+    state.players.length > 0 && state.players.every((p) => p.hand.length > 0);
+  return JSON.stringify({
+    round: state.round,
+    trickIndex: state.currentTrick?.length ?? 0,
+    currentPlayer: state.currentPlayerIndex,
+    waitingForRoundStart: state.waitingForRoundStart,
+    handsDealt,
+  });
+}
+
 interface UseMultiplayerOptions {
   enabled: boolean;
   sessionCode: string;
@@ -32,11 +44,7 @@ export function useMultiplayer({
 
     const unsubscribe = subscribeToState(sessionCode, (remoteState) => {
       // Ignore our own publishes by comparing a lightweight signature
-      const sig = JSON.stringify({
-        round: remoteState.round,
-        trickIndex: remoteState.currentTrick?.length ?? 0,
-        currentPlayer: remoteState.currentPlayerIndex,
-      });
+      const sig = stateSignature(remoteState);
       if (sig === lastPublishedRef.current) return;
       onRemoteState(remoteState);
     });
@@ -47,11 +55,7 @@ export function useMultiplayer({
   const publishAfterPlay = useCallback(
     (state: GameState) => {
       if (!enabled || !sessionCode) return;
-      const sig = JSON.stringify({
-        round: state.round,
-        trickIndex: state.currentTrick?.length ?? 0,
-        currentPlayer: state.currentPlayerIndex,
-      });
+      const sig = stateSignature(state);
       lastPublishedRef.current = sig;
       publishState(sessionCode, state).catch((err) => {
         console.error('[Multiplayer] Failed to publish state:', err);

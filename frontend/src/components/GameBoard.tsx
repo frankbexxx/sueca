@@ -70,10 +70,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const multiplayerPlayerIndex = config.localPlayerIndex ?? 0;
   const isJoiner = isMultiplayer && multiplayerPlayerIndex !== 0;
+  const [waitingForHost, setWaitingForHost] = useState(isJoiner);
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
-  
+  const latestRemoteStateRef = useRef<GameState | null>(null);
+
   /**
    * Game state snapshot - reactive state for UI updates
    * Falls back to minimal valid state if game is null or initialization fails
@@ -116,15 +118,41 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const layoutSnapshot = useLayoutSnapshot();
 
-  const handleRemoteState = useCallback((remoteState: GameState) => {
+  const applyRemoteState = useCallback((remoteState: GameState) => {
     const adapter = gameAdapterRef.current;
-    if (adapter && adapter.variant === remoteState.variant) {
-      const synced = adapter.restoreState(remoteState);
+    const variant = remoteState.variant ?? adapter?.variant;
+    const stateToRestore =
+      adapter && !remoteState.variant
+        ? { ...remoteState, variant: adapter.variant }
+        : remoteState;
+
+    if (adapter && (!remoteState.variant || adapter.variant === remoteState.variant)) {
+      const synced = adapter.restoreState(stateToRestore);
       setGameState(synced);
     } else {
       setGameState(remoteState);
     }
-  }, []);
+
+    if (!isJoiner) return;
+
+    // Sueca: host deals via modal — joiner waits until cards are actually dealt
+    if (variant === 'sueca') {
+      const waitingForHostDeal =
+        remoteState.waitingForRoundStart ||
+        remoteState.players.some((p) => p.hand.length === 0);
+      setWaitingForHost(waitingForHostDeal);
+      return;
+    }
+
+    setWaitingForHost(false);
+  }, [isJoiner]);
+
+  const handleRemoteState = useCallback((remoteState: GameState) => {
+    latestRemoteStateRef.current = remoteState;
+    if (gameAdapterRef.current) {
+      applyRemoteState(remoteState);
+    }
+  }, [applyRemoteState]);
 
   const { publishAfterPlay } = useMultiplayer({
     enabled: isMultiplayer,
@@ -182,6 +210,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
 
   useEffect(() => {
     try {
+      if (freshStartRef.current) {
+        latestRemoteStateRef.current = null;
+      }
+
       const adapter = GameFactory.getAdapter(config.gameVariant);
       let initialState: GameState;
       const shouldResume =
@@ -201,14 +233,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       }
       freshStartRef.current = false;
       setGameAdapter(adapter);
-      setGameState(initialState);
+      gameAdapterRef.current = adapter;
+
+      const bufferedRemote = latestRemoteStateRef.current;
+      if (isJoiner && bufferedRemote) {
+        applyRemoteState(bufferedRemote);
+      } else {
+        setGameState(initialState);
+        setWaitingForHost(isJoiner);
+      }
       setGameStarted(true);
     } catch (error) {
       console.error('Error starting game:', error);
       alert(t.startMenu.errorStartingGame);
       onExit();
     }
-  }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame]);
+  }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame, isJoiner, applyRemoteState]);
 
   // Host publishes initial state so joiners can sync immediately
   useEffect(() => {
@@ -354,9 +394,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         cardIndex = gameAdapter.chooseAICard(currentState, playerIndex);
       }
 
+      const publishHostAiPlay = () => {
+        if (isMultiplayer && multiplayerPlayerIndex === 0) {
+          publishAfterPlay(gameAdapter.getCurrentState());
+        }
+      };
+
       if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
         playCardSound();
         setGameState(gameAdapter.getCurrentState());
+        publishHostAiPlay();
       } else {
         if (cardIndex >= 0) {
           console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
@@ -365,6 +412,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         if (fallbackIdx >= 0) {
           playCardSound();
           setGameState(gameAdapter.getCurrentState());
+          publishHostAiPlay();
         } else {
           console.error(
             `[AI fallback] playFirstLegal returned -1 — turn may be stuck`,
@@ -380,7 +428,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     };
 
     chooseAndPlay();
-  }, [gameAdapter, gameState, playCardSound]);
+  }, [gameAdapter, gameState, playCardSound, isMultiplayer, multiplayerPlayerIndex, publishAfterPlay]);
 
   /**
    * Auto-play effect for AI players
@@ -1043,7 +1091,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         />
       )}
 
-      {isJoiner && gameState.waitingForRoundStart && !gameState.isGameOver && (
+      {waitingForHost && (
         <div className="multiplayer-host-wait-overlay">
           <div className="multiplayer-host-wait-content">
             <span className="multiplayer-host-wait-spinner" />
