@@ -69,8 +69,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const multiplayerPlayerIndex = config.localPlayerIndex ?? 0;
+  const isJoiner = isMultiplayer && multiplayerPlayerIndex !== 0;
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
+  const gameAdapterRef = useRef<GameAdapter | null>(null);
   
   /**
    * Game state snapshot - reactive state for UI updates
@@ -114,12 +116,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const layoutSnapshot = useLayoutSnapshot();
 
+  const handleRemoteState = useCallback((remoteState: GameState) => {
+    const adapter = gameAdapterRef.current;
+    if (adapter && adapter.variant === remoteState.variant) {
+      const synced = adapter.restoreState(remoteState);
+      setGameState(synced);
+    } else {
+      setGameState(remoteState);
+    }
+  }, []);
+
   const { publishAfterPlay } = useMultiplayer({
     enabled: isMultiplayer,
     sessionCode: config.multiplayerSessionId ?? '',
     localPlayerIndex: multiplayerPlayerIndex,
-    onRemoteState: setGameState,
+    onRemoteState: handleRemoteState,
   });
+  useEffect(() => {
+    gameAdapterRef.current = gameAdapter;
+  }, [gameAdapter]);
+
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
   const shuffleTimerRef = useRef<number | null>(null);
@@ -855,7 +871,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           />
         )}
 
-      {gameVariant === 'king' &&
+      {!isJoiner && gameVariant === 'king' &&
         resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
         (() => {
           const king = getKingPtState(gameState);
@@ -963,7 +979,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       {gameVariant === 'king' &&
         resolvePresetId('king', rulesPresetId) === 'king-simplified' &&
         gameState.waitingForRoundStart &&
-        !gameState.isGameOver && (
+        !gameState.isGameOver && !isJoiner && (
           <div className="variant-modal-overlay">
             <div className="variant-modal dobo-panel">
               <h2>
@@ -976,7 +992,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
                 onClick={() => {
                   if (gameAdapter) {
                     gameAdapter.startRound(gameAdapter.getCurrentState());
-                    setGameState(gameAdapter.getCurrentState());
+                    const newState = gameAdapter.getCurrentState();
+                    setGameState(newState);
+                    if (isMultiplayer && multiplayerPlayerIndex === 0) {
+                      publishAfterPlay(newState);
+                    }
                   }
                 }}
               >
@@ -986,7 +1006,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           </div>
         )}
 
-      {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && (
+      {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && !isJoiner && (
         <SuecaDealingModal
           round={gameState.round}
           dealingMethod={roundDealingMethod}
@@ -997,7 +1017,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
             if (gameAdapter) {
               (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
               gameAdapter.startRound(gameAdapter.getCurrentState());
-              setGameState(gameAdapter.getCurrentState());
+              const newState = gameAdapter.getCurrentState();
+              setGameState(newState);
+              if (isMultiplayer && multiplayerPlayerIndex === 0) {
+                publishAfterPlay(newState);
+              }
             }
           }}
         />
@@ -1017,6 +1041,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           onDealingMethodChange={() => {}}
           onNewGame={handleNewGame}
         />
+      )}
+
+      {isJoiner && gameState.waitingForRoundStart && !gameState.isGameOver && (
+        <div className="multiplayer-host-wait-overlay">
+          <div className="multiplayer-host-wait-content">
+            <span className="multiplayer-host-wait-spinner" />
+            <p>A aguardar o host…</p>
+          </div>
+        </div>
       )}
 
       {waitingForEarlyEnd && (
