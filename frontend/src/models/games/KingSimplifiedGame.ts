@@ -55,6 +55,7 @@ export class KingSimplifiedGame extends BaseGameAdapter {
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
     const handType = handTypeForIndex(handIndex);
     const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
     const trumpSuit = suits[handIndex % 4];
@@ -69,7 +70,7 @@ export class KingSimplifiedGame extends BaseGameAdapter {
         type: (localPlayerIndex !== undefined ? isLocalHuman : index === 0)
           ? 'human'
           : localPlayerIndex !== undefined
-            ? 'remote'
+            ? (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
             : 'ai'
       };
     });

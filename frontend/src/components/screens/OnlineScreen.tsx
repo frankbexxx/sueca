@@ -120,13 +120,13 @@ export const OnlineScreen: React.FC<OnlineScreenProps> = ({
 
   const handleStartAsHost = async () => {
     await startSession(sessionCode);
-    const cleanNames = liveSlots.map((s) => s.name);
     const config: GameConfig = {
       ...setup.buildConfig(),
-      playerNames: cleanNames,
+      playerNames: liveSlots.map((s) => s.name),
       multiplayerEnabled: true,
       multiplayerSessionId: sessionCode,
       localPlayerIndex: 0,
+      multiplayerSlots: liveSlots.map((s) => s.type),
     };
     saveLastConfig(config);
     onStartGame(config);
@@ -141,6 +141,7 @@ export const OnlineScreen: React.FC<OnlineScreenProps> = ({
       multiplayerEnabled: true,
       multiplayerSessionId: sessionCode,
       localPlayerIndex: joinResult.localPlayerIndex,
+      multiplayerSlots: liveSlots.map((s) => s.type),
     };
     saveLastConfig(config);
     onStartGame(config);

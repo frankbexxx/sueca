@@ -534,6 +534,7 @@ export class KingPtGame extends BaseGameAdapter {
     withKohReveal: boolean
   ): GameState {
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
     const isFesta = gameIndex >= KING_NEGATIVE_GAMES;
     const kohReveal = withKohReveal ? simulateKohDraw() : null;
 
@@ -562,7 +563,7 @@ export class KingPtGame extends BaseGameAdapter {
       );
     }
 
-    const players = this.buildPlayers(playerNames, localPlayerIndex);
+    const players = this.buildPlayers(playerNames, localPlayerIndex, multiplayerSlots);
     const leader = gameLeader(king.kohPlayerIndex, gameIndex);
 
     const state: GameState = {
@@ -606,17 +607,26 @@ export class KingPtGame extends BaseGameAdapter {
     return state;
   }
 
-  private buildPlayers(names: string[], localPlayerIndex?: number): Player[] {
+  private buildPlayers(
+    names: string[],
+    localPlayerIndex?: number,
+    multiplayerSlots?: Array<'human' | 'ai'>
+  ): Player[] {
     const humanIndex =
       localPlayerIndex !== undefined && localPlayerIndex >= 0 ? localPlayerIndex : 0;
     return names.slice(0, 4).map((name, index) => {
       const isHuman = index === humanIndex;
+      const type = isHuman
+        ? 'human'
+        : localPlayerIndex !== undefined
+          ? (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
+          : 'ai';
       return {
         id: `player_${index}`,
         name,
         hand: [],
         team: (index % 2 === 0 ? 1 : 2) as 1 | 2,
-        type: isHuman ? 'human' : (localPlayerIndex !== undefined ? 'remote' : 'ai')
+        type
       };
     });
   }

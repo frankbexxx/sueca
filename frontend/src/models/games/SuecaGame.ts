@@ -12,8 +12,9 @@ export class SuecaGame extends BaseGameAdapter {
     const dealingMethod = (options?.dealingMethod as DealingMethod) || 'A';
     const aiDifficulty = (options?.aiDifficulty as AIDifficulty) || 'medium';
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
 
-    this.game = new Game(playerNames, dealingMethod, aiDifficulty, localPlayerIndex);
+    this.game = new Game(playerNames, dealingMethod, aiDifficulty, localPlayerIndex, multiplayerSlots);
     const state = this.game.getState();
     state.variant = 'sueca';
     return state;

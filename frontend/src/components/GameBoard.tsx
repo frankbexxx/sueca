@@ -179,6 +179,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           dealingMethod: config.dealingMethod,
           aiDifficulty: config.aiDifficulty,
           localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
+          multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
           rulesPresetId: config.rulesPresetId
         });
       }

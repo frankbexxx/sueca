@@ -11,10 +11,11 @@ export class Game {
     playerNames: string[] = ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
     dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
-    localPlayerIndex?: number
+    localPlayerIndex?: number,
+    multiplayerSlots?: Array<'human' | 'ai'>
   ) {
     this.deck = new Deck();
-    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty, localPlayerIndex);
+    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty, localPlayerIndex, multiplayerSlots);
   }
 
   /**
@@ -181,7 +182,8 @@ export class Game {
     playerNames: string[],
     dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
-    localPlayerIndex?: number
+    localPlayerIndex?: number,
+    multiplayerSlots?: Array<'human' | 'ai'>
   ): GameState {
     // Choose dealer
     const dealerName = this.chooseDealer(playerNames);
@@ -194,7 +196,9 @@ export class Game {
       const isTeam1 = index === 0 || index === 2;
       const isLocalHuman = localPlayerIndex !== undefined ? index === localPlayerIndex : index === 0;
       const playerType = localPlayerIndex !== undefined
-        ? (isLocalHuman ? 'human' : 'remote')
+        ? isLocalHuman
+          ? 'human'
+          : (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
         : (isLocalHuman ? 'human' : 'ai');
       return {
         id: `player_${index}`,

@@ -196,6 +196,7 @@ export class SpadesGame extends BaseGameAdapter {
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
     const presetId = resolvePresetId('spades', options?.rulesPresetId as string | undefined);
     const presetOptions = getSpadesPresetOptions(presetId);
 
@@ -215,7 +216,7 @@ export class SpadesGame extends BaseGameAdapter {
         localPlayerIndex !== undefined
           ? isLocalHuman
             ? 'human'
-            : 'remote'
+            : (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
           : isLocalHuman
             ? 'human'
             : 'ai';

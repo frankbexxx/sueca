@@ -177,6 +177,7 @@ export class HeartsGame extends BaseGameAdapter {
   ): GameState {
     const deck = new Deck('standard52');
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
+    const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
     const passDirection = passDirectionForRound(round);
     const dealerIndex = (round - 1) % 4;
 
@@ -187,7 +188,7 @@ export class HeartsGame extends BaseGameAdapter {
         localPlayerIndex !== undefined
           ? isLocalHuman
             ? 'human'
-            : 'remote'
+            : (multiplayerSlots?.[index] === 'ai' ? 'ai' : 'remote')
           : isLocalHuman
             ? 'human'
             : 'ai';
