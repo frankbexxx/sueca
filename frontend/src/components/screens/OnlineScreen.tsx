@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { GameVariant, AIDifficulty, DealingMethod } from '../../types/game';
+import { GameVariant } from '../../types/game';
 import { GameConfig } from '../../types/gameConfig';
 import { GameSelector } from '../GameSelector';
-import { useLanguage } from '../../i18n/useLanguage';
 import { useGameSetup } from '../../hooks/useGameSetup';
 import { MULTIPLAYER_ENABLED } from '../../config/features';
 import { saveLastConfig } from '../../services/gameSessionStorage';
-import { getAvailableGames } from '../../constants/gameMetadata';
 import {
   SessionSlot,
   createSession,
@@ -38,7 +36,6 @@ export const OnlineScreen: React.FC<OnlineScreenProps> = ({
   showBack = false,
   onBack,
 }) => {
-  const { t } = useLanguage();
   const setup = useGameSetup();
 
   const [phase, setPhase] = useState<OnlinePhase>('choose');
