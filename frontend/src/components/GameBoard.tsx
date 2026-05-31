@@ -41,6 +41,7 @@ import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
 import { useMultiplayer } from '../hooks/useMultiplayer';
+import { fetchSessionState } from '../services/multiplayerClient';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -225,53 +226,79 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
 
   useEffect(() => {
-    try {
-      if (freshStartRef.current) {
-        latestRemoteStateRef.current = null;
-      }
+    let cancelled = false;
 
-      const adapter = GameFactory.getAdapter(config.gameVariant);
-      let initialState: GameState;
-      const shouldResume =
-        !freshStartRef.current &&
-        resumeSession?.state &&
-        resumeSession.config.gameVariant === config.gameVariant;
-      if (shouldResume) {
-        initialState = adapter.restoreState(resumeSession.state);
-      } else {
-        initialState = adapter.initialize(config.playerNames, {
-          dealingMethod: config.dealingMethod,
-          aiDifficulty: config.aiDifficulty,
-          localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
-          multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
-          rulesPresetId: config.rulesPresetId
+    const startGame = async () => {
+      try {
+        if (freshStartRef.current) {
+          latestRemoteStateRef.current = null;
+        }
+
+        const adapter = GameFactory.getAdapter(config.gameVariant);
+        let initialState: GameState;
+        const shouldResume =
+          !freshStartRef.current &&
+          resumeSession?.state &&
+          resumeSession.config.gameVariant === config.gameVariant;
+        if (shouldResume) {
+          initialState = adapter.restoreState(resumeSession.state);
+        } else {
+          initialState = adapter.initialize(config.playerNames, {
+            dealingMethod: config.dealingMethod,
+            aiDifficulty: config.aiDifficulty,
+            localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
+            multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
+            rulesPresetId: config.rulesPresetId
+          });
+        }
+        freshStartRef.current = false;
+        if (cancelled) return;
+
+        setGameAdapter(adapter);
+        gameAdapterRef.current = adapter;
+
+        let remoteState = latestRemoteStateRef.current;
+        if (isJoiner && !remoteState && config.multiplayerSessionId) {
+          remoteState = await fetchSessionState(config.multiplayerSessionId);
+          if (cancelled) return;
+          if (remoteState) {
+            latestRemoteStateRef.current = remoteState;
+            console.log('[MP] init fetch', {
+              waitingForRoundStart: remoteState.waitingForRoundStart,
+              handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
+              session: config.multiplayerSessionId,
+            });
+          } else {
+            console.log('[MP] init fetch empty', { session: config.multiplayerSessionId });
+          }
+        }
+
+        const initPath = isJoiner && remoteState ? 'applyRemote' : 'localInit';
+        console.log('[MP] init', {
+          role: isJoiner ? 'joiner' : 'host',
+          path: initPath,
+          hasBuffered: Boolean(remoteState),
+          bufferedHandLens: remoteState?.players?.map((p) => p.hand?.length ?? 0),
+          bufferedWaitingForRoundStart: remoteState?.waitingForRoundStart,
         });
+        if (isJoiner && remoteState) {
+          applyRemoteState(remoteState);
+        } else {
+          setGameState(initialState);
+          setWaitingForHost(isJoiner);
+        }
+        setGameStarted(true);
+      } catch (error) {
+        console.error('Error starting game:', error);
+        alert(t.startMenu.errorStartingGame);
+        onExit();
       }
-      freshStartRef.current = false;
-      setGameAdapter(adapter);
-      gameAdapterRef.current = adapter;
+    };
 
-      const bufferedRemote = latestRemoteStateRef.current;
-      const initPath = isJoiner && bufferedRemote ? 'applyRemote' : 'localInit';
-      console.log('[MP] init', {
-        role: isJoiner ? 'joiner' : 'host',
-        path: initPath,
-        hasBuffered: Boolean(bufferedRemote),
-        bufferedHandLens: bufferedRemote?.players?.map((p) => p.hand?.length ?? 0),
-        bufferedWaitingForRoundStart: bufferedRemote?.waitingForRoundStart,
-      });
-      if (isJoiner && bufferedRemote) {
-        applyRemoteState(bufferedRemote);
-      } else {
-        setGameState(initialState);
-        setWaitingForHost(isJoiner);
-      }
-      setGameStarted(true);
-    } catch (error) {
-      console.error('Error starting game:', error);
-      alert(t.startMenu.errorStartingGame);
-      onExit();
-    }
+    void startGame();
+    return () => {
+      cancelled = true;
+    };
   }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame, isJoiner, applyRemoteState]);
 
   // Host publishes initial state so joiners can sync immediately

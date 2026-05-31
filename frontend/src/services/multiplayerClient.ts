@@ -83,6 +83,15 @@ export async function publishState(code: string, state: GameState): Promise<void
 }
 
 /**
+ * Reads the current game state snapshot once (for joiners that mount after host published).
+ */
+export async function fetchSessionState(code: string): Promise<GameState | null> {
+  const snapshot = await get(ref(db, `sessions/${code}/state`));
+  if (!snapshot.exists()) return null;
+  return snapshot.val() as GameState;
+}
+
+/**
  * Subscribes to real-time state updates for a session.
  * Returns an unsubscribe function.
  */
