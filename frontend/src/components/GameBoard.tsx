@@ -68,9 +68,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const { playerNames, dealingMethod, aiDifficulty, gameVariant, rulesPresetId } = config;
   const [roundDealingMethod, setRoundDealingMethod] = useState(dealingMethod);
   const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
+  const multiplayerSessionCode = (config.multiplayerSessionId ?? '').trim();
   const isMultiplayer = Boolean(config.multiplayerEnabled);
+  const isMultiplayerActive = isMultiplayer && multiplayerSessionCode.length > 0;
   const multiplayerPlayerIndex = config.localPlayerIndex ?? 0;
-  const isJoiner = isMultiplayer && multiplayerPlayerIndex !== 0;
+  const isHost = isMultiplayerActive && multiplayerPlayerIndex === 0;
+  const isJoiner = isMultiplayerActive && multiplayerPlayerIndex !== 0;
   const [waitingForHost, setWaitingForHost] = useState(isJoiner);
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
@@ -172,11 +175,39 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   }, [applyRemoteState, isJoiner, config.multiplayerSessionId]);
 
   const { publishAfterPlay } = useMultiplayer({
-    enabled: isMultiplayer,
-    sessionCode: config.multiplayerSessionId ?? '',
+    enabled: isMultiplayerActive,
+    sessionCode: multiplayerSessionCode,
     localPlayerIndex: multiplayerPlayerIndex,
     onRemoteState: handleRemoteState,
   });
+
+  const publishHostState = useCallback(
+    (state: GameState) => {
+      if (!isHost) {
+        console.warn('[MP] host publish skipped', {
+          isMultiplayerActive,
+          multiplayerPlayerIndex,
+          session: multiplayerSessionCode || '(empty)',
+        });
+        return;
+      }
+      publishAfterPlay(state);
+    },
+    [isHost, isMultiplayerActive, multiplayerPlayerIndex, multiplayerSessionCode, publishAfterPlay]
+  );
+
+  const publishHostStateRef = useRef(publishHostState);
+  publishHostStateRef.current = publishHostState;
+
+  useEffect(() => {
+    console.log('[MP] board', {
+      role: isHost ? 'host' : isJoiner ? 'joiner' : 'solo',
+      isMultiplayerActive,
+      session: multiplayerSessionCode || '(empty)',
+      localPlayerIndex: multiplayerPlayerIndex,
+    });
+  }, [isHost, isJoiner, isMultiplayerActive, multiplayerSessionCode, multiplayerPlayerIndex]);
+
   useEffect(() => {
     gameAdapterRef.current = gameAdapter;
   }, [gameAdapter]);
@@ -288,6 +319,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           setWaitingForHost(isJoiner);
         }
         setGameStarted(true);
+
+        if (isHost) {
+          publishHostStateRef.current(adapter.getCurrentState());
+        }
       } catch (error) {
         console.error('Error starting game:', error);
         alert(t.startMenu.errorStartingGame);
@@ -299,14 +334,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     return () => {
       cancelled = true;
     };
-  }, [config, resumeSession, gameInitKey, onExit, t.startMenu.errorStartingGame, isJoiner, applyRemoteState]);
+  }, [
+    config,
+    resumeSession,
+    gameInitKey,
+    onExit,
+    t.startMenu.errorStartingGame,
+    isJoiner,
+    isHost,
+    applyRemoteState,
+  ]);
 
-  // Host publishes initial state so joiners can sync immediately
+  // Host publishes when the adapter is ready so joiners can sync immediately
   useEffect(() => {
-    if (!isMultiplayer || multiplayerPlayerIndex !== 0 || !gameAdapter || !gameStarted) return;
-    publishAfterPlay(gameState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStarted, gameAdapter]);
+    if (!isHost || !gameAdapter || !gameStarted) return;
+    publishHostState(gameAdapter.getCurrentState());
+  }, [isHost, gameStarted, gameAdapter, publishHostState]);
 
   useEffect(() => {
     if (!gameAdapter || !gameStarted || gameState.isGameOver) return;
@@ -446,9 +489,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       }
 
       const publishHostAiPlay = () => {
-        if (isMultiplayer && multiplayerPlayerIndex === 0) {
-          publishAfterPlay(gameAdapter.getCurrentState());
-        }
+        publishHostState(gameAdapter.getCurrentState());
       };
 
       if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
@@ -479,7 +520,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     };
 
     chooseAndPlay();
-  }, [gameAdapter, gameState, playCardSound, isMultiplayer, multiplayerPlayerIndex, publishAfterPlay]);
+  }, [gameAdapter, gameState, playCardSound, publishHostState]);
 
   /**
    * Auto-play effect for AI players
@@ -573,7 +614,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           const newState = gameAdapter.getCurrentState();
           setGameState(newState);
           setSelectedCard(null);
-          publishAfterPlay(newState);
+          publishHostState(newState);
         } else {
           playErrorSound();
         }
@@ -1093,8 +1134,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
                     gameAdapter.startRound(gameAdapter.getCurrentState());
                     const newState = gameAdapter.getCurrentState();
                     setGameState(newState);
-                    if (isMultiplayer && multiplayerPlayerIndex === 0) {
-                      publishAfterPlay(newState);
+                    if (isHost) {
+                      publishHostState(newState);
                     }
                   }
                 }}
@@ -1118,14 +1159,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
               gameAdapter.startRound(gameAdapter.getCurrentState());
               const newState = gameAdapter.getCurrentState();
               setGameState(newState);
-              if (isMultiplayer && multiplayerPlayerIndex === 0) {
+              if (isHost) {
                 console.log('[MP] host publish deal', {
                   waitingForRoundStart: newState.waitingForRoundStart,
                   handLens: newState.players.map((p) => p.hand.length),
                   variant: newState.variant,
-                  session: config.multiplayerSessionId,
+                  session: multiplayerSessionCode,
                 });
-                publishAfterPlay(newState);
+                publishHostState(newState);
               }
             }
           }}

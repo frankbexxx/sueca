@@ -40,7 +40,10 @@ export function useMultiplayer({
   const lastPublishedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled || !sessionCode) return;
+    if (!enabled || !sessionCode) {
+      console.log('[MP] subscribe skipped', { enabled, sessionCode: sessionCode || '(empty)' });
+      return;
+    }
 
     const unsubscribe = subscribeToState(sessionCode, (remoteState) => {
       // Ignore our own publishes by comparing a lightweight signature
@@ -62,7 +65,13 @@ export function useMultiplayer({
 
   const publishAfterPlay = useCallback(
     (state: GameState) => {
-      if (!enabled || !sessionCode) return;
+      if (!enabled || !sessionCode) {
+        console.warn('[MP] publish skipped', {
+          enabled,
+          sessionCode: sessionCode || '(empty)',
+        });
+        return;
+      }
       const sig = stateSignature(state);
       lastPublishedRef.current = sig;
       console.log('[MP] publish', {
