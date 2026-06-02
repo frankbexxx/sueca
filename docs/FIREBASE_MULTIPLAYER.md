@@ -26,6 +26,14 @@ Optional debug logging:
 |----------|--------|
 | `REACT_APP_DEBUG_MP` | `true` | Enables `[MP]` console logs in production builds |
 
+In the browser console (including production):
+
+```js
+localStorage.setItem('sueca-mp-debug', '1'); location.reload();
+```
+
+To disable: `localStorage.removeItem('sueca-mp-debug'); location.reload();`
+
 See `frontend/.env.example` for a template.
 
 ## Security rules

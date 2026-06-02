@@ -42,7 +42,7 @@ export const GameActions: React.FC<GameActionsProps> = ({
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [waiting, autoPause, variant, gameState.currentTrick.length]);
+  }, [waiting, autoPause, variant, gameState.currentTrick?.length ?? 0]);
 
   const toggleAutoPause = useCallback(() => {
     setAutoPause((prev) => {

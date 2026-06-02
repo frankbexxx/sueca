@@ -43,6 +43,7 @@ import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStora
 import { useMultiplayer } from '../hooks/useMultiplayer';
 import { fetchSessionState, subscribeToActions } from '../services/multiplayerClient';
 import { applyHostAction } from '../multiplayer/applyHostAction';
+import { normalizeGameState } from '../multiplayer/normalizeGameState';
 import { mpLog, mpWarn } from '../utils/mpDebug';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
@@ -144,7 +145,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         : remoteState;
 
     if (adapter && (!remoteState.variant || adapter.variant === remoteState.variant)) {
-      const synced = adapter.restoreState(stateToRestore);
+      const restoreOptions = isMultiplayerActive
+        ? {
+            localPlayerIndex: config.localPlayerIndex ?? 0,
+            multiplayerSlots: config.multiplayerSlots,
+          }
+        : undefined;
+      const synced = adapter.restoreState(stateToRestore, restoreOptions);
       setGameState(synced);
     } else {
       setGameState(remoteState);
@@ -156,7 +163,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (variant === 'sueca') {
       const waitingForHostDeal =
         remoteState.waitingForRoundStart ||
-        remoteState.players.some((p) => p.hand.length === 0);
+        remoteState.players.some((p) => (p.hand?.length ?? 0) === 0);
       mpLog('[MP] applyRemoteState sueca', {
         waitingForHostDeal,
         waitingForRoundStart: remoteState.waitingForRoundStart,
@@ -169,7 +176,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
     mpLog('[MP] applyRemoteState', { variant, waitingForHost: false });
     setWaitingForHost(false);
-  }, [isJoiner]);
+  }, [isJoiner, isMultiplayerActive, config.localPlayerIndex, config.multiplayerSlots]);
 
   const handleRemoteState = useCallback((remoteState: GameState) => {
     if (isHost) return;
@@ -319,7 +326,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           resumeSession?.state &&
           resumeSession.config.gameVariant === config.gameVariant;
         if (shouldResume) {
-          initialState = adapter.restoreState(resumeSession.state);
+          initialState = adapter.restoreState(normalizeGameState(resumeSession.state));
         } else {
           initialState = adapter.initialize(config.playerNames, {
             dealingMethod: config.dealingMethod,

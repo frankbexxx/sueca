@@ -1,4 +1,4 @@
-import { BaseGameAdapter } from './GameAdapter';
+import { BaseGameAdapter, RestoreStateOptions } from './GameAdapter';
 import { Game } from '../Game';
 import { AIDifficulty, DealingMethod, GameState } from '../../types/game';
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
@@ -83,10 +83,13 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.setDealingMethod(method);
   }
 
-  restoreState(state: GameState): GameState {
+  restoreState(state: GameState, options?: RestoreStateOptions): GameState {
     const names = state.players.map((p) => p.name);
     this.game = new Game(names, state.dealingMethod || 'A', state.aiDifficulty || 'medium');
     this.game.loadState(state);
+    if (options?.localPlayerIndex !== undefined) {
+      this.game.setLocalPlayerIndex(options.localPlayerIndex, options.multiplayerSlots);
+    }
     return this.getCurrentState();
   }
 }

@@ -6,6 +6,11 @@ export interface GameInitOptions {
   localPlayerIndex?: number;
 }
 
+export interface RestoreStateOptions {
+  localPlayerIndex?: number;
+  multiplayerSlots?: Array<'human' | 'ai'>;
+}
+
 export interface GameAdapter {
   variant: GameVariant;
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState;
@@ -23,7 +28,7 @@ export interface GameAdapter {
   getPlayerHand(state: GameState, playerIndex: number): Card[];
   getPlayers(state: GameState): Player[];
   getState(state: GameState): GameState;
-  restoreState(state: GameState): GameState;
+  restoreState(state: GameState, options?: RestoreStateOptions): GameState;
 }
 
 function cloneState(state: GameState): GameState {
@@ -94,7 +99,7 @@ export abstract class BaseGameAdapter implements GameAdapter {
     return cloneState(state);
   }
 
-  restoreState(state: GameState): GameState {
+  restoreState(state: GameState, _options?: RestoreStateOptions): GameState {
     return cloneState(state);
   }
 

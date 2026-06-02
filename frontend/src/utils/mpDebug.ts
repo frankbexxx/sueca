@@ -1,9 +1,12 @@
-/** True when MP debug logs should print (dev or explicit flag). */
+/** True when MP debug logs should print (dev, env flag, or localStorage). */
 export function isMpDebugEnabled(): boolean {
-  return (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.REACT_APP_DEBUG_MP === 'true'
-  );
+  if (process.env.NODE_ENV !== 'production') return true;
+  if (process.env.REACT_APP_DEBUG_MP === 'true') return true;
+  try {
+    return localStorage.getItem('sueca-mp-debug') === '1';
+  } catch {
+    return false;
+  }
 }
 
 export function mpLog(...args: unknown[]): void {

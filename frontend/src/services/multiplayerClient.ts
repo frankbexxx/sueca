@@ -2,6 +2,7 @@ import { ref, set, get, push, onValue, onChildAdded, off, runTransaction } from 
 import { db } from './firebaseConfig';
 import { GameState, GameVariant } from '../types/game';
 import { GameAction } from '../types/multiplayerActions';
+import { normalizeGameState } from '../multiplayer/normalizeGameState';
 
 const LOCAL_PLAYER_KEY = 'sueca-mp-local-index';
 
@@ -99,13 +100,13 @@ export async function fetchSessionMeta(code: string): Promise<SessionMeta | null
 
 /** Publishes the full game state to Firebase (host only). */
 export async function publishState(code: string, state: GameState): Promise<void> {
-  await set(ref(db, `sessions/${code}/state`), sanitizeForRtdb(state));
+  await set(ref(db, `sessions/${code}/state`), sanitizeForRtdb(normalizeGameState(state)));
 }
 
 export async function fetchSessionState(code: string): Promise<GameState | null> {
   const snapshot = await get(ref(db, `sessions/${code}/state`));
   if (!snapshot.exists()) return null;
-  return snapshot.val() as GameState;
+  return normalizeGameState(snapshot.val() as Partial<GameState>);
 }
 
 export function subscribeToState(
@@ -114,7 +115,9 @@ export function subscribeToState(
 ): () => void {
   const stateRef = ref(db, `sessions/${code}/state`);
   const listener = onValue(stateRef, (snapshot) => {
-    if (snapshot.exists()) callback(snapshot.val() as GameState);
+    if (snapshot.exists()) {
+      callback(normalizeGameState(snapshot.val() as Partial<GameState>));
+    }
   });
   return () => off(stateRef, 'value', listener);
 }

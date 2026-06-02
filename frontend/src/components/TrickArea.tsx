@@ -16,9 +16,9 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
 }) => {
   return (
     <div className="trick-area-center">
-      {gameState.currentTrick.length > 0 && (
+      {(gameState.currentTrick?.length ?? 0) > 0 && (
         <div className="trick-cards-cross">
-          {gameState.currentTrick.map((card: Card, index: number) => {
+          {(gameState.currentTrick ?? []).map((card: Card, index: number) => {
             const playerIndex = (gameState.trickLeader + index) % 4;
             const position = getTablePositionForPlayer(playerIndex, localPlayerIndex);
             return (

@@ -104,14 +104,19 @@ describe('multiplayerClient', () => {
     expect(paths).toContain('sessions/ROOM1/actions');
   });
 
-  it('publishState strips undefined fields', async () => {
+  it('publishState strips undefined fields and normalizes missing arrays', async () => {
     const state = {
-      players: [],
+      players: [
+        { id: 'p0', name: 'Host', team: 1 },
+        { id: 'p1', name: 'Guest', team: 2 },
+        { id: 'p2', name: 'Bot1', team: 1 },
+        { id: 'p3', name: 'Bot2', team: 2 },
+      ],
       currentPlayerIndex: 0,
       dealerIndex: 0,
       trumpSuit: null,
       trumpCard: null,
-      currentTrick: [],
+      currentTrick: undefined,
       trickLeader: 0,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
@@ -134,7 +139,7 @@ describe('multiplayerClient', () => {
       partnerSignals: [],
       nextRoundValue: undefined,
       pendingRoundMultiplier: undefined,
-    } as GameState;
+    } as unknown as GameState;
 
     await publishState('ROOM1', state);
 
@@ -142,6 +147,10 @@ describe('multiplayerClient', () => {
     const payload = mockSet.mock.calls[0][1] as Record<string, unknown>;
     expect(payload).not.toHaveProperty('nextRoundValue');
     expect(payload).not.toHaveProperty('pendingRoundMultiplier');
+    expect(payload.currentTrick).toEqual([]);
+    expect(
+      (payload.players as Array<{ hand: unknown[] }>).every((p) => Array.isArray(p.hand))
+    ).toBe(true);
     expect(mockRef.mock.calls[0][1]).toBe('sessions/ROOM1/state');
   });
 });

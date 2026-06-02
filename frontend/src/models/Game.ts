@@ -252,11 +252,20 @@ export class Game {
     this.state = JSON.parse(JSON.stringify(state));
   }
 
-  setLocalPlayerIndex(localPlayerIndex: number): void {
-    this.state.players = this.state.players.map((player, index) => ({
-      ...player,
-      type: index === localPlayerIndex ? 'human' : 'remote'
-    }));
+  setLocalPlayerIndex(
+    localPlayerIndex: number,
+    multiplayerSlots?: Array<'human' | 'ai'>
+  ): void {
+    this.state.players = this.state.players.map((player, index) => {
+      if (index === localPlayerIndex) {
+        return { ...player, type: 'human' };
+      }
+      const slotType = multiplayerSlots?.[index];
+      return {
+        ...player,
+        type: slotType === 'ai' ? 'ai' : 'remote',
+      };
+    });
   }
 
   /**

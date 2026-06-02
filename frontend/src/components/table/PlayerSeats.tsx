@@ -57,7 +57,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                 className="card-back-small"
                 draggable={false}
               />
-              <span className="card-count">{player.hand.length}</span>
+              <span className="card-count">{player.hand?.length ?? 0}</span>
             </div>
           );
         };
