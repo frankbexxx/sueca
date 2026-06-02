@@ -138,7 +138,7 @@ function App() {
       }
       startGame(saved.config, saved);
     },
-    [startGame, t.dashboard.playNewGameConfirm]
+    [startGame, t.dashboard.multiplayerOfflineContinueBlocked]
   );
 
   const handlePlayVariant = useCallback(
