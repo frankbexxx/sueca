@@ -83,6 +83,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const multiplayerPlayerIndex = config.localPlayerIndex ?? 0;
   const isHost = isMultiplayerActive && multiplayerPlayerIndex === 0;
   const isJoiner = isMultiplayerActive && multiplayerPlayerIndex !== 0;
+  const isHostOrSolo = !isMultiplayer || multiplayerPlayerIndex === 0;
   const [waitingForHost, setWaitingForHost] = useState(isJoiner);
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
@@ -211,10 +212,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const afterHostMutation = useCallback(() => {
     const adapter = gameAdapterRef.current;
-    if (!adapter || !isHost) return;
+    if (!adapter) return;
     const next = adapter.getCurrentState();
     setGameState(next);
-    publishHostState(next);
+    if (isHost) publishHostState(next);
   }, [isHost, publishHostState]);
 
   const afterHostMutationRef = useRef(afterHostMutation);
@@ -582,8 +583,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const isLocalHumanTurn = isMultiplayer
       ? gameState.currentPlayerIndex === multiplayerPlayerIndex
       : gameState.currentPlayerIndex === 0;
-    // In multiplayer, only the host (index 0) runs AI for bot players
-    const isHostOrSolo = !isMultiplayer || multiplayerPlayerIndex === 0;
 
     if (
       !gameState.isGameOver &&
@@ -602,7 +601,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, waitingForEarlyEnd]);
+  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd]);
 
   /**
    * Handles card click from human player
@@ -1216,14 +1215,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           onDirectionChange={setDealingDirection}
           onConfirm={() => {
             if (!gameAdapter) return;
+            (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
+            gameAdapter.startRound(gameAdapter.getCurrentState());
             if (isHost) {
-              (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
-              gameAdapter.startRound(gameAdapter.getCurrentState());
               mpLog('[MP] host publish deal', {
                 session: multiplayerSessionCode,
               });
-              afterHostMutation();
             }
+            afterHostMutation();
           }}
         />
       )}
