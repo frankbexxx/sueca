@@ -67,9 +67,7 @@ export function shellNavigationReducer(
       if (current.tab === action.tab) {
         return popToTabRoot(stack, action.tab);
       }
-      const root = tabRootRoute(action.tab);
-      if (routesEqual(current, root)) return stack;
-      return [...stack, root];
+      return [tabRootRoute(action.tab)];
     }
     default:
       return stack;

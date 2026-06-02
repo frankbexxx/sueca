@@ -37,12 +37,12 @@ describe('shellNavigation', () => {
     expect(shellNavigationReducer(stack, { type: 'resetToHome' })).toEqual([HOME_ROUTE]);
   });
 
-  it('navigateTabRoot from home pushes tab root', () => {
+  it('navigateTabRoot from home replaces stack with tab root', () => {
     const next = shellNavigationReducer([HOME_ROUTE], {
       type: 'navigateTabRoot',
       tab: 'rules'
     });
-    expect(next).toEqual([HOME_ROUTE, tabRootRoute('rules')]);
+    expect(next).toEqual([tabRootRoute('rules')]);
   });
 
   it('navigateTabRoot home resets stack', () => {
@@ -62,19 +62,14 @@ describe('shellNavigation', () => {
     expect(next).toEqual([HOME_ROUTE, tabRootRoute('settings')]);
   });
 
-  it('navigateTabRoot preserves history when switching tabs', () => {
+  it('navigateTabRoot resets stack when switching tabs', () => {
     const stack = [
       HOME_ROUTE,
       tabRootRoute('settings'),
       { tab: 'settings', screen: 'hand' as const }
     ];
     const next = shellNavigationReducer(stack, { type: 'navigateTabRoot', tab: 'history' });
-    expect(next).toEqual([
-      HOME_ROUTE,
-      tabRootRoute('settings'),
-      { tab: 'settings', screen: 'hand' },
-      tabRootRoute('history')
-    ]);
+    expect(next).toEqual([tabRootRoute('history')]);
   });
 
   it('popToTabRoot stops at tab root', () => {

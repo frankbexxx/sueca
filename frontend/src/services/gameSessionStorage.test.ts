@@ -8,7 +8,8 @@ import {
   saveGameSession,
   loadGameSession,
   loadAllGameSessions,
-  clearGameSession
+  clearGameSession,
+  buildSoloConfigForVariant
 } from './gameSessionStorage';
 import { GameConfig } from '../types/gameConfig';
 import { GameState } from '../types/game';
@@ -180,5 +181,38 @@ describe('gameSessionStorage', () => {
     expect(formatRelativeTime(now - 30 * 60 * 1000, 'en')).toBe('30 min ago');
     expect(formatRelativeTime(now - 25 * 60 * 60 * 1000, 'pt')).toBe('ontem');
     expect(formatRelativeTime(now - 3 * 24 * 60 * 60 * 1000, 'en')).toBe('3 days ago');
+  });
+
+  it('buildSoloConfigForVariant strips multiplayer fields from last config', () => {
+    saveLastConfig({
+      ...mockConfig('sueca'),
+      multiplayerEnabled: true,
+      multiplayerSessionId: 'ABC12',
+      multiplayerJoinMode: true,
+      localPlayerIndex: 2,
+      multiplayerSlots: ['human', 'human', 'ai', 'ai']
+    });
+    const config = buildSoloConfigForVariant('sueca');
+    expect(config.multiplayerEnabled).toBe(false);
+    expect(config.multiplayerJoinMode).toBe(false);
+    expect(config.multiplayerSessionId).toBeUndefined();
+    expect(config.localPlayerIndex).toBeUndefined();
+    expect(config.multiplayerSlots).toBeUndefined();
+    expect(config.playerNames[0]).toBe('Alice');
+    expect(config.aiDifficulty).toBe('medium');
+  });
+
+  it('buildSoloConfigForVariant uses requested variant and default preset when last differs', () => {
+    saveLastConfig(mockConfig('hearts'));
+    const config = buildSoloConfigForVariant('sueca');
+    expect(config.gameVariant).toBe('sueca');
+    expect(config.rulesPresetId).toBe('sueca-pt-normal');
+    expect(config.playerNames[0]).toBe('Alice');
+  });
+
+  it('buildSoloConfigForVariant preserves preset when last matches variant', () => {
+    saveLastConfig({ ...mockConfig('sueca'), rulesPresetId: 'sueca-pt-normal' });
+    const config = buildSoloConfigForVariant('sueca');
+    expect(config.rulesPresetId).toBe('sueca-pt-normal');
   });
 });

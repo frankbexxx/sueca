@@ -11,7 +11,7 @@ import {
   loadGameSession,
   saveLastConfig,
   clearGameSession,
-  buildQuickConfigForVariant
+  buildSoloConfigForVariant
 } from './services/gameSessionStorage';
 import { consumeLandingReturnFlag } from './services/appLifecycle';
 import { getActiveTheme, ThemeId } from './services/billingService';
@@ -116,19 +116,12 @@ function App() {
     (variant: GameVariant) => {
       const saved = loadGameSession(variant);
       if (saved) {
-        if (window.confirm(t.dashboard.playSavedConfirm)) {
-          startGame(saved.config, saved);
-          return;
-        }
-        if (window.confirm(t.dashboard.playNewConfirm)) {
-          clearGameSession(variant);
-          startGame(buildQuickConfigForVariant(variant));
-        }
-        return;
+        if (!window.confirm(t.dashboard.playNewGameConfirm)) return;
+        clearGameSession(variant);
       }
-      startGame(buildQuickConfigForVariant(variant));
+      startGame(buildSoloConfigForVariant(variant));
     },
-    [startGame, t.dashboard.playNewConfirm, t.dashboard.playSavedConfirm]
+    [startGame, t.dashboard.playNewGameConfirm]
   );
 
   const handleTabChange = useCallback(
@@ -139,6 +132,7 @@ function App() {
         return;
       }
       navigateTabRoot(tab);
+      handleHistoryReset();
     },
     [navigateTabRoot, resetToHome, handleHistoryReset]
   );

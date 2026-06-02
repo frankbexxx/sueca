@@ -15,6 +15,7 @@
 
 .app-shell--game {
   padding-bottom: 0;
+  overscroll-behavior: none;
 }
 
 .app-shell--game .app-shell-content {

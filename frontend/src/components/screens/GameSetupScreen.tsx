@@ -38,7 +38,14 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
       setError(t.startMenu.errorPlayer1Required);
       return;
     }
-    const config = { ...setup.buildConfig(), multiplayerEnabled: false };
+    const config: GameConfig = {
+      ...setup.buildConfig(),
+      multiplayerEnabled: false,
+      multiplayerJoinMode: false,
+      multiplayerSessionId: undefined,
+      localPlayerIndex: undefined,
+      multiplayerSlots: undefined
+    };
     saveLastConfig(config);
     onStartGame(config);
   };

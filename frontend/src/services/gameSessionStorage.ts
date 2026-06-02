@@ -128,17 +128,27 @@ export function loadLastConfig(): GameConfig | null {
   }
 }
 
-export function buildQuickConfigForVariant(variant: GameVariant): GameConfig {
+/** Builds a fresh solo config from saved preferences — never resumes or enables MP. */
+export function buildSoloConfigForVariant(variant: GameVariant): GameConfig {
   const last = loadLastConfig();
-  if (last && last.gameVariant === variant) return last;
+  const rulesPresetId =
+    last?.gameVariant === variant
+      ? resolvePresetId(variant, last.rulesPresetId)
+      : getDefaultPresetId(variant);
   return {
     playerNames: last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
     aiDifficulty: last?.aiDifficulty ?? 'medium',
     dealingMethod: last?.dealingMethod ?? 'A',
     multiplayerEnabled: false,
+    multiplayerJoinMode: false,
     gameVariant: variant,
-    rulesPresetId: getDefaultPresetId(variant)
+    rulesPresetId
   };
+}
+
+/** @deprecated Prefer buildSoloConfigForVariant — kept for call-site compatibility. */
+export function buildQuickConfigForVariant(variant: GameVariant): GameConfig {
+  return buildSoloConfigForVariant(variant);
 }
 
 export function saveGameSession(config: GameConfig, state: GameState): void {

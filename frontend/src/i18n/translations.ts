@@ -215,6 +215,7 @@ export interface Translations {
     configureGame: (game: string) => string;
     playSavedConfirm: string;
     playNewConfirm: string;
+    playNewGameConfirm: string;
   };
 
   playSetup: {
@@ -434,7 +435,8 @@ export const translations: Record<Language, Translations> = {
       playGame: 'Jogar',
       configureGame: (game) => `Configurar ${game}`,
       playSavedConfirm: 'Tens uma partida guardada. Continuar?',
-      playNewConfirm: 'Começar novo jogo e apagar a partida guardada?'
+      playNewConfirm: 'Começar novo jogo e apagar a partida guardada?',
+      playNewGameConfirm: 'Quer começar jogo novo? (Tens um jogo activo)'
     },
     playSetup: {
       title: 'Nova partida',
@@ -727,7 +729,8 @@ export const translations: Record<Language, Translations> = {
       playGame: 'Play',
       configureGame: (game) => `Configure ${game}`,
       playSavedConfirm: 'You have a saved game. Continue?',
-      playNewConfirm: 'Start a new game and delete the saved one?'
+      playNewConfirm: 'Start a new game and delete the saved one?',
+      playNewGameConfirm: 'Start a new game? (You have an active game)'
     },
     playSetup: {
       title: 'New game',
