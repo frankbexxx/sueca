@@ -13,8 +13,8 @@ function stateSignature(state: GameState): string {
     waitingForTrickEnd: state.waitingForTrickEnd,
     scores: state.scores,
     gameScore: state.gameScore,
-    handLens: state.players.map((p) => p.hand.length),
-    trickLen: state.currentTrick.length,
+    handLens: state.players?.map((p) => p.hand?.length ?? 0) ?? [],
+    trickLen: state.currentTrick?.length ?? 0,
   });
 }
 

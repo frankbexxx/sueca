@@ -2,6 +2,7 @@ node_modules/
 frontend/node_modules/
 build/
 frontend/build/
+frontend/src/generated/buildInfo.ts
 dist/
 *.log
 .DS_Store
