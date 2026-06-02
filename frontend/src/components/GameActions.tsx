@@ -22,6 +22,7 @@ export const GameActions: React.FC<GameActionsProps> = ({
   onContinueRef.current = onContinueTrick;
 
   const waiting = gameState.waitingForTrickEnd;
+  const currentTrickLength = gameState.currentTrick?.length ?? 0;
 
   useEffect(() => {
     if (!waiting || autoPause) {
@@ -42,7 +43,7 @@ export const GameActions: React.FC<GameActionsProps> = ({
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [waiting, autoPause, variant, gameState.currentTrick?.length ?? 0]);
+  }, [waiting, autoPause, variant, currentTrickLength]);
 
   const toggleAutoPause = useCallback(() => {
     setAutoPause((prev) => {

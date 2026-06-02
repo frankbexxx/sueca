@@ -7,8 +7,6 @@ import {
 } from '../types/game';
 import { mpWarn } from '../utils/mpDebug';
 
-const DEFAULT_SCORES = { team1: 0, team2: 0 };
-
 function defaultPlayer(index: number, existing?: Partial<Player>): Player {
   const isTeam1 = index === 0 || index === 2;
   return {
