@@ -5,6 +5,11 @@ import { GameAction } from '../types/multiplayerActions';
 
 const LOCAL_PLAYER_KEY = 'sueca-mp-local-index';
 
+/** RTDB rejects undefined anywhere in the payload. */
+function sanitizeForRtdb<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
@@ -94,7 +99,7 @@ export async function fetchSessionMeta(code: string): Promise<SessionMeta | null
 
 /** Publishes the full game state to Firebase (host only). */
 export async function publishState(code: string, state: GameState): Promise<void> {
-  await set(ref(db, `sessions/${code}/state`), state);
+  await set(ref(db, `sessions/${code}/state`), sanitizeForRtdb(state));
 }
 
 export async function fetchSessionState(code: string): Promise<GameState | null> {

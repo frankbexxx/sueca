@@ -25,7 +25,9 @@ import {
   joinSession,
   pushAction,
   endSession,
+  publishState,
 } from './multiplayerClient';
+import { GameState } from '../types/game';
 
 describe('multiplayerClient', () => {
   beforeEach(() => {
@@ -100,5 +102,46 @@ describe('multiplayerClient', () => {
     expect(paths).toContain('sessions/ROOM1/status');
     expect(paths).toContain('sessions/ROOM1/state');
     expect(paths).toContain('sessions/ROOM1/actions');
+  });
+
+  it('publishState strips undefined fields', async () => {
+    const state = {
+      players: [],
+      currentPlayerIndex: 0,
+      dealerIndex: 0,
+      trumpSuit: null,
+      trumpCard: null,
+      currentTrick: [],
+      trickLeader: 0,
+      scores: { team1: 0, team2: 0 },
+      gameScore: { team1: 0, team2: 0 },
+      completedPentes: [],
+      round: 1,
+      isGameOver: false,
+      winner: null,
+      lastTrickWinner: null,
+      waitingForTrickEnd: false,
+      nextTrickLeader: null,
+      isFirstTrick: true,
+      dealingMethod: 'A',
+      waitingForRoundStart: true,
+      waitingForRoundEnd: false,
+      waitingForGameStart: false,
+      playedCards: [],
+      isPaused: false,
+      playerName: 'Player 1',
+      aiDifficulty: 'medium',
+      partnerSignals: [],
+      nextRoundValue: undefined,
+      pendingRoundMultiplier: undefined,
+    } as GameState;
+
+    await publishState('ROOM1', state);
+
+    expect(mockSet).toHaveBeenCalledTimes(1);
+    const payload = mockSet.mock.calls[0][1] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty('nextRoundValue');
+    expect(payload).not.toHaveProperty('pendingRoundMultiplier');
+    expect(mockRef.mock.calls[0][1]).toBe('sessions/ROOM1/state');
   });
 });
