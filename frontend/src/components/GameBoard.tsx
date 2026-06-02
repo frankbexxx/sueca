@@ -41,26 +41,35 @@ import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
 import { useMultiplayer } from '../hooks/useMultiplayer';
-import { fetchSessionState } from '../services/multiplayerClient';
+import { fetchSessionState, subscribeToActions } from '../services/multiplayerClient';
+import { applyHostAction } from '../multiplayer/applyHostAction';
+import { mpLog, mpWarn } from '../utils/mpDebug';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
   clearGameSession,
   recordGameResult,
-  SavedGameSession
+  SavedGameSession,
+  stripMultiplayerFields
 } from '../services/gameSessionStorage';
 
 export interface GameBoardProps {
   config: GameConfig;
   resumeSession?: SavedGameSession | null;
   onExit: () => void;
+  onRestartAsSolo?: (variant: import('../types/game').GameVariant) => void;
 }
 
 /**
  * Main game board component - renders the entire Sueca game interface
  * Manages game state, player interactions, AI moves, and UI rendering
  */
-export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onExit }) => {
+export const GameBoard: React.FC<GameBoardProps> = ({
+  config,
+  resumeSession,
+  onExit,
+  onRestartAsSolo
+}) => {
   const { t, language } = useLanguage();
   const [gameStarted, setGameStarted] = useState(false);
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
@@ -79,6 +88,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
   const latestRemoteStateRef = useRef<GameState | null>(null);
+  const processedActionIdsRef = useRef<Set<string>>(new Set());
+  const roundDealingMethodRef = useRef(dealingMethod);
+  roundDealingMethodRef.current = roundDealingMethod;
 
   /**
    * Game state snapshot - reactive state for UI updates
@@ -144,7 +156,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       const waitingForHostDeal =
         remoteState.waitingForRoundStart ||
         remoteState.players.some((p) => p.hand.length === 0);
-      console.log('[MP] applyRemoteState sueca', {
+      mpLog('[MP] applyRemoteState sueca', {
         waitingForHostDeal,
         waitingForRoundStart: remoteState.waitingForRoundStart,
         handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
@@ -154,13 +166,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       return;
     }
 
-    console.log('[MP] applyRemoteState', { variant, waitingForHost: false });
+    mpLog('[MP] applyRemoteState', { variant, waitingForHost: false });
     setWaitingForHost(false);
   }, [isJoiner]);
 
   const handleRemoteState = useCallback((remoteState: GameState) => {
+    if (isHost) return;
     latestRemoteStateRef.current = remoteState;
-    console.log('[MP] remote received', {
+    mpLog('[MP] remote received', {
       role: isJoiner ? 'joiner' : 'host',
       hasAdapter: Boolean(gameAdapterRef.current),
       waitingForRoundStart: remoteState.waitingForRoundStart,
@@ -172,19 +185,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     if (gameAdapterRef.current) {
       applyRemoteState(remoteState);
     }
-  }, [applyRemoteState, isJoiner, config.multiplayerSessionId]);
+  }, [applyRemoteState, isJoiner, isHost, config.multiplayerSessionId]);
 
-  const { publishAfterPlay } = useMultiplayer({
+  const { publishAfterPlay, submitAction } = useMultiplayer({
     enabled: isMultiplayerActive,
     sessionCode: multiplayerSessionCode,
-    localPlayerIndex: multiplayerPlayerIndex,
     onRemoteState: handleRemoteState,
+    applyAllRemoteUpdates: isJoiner,
   });
 
   const publishHostState = useCallback(
     (state: GameState) => {
       if (!isHost) {
-        console.warn('[MP] host publish skipped', {
+        mpWarn('[MP] host publish skipped', {
           isMultiplayerActive,
           multiplayerPlayerIndex,
           session: multiplayerSessionCode || '(empty)',
@@ -196,17 +209,50 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     [isHost, isMultiplayerActive, multiplayerPlayerIndex, multiplayerSessionCode, publishAfterPlay]
   );
 
+  const afterHostMutation = useCallback(() => {
+    const adapter = gameAdapterRef.current;
+    if (!adapter || !isHost) return;
+    const next = adapter.getCurrentState();
+    setGameState(next);
+    publishHostState(next);
+  }, [isHost, publishHostState]);
+
+  const afterHostMutationRef = useRef(afterHostMutation);
+  afterHostMutationRef.current = afterHostMutation;
+
   const publishHostStateRef = useRef(publishHostState);
   publishHostStateRef.current = publishHostState;
 
   useEffect(() => {
-    console.log('[MP] board', {
+    mpLog('[MP] board', {
       role: isHost ? 'host' : isJoiner ? 'joiner' : 'solo',
       isMultiplayerActive,
       session: multiplayerSessionCode || '(empty)',
       localPlayerIndex: multiplayerPlayerIndex,
     });
   }, [isHost, isJoiner, isMultiplayerActive, multiplayerSessionCode, multiplayerPlayerIndex]);
+
+  useEffect(() => {
+    if (!isHost || !isMultiplayerActive || !multiplayerSessionCode || !gameAdapter) return;
+
+    return subscribeToActions(multiplayerSessionCode, (action, actionId) => {
+      if (processedActionIdsRef.current.has(actionId)) return;
+      processedActionIdsRef.current.add(actionId);
+
+      const adapter = gameAdapterRef.current;
+      if (!adapter) return;
+
+      const ok = applyHostAction(adapter, action, {
+        roundDealingMethod: roundDealingMethodRef.current,
+        rulesPresetId,
+      });
+      if (!ok) {
+        mpWarn('[MP] host rejected action', action);
+        return;
+      }
+      afterHostMutationRef.current();
+    });
+  }, [isHost, isMultiplayerActive, multiplayerSessionCode, gameAdapter, rulesPresetId]);
 
   useEffect(() => {
     gameAdapterRef.current = gameAdapter;
@@ -294,18 +340,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           if (cancelled) return;
           if (remoteState) {
             latestRemoteStateRef.current = remoteState;
-            console.log('[MP] init fetch', {
+            mpLog('[MP] init fetch', {
               waitingForRoundStart: remoteState.waitingForRoundStart,
               handLens: remoteState.players?.map((p) => p.hand?.length ?? 0),
               session: config.multiplayerSessionId,
             });
           } else {
-            console.log('[MP] init fetch empty', { session: config.multiplayerSessionId });
+            mpLog('[MP] init fetch empty', { session: config.multiplayerSessionId });
           }
         }
 
         const initPath = isJoiner && remoteState ? 'applyRemote' : 'localInit';
-        console.log('[MP] init', {
+        mpLog('[MP] init', {
           role: isJoiner ? 'joiner' : 'host',
           path: initPath,
           hasBuffered: Boolean(remoteState),
@@ -352,12 +398,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   }, [isHost, gameStarted, gameAdapter, publishHostState]);
 
   useEffect(() => {
-    if (!gameAdapter || !gameStarted || gameState.isGameOver) return;
+    if (!gameAdapter || !gameStarted || gameState.isGameOver || isMultiplayerActive) return;
     saveGameSession(
-      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
+      stripMultiplayerFields({ ...config, playerNames, aiDifficulty, dealingMethod, gameVariant }),
       gameState
     );
-  }, [gameAdapter, gameStarted, gameState, config, playerNames, aiDifficulty, dealingMethod, gameVariant]);
+  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, dealingMethod, gameVariant]);
 
   useEffect(() => {
     if (!gameStarted) return;
@@ -489,12 +535,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       }
 
       const publishHostAiPlay = () => {
-        publishHostState(gameAdapter.getCurrentState());
+        afterHostMutationRef.current();
       };
 
       if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
         playCardSound();
-        setGameState(gameAdapter.getCurrentState());
         publishHostAiPlay();
       } else {
         if (cardIndex >= 0) {
@@ -503,7 +548,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
         if (fallbackIdx >= 0) {
           playCardSound();
-          setGameState(gameAdapter.getCurrentState());
           publishHostAiPlay();
         } else {
           console.error(
@@ -520,7 +564,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
     };
 
     chooseAndPlay();
-  }, [gameAdapter, gameState, playCardSound, publishHostState]);
+  }, [gameAdapter, gameState, playCardSound]);
 
   /**
    * Auto-play effect for AI players
@@ -608,13 +652,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
       }
 
       if (selectedCard === cardIndex) {
+        if (isJoiner) {
+          submitAction({ type: 'playCard', playerIndex, cardIndex });
+          playCardSound();
+          setSelectedCard(null);
+          return;
+        }
         const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
           playCardSound();
-          const newState = gameAdapter.getCurrentState();
-          setGameState(newState);
           setSelectedCard(null);
-          publishHostState(newState);
+          afterHostMutation();
         } else {
           playErrorSound();
         }
@@ -817,10 +865,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
    * Leaves the game screen and keeps the saved session for Continue.
    */
   const handleLeaveScreen = () => {
-    saveGameSession(
-      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
-      gameState
-    );
+    if (!isMultiplayerActive) {
+      saveGameSession(
+        stripMultiplayerFields({ ...config, playerNames, aiDifficulty, dealingMethod, gameVariant }),
+        gameState
+      );
+    }
     onExit();
   };
 
@@ -832,6 +882,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
   };
 
   const handleNewGame = () => {
+    if (isMultiplayerActive && onRestartAsSolo) {
+      onRestartAsSolo(gameVariant);
+      return;
+    }
     restartFreshGame();
   };
 
@@ -950,10 +1004,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           nilEnabled={spadesState.nilEnabled}
           blindNilEnabled={spadesState.blindNilEnabled}
           onConfirm={(bid, bidType) => {
-            if (gameAdapter) {
-              (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
-              setGameState(gameAdapter.getCurrentState());
+            if (!gameAdapter) return;
+            if (isJoiner) {
+              submitAction({ type: 'submitBid', playerIndex: localPlayerIndex, bid, bidType });
+              return;
             }
+            (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
+            afterHostMutation();
           }}
         />
       )}
@@ -963,10 +1020,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
         gameState={gameState}
         variant={gameVariant}
         onContinueTrick={() => {
-          if (gameAdapter && gameState.waitingForTrickEnd) {
-            gameAdapter.finishTrick(gameAdapter.getCurrentState());
-            setGameState(gameAdapter.getCurrentState());
+          if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+          if (isJoiner) {
+            submitAction({ type: 'finishTrick', playerIndex: multiplayerPlayerIndex });
+            return;
           }
+          gameAdapter.finishTrick(gameAdapter.getCurrentState());
+          afterHostMutation();
         }}
       />
 
@@ -985,13 +1045,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           themTeam={themTeam}
           localPlayerIndex={localPlayerIndex}
           onContinue={() => {
-            if (gameAdapter) {
-              gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
-              if (gameVariant === 'king') {
-                (gameAdapter as KingGame).tickFestaAi();
-              }
-              setGameState(gameAdapter.getCurrentState());
+            if (!gameAdapter) return;
+            if (isJoiner) {
+              submitAction({ type: 'continueRound' });
+              return;
             }
+            gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
+            if (gameVariant === 'king') {
+              (gameAdapter as KingGame).tickFestaAi();
+            }
+            afterHostMutation();
           }}
         />
       )}
@@ -1003,10 +1066,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
             localPlayerIndex={localPlayerIndex}
             selectedCount={heartsState?.humanPassIndices?.length ?? 0}
             onConfirm={() => {
-              if (gameAdapter) {
-                (gameAdapter as HeartsGame).confirmPass(localPlayerIndex);
-                setGameState(gameAdapter.getCurrentState());
+              if (!gameAdapter) return;
+              if (isJoiner) {
+                submitAction({ type: 'confirmPass', playerIndex: localPlayerIndex });
+                return;
               }
+              (gameAdapter as HeartsGame).confirmPass(localPlayerIndex);
+              afterHostMutation();
             }}
           />
         )}
@@ -1130,14 +1196,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
                 type="button"
                 className="variant-modal-primary dobo-btn"
                 onClick={() => {
-                  if (gameAdapter) {
-                    gameAdapter.startRound(gameAdapter.getCurrentState());
-                    const newState = gameAdapter.getCurrentState();
-                    setGameState(newState);
-                    if (isHost) {
-                      publishHostState(newState);
-                    }
-                  }
+                  if (!gameAdapter) return;
+                  gameAdapter.startRound(gameAdapter.getCurrentState());
+                  afterHostMutation();
                 }}
               >
                 Começar mão
@@ -1154,20 +1215,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ config, resumeSession, onE
           onMethodChange={setRoundDealingMethod}
           onDirectionChange={setDealingDirection}
           onConfirm={() => {
-            if (gameAdapter) {
+            if (!gameAdapter) return;
+            if (isHost) {
               (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
               gameAdapter.startRound(gameAdapter.getCurrentState());
-              const newState = gameAdapter.getCurrentState();
-              setGameState(newState);
-              if (isHost) {
-                console.log('[MP] host publish deal', {
-                  waitingForRoundStart: newState.waitingForRoundStart,
-                  handLens: newState.players.map((p) => p.hand.length),
-                  variant: newState.variant,
-                  session: multiplayerSessionCode,
-                });
-                publishHostState(newState);
-              }
+              mpLog('[MP] host publish deal', {
+                session: multiplayerSessionCode,
+              });
+              afterHostMutation();
             }
           }}
         />

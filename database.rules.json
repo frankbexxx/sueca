@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "sessions": {
+      "$code": {
+        ".read": true,
+        ".write": "!data.exists() || newData.child('slots').exists()",
+        "status": {
+          ".write": "root.child('sessions').child($code).exists()"
+        },
+        "state": {
+          ".write": "root.child('sessions').child($code).exists()"
+        },
+        "actions": {
+          ".write": "root.child('sessions').child($code).exists()",
+          "$actionId": {
+            ".write": "!data.exists()",
+            ".validate": "newData.hasChildren(['type', 'clientId', 'at'])"
+          }
+        }
+      }
+    }
+  }
+}

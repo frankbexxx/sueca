@@ -7,7 +7,6 @@ export interface GameConfig {
   dealingMethod: DealingMethod;
   multiplayerEnabled: boolean;
   multiplayerSessionId?: string;
-  multiplayerJoinMode?: boolean;
   /** Index of the local human player in multiplayer sessions (0 = host). */
   localPlayerIndex?: number;
   /** Slot types for each player position in multiplayer sessions. */

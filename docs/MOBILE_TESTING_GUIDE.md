@@ -53,6 +53,17 @@ Garantir que o jogo Sueca funcione corretamente em dispositivos móveis Android 
 - [ ] **Modais** abrem e fecham corretamente
 - [ ] **Modo escuro** funciona
 
+### 6. Multiplayer Online (Sueca)
+- [ ] **Criar sala** — código de 5 letras visível e partilhável
+- [ ] **Entrar com código** — joiner vê lugares e estado “Pronto”
+- [ ] **Entrar no Jogo** — desactivado até `status: playing` ou state publicado
+- [ ] **Sync** — joiner vê deal; jogada remota aparece no host; trick fecha alinhado
+- [ ] **Sair MP → Jogar solo** — mesa **sem** bots/nomes herdados (ver `docs/FIREBASE_MULTIPLAYER.md`)
+- [ ] **Continuar offline** — sessão MP guardada **não** retoma como solo
+- [ ] **Dois browsers** — host + 1 humano remoto + bots (smoke test)
+
+Ver checklist completo em [`docs/FIREBASE_MULTIPLAYER.md`](FIREBASE_MULTIPLAYER.md).
+
 ## 🔍 Problemas Conhecidos a Verificar
 
 ### Críticos

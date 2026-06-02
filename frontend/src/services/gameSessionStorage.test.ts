@@ -9,7 +9,12 @@ import {
   loadGameSession,
   loadAllGameSessions,
   clearGameSession,
-  buildSoloConfigForVariant
+  buildSoloConfigForVariant,
+  stripMultiplayerFields,
+  clearMultiplayerLocalStorage,
+  loadLastConfig,
+  isOfflineMultiplayerSession,
+  MP_LOCAL_STORAGE_KEYS
 } from './gameSessionStorage';
 import { GameConfig } from '../types/gameConfig';
 import { GameState } from '../types/game';
@@ -25,7 +30,6 @@ const mockConfig = (variant: GameConfig['gameVariant'] = 'hearts'): GameConfig =
   aiDifficulty: 'medium',
   dealingMethod: 'A',
   multiplayerEnabled: false,
-  multiplayerJoinMode: false,
   gameVariant: variant,
   rulesPresetId: variant === 'hearts' ? 'hearts-us-normal' : 'sueca-pt-normal'
 });
@@ -188,18 +192,61 @@ describe('gameSessionStorage', () => {
       ...mockConfig('sueca'),
       multiplayerEnabled: true,
       multiplayerSessionId: 'ABC12',
-      multiplayerJoinMode: true,
       localPlayerIndex: 2,
       multiplayerSlots: ['human', 'human', 'ai', 'ai']
     });
     const config = buildSoloConfigForVariant('sueca');
     expect(config.multiplayerEnabled).toBe(false);
-    expect(config.multiplayerJoinMode).toBe(false);
     expect(config.multiplayerSessionId).toBeUndefined();
     expect(config.localPlayerIndex).toBeUndefined();
     expect(config.multiplayerSlots).toBeUndefined();
     expect(config.playerNames[0]).toBe('Alice');
     expect(config.aiDifficulty).toBe('medium');
+  });
+
+  it('stripMultiplayerFields removes session fields only', () => {
+    const stripped = stripMultiplayerFields({
+      ...mockConfig('sueca'),
+      multiplayerEnabled: true,
+      multiplayerSessionId: 'XYZ99',
+      localPlayerIndex: 1,
+      multiplayerSlots: ['human', 'ai', 'ai', 'ai'],
+    });
+    expect(stripped.multiplayerEnabled).toBe(false);
+    expect(stripped.multiplayerSessionId).toBeUndefined();
+    expect(stripped.playerNames[0]).toBe('Alice');
+  });
+
+  it('saveLastConfig and loadLastConfig never persist multiplayer session fields', () => {
+    saveLastConfig({
+      ...mockConfig('hearts'),
+      multiplayerEnabled: true,
+      multiplayerSessionId: 'ROOM1',
+      localPlayerIndex: 0,
+    });
+    const loaded = loadLastConfig();
+    expect(loaded?.multiplayerEnabled).toBe(false);
+    expect(loaded?.multiplayerSessionId).toBeUndefined();
+    const raw = JSON.parse(localStorage.getItem(LAST_CONFIG_KEY) ?? '{}');
+    expect(raw.multiplayerSessionId).toBeUndefined();
+  });
+
+  it('clearMultiplayerLocalStorage removes MP keys', () => {
+    localStorage.setItem(MP_LOCAL_STORAGE_KEYS.enabled, 'true');
+    localStorage.setItem(MP_LOCAL_STORAGE_KEYS.sessionId, 'ABC12');
+    clearMultiplayerLocalStorage();
+    expect(localStorage.getItem(MP_LOCAL_STORAGE_KEYS.enabled)).toBeNull();
+    expect(localStorage.getItem(MP_LOCAL_STORAGE_KEYS.sessionId)).toBeNull();
+  });
+
+  it('isOfflineMultiplayerSession detects saved MP sessions', () => {
+    const session = {
+      config: { ...mockConfig('sueca'), multiplayerEnabled: true, multiplayerSessionId: 'X' },
+      state: mockState('sueca'),
+      savedAt: Date.now(),
+    };
+    expect(isOfflineMultiplayerSession(session)).toBe(true);
+    expect(isOfflineMultiplayerSession({ ...session, config: mockConfig('sueca') })).toBe(false);
   });
 
   it('buildSoloConfigForVariant uses requested variant and default preset when last differs', () => {

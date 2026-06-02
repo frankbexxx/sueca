@@ -7,6 +7,12 @@ const LEGACY_SESSION_KEY = 'sueca-saved-session';
 const LAST_CONFIG_KEY = 'sueca-last-config';
 const STATS_KEY = 'sueca-local-stats';
 
+export const MP_LOCAL_STORAGE_KEYS = {
+  enabled: 'sueca-multiplayer-enabled',
+  sessionId: 'sueca-multiplayer-session-id',
+  legacyJoinMode: 'sueca-multiplayer-join-mode',
+} as const;
+
 const ALL_VARIANTS: GameVariant[] = ['sueca', 'hearts', 'spades', 'king'];
 
 export interface SavedGameSession {
@@ -103,8 +109,30 @@ export function touchLastPlayed(variant: GameVariant): void {
 }
 
 export function saveLastConfig(config: GameConfig): void {
-  localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify(config));
+  localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify(stripMultiplayerFields(config)));
   touchLastPlayed(config.gameVariant);
+}
+
+/** Removes online-session fields — use when persisting solo preferences or exiting MP. */
+export function stripMultiplayerFields(config: GameConfig): GameConfig {
+  return {
+    playerNames: config.playerNames,
+    aiDifficulty: config.aiDifficulty,
+    dealingMethod: config.dealingMethod,
+    gameVariant: config.gameVariant,
+    rulesPresetId: config.rulesPresetId,
+    multiplayerEnabled: false,
+  };
+}
+
+export function clearMultiplayerLocalStorage(): void {
+  localStorage.removeItem(MP_LOCAL_STORAGE_KEYS.enabled);
+  localStorage.removeItem(MP_LOCAL_STORAGE_KEYS.sessionId);
+  localStorage.removeItem(MP_LOCAL_STORAGE_KEYS.legacyJoinMode);
+}
+
+export function isOfflineMultiplayerSession(session: SavedGameSession): boolean {
+  return Boolean(session.config.multiplayerEnabled && session.config.multiplayerSessionId);
 }
 
 export function loadLastConfig(): GameConfig | null {
@@ -113,16 +141,14 @@ export function loadLastConfig(): GameConfig | null {
   try {
     const parsed = JSON.parse(raw) as Partial<GameConfig>;
     if (!parsed.gameVariant) return null;
-    return {
+    return stripMultiplayerFields({
       playerNames: parsed.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
       aiDifficulty: parsed.aiDifficulty ?? 'medium',
       dealingMethod: parsed.dealingMethod ?? 'A',
-      multiplayerEnabled: parsed.multiplayerEnabled ?? false,
-      multiplayerJoinMode: parsed.multiplayerJoinMode ?? false,
-      multiplayerSessionId: parsed.multiplayerSessionId,
+      multiplayerEnabled: false,
       gameVariant: parsed.gameVariant,
-      rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId)
-    };
+      rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId),
+    });
   } catch {
     return null;
   }
@@ -140,15 +166,9 @@ export function buildSoloConfigForVariant(variant: GameVariant): GameConfig {
     aiDifficulty: last?.aiDifficulty ?? 'medium',
     dealingMethod: last?.dealingMethod ?? 'A',
     multiplayerEnabled: false,
-    multiplayerJoinMode: false,
     gameVariant: variant,
     rulesPresetId
   };
-}
-
-/** @deprecated Prefer buildSoloConfigForVariant — kept for call-site compatibility. */
-export function buildQuickConfigForVariant(variant: GameVariant): GameConfig {
-  return buildSoloConfigForVariant(variant);
 }
 
 export function saveGameSession(config: GameConfig, state: GameState): void {

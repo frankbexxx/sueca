@@ -39,10 +39,6 @@ export function useGameSetup(initialVariant?: GameVariant) {
     () => localStorage.getItem('sueca-multiplayer-enabled') === 'true'
   );
 
-  const [multiplayerJoinMode, setMultiplayerJoinMode] = useState(
-    () => localStorage.getItem('sueca-multiplayer-join-mode') === 'true'
-  );
-
   const [multiplayerSessionId, setMultiplayerSessionId] = useState(
     () => localStorage.getItem('sueca-multiplayer-session-id') || ''
   );
@@ -90,10 +86,6 @@ export function useGameSetup(initialVariant?: GameVariant) {
   }, [multiplayerEnabled]);
 
   useEffect(() => {
-    localStorage.setItem('sueca-multiplayer-join-mode', String(multiplayerJoinMode));
-  }, [multiplayerJoinMode]);
-
-  useEffect(() => {
     localStorage.setItem('sueca-multiplayer-session-id', multiplayerSessionId);
   }, [multiplayerSessionId]);
 
@@ -128,7 +120,6 @@ export function useGameSetup(initialVariant?: GameVariant) {
       dealingMethod,
       multiplayerEnabled: MULTIPLAYER_ENABLED && multiplayerEnabled,
       multiplayerSessionId: multiplayerSessionId.trim() || undefined,
-      multiplayerJoinMode,
       gameVariant,
       rulesPresetId: resolvePresetId(gameVariant, rulesPresetId)
     };
@@ -143,8 +134,6 @@ export function useGameSetup(initialVariant?: GameVariant) {
     setDealingMethod,
     multiplayerEnabled,
     setMultiplayerEnabled,
-    multiplayerJoinMode,
-    setMultiplayerJoinMode,
     multiplayerSessionId,
     setMultiplayerSessionId,
     gameVariant,

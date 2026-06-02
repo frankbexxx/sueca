@@ -213,9 +213,8 @@ export interface Translations {
     buildVersion: string;
     playGame: string;
     configureGame: (game: string) => string;
-    playSavedConfirm: string;
-    playNewConfirm: string;
     playNewGameConfirm: string;
+    multiplayerOfflineContinueBlocked: string;
   };
 
   playSetup: {
@@ -223,6 +222,44 @@ export interface Translations {
     subtitle: string;
     subtitleVariant: (game: string) => string;
     rulesPreset: string;
+  };
+
+  onlineScreen: {
+    title: string;
+    subtitle: string;
+    unavailable: string;
+    createTable: string;
+    createTableSub: string;
+    joinWithCode: string;
+    joinWithCodeSub: string;
+    gameLabel: string;
+    suecaOnlyHint: string;
+    seatsLabel: string;
+    hostBadge: string;
+    youBadge: string;
+    botLabel: string;
+    yourNamePlaceholder: string;
+    friendPlaceholder: (index: number) => string;
+    createRoom: string;
+    creating: string;
+    roomCodeLabel: string;
+    shareCodeHint: string;
+    playersLabel: string;
+    startGame: string;
+    joinCodeLabel: string;
+    joinCodePlaceholder: string;
+    join: string;
+    joining: string;
+    roomTitle: (code: string) => string;
+    joinedAs: (name: string, seat: number) => string;
+    enterGame: string;
+    waitForHostHint: string;
+    slotReady: string;
+    slotWaiting: string;
+    slotAi: string;
+    errorCreate: string;
+    errorJoinEmpty: string;
+    errorJoinGeneric: string;
   };
 
   rulesHub: {
@@ -434,15 +471,53 @@ export const translations: Record<Language, Translations> = {
       buildVersion: 'Versão',
       playGame: 'Jogar',
       configureGame: (game) => `Configurar ${game}`,
-      playSavedConfirm: 'Tens uma partida guardada. Continuar?',
-      playNewConfirm: 'Começar novo jogo e apagar a partida guardada?',
-      playNewGameConfirm: 'Quer começar jogo novo? (Tens um jogo activo)'
+      playNewGameConfirm: 'Quer começar jogo novo? (Tens um jogo activo)',
+      multiplayerOfflineContinueBlocked:
+        'Esta partida era online. Usa Online para criar ou entrar numa nova sala.'
     },
     playSetup: {
       title: 'Nova partida',
       subtitle: 'Escolhe o jogo e os adversários',
       subtitleVariant: (game) => `Configurar ${game}`,
       rulesPreset: 'Modo de regras'
+    },
+    onlineScreen: {
+      title: 'Online',
+      subtitle: 'Joga com amigos em dispositivos diferentes',
+      unavailable: 'Multiplayer não está disponível nesta versão.',
+      createTable: 'Criar Mesa',
+      createTableSub: 'Define o jogo e convida amigos',
+      joinWithCode: 'Entrar com Código',
+      joinWithCodeSub: 'Junta-te a uma mesa existente',
+      gameLabel: 'Jogo',
+      suecaOnlyHint: 'Multiplayer online disponível apenas para Sueca.',
+      seatsLabel: 'Lugares',
+      hostBadge: 'Host',
+      youBadge: ' (tu)',
+      botLabel: 'Bot (IA)',
+      yourNamePlaceholder: 'O teu nome',
+      friendPlaceholder: (index) => `Amigo ${index}`,
+      createRoom: '🏠 Criar Sala',
+      creating: 'A criar…',
+      roomCodeLabel: 'Código da sala',
+      shareCodeHint: 'Partilha este código com os teus amigos',
+      playersLabel: 'Jogadores',
+      startGame: '▶ Iniciar Jogo',
+      joinCodeLabel: 'Código da sala',
+      joinCodePlaceholder: 'Ex: AB3CD',
+      join: '🔗 Entrar',
+      joining: 'A entrar…',
+      roomTitle: (code) => `Sala: ${code}`,
+      joinedAs: (name, seat) => `Entraste como ${name} (lugar ${seat})`,
+      enterGame: '▶ Entrar no Jogo',
+      waitForHostHint:
+        'Aguarda que o host inicie, ou entra já — a mesa sincroniza automaticamente.',
+      slotReady: 'Pronto',
+      slotWaiting: 'A aguardar…',
+      slotAi: 'IA',
+      errorCreate: 'Erro ao criar sala. Verifica a ligação.',
+      errorJoinEmpty: 'Introduz o código da sala.',
+      errorJoinGeneric: 'Erro ao entrar na sala.',
     },
     rulesHub: {
       title: 'Regras',
@@ -728,15 +803,52 @@ export const translations: Record<Language, Translations> = {
       buildVersion: 'Version',
       playGame: 'Play',
       configureGame: (game) => `Configure ${game}`,
-      playSavedConfirm: 'You have a saved game. Continue?',
-      playNewConfirm: 'Start a new game and delete the saved one?',
-      playNewGameConfirm: 'Start a new game? (You have an active game)'
+      playNewGameConfirm: 'Start a new game? (You have an active game)',
+      multiplayerOfflineContinueBlocked:
+        'This was an online game. Use Online to create or join a new room.'
     },
     playSetup: {
       title: 'New game',
       subtitle: 'Pick a game and opponents',
       subtitleVariant: (game) => `Configure ${game}`,
       rulesPreset: 'Rules mode'
+    },
+    onlineScreen: {
+      title: 'Online',
+      subtitle: 'Play with friends on different devices',
+      unavailable: 'Multiplayer is not available in this build.',
+      createTable: 'Create Table',
+      createTableSub: 'Set up the game and invite friends',
+      joinWithCode: 'Join with Code',
+      joinWithCodeSub: 'Join an existing table',
+      gameLabel: 'Game',
+      suecaOnlyHint: 'Online multiplayer is available for Sueca only.',
+      seatsLabel: 'Seats',
+      hostBadge: 'Host',
+      youBadge: ' (you)',
+      botLabel: 'Bot (AI)',
+      yourNamePlaceholder: 'Your name',
+      friendPlaceholder: (index) => `Friend ${index}`,
+      createRoom: '🏠 Create Room',
+      creating: 'Creating…',
+      roomCodeLabel: 'Room code',
+      shareCodeHint: 'Share this code with your friends',
+      playersLabel: 'Players',
+      startGame: '▶ Start Game',
+      joinCodeLabel: 'Room code',
+      joinCodePlaceholder: 'e.g. AB3CD',
+      join: '🔗 Join',
+      joining: 'Joining…',
+      roomTitle: (code) => `Room: ${code}`,
+      joinedAs: (name, seat) => `You joined as ${name} (seat ${seat})`,
+      enterGame: '▶ Enter Game',
+      waitForHostHint: 'Wait for the host to start, or enter now — the table syncs automatically.',
+      slotReady: 'Ready',
+      slotWaiting: 'Waiting…',
+      slotAi: 'AI',
+      errorCreate: 'Could not create room. Check your connection.',
+      errorJoinEmpty: 'Enter the room code.',
+      errorJoinGeneric: 'Could not join the room.',
     },
     rulesHub: {
       title: 'Rules',

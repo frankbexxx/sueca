@@ -41,7 +41,6 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
     const config: GameConfig = {
       ...setup.buildConfig(),
       multiplayerEnabled: false,
-      multiplayerJoinMode: false,
       multiplayerSessionId: undefined,
       localPlayerIndex: undefined,
       multiplayerSlots: undefined

@@ -17,7 +17,6 @@ const mockConfig = (variant: GameConfig['gameVariant'] = 'sueca'): GameConfig =>
   aiDifficulty: 'medium',
   dealingMethod: 'A',
   multiplayerEnabled: false,
-  multiplayerJoinMode: false,
   gameVariant: variant,
   rulesPresetId: 'sueca-pt-normal'
 });

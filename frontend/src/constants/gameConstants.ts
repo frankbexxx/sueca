@@ -40,4 +40,3 @@ export const STORAGE_KEYS = {
 export const DEFAULT_PLAYER_NAMES = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
 export const DEFAULT_DEALING_METHOD = 'A' as const;
 export const DEFAULT_AI_DIFFICULTY = 'medium' as const;
-export const DEFAULT_MULTIPLAYER_URL = process.env.REACT_APP_MULTIPLAYER_URL || 'ws://127.0.0.1:8000/ws';

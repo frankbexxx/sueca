@@ -11,8 +11,12 @@ import {
   loadGameSession,
   saveLastConfig,
   clearGameSession,
-  buildSoloConfigForVariant
+  buildSoloConfigForVariant,
+  clearMultiplayerLocalStorage,
+  stripMultiplayerFields,
+  isOfflineMultiplayerSession
 } from './services/gameSessionStorage';
+import { endSession } from './services/multiplayerClient';
 import { consumeLandingReturnFlag } from './services/appLifecycle';
 import { getActiveTheme, ThemeId } from './services/billingService';
 import { useLanguage } from './i18n/useLanguage';
@@ -90,26 +94,51 @@ function App() {
   }, [resetToHome, handleHistoryReset]);
 
   const startGame = useCallback((config: GameConfig, session?: SavedGameSession | null) => {
-    saveLastConfig(config);
+    const soloConfig = config.multiplayerEnabled ? config : stripMultiplayerFields(config);
+    saveLastConfig(soloConfig);
     setGameConfig(config);
     setResumeSession(session ?? null);
     setScreen('game');
   }, []);
 
   const exitGame = useCallback(() => {
-    setGameConfig(null);
+    setGameConfig((current) => {
+      if (current?.multiplayerEnabled && current.multiplayerSessionId) {
+        if ((current.localPlayerIndex ?? 0) === 0) {
+          void endSession(current.multiplayerSessionId).catch(() => undefined);
+        }
+        clearMultiplayerLocalStorage();
+        saveLastConfig(buildSoloConfigForVariant(current.gameVariant));
+      }
+      return null;
+    });
     setResumeSession(null);
     setScreen('shell');
     resetToHome();
     handleHistoryReset();
   }, [resetToHome, handleHistoryReset]);
 
+  const restartSoloGame = useCallback(
+    (variant: GameVariant) => {
+      clearMultiplayerLocalStorage();
+      clearGameSession(variant);
+      startGame(buildSoloConfigForVariant(variant));
+    },
+    [startGame]
+  );
+
   const handleContinue = useCallback(
     (variant: GameVariant, session?: SavedGameSession | null) => {
       const saved = session ?? loadGameSession(variant);
-      if (saved) startGame(saved.config, saved);
+      if (!saved) return;
+      if (isOfflineMultiplayerSession(saved)) {
+        clearGameSession(variant);
+        window.alert(t.dashboard.multiplayerOfflineContinueBlocked);
+        return;
+      }
+      startGame(saved.config, saved);
     },
-    [startGame]
+    [startGame, t.dashboard.playNewGameConfirm]
   );
 
   const handlePlayVariant = useCallback(
@@ -165,6 +194,7 @@ function App() {
           config={gameConfig}
           resumeSession={resumeSession}
           onExit={exitGame}
+          onRestartAsSolo={restartSoloGame}
         />
       </div>
     );
