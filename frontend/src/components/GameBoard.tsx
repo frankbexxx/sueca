@@ -45,7 +45,7 @@ import { fetchSessionState, subscribeToActions } from '../services/multiplayerCl
 import { applyHostAction } from '../multiplayer/applyHostAction';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
 import { mpLog, mpWarn } from '../utils/mpDebug';
-import { capturePlayDecision } from '../cardIntelligence';
+import { capturePlayDecision, extractLegalMoves } from '../cardIntelligence';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -547,23 +547,30 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         afterHostMutationRef.current();
       };
 
-      if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
-        playCardSound();
-        capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
-          gameConfigMode: config.rulesPresetId,
-          isMultiplayer: isMultiplayerActive,
-        });
-        publishHostAiPlay();
-      } else {
-        if (cardIndex >= 0) {
-          console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
+      if (cardIndex >= 0) {
+        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
+        if (gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
+          playCardSound();
+          capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
+            gameConfigMode: config.rulesPresetId,
+            isMultiplayer: isMultiplayerActive,
+            legalMoves,
+          });
+          publishHostAiPlay();
+          return;
         }
+        console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
+      }
+
+      {
+        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
         const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
         if (fallbackIdx >= 0) {
           playCardSound();
           capturePlayDecision(gameAdapter, currentState, playerIndex, fallbackIdx, {
             gameConfigMode: config.rulesPresetId,
             isMultiplayer: isMultiplayerActive,
+            legalMoves,
           });
           publishHostAiPlay();
         } else {
@@ -673,12 +680,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           setSelectedCard(null);
           return;
         }
+        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
         const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
           playCardSound();
           capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
             gameConfigMode: config.rulesPresetId,
             isMultiplayer: isMultiplayerActive,
+            legalMoves,
           });
           setSelectedCard(null);
           afterHostMutation();

@@ -32,6 +32,8 @@ export interface BuildCardDecisionEventInput {
   trickIndex: number | null;
   gameConfigMode?: string | null;
   source?: LogSource;
+  /** Pre-play snapshot; required when adapter state is already mutated after playCard */
+  legalMoves?: Card[];
 }
 
 function resolvePlayerType(state: GameState, playerIndex: number): PlayerType {
@@ -61,6 +63,7 @@ export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): Card
     trickIndex,
     gameConfigMode,
     source = 'live_game',
+    legalMoves: legalMovesInput,
   } = input;
 
   const handBefore = cloneCards(stateBefore.players[playerIndex]?.hand ?? []);
@@ -69,7 +72,8 @@ export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): Card
     throw new Error(`Invalid cardIndex ${cardIndex} for player ${playerIndex}`);
   }
 
-  const legalMoves = extractLegalMoves(gameAdapter, stateBefore, playerIndex);
+  const legalMoves =
+    legalMovesInput ?? extractLegalMoves(gameAdapter, stateBefore, playerIndex);
   const trickBefore = cloneCards(stateBefore.currentTrick);
   const trickAfter = [...trickBefore, cloneCard(chosenCard)];
   const roundIndex = normalizeRoundIndex(stateBefore);

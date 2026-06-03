@@ -104,4 +104,50 @@ describe('buildCardDecisionEvent', () => {
     expect(event.roundPlayHistory).toHaveLength(1);
     expect(event.metricsCandidateIds).toContain('T01');
   });
+
+  it('uses explicit legalMoves when adapter canPlayCard is stale after playCard', () => {
+    const adapter = mockAdapter();
+    (adapter.canPlayCard as jest.Mock).mockReturnValue(false);
+    const before = mockState();
+    const after = mockState();
+    after.currentTrick = [before.players[0].hand[0]];
+    const chosen = before.players[0].hand[0];
+
+    const event = buildCardDecisionEvent({
+      gameAdapter: adapter,
+      stateBefore: before,
+      stateAfter: after,
+      playerIndex: 0,
+      cardIndex: 0,
+      gameId: 'game-1',
+      sessionId: 'session-1',
+      trickIndex: 0,
+      legalMoves: [chosen],
+    });
+
+    expect(event.chosenCard.id).toBe('A-clubs');
+    expect(event.legalMoves).toHaveLength(1);
+    expect(event.legalMoves[0].id).toBe('A-clubs');
+  });
+
+  it('throws when legalMoves is omitted and adapter canPlayCard is stale', () => {
+    const adapter = mockAdapter();
+    (adapter.canPlayCard as jest.Mock).mockReturnValue(false);
+    const before = mockState();
+    const after = mockState();
+    after.currentTrick = [before.players[0].hand[0]];
+
+    expect(() =>
+      buildCardDecisionEvent({
+        gameAdapter: adapter,
+        stateBefore: before,
+        stateAfter: after,
+        playerIndex: 0,
+        cardIndex: 0,
+        gameId: 'game-1',
+        sessionId: 'session-1',
+        trickIndex: 0,
+      })
+    ).toThrow('chosenCard must be in legalMoves');
+  });
 });

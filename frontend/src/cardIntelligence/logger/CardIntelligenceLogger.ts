@@ -1,5 +1,5 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
-import { GameState, GameVariant } from '../../types/game';
+import { Card, GameState, GameVariant } from '../../types/game';
 import { createGameId, getOrCreateSessionId, resetSessionIdForTests } from '../shared/ids';
 import { appendLogEvent } from '../shared/storage/logStore';
 import { LogSessionMeta, LogSource } from '../shared/types/logEvents';
@@ -17,6 +17,7 @@ export interface LogCardDecisionInput {
   gameConfigMode?: string | null;
   source?: LogSource;
   isMultiplayer?: boolean;
+  legalMoves?: Card[];
 }
 
 let activeGameId: string | null = null;
@@ -41,6 +42,7 @@ export async function logCardDecision(input: LogCardDecisionInput): Promise<void
     gameConfigMode,
     source = 'live_game',
     isMultiplayer = false,
+    legalMoves,
   } = input;
 
   const sessionId = getOrCreateSessionId();
@@ -61,6 +63,7 @@ export async function logCardDecision(input: LogCardDecisionInput): Promise<void
     trickIndex,
     gameConfigMode,
     source,
+    legalMoves,
   });
 
   const sessionMeta: LogSessionMeta = {
