@@ -5,13 +5,7 @@ import {
   PlayerType,
   Suit,
 } from '../../../types/game';
-import {
-  HeartsLogFields,
-  KingLogFields,
-  SpadesLogFields,
-  SuecaLogFields,
-  VariantLogFields,
-} from './variantLogFields';
+import { VariantLogFields } from './variantLogFields';
 
 export const LOG_SCHEMA_VERSION = '3.0.0' as const;
 

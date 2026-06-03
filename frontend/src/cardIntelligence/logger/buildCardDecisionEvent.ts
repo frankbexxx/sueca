@@ -32,7 +32,6 @@ export interface BuildCardDecisionEventInput {
   trickIndex: number | null;
   gameConfigMode?: string | null;
   source?: LogSource;
-  isMultiplayer?: boolean;
 }
 
 function resolvePlayerType(state: GameState, playerIndex: number): PlayerType {
@@ -62,7 +61,6 @@ export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): Card
     trickIndex,
     gameConfigMode,
     source = 'live_game',
-    isMultiplayer = false,
   } = input;
 
   const handBefore = cloneCards(stateBefore.players[playerIndex]?.hand ?? []);

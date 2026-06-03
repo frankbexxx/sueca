@@ -94,7 +94,7 @@ cd frontend && CI=true npm test -- --watchAll=false --testPathPattern=cardIntell
 
 **Resultado:** 5 suites, 7 tests — **PASS**
 
-Build: `npm run build` — **PASS**
+Build: `CI=true npm run build` — **PASS** (Vercel usa `CI=true`; warnings ESLint falham como erro)
 
 ---
 

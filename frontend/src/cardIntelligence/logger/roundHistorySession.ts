@@ -1,4 +1,3 @@
-import { Card } from '../../types/game';
 import { RoundPlayEntry } from '../shared/types/logEvents';
 
 export class RoundHistorySession {

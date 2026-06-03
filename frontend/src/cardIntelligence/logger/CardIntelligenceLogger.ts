@@ -61,7 +61,6 @@ export async function logCardDecision(input: LogCardDecisionInput): Promise<void
     trickIndex,
     gameConfigMode,
     source,
-    isMultiplayer,
   });
 
   const sessionMeta: LogSessionMeta = {
