@@ -1,4 +1,4 @@
-import { acesSeenFromPlays, heartsTrickPoints, suecaTrickPoints } from './historySelectors';
+import { acesSeenFromPlays, heartsTrickPoints, sevensSeenFromPlays, suecaTrickPoints } from './historySelectors';
 import { TrickPlayRecord } from './types';
 
 describe('historySelectors', () => {
@@ -43,5 +43,23 @@ describe('historySelectors', () => {
       { suit: 'clubs' as const, rank: '7' as const, id: '2' },
     ];
     expect(suecaTrickPoints(trick)).toBe(21);
+  });
+
+  it('sevensSeenFromPlays tracks sevens by suit', () => {
+    const plays: TrickPlayRecord[] = [
+      {
+        roundIndex: 0,
+        trickIndex: 0,
+        turnIndex: 0,
+        playerIndex: 0,
+        card: { suit: 'diamonds', rank: '7', id: '7-d' },
+      },
+    ];
+    expect(sevensSeenFromPlays(plays)).toEqual({
+      clubs: false,
+      diamonds: true,
+      hearts: false,
+      spades: false,
+    });
   });
 });

@@ -27,6 +27,21 @@ export function acesSeenFromPlays(plays: TrickPlayRecord[]): Record<Suit, boolea
   return seen;
 }
 
+export function sevensSeenFromPlays(plays: TrickPlayRecord[]): Record<Suit, boolean> {
+  const seen: Record<Suit, boolean> = {
+    clubs: false,
+    diamonds: false,
+    hearts: false,
+    spades: false,
+  };
+  for (const play of plays) {
+    if (play.card.rank === '7') {
+      seen[play.card.suit] = true;
+    }
+  }
+  return seen;
+}
+
 export function countSuitInPlays(plays: TrickPlayRecord[], suit: Suit): number {
   return plays.filter((p) => p.card.suit === suit).length;
 }
