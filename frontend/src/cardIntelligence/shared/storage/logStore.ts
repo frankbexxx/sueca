@@ -1,9 +1,9 @@
-import { CardDecisionLogEvent, LogSessionMeta } from '../types/logEvents';
+import { LogEvent, LogSessionMeta } from '../types/logEvents';
 import { openLogDatabase } from './indexedDb';
 import { LocalStorageLogStore, LogStore } from './logStore.localStorage';
 
 export class IndexedDbLogStore implements LogStore {
-  async appendEvent(event: CardDecisionLogEvent, sessionMeta: LogSessionMeta): Promise<void> {
+  async appendEvent(event: LogEvent, sessionMeta: LogSessionMeta): Promise<void> {
     const db = await openLogDatabase();
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(['events', 'sessions'], 'readwrite');
@@ -39,7 +39,7 @@ export function setLogStoreForTests(store: LogStore | null): void {
 }
 
 export async function appendLogEvent(
-  event: CardDecisionLogEvent,
+  event: LogEvent,
   sessionMeta: LogSessionMeta
 ): Promise<void> {
   const primary = getLogStore();

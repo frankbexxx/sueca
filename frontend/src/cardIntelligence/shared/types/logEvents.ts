@@ -6,6 +6,7 @@ import {
   Suit,
 } from '../../../types/game';
 import { VariantLogFields } from './variantLogFields';
+import { TrickEndEvent } from './trickEndEvent';
 
 export const LOG_SCHEMA_VERSION = '3.0.0' as const;
 
@@ -83,3 +84,5 @@ export interface LogSessionMeta {
   source: LogSource;
   isMultiplayer: boolean;
 }
+
+export type LogEvent = CardDecisionLogEvent | TrickEndEvent;

@@ -1,7 +1,7 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
 import { Card, GameState } from '../../types/game';
 import { buildCardDecisionEvent } from './buildCardDecisionEvent';
-import { resetRoundHistorySessionForTests } from './roundHistorySession';
+import { resetRoundHistorySessionForTests, roundHistorySession } from './roundHistorySession';
 import { resetTrickIndexTrackerForTests } from './resolveTrickIndex';
 
 const card = (suit: Card['suit'], rank: Card['rank'], id: string): Card => ({
@@ -82,6 +82,14 @@ describe('buildCardDecisionEvent', () => {
     const before = mockState();
     const after = mockState();
     after.currentTrick = [before.players[0].hand[0]];
+
+    roundHistorySession.append({
+      roundIndex: 0,
+      trickIndex: 0,
+      turnIndex: 0,
+      playerIndex: 0,
+      card: before.players[0].hand[0],
+    });
 
     const event = buildCardDecisionEvent({
       gameAdapter: adapter,

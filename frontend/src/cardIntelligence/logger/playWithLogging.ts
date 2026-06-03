@@ -2,7 +2,7 @@ import { playFirstLegal } from '../../ai/core/FallbackMoveSelector';
 import { CARD_INTELLIGENCE_LOGGER_ENABLED } from '../../config/features';
 import { GameAdapter } from '../../models/games/GameAdapter';
 import { Card, GameState } from '../../types/game';
-import { logCardDecision } from './CardIntelligenceLogger';
+import { logCardDecision, logTrickEndDecision } from './CardIntelligenceLogger';
 import { extractLegalMoves } from './extractLegalMoves';
 import { recordLogFailure } from './logFailureTelemetry';
 
@@ -35,6 +35,14 @@ function logSuccessfulPlay(
     gameConfigMode: options.gameConfigMode ?? null,
     isMultiplayer: options.isMultiplayer ?? false,
     legalMoves,
+  }).catch(recordLogFailure);
+
+  const stateAfter = adapter.getCurrentState();
+  void logTrickEndDecision({
+    gameAdapter: adapter,
+    stateBefore,
+    stateAfter,
+    isMultiplayer: options.isMultiplayer ?? false,
   }).catch(recordLogFailure);
 }
 

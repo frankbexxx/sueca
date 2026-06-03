@@ -1,30 +1,24 @@
+import { resetRoundHistoryEngineForTests, roundHistoryEngine } from '../history/roundHistory';
 import { RoundPlayEntry } from '../shared/types/logEvents';
 
+/** @deprecated Use roundHistoryEngine — kept for test compat */
 export class RoundHistorySession {
-  private entries: RoundPlayEntry[] = [];
-
   reset(): void {
-    this.entries = [];
+    roundHistoryEngine.reset();
   }
 
   snapshot(): RoundPlayEntry[] {
-    return this.entries.map((entry) => ({
-      ...entry,
-      card: { ...entry.card },
-    }));
+    return roundHistoryEngine.snapshotEntries();
   }
 
   append(entry: RoundPlayEntry): RoundPlayEntry[] {
-    this.entries.push({
-      ...entry,
-      card: { ...entry.card },
-    });
-    return this.snapshot();
+    roundHistoryEngine.recordPlay(entry);
+    return roundHistoryEngine.snapshotEntries();
   }
 }
 
 export const roundHistorySession = new RoundHistorySession();
 
 export function resetRoundHistorySessionForTests(): void {
-  roundHistorySession.reset();
+  resetRoundHistoryEngineForTests();
 }

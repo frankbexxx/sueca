@@ -11,13 +11,12 @@ import { createEventId } from '../shared/ids';
 import {
   CardDecisionLogEvent,
   LogSource,
-  RoundPlayEntry,
 } from '../shared/types/logEvents';
 import { extractLegalMoves } from './extractLegalMoves';
 import { extractVariantFields } from './extractVariantFields';
 import { normalizeRoundIndex, resolveTurnIndex } from './resolveTrickIndex';
 import { resolveContract, resolveMode } from './resolveMode';
-import { roundHistorySession } from './roundHistorySession';
+import { roundHistoryEngine } from '../history/roundHistory';
 import { suggestMetricCandidates } from './suggestMetricCandidates';
 import { validateCardDecisionEvent } from './validateCardDecisionEvent';
 
@@ -101,14 +100,7 @@ export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): Card
   const difficulty = resolveDifficulty(stateBefore, playerType);
   const variant = gameAdapter.variant;
 
-  const historyEntry: RoundPlayEntry = {
-    roundIndex,
-    trickIndex,
-    turnIndex,
-    playerIndex,
-    card: cloneCard(chosenCard),
-  };
-  const roundPlayHistory = roundHistorySession.append(historyEntry);
+  const roundPlayHistory = roundHistoryEngine.snapshotEntries();
 
   const event: CardDecisionLogEvent = {
     eventId: createEventId(),
