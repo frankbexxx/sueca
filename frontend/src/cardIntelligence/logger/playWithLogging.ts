@@ -2,6 +2,7 @@ import { playFirstLegal } from '../../ai/core/FallbackMoveSelector';
 import { CARD_INTELLIGENCE_LOGGER_ENABLED } from '../../config/features';
 import { GameAdapter } from '../../models/games/GameAdapter';
 import { Card, GameState } from '../../types/game';
+import { cloneGameStateSnapshot } from '../shared/clone';
 import { logCardDecision, logTrickEndDecision } from './CardIntelligenceLogger';
 import { extractLegalMoves } from './extractLegalMoves';
 import { recordLogFailure } from './logFailureTelemetry';
@@ -21,7 +22,7 @@ function createPlayLogSnapshot(
 
 function logSuccessfulPlay(
   adapter: GameAdapter,
-  stateBefore: GameState,
+  stateBeforeSnapshot: GameState,
   playerIndex: number,
   cardIndex: number,
   legalMoves: Card[],
@@ -29,7 +30,7 @@ function logSuccessfulPlay(
 ): void {
   void logCardDecision({
     gameAdapter: adapter,
-    stateBefore,
+    stateBefore: stateBeforeSnapshot,
     playerIndex,
     cardIndex,
     gameConfigMode: options.gameConfigMode ?? null,
@@ -40,7 +41,7 @@ function logSuccessfulPlay(
   const stateAfter = adapter.getCurrentState();
   void logTrickEndDecision({
     gameAdapter: adapter,
-    stateBefore,
+    stateBefore: stateBeforeSnapshot,
     stateAfter,
     isMultiplayer: options.isMultiplayer ?? false,
   }).catch(recordLogFailure);
@@ -50,6 +51,7 @@ function logSuccessfulPlay(
  * Play a card; log on success when logger is enabled.
  * Caller must pass stateBefore from getCurrentState() immediately before play
  * (e.g. after await tryExternal() in AI paths).
+ * A deep snapshot is taken before playCard so Sueca shallow getState() cannot mutate pre-play trick.
  */
 export function playCardAndLogDecision(
   adapter: GameAdapter,
@@ -58,14 +60,17 @@ export function playCardAndLogDecision(
   cardIndex: number,
   options: PlayLogOptions = {}
 ): boolean {
+  const stateSnapshot = CARD_INTELLIGENCE_LOGGER_ENABLED
+    ? cloneGameStateSnapshot(stateBefore)
+    : null;
   const legalMoves = CARD_INTELLIGENCE_LOGGER_ENABLED
     ? createPlayLogSnapshot(adapter, stateBefore, playerIndex).legalMoves
     : null;
 
   const played = adapter.playCard(stateBefore, playerIndex, cardIndex);
 
-  if (played && legalMoves) {
-    logSuccessfulPlay(adapter, stateBefore, playerIndex, cardIndex, legalMoves, options);
+  if (played && legalMoves && stateSnapshot) {
+    logSuccessfulPlay(adapter, stateSnapshot, playerIndex, cardIndex, legalMoves, options);
   }
 
   return played;
@@ -81,14 +86,17 @@ export function playFirstLegalAndLogDecision(
   playerIndex: number,
   options: PlayLogOptions = {}
 ): number {
+  const stateSnapshot = CARD_INTELLIGENCE_LOGGER_ENABLED
+    ? cloneGameStateSnapshot(stateBefore)
+    : null;
   const legalMoves = CARD_INTELLIGENCE_LOGGER_ENABLED
     ? createPlayLogSnapshot(adapter, stateBefore, playerIndex).legalMoves
     : null;
 
   const cardIndex = playFirstLegal(adapter, stateBefore, playerIndex);
 
-  if (cardIndex >= 0 && legalMoves) {
-    logSuccessfulPlay(adapter, stateBefore, playerIndex, cardIndex, legalMoves, options);
+  if (cardIndex >= 0 && legalMoves && stateSnapshot) {
+    logSuccessfulPlay(adapter, stateSnapshot, playerIndex, cardIndex, legalMoves, options);
   }
 
   return cardIndex;

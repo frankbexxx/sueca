@@ -25,3 +25,8 @@ export function buildScoreSnapshot(state: GameState): ScoreSnapshot {
 export function cardsMatch(a: Card, b: Card): boolean {
   return a.id === b.id || (a.suit === b.suit && a.rank === b.rank);
 }
+
+/** Deep snapshot for logging — isolates pre-play state from Sueca shallow getState(). */
+export function cloneGameStateSnapshot(state: GameState): GameState {
+  return JSON.parse(JSON.stringify(state)) as GameState;
+}

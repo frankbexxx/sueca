@@ -12,11 +12,16 @@ import { TrickPlayRecord } from './types';
 import { deriveTrickPoints, extractTrickEndVariantFields } from './variantTrickFields';
 
 export function isTrickJustClosed(stateBefore: GameState, stateAfter: GameState): boolean {
-  return (
-    stateBefore.currentTrick.length === 3 &&
-    stateAfter.waitingForTrickEnd === true &&
-    stateAfter.currentTrick.length === 4
-  );
+  if (stateAfter.waitingForTrickEnd !== true) {
+    return false;
+  }
+  if (stateAfter.currentTrick.length !== 4) {
+    return false;
+  }
+  if (stateBefore.waitingForTrickEnd === true) {
+    return false;
+  }
+  return true;
 }
 
 function resolveLedSuit(trick: Card[]): Suit | null {

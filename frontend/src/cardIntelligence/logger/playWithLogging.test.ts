@@ -1,6 +1,6 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
 import { Card, GameState } from '../../types/game';
-import { CardDecisionLogEvent } from '../shared/types/logEvents';
+import { CardDecisionLogEvent, LogEvent } from '../shared/types/logEvents';
 import { appendLogEvent, setLogStoreForTests } from '../shared/storage/logStore';
 import { LogStore } from '../shared/storage/logStore.localStorage';
 import {
@@ -10,6 +10,7 @@ import {
   resetLoggerSessionForTests,
 } from './index';
 import { resetLogFailureCountForTests } from './logFailureTelemetry';
+import { trickIndexTracker } from './resolveTrickIndex';
 
 jest.mock('../../config/features', () => ({
   CARD_INTELLIGENCE_LOGGER_ENABLED: true,
@@ -180,6 +181,94 @@ describe('playWithLogging', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(events).toHaveLength(1);
     expect(events[0].chosenCard.id).toBe('2-hearts');
+  });
+
+  it('emits TrickEnd on 4th card with Sueca-like shallow mutable stateBefore', async () => {
+    const trickSoFar = [
+      card('clubs', 'A', '1'),
+      card('clubs', '2', '2'),
+      card('clubs', '3', '3'),
+    ];
+    const hand = [card('clubs', 'K', '4')];
+
+    const internal: GameState = {
+      ...mockState(hand),
+      currentTrick: trickSoFar.map((c) => ({ ...c })),
+      trickLeader: 0,
+      currentPlayerIndex: 0,
+      players: [
+        { id: 'p0', name: 'P0', hand: hand.map((c) => ({ ...c })), team: 1, type: 'human' },
+        { id: 'p1', name: 'P1', hand: [], team: 2, type: 'ai' },
+        { id: 'p2', name: 'P2', hand: [], team: 1, type: 'ai' },
+        { id: 'p3', name: 'P3', hand: [], team: 2, type: 'ai' },
+      ],
+    };
+
+    const stateBeforeShallow: GameState = { ...internal, currentTrick: internal.currentTrick };
+
+    const adapter: GameAdapter = {
+      variant: 'sueca',
+      initialize: jest.fn(),
+      getCurrentState: jest.fn(() => ({
+        ...internal,
+        players: internal.players.map((p) => ({ ...p, hand: [...p.hand] })),
+        currentTrick: internal.currentTrick,
+      })),
+      canPlayCard: jest.fn((_s, _p, cardIndex) => cardIndex === 0),
+      playCard: jest.fn((_s, playerIndex, cardIndex) => {
+        if (cardIndex !== 0) return false;
+        const played = internal.players[playerIndex].hand.splice(0, 1)[0];
+        internal.currentTrick.push(played);
+        internal.waitingForTrickEnd = true;
+        internal.lastTrickWinner = 0;
+        return true;
+      }),
+      finishTrick: jest.fn(),
+      continueToNextRound: jest.fn(),
+      startRound: jest.fn(),
+      chooseAICard: jest.fn(),
+      pauseGame: jest.fn(),
+      resumeGame: jest.fn(),
+      quitGame: jest.fn(),
+      updatePlayerNames: jest.fn(),
+      getPlayerHand: jest.fn(),
+      getPlayers: jest.fn(),
+      getState: jest.fn(),
+      restoreState: jest.fn(),
+    };
+
+    const allEvents: LogEvent[] = [];
+    setLogStoreForTests({
+      appendEvent: async (event) => {
+        allEvents.push(event);
+      },
+    } as LogStore);
+
+    trickIndexTracker.resolve(0, 0);
+
+    const played = playCardAndLogDecision(adapter, stateBeforeShallow, 0, 0);
+    expect(played).toBe(true);
+    expect(stateBeforeShallow.currentTrick).toHaveLength(4);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const decisions = allEvents.filter(
+      (e): e is CardDecisionLogEvent =>
+        'chosenCard' in e && (!('eventType' in e) || e.eventType !== 'trick_end')
+    );
+    const trickEnd = allEvents.find(
+      (e): e is Extract<LogEvent, { eventType: 'trick_end' }> =>
+        'eventType' in e && e.eventType === 'trick_end'
+    );
+
+    expect(decisions).toHaveLength(1);
+    expect(decisions[0].chosenCard.id).toBe('4');
+    expect(decisions[0].legalMoves.some((m) => m.id === decisions[0].chosenCard.id)).toBe(true);
+    expect(decisions[0].trickAfter).toHaveLength(4);
+    expect(trickEnd).toBeDefined();
+    expect(trickEnd?.plays).toHaveLength(4);
+    expect(trickEnd?.winnerIndex).toBe(0);
+    expect(getLogFailureCount()).toBe(0);
   });
 });
 

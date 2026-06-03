@@ -88,6 +88,22 @@ describe('isTrickJustClosed', () => {
     });
     expect(isTrickJustClosed(before, after)).toBe(false);
   });
+
+  it('returns true when stateBefore currentTrick was mutated (Sueca shallow copy)', () => {
+    const trick = [
+      card('clubs', 'A', '1'),
+      card('clubs', '2', '2'),
+      card('clubs', '3', '3'),
+      card('clubs', 'K', '4'),
+    ];
+    const before = baseState({ currentTrick: trick, waitingForTrickEnd: false });
+    const after = baseState({
+      currentTrick: trick,
+      waitingForTrickEnd: true,
+      lastTrickWinner: 0,
+    });
+    expect(isTrickJustClosed(before, after)).toBe(true);
+  });
 });
 
 describe('buildTrickEndEvent', () => {
