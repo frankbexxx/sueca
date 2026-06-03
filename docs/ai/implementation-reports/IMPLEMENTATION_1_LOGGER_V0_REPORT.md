@@ -65,6 +65,8 @@ Fire-and-forget, fail-silent, sem `await`.
 
 **Hotfix legalMoves (pós-H1):** adapters ignoram `stateBefore` em `canPlayCard` após `playCard` mutar o turno; `GameBoard` passa `legalMoves` capturados antes da jogada.
 
+**Impl 1.1 hardening:** substituído padrão manual 3× por choke point [`playWithLogging`](../frontend/src/cardIntelligence/logger/playWithLogging.ts) — ver [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](./IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md).
+
 ---
 
 ## 4. Fórmulas
@@ -141,7 +143,7 @@ Checkpoint **H1** (Francisco): bloqueado inicialmente por bug `legalMoves` vazio
 
 ## 11. Próximos passos
 
-1. Checkpoint **H1** — re-validação humana após hotfix legalMoves
+1. Checkpoint **H1** — re-validação humana após Impl 1.1 hardening
 2. `IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md` → TrickEnd + histórico cross-game
 3. Encoder v0 (Impl 3)
 

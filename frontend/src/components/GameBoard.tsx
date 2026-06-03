@@ -8,7 +8,7 @@ import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 import { requestAiPlay } from '../services/aiClient';
-import { playFirstLegal } from '../ai/core/FallbackMoveSelector';
+import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
 import {
@@ -45,7 +45,6 @@ import { fetchSessionState, subscribeToActions } from '../services/multiplayerCl
 import { applyHostAction } from '../multiplayer/applyHostAction';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
 import { mpLog, mpWarn } from '../utils/mpDebug';
-import { capturePlayDecision, extractLegalMoves } from '../cardIntelligence';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -547,33 +546,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         afterHostMutationRef.current();
       };
 
+      const logOpts = {
+        gameConfigMode: config.rulesPresetId,
+        isMultiplayer: isMultiplayerActive,
+      };
+
+      if (cardIndex >= 0 && playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, logOpts)) {
+        playCardSound();
+        publishHostAiPlay();
+        return;
+      }
       if (cardIndex >= 0) {
-        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
-        if (gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
-          playCardSound();
-          capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
-            gameConfigMode: config.rulesPresetId,
-            isMultiplayer: isMultiplayerActive,
-            legalMoves,
-          });
-          publishHostAiPlay();
-          return;
-        }
         console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
       }
 
-      {
-        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
-        const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
-        if (fallbackIdx >= 0) {
-          playCardSound();
-          capturePlayDecision(gameAdapter, currentState, playerIndex, fallbackIdx, {
-            gameConfigMode: config.rulesPresetId,
-            isMultiplayer: isMultiplayerActive,
-            legalMoves,
-          });
-          publishHostAiPlay();
-        } else {
+      const fallbackIdx = playFirstLegalAndLogDecision(gameAdapter, currentState, playerIndex, logOpts);
+      if (fallbackIdx >= 0) {
+        playCardSound();
+        publishHostAiPlay();
+      } else {
           console.error(
             `[AI fallback] playFirstLegal returned -1 — turn may be stuck`,
             {
@@ -584,7 +575,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             }
           );
         }
-      }
     };
 
     chooseAndPlay();
@@ -680,15 +670,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           setSelectedCard(null);
           return;
         }
-        const legalMoves = extractLegalMoves(gameAdapter, currentState, playerIndex);
-        const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
-        if (success) {
+        if (playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, {
+          gameConfigMode: config.rulesPresetId,
+          isMultiplayer: isMultiplayerActive,
+        })) {
           playCardSound();
-          capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
-            gameConfigMode: config.rulesPresetId,
-            isMultiplayer: isMultiplayerActive,
-            legalMoves,
-          });
           setSelectedCard(null);
           afterHostMutation();
         } else {

@@ -1,3 +1,10 @@
-export { capturePlayDecision, logCardDecision, resetLoggerSessionForTests } from './logger';
-export type { LogCardDecisionInput } from './logger';
-export { extractLegalMoves } from './logger/extractLegalMoves';
+export {
+  capturePlayDecision,
+  logCardDecision,
+  resetLoggerSessionForTests,
+  playCardAndLogDecision,
+  playFirstLegalAndLogDecision,
+  getLogFailureCount,
+  resetLogFailureCountForTests,
+} from './logger';
+export type { LogCardDecisionInput, PlayLogOptions } from './logger';

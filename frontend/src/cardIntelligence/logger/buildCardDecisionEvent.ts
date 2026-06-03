@@ -51,6 +51,21 @@ function resolveLedSuit(trickBefore: Card[], chosenCard: Card): Suit | null {
   return null;
 }
 
+function resolveLegalMoves(
+  legalMovesInput: Card[] | undefined,
+  gameAdapter: GameAdapter,
+  stateBefore: GameState,
+  playerIndex: number
+): Card[] {
+  if (legalMovesInput) {
+    return legalMovesInput;
+  }
+  if (process.env.NODE_ENV === 'test') {
+    return extractLegalMoves(gameAdapter, stateBefore, playerIndex);
+  }
+  throw new Error('legalMoves required outside unit tests');
+}
+
 export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): CardDecisionLogEvent {
   const {
     gameAdapter,
@@ -72,8 +87,12 @@ export function buildCardDecisionEvent(input: BuildCardDecisionEventInput): Card
     throw new Error(`Invalid cardIndex ${cardIndex} for player ${playerIndex}`);
   }
 
-  const legalMoves =
-    legalMovesInput ?? extractLegalMoves(gameAdapter, stateBefore, playerIndex);
+  const legalMoves = resolveLegalMoves(
+    legalMovesInput,
+    gameAdapter,
+    stateBefore,
+    playerIndex
+  );
   const trickBefore = cloneCards(stateBefore.currentTrick);
   const trickAfter = [...trickBefore, cloneCard(chosenCard)];
   const roundIndex = normalizeRoundIndex(stateBefore);

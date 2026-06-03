@@ -150,4 +150,29 @@ describe('buildCardDecisionEvent', () => {
       })
     ).toThrow('chosenCard must be in legalMoves');
   });
+
+  it('throws when legalMoves is omitted outside unit tests', () => {
+    const env = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    const adapter = mockAdapter();
+    const before = mockState();
+    const after = mockState();
+
+    try {
+      expect(() =>
+        buildCardDecisionEvent({
+          gameAdapter: adapter,
+          stateBefore: before,
+          stateAfter: after,
+          playerIndex: 0,
+          cardIndex: 0,
+          gameId: 'game-1',
+          sessionId: 'session-1',
+          trickIndex: 0,
+        })
+      ).toThrow('legalMoves required outside unit tests');
+    } finally {
+      process.env.NODE_ENV = env;
+    }
+  });
 });

@@ -6,6 +6,7 @@ import { LogSessionMeta, LogSource } from '../shared/types/logEvents';
 import {
   buildCardDecisionEvent,
 } from './buildCardDecisionEvent';
+import { resetLogFailureCountForTests } from './logFailureTelemetry';
 import { normalizeRoundIndex, resolveTurnIndex, trickIndexTracker, resetTrickIndexTrackerForTests } from './resolveTrickIndex';
 import { resetRoundHistorySessionForTests, roundHistorySession } from './roundHistorySession';
 
@@ -17,7 +18,7 @@ export interface LogCardDecisionInput {
   gameConfigMode?: string | null;
   source?: LogSource;
   isMultiplayer?: boolean;
-  legalMoves?: Card[];
+  legalMoves: Card[];
 }
 
 let activeGameId: string | null = null;
@@ -106,4 +107,5 @@ export function resetLoggerSessionForTests(): void {
   resetSessionIdForTests();
   resetRoundHistorySessionForTests();
   resetTrickIndexTrackerForTests();
+  resetLogFailureCountForTests();
 }
