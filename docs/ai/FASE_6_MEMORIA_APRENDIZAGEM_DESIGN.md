@@ -76,7 +76,7 @@ flowchart LR
 | Treinar modelo ML | Fora do v0; Learning futuro (§11) |
 | Usar informação hidden sem metadata | Player View default; Engine View marcada |
 | Substituir regras do jogo | Catálogo F1 + motor de regras permanecem autoridade |
-| Substituir avaliador | Agrega output do juiz; se juiz muda versão, agregados podem recalcular |
+| Substituir avaliador | Agrega output do juiz; recalc em bump major = futuro (§9.1) |
 
 ---
 
@@ -139,7 +139,9 @@ interface MemoryIngestRecord {
 | partialEvaluation, unknown | Re-avaliação heurística na memória |
 | Versões pipeline | Logs brutos inteiros (store separado F3) |
 
-**Regra:** memória agrega **decisões já classificadas**. Eventos logger **sem** avaliação F5 **não** incrementam `goodCount` / `badCount` — podem alimentar fila «pendente avaliação».
+**Regra v0:** memória consome **apenas** decisões **já avaliadas** pela Fase 5 (`DecisionEvaluationResult`). Eventos logger **sem** avaliação F5 **não** entram na memória — são **ignorados** ou mantidos **fora** da memória até existir avaliador.
+
+**Conceito futuro (`ingestQueue`):** fila de eventos pendentes de avaliação — **não faz parte do v0**; documentada em §13.2 para evolução posterior.
 
 ---
 
@@ -167,7 +169,7 @@ interface MetricMemoryAggregate {
   mediumCount: number;
   badCount: number;
   unknownCount: number;
-  partialCount: number;           // decisões com partialEvaluation true
+  partialCount: number;           // avaliação parcial possível (≠ unknownCount)
 
   lastSeenAt: string;
   firstSeenAt: string;
@@ -275,11 +277,31 @@ Mapeamento **padrão humano → metricId F1** — alimenta `commonMistakes` / da
 | **Bot Memory** | `bot` / `ai` | `bot:medium:sueca`, `ai:hard` | Por dificuldade + variant |
 | **Variant Memory** | `global` | `global:hearts` | Estatísticas globais por jogo |
 | **Metric Memory** | qualquer + chave metricId | agregado por métrica | Ranking métricas problemáticas |
-| **Table Memory** | `table` | `session:{sessionId}` | Estilo da mesa actual; Hard futuro |
+| **Table Memory** | `table` | `session:{sessionId}` | **Opcional v0** — ver §6.1 |
 
 **v0 prioridade:** Bot Memory (Medium) + Variant Memory + Metric Memory para métricas P0 F2B.
 
-**Nota:** `ai` vs `bot` — `bot` = slot AI com dificuldade; `ai` = path genérico (ex.: Sueca externa T02, v1).
+## 6.1 Esclarecimentos de scope (v0)
+
+### `subjectType`: `ai` vs `bot`
+
+Ambos podem existir no schema; no **v0 recomenda-se normalizar** assim:
+
+| Valor | Significado | Quando usar |
+|-------|-------------|-------------|
+| **`bot`** | Implementação **local concreta** do jogo (Easy / Medium / Hard no Suecão) | Bots internos, agregados por dificuldade + variant |
+| **`ai`** | Actor / origem **genérica ou externa** de decisão automatizada | Path externo (ex.: Sueca T02), origem não mapeada a bot local |
+
+**Regra prática v0:** preferir `bot` para slots AI do app; reservar `ai` para origens externas ou genéricas.
+
+### Table Memory vs `sessionMemory`
+
+| Conceito | v0 | Futuro |
+|----------|-----|--------|
+| **`sessionMemory`** | **Sim — MVP** | Rolling state por partida; cobre «nesta sessão já deu 3 bags» |
+| **Table Memory persistente** (`subjectType: table`) | **Não** | Padrões de mesa entre partidas; útil para Hard / F7 |
+
+Para o MVP, **`sessionMemory` cobre o necessário**; Table Memory persistente fica para fase futura.
 
 ---
 
@@ -345,7 +367,7 @@ flowchart TD
 | Avaliador produz | `classification`, `reasonShort`, `metricResults` |
 | Memória agrega | Contagens + trends + exemplos |
 | Memória **não** reclassifica | Nunca sobrescrever veredicto F5 |
-| Versão muda | Guardar `evaluatorVersion` por agregado; recalcular ou invalidar agregados antigos |
+| Versão muda | Guardar `evaluatorVersion` por agregado; **não misturar** contagens de versões diferentes |
 
 ## 9.1 Campos de versão
 
@@ -356,15 +378,22 @@ flowchart TD
 | `evaluatorVersion` | F5 (5.0.0) |
 | `metricCatalogVersion` | F1 histórico (1.1) |
 
-**Política v0:** se `evaluatorVersion` muda major, **não** misturar contagens — novo `memoryId` suffix ou reset agregado documentado.
+**Política v0:** se `evaluatorVersion` muda major, **não** misturar contagens — novo `memoryId` suffix ou agregado separado.
+
+**Recalcular agregados (futuro, não v0):** mudança **major** de `evaluatorVersion` pode exigir **recalcular** agregados antigos a partir dos logs + re-avaliação F5. Isto fica documentado como **risco / evolução futura** (§16 R4) — **sem job de recalc na implementação v0**.
 
 ## 9.2 Partial vs unknown na memória
 
-| Campo F5 | Contagem memória |
-|----------|------------------|
-| `classification: unknown` | `unknownCount++` |
-| `partialEvaluation: true` | `partialCount++` **e** incrementar good/medium/bad conforme classificação global |
-| «Pior vence» | `failedMetricIds` alimentam `commonMistakes` por metricId |
+**Confirmado:** `partialCount` e `unknownCount` são **contadores separados** — não colapsar num só.
+
+| Campo F5 | Significado | Contagem memória |
+|----------|-------------|------------------|
+| `classification: unknown` | Sem dados suficientes para avaliar | `unknownCount++` apenas; **não** entra em `evaluatedCount` |
+| `partialEvaluation: true` | Avaliação **parcial possível** (≠ unknown) | `partialCount++` **e** incrementar good/medium/bad conforme classificação global |
+| Ambos falsos + veredicto | Avaliação completa | good/medium/bad conforme classificação |
+| «Pior vence» | — | `failedMetricIds` alimentam `commonMistakes` por metricId |
+
+**Nota:** uma decisão pode ser `partialEvaluation: true` **e** ter classificação global `good` / `medium` / `bad` — `partialCount` regista a limitação; `unknownCount` regista ausência total de veredicto.
 
 ---
 
@@ -436,13 +465,15 @@ Sem implementação — desenho alinhado com F3 IndexedDB.
 
 ## 13.2 Object stores
 
-| Store | Conteúdo | Chave |
-|-------|----------|-------|
-| `memoryAggregates` | `MetricMemoryAggregate` | `memoryId` |
-| `memoryExamples` | `{ exampleId, sourceEventId, metricId, classification, reasonShort, snapshotTruncated, viewTypeUsed, timestamp }` | `exampleId` |
-| `sessionMemory` | Rolling state por `sessionId` | `sessionId` |
-| `ingestQueue` | Pendentes sem avaliação F5 | `sourceEventId` |
-| `exportJobs` | Metadata exports JSONL | `exportId` |
+| Store | Conteúdo | Chave | v0 |
+|-------|----------|-------|-----|
+| `memoryAggregates` | `MetricMemoryAggregate` | `memoryId` | **Sim** |
+| `memoryExamples` | `{ exampleId, sourceEventId, metricId, classification, reasonShort, snapshotTruncated, viewTypeUsed, timestamp }` | `exampleId` | **Sim** |
+| `sessionMemory` | Rolling state por `sessionId` | `sessionId` | **Sim** (MVP) |
+| `exportJobs` | Metadata exports JSONL | `exportId` | Futuro |
+| `ingestQueue` | Pendentes sem avaliação F5 | `sourceEventId` | **Futuro** — conceito apenas; v0 não persiste fila |
+
+**Nota `ingestQueue`:** reservada para quando existir pipeline assíncrono logger → avaliador → memória. No **v0**, eventos sem avaliação F5 **não** entram na memória (§3.2).
 
 ## 13.3 Rotação e retenção
 
@@ -450,7 +481,7 @@ Sem implementação — desenho alinhado com F3 IndexedDB.
 |----------|----------------|
 | `exampleEventIds` por agregado | Máx. **10** |
 | `memoryExamples` total | Máx. **500** ou 30 dias |
-| Agregados | Manter; reset por `evaluatorVersion` major |
+| Agregados | Manter; separar por `evaluatorVersion` major (recalc job = futuro) |
 | Sessão | Purge 7 dias após fim |
 | Alerta quota | ~30 MB (mobile) |
 
@@ -503,7 +534,7 @@ A mini-LLM **pode receber** (contexto, não ordens):
 | R1 | Poucos jogos → agregado enviesado | Conclusões falsas | `confidence: low`; mínimo N para trend |
 | R2 | Jogador fraco vs estratégia válida | Rotular humano injustamente | Player View; não punir no gameplay |
 | R3 | Engine View indevida | Memória «batota» | Marcar `viewTypeUsed`; não mix |
-| R4 | Misturar versões avaliador | badRate incoerente | `evaluatorVersion` no agregado |
+| R4 | Misturar versões avaliador | badRate incoerente | `evaluatorVersion` no agregado; recalc major bump = **futuro**, não v0 |
 | R5 | Guardar dados demais | IDB quota | Caps exemplos; retenção |
 | R6 | Performance mobile | Lag | Batch pós-partida |
 | R7 | Privacidade local | Dados sensíveis no device | Local only; export opt-in |
@@ -544,15 +575,15 @@ Motor valida legalidade
 
 ---
 
-# Dúvidas documentadas (não bloqueantes)
+# Dúvidas documentadas — resolvidas (v1.1)
 
-| # | Tema | Proposta Fase 6 |
+| # | Tema | Decisão fechada |
 |---|------|-----------------|
-| 1 | `subjectType` ai vs bot | `bot` = slot com difficulty; `ai` reservado path externo T02 |
-| 2 | Ingest sem avaliação F5 | Fila `ingestQueue`; não contamina badRate |
-| 3 | Recalcular agregados | Major version bump → novo agregado ou job recalc |
-| 4 | Partial na memória | Conta partial + classificação global separadamente |
-| 5 | Table Memory v0 | Opcional; sessionMemory cobre MVP |
+| 1 | `subjectType` ai vs bot | `ai` = actor/origem genérica automatizada; `bot` = implementação local concreta; v0 normaliza `bot` para bots internos, `ai` para externo/genérico (§6.1) |
+| 2 | `ingestQueue` | Conceito **futuro**; v0 consome só F5 avaliado; eventos sem avaliação ignorados/fora da memória (§3.2, §13.2) |
+| 3 | Recalcular agregados | Major `evaluatorVersion` pode exigir recalc — **risco/futuro**, não implementação v0 (§9.1, R4) |
+| 4 | `partialCount` vs `unknownCount` | Separados: partial = avaliação parcial possível; unknown = sem dados para avaliar (§9.2) |
+| 5 | Table Memory | Opcional v0; `sessionMemory` cobre MVP; Table Memory persistente = futuro (§6.1) |
 
 ---
 
@@ -572,3 +603,4 @@ Motor valida legalidade
 | Versão | Data | Nota |
 |--------|------|------|
 | 1.0 | 2026-05-31 | Desenho inicial Fase 6 — schema 6.0.0, agregados simples |
+| 1.1 | 2026-05-31 | Esclarecimentos: ai/bot, ingestQueue futuro, recalc futuro, partial/unknown, sessionMemory MVP |

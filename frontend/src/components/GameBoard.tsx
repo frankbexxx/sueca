@@ -45,6 +45,7 @@ import { fetchSessionState, subscribeToActions } from '../services/multiplayerCl
 import { applyHostAction } from '../multiplayer/applyHostAction';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
 import { mpLog, mpWarn } from '../utils/mpDebug';
+import { capturePlayDecision } from '../cardIntelligence';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
@@ -548,6 +549,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       if (cardIndex >= 0 && gameAdapter.playCard(currentState, playerIndex, cardIndex)) {
         playCardSound();
+        capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
+          gameConfigMode: config.rulesPresetId,
+          isMultiplayer: isMultiplayerActive,
+        });
         publishHostAiPlay();
       } else {
         if (cardIndex >= 0) {
@@ -556,6 +561,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         const fallbackIdx = playFirstLegal(gameAdapter, currentState, playerIndex);
         if (fallbackIdx >= 0) {
           playCardSound();
+          capturePlayDecision(gameAdapter, currentState, playerIndex, fallbackIdx, {
+            gameConfigMode: config.rulesPresetId,
+            isMultiplayer: isMultiplayerActive,
+          });
           publishHostAiPlay();
         } else {
           console.error(
@@ -572,7 +581,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     };
 
     chooseAndPlay();
-  }, [gameAdapter, gameState, playCardSound]);
+  }, [gameAdapter, gameState, playCardSound, config.rulesPresetId, isMultiplayerActive]);
 
   /**
    * Auto-play effect for AI players
@@ -667,6 +676,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         const success = gameAdapter.playCard(currentState, playerIndex, cardIndex);
         if (success) {
           playCardSound();
+          capturePlayDecision(gameAdapter, currentState, playerIndex, cardIndex, {
+            gameConfigMode: config.rulesPresetId,
+            isMultiplayer: isMultiplayerActive,
+          });
           setSelectedCard(null);
           afterHostMutation();
         } else {
