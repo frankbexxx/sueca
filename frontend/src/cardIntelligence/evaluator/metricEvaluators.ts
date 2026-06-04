@@ -4,7 +4,6 @@ import { isKingHearts } from '../shared/kingObligations';
 import {
   cardWouldWinTrickStandard,
   cardWouldWinTrickSueca,
-  inferTrickLeader,
   lowestWinningCardSueca,
   lowestTrumpThatWinsSueca,
 } from '../encoder/trickHelpers';
@@ -14,14 +13,12 @@ import {
   isLeading,
   isMetricApplicable,
   kingEnc,
+  lowestWinningSpade,
   notApplicable,
   result,
   spadesEnc,
   suecaEnc,
-  tierBPartialMetric,
   trickLeader,
-  lowestWinningSpade,
-  lowestWinningStandard,
 } from './evalHelpers';
 import { EvaluatorContext, MetricEvaluationResult, MetricEvaluatorFn } from './types';
 
