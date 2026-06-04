@@ -45,7 +45,7 @@ function countTrickWinsForPlayer(event: CardDecisionLogEvent, playerIndex: numbe
     );
     if (playsInTrick.length < 4) continue;
     const trickLeader = (play.playerIndex - 3 + 4) % 4;
-    const cards = playsInTrick.sort((a, b) => a.turnIndex - b.turnIndex).map((p) => p.card);
+    const cards = [...playsInTrick].sort((a, b) => a.turnIndex - b.turnIndex).map((p) => p.card);
     const winner = standardTrickWinnerIndex(cards, trickLeader, 'spades');
     completedTricks.add(key);
     if (winner === playerIndex) wins++;
@@ -66,7 +66,7 @@ function deriveTricksFromHistory(
         (p) => p.trickIndex === play.trickIndex && p.roundIndex === play.roundIndex
       );
       if (playsInTrick.length < 4) continue;
-      const cards = playsInTrick
+      const cards = [...playsInTrick]
         .sort((a, b) => a.turnIndex - b.turnIndex)
         .map((p) => p.card);
       const winner = standardTrickWinnerIndex(cards, trickLeader, 'spades');

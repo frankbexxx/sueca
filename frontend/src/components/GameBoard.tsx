@@ -577,7 +577,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         }
     };
 
-    chooseAndPlay();
+    void chooseAndPlay().catch((err) => {
+      console.warn('[AI chooseAndPlay]', err instanceof Error ? err.message : err);
+    });
   }, [gameAdapter, gameState, playCardSound, config.rulesPresetId, isMultiplayerActive]);
 
   /**

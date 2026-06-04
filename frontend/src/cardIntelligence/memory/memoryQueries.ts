@@ -13,7 +13,7 @@ export async function queryMemory(
   const results = await listAggregates(query);
   if (results.length === 0) return null;
   if (results.length === 1) return results[0];
-  return results.sort(
+  return [...results].sort(
     (a, b) =>
       new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
   )[0];
