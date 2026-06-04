@@ -6,6 +6,13 @@ import './styles/sueca-buttons.css';
 import './styles/dobo-ui.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { CARD_INTELLIGENCE_DEBUG } from './config/features';
+
+if (CARD_INTELLIGENCE_DEBUG) {
+  void import('./cardIntelligence/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {
+    installCardIntelligenceDebugConsole();
+  });
+}
 
 // Error boundary for production
 const rootElement = document.getElementById('root');

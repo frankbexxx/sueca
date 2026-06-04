@@ -14,3 +14,8 @@ export const GAMES_PER_INTERSTITIAL = Number(process.env.REACT_APP_GAMES_PER_AD 
 /** Card Intelligence logger — default on; set REACT_APP_CARD_INTELLIGENCE_LOGGER=false to disable */
 export const CARD_INTELLIGENCE_LOGGER_ENABLED =
   process.env.REACT_APP_CARD_INTELLIGENCE_LOGGER !== 'false';
+
+/** H3 / dev console: encode + IDB helpers on window.__ci* (npm start or REACT_APP_CARD_INTELLIGENCE_DEBUG=true) */
+export const CARD_INTELLIGENCE_DEBUG =
+  process.env.NODE_ENV === 'development' ||
+  process.env.REACT_APP_CARD_INTELLIGENCE_DEBUG === 'true';
