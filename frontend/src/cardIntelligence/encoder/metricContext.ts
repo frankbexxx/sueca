@@ -95,6 +95,14 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
       confidence: () => 0.9,
     },
     {
+      metricId: 'S25',
+      metricNameHuman: 'Destrunfar parceiro',
+      neededFields: ['partnerIndex', 'cutRisk'],
+      isApplicable: (s) => s.trickPosition === 0,
+      reasonShort: () => 'Leading — destrunfar (parcial)',
+      confidence: () => 0.65,
+    },
+    {
       metricId: 'T04',
       metricNameHuman: 'Ganhar barato quando desejável',
       neededFields: ['canWinCheaply'],
@@ -121,6 +129,15 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
       confidence: () => 1,
     },
     {
+      metricId: 'SP01',
+      metricNameHuman: 'Bid conservador / need tricks',
+      neededFields: ['playerBid', 'needTricks'],
+      isApplicable: (_, e) =>
+        (e as SpadesEncoding).playerBid !== null && (e as SpadesEncoding).needTricks !== null,
+      reasonShort: () => 'Contexto bid (proxy play)',
+      confidence: () => 0.7,
+    },
+    {
       metricId: 'SP06',
       metricNameHuman: 'Proteger parceiro',
       neededFields: ['partnerWinning'],
@@ -143,6 +160,14 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
       isApplicable: (_, e) => (e as SpadesEncoding).avoidBagMode !== null,
       reasonShort: () => 'Gestão bags',
       confidence: () => 0.85,
+    },
+    {
+      metricId: 'SP14',
+      metricNameHuman: 'Pressão bid adversária alta',
+      neededFields: ['bidMet', 'needTricks'],
+      isApplicable: (_, e) => (e as SpadesEncoding).bidMet !== null,
+      reasonShort: () => 'Gestão bid equipa',
+      confidence: () => 0.75,
     },
     {
       metricId: 'T05',
@@ -205,6 +230,14 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
       confidence: () => 0.85,
     },
     {
+      metricId: 'H10',
+      metricNameHuman: 'Bloquear shoot the moon',
+      neededFields: ['heartsBroken'],
+      isApplicable: () => true,
+      reasonShort: () => 'Moon threat (parcial v0)',
+      confidence: () => 0.6,
+    },
+    {
       metricId: 'T06',
       metricNameHuman: 'Evitar pontos quando possível',
       neededFields: ['pointsInTrick'],
@@ -264,6 +297,14 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
       isApplicable: (s) => s.trickPosition === 0,
       reasonShort: () => 'Leading trick King',
       confidence: () => 0.85,
+    },
+    {
+      metricId: 'K10',
+      metricNameHuman: 'Duas últimas / trick 11–12',
+      neededFields: ['isLastTwoPhase', 'trickNumberForLastTwo'],
+      isApplicable: (_, e) => (e as KingEncoding).isLastTwoPhase === true,
+      reasonShort: () => 'Fase penúltima/última vaza',
+      confidence: () => 0.8,
     },
     {
       metricId: 'K08',

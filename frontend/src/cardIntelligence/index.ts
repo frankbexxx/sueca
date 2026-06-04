@@ -10,3 +10,5 @@ export {
 export type { LogCardDecisionInput, PlayLogOptions } from './logger';
 export { encodeDecisionState, createTestLogEvent } from './encoder/encodeDecisionState';
 export type { EncodedDecisionState, EncoderInput } from './encoder/types';
+export { ALL_FIXTURES, FIXTURE_IDS, getFixtureById } from './fixtures';
+export type { FixtureCase } from './fixtures';

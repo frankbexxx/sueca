@@ -27,4 +27,19 @@ describe('metricContext', () => {
       expect(entry).not.toHaveProperty('classification');
     }
   });
+
+  it('lists new MetricDef from fixtures gaps (SP01, SP14, S25, K10, H10)', () => {
+    const cases: Array<{ id: string; variant: 'spades' | 'sueca' | 'king' | 'hearts' }> = [
+      { id: 'SP01', variant: 'spades' },
+      { id: 'SP14', variant: 'spades' },
+      { id: 'S25', variant: 'sueca' },
+      { id: 'K10', variant: 'king' },
+      { id: 'H10', variant: 'hearts' },
+    ];
+    for (const { id, variant } of cases) {
+      const event = createTestLogEvent({ variant });
+      const ids = encodeDecisionState({ event }).metricContext.map((m) => m.metricId);
+      expect(ids).toContain(id);
+    }
+  });
 });
