@@ -46,3 +46,14 @@ export {
   buildPostGameReport,
 } from './debug';
 export type { ExportOptions, ExportResult, EvaluateStoredResult } from './debug';
+export {
+  getMiniLLMAdvice,
+  buildMiniLLMInput,
+  buildMiniLLMInputFromStoredEvent,
+  createMockProvider,
+} from './llm';
+export type {
+  MiniLLMAdvisoryResult,
+  MiniLLMDecisionInput,
+  MiniLLMFallbackReason,
+} from './llm';

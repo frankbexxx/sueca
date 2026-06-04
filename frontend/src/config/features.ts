@@ -19,3 +19,10 @@ export const CARD_INTELLIGENCE_LOGGER_ENABLED =
 export const CARD_INTELLIGENCE_DEBUG =
   process.env.NODE_ENV === 'development' ||
   process.env.REACT_APP_CARD_INTELLIGENCE_DEBUG === 'true';
+
+/**
+ * Mini-LLM advisory — default OFF everywhere (including npm start).
+ * Requires CARD_INTELLIGENCE_DEBUG for __ciGetMiniLLMAdvice helper.
+ */
+export const CARD_INTELLIGENCE_LLM_ADVISORY =
+  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ADVISORY === 'true';

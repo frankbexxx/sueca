@@ -1,5 +1,13 @@
 import { CardDecisionLogEvent } from '../shared/types/logEvents';
 import {
+  CARD_INTELLIGENCE_DEBUG,
+  CARD_INTELLIGENCE_LLM_ADVISORY,
+} from '../../config/features';
+import { buildMiniLLMInputFromStoredEvent } from '../llm/buildMiniLLMInput';
+import { getMiniLLMAdvice } from '../llm/getMiniLLMAdvice';
+import type { MiniLLMAdvisoryResult } from '../llm/types';
+import { MemoryQuery } from '../memory/types';
+import {
   clearAllCardIntelligenceDebugData,
   confirmClearAllCardIntelligenceDebugData,
 } from './clearDebugData';
@@ -39,6 +47,10 @@ export interface CardIntelligenceDebugConsole {
   ingestEvaluations: typeof ingestEvaluationsOffline;
   postGameReport: (gameId?: string) => Promise<string>;
   clearAllData: (opts?: ClearDebugDataOptions) => Promise<{ clearedLogs: boolean; clearedMemory: boolean } | null>;
+  getMiniLLMAdvice?: (
+    eventId: string,
+    opts?: { fallbackMoveIndex?: number; memoryQuery?: MemoryQuery; includeMemoryHints?: boolean }
+  ) => Promise<MiniLLMAdvisoryResult | null>;
 }
 
 declare global {
@@ -57,6 +69,14 @@ declare global {
     __ciClearAllCardIntelligenceData?: (
       opts?: ClearDebugDataOptions
     ) => Promise<{ clearedLogs: boolean; clearedMemory: boolean } | null>;
+    __ciGetMiniLLMAdvice?: (
+      eventId: string,
+      opts?: {
+        fallbackMoveIndex?: number;
+        memoryQuery?: MemoryQuery;
+        includeMemoryHints?: boolean;
+      }
+    ) => Promise<MiniLLMAdvisoryResult | null>;
   }
 }
 
@@ -89,6 +109,19 @@ async function buildPostGameReportForGame(gameId?: string): Promise<string> {
     evaluations,
     aggregates,
   });
+}
+
+async function ciGetMiniLLMAdviceForEvent(
+  eventId: string,
+  opts?: {
+    fallbackMoveIndex?: number;
+    memoryQuery?: MemoryQuery;
+    includeMemoryHints?: boolean;
+  }
+): Promise<MiniLLMAdvisoryResult | null> {
+  const input = await buildMiniLLMInputFromStoredEvent(eventId, opts);
+  if (!input) return null;
+  return getMiniLLMAdvice(input, { includePromptText: true, forceAdvisory: true });
 }
 
 export function installCardIntelligenceDebugConsole(): void {
@@ -128,13 +161,22 @@ export function installCardIntelligenceDebugConsole(): void {
   window.__ciPostGameReport = buildPostGameReportForGame;
   window.__ciClearAllCardIntelligenceData = clearWithConfirm;
 
+  if (CARD_INTELLIGENCE_DEBUG && CARD_INTELLIGENCE_LLM_ADVISORY) {
+    const getAdvice = ciGetMiniLLMAdviceForEvent;
+    api.getMiniLLMAdvice = getAdvice;
+    window.__ciGetMiniLLMAdvice = getAdvice;
+  }
+
   console.info(
-    '[CardIntelligence] Debug console ready (Impl 7):\n' +
+    '[CardIntelligence] Debug console ready (Impl 7–8):\n' +
       '  await __ciLoadEvents()\n' +
       '  __ciSummarize(await __ciLoadEvents())\n' +
       '  await __ciEvaluateEvent("<eventId>")\n' +
       '  await __ciExportLogsJsonl({ includeEvaluations: true })\n' +
       '  await __ciListMemory()\n' +
+      (CARD_INTELLIGENCE_LLM_ADVISORY
+        ? '  await __ciGetMiniLLMAdvice("<eventId>") — advisory only; no play\n'
+        : '') +
       '  __ci.encode / __ci.exportJsonl / …'
   );
 }
