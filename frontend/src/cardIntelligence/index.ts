@@ -37,3 +37,12 @@ export type {
   MemoryStore,
   MemorySubjectType,
 } from './memory';
+export {
+  exportCardIntelligenceJsonl,
+  buildJsonlLines,
+  evaluateStoredPlay,
+  evaluateStoredPlayByEventId,
+  listMemoryAggregates,
+  buildPostGameReport,
+} from './debug';
+export type { ExportOptions, ExportResult, EvaluateStoredResult } from './debug';

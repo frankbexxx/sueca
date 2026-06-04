@@ -9,7 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { CARD_INTELLIGENCE_DEBUG } from './config/features';
 
 if (CARD_INTELLIGENCE_DEBUG) {
-  void import('./cardIntelligence/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {
+  void import('./cardIntelligence/debug/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {
     installCardIntelligenceDebugConsole();
   });
 }

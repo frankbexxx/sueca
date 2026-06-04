@@ -1,0 +1,35 @@
+export {
+  installCardIntelligenceDebugConsole,
+  loadAllLogEvents,
+  sortEventsByTimestamp,
+  splitLogEvents,
+  summarizeLogEvents,
+  filterLogEvents,
+  findPlayByEventId,
+  listGameIds,
+  ciEncode,
+  findTrickEndForPlay,
+  evaluateStoredPlay,
+  evaluateStoredPlayByEventId,
+  evaluateStoredGame,
+  encodeStoredPlayByEventId,
+  exportCardIntelligenceJsonl,
+  buildJsonlLines,
+  buildExportFilename,
+  listMemoryAggregates,
+  ingestEvaluationsOffline,
+  buildPostGameReport,
+  clearAllCardIntelligenceDebugData,
+} from './debugConsole';
+export type {
+  CiEncodeOptions,
+  CardIntelligenceDebugConsole,
+} from './debugConsole';
+export type {
+  ExportOptions,
+  ExportResult,
+  EvaluateStoredResult,
+  CardIntelligenceExportEnvelope,
+  ExportRecordType,
+  ClearDebugDataOptions,
+} from './types';
