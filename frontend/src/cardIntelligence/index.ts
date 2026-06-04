@@ -23,3 +23,17 @@ export type {
   MetricEvaluationResult,
   EvaluationClassification,
 } from './evaluator';
+export {
+  ingestEvaluationResult,
+  buildMemoryIngestRecord,
+  queryMemory,
+  listAggregates,
+  MEMORY_SCHEMA_VERSION,
+} from './memory';
+export type {
+  MemoryIngestRecord,
+  MetricMemoryAggregate,
+  MemoryQuery,
+  MemoryStore,
+  MemorySubjectType,
+} from './memory';
