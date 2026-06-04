@@ -7,7 +7,7 @@ import {
 import { kingHeartsPlayedInHistory } from '../shared/kingObligations';
 import { buildMetricContext } from './metricContext';
 import { encodeHeartsVariant, resolveHeartsCurrentWinner } from './heartsEncoder';
-import { encodeKingVariant, resolveKingCurrentWinner } from './kingEncoder';
+import { encodeKingVariant, resolveKingContractId, resolveKingCurrentWinner } from './kingEncoder';
 import { encodeSpadesVariant, resolveSpadesCurrentWinner } from './spadesEncoder';
 import { encodeSuecaVariant, resolveSuecaCurrentWinner } from './suecaEncoder';
 import {
@@ -66,6 +66,9 @@ function buildHiddenPolicy(viewType: 'player' | 'engine'): HiddenInformationPoli
 }
 
 function resolveContractId(event: CardDecisionLogEvent): string | null {
+  if (event.variant === 'king') {
+    return resolveKingContractId(event);
+  }
   if ('contractId' in event.variantFields && event.variantFields.contractId) {
     return event.variantFields.contractId;
   }

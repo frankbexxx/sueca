@@ -125,7 +125,7 @@ Validar em **solo ou host local** (multiplayer joiner continua gap):
 2. [ ] Em consola dev/test: `encodeDecisionState({ event })` — campos fazem sentido.
 3. [ ] Sueca: `acesSeenBySuit`, `partnerIndex`, `trumpSuit` coerentes com mesa.
 4. [ ] Spades: `needTricks`, `bidMet`, `spadesBroken` — ou null documentado se tricks só pós-Continue.
-5. [ ] King negativo `no_king_hearts`: `mustPlayKingHeartsNow` true na 1.ª oportunidade legal.
+5. [ ] King negativo `no_king_hearts`: `mustPlayKingHeartsNow` true na 1.ª oportunidade legal — **corrigido em Impl 3.1**; re-validar com `__ciEncode` em IDB.
 6. [ ] Confirmar que partida normal **não** chama encoder (sem regressão UX).
 
 **Como testar rapidamente (dev):**
@@ -136,6 +136,51 @@ import { encodeDecisionState } from './cardIntelligence';
 const encoded = encodeDecisionState({ event });
 console.log(encoded.variantEncoding, encoded.metricContext);
 ```
+
+---
+
+## 8.1 Impl 3.1 — King encoder gaps (patch)
+
+**Data:** 2026-05-31  
+**Scope:** encoder-only (sem logger/gameplay)
+
+### Bugs fechados
+
+| Bug | Fix |
+|-----|-----|
+| `contractId` null em logs reais King PT | `resolveKingContractId` lê fallback `scoreBefore.raw.variantState.kingPt.contract` ([`kingEncoder.ts`](../../../frontend/src/cardIntelligence/encoder/kingEncoder.ts)) |
+| `mustPlayKingHeartsNow` false no play K♥ | `roundPlayHistoryBeforeCurrentDecision` exclui jogada actual quando logger a incluiu antes do evento ([`kingObligations.ts`](../../../frontend/src/cardIntelligence/shared/kingObligations.ts)) |
+| Top-level `EncodedDecisionState.contractId` desalinhado | `encodeDecisionState.resolveContractId` delega a `resolveKingContractId` para `variant === 'king'` |
+
+### Testes novos
+
+[`kingEncoder.test.ts`](../../../frontend/src/cardIntelligence/encoder/kingEncoder.test.ts):
+
+- fallback `kingPt.contract` → `contractId`
+- K♥ 1.ª oportunidade com `roundPlayHistory` duplicado (logger-realista) → `mustPlayKingHeartsNow: true`, `kingHeartsPlayed: false`
+- pós-K♥ → `kingHeartsPlayed: true`, `mustPlayKingHeartsNow: false`
+- regressão `no_hearts`
+
+**52** testes cardIntelligence passam (incl. 5 kingEncoder).
+
+### Verificação IDB (sem novo jogo)
+
+```javascript
+const events = await __ciLoadEvents();
+const p = events.find(e =>
+  e.variant === 'king' &&
+  e.chosenCard?.rank === 'K' && e.chosenCard?.suit === 'hearts' &&
+  e.scoreBefore?.raw?.variantState?.kingPt?.contract === 'no_king_hearts'
+);
+__ciEncode(p)?.variantEncoding
+// esperado: contractId 'no_king_hearts', mustPlayKingHeartsNow true, kingHeartsPlayed false
+```
+
+### Limites remanescentes
+
+- `event.contract` / `variantFields.contractId` no log raw continuam null (logger não alterado).
+- `importantCardsSeen.kingHeartsPlayed` usa histórico completo do log (fora de scope).
+- `kingSimplified` sem fallback neste patch.
 
 ---
 

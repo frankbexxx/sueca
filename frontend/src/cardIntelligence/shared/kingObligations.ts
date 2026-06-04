@@ -1,5 +1,6 @@
 import { Card, Suit } from '../../types/game';
-import { RoundPlayEntry } from './types/logEvents';
+import { cardsMatch } from './clone';
+import { CardDecisionLogEvent, RoundPlayEntry } from './types/logEvents';
 
 type PlayEntry = RoundPlayEntry;
 
@@ -9,6 +10,28 @@ export function isKingHearts(card: Card): boolean {
 
 export function kingHeartsPlayedInHistory(plays: PlayEntry[]): boolean {
   return plays.some((p) => isKingHearts(p.card));
+}
+
+/** Exclude current play when logger recorded it before building the event. */
+export function roundPlayHistoryBeforeCurrentDecision(
+  event: CardDecisionLogEvent
+): RoundPlayEntry[] {
+  const history = event.roundPlayHistory;
+  if (history.length === 0) return history;
+
+  const last = history[history.length - 1];
+  const chosen = event.chosenCard;
+  if (
+    last.playerIndex === event.playerIndex &&
+    last.turnIndex === event.turnIndex &&
+    last.trickIndex === event.trickIndex &&
+    last.roundIndex === event.roundIndex &&
+    cardsMatch(last.card, chosen)
+  ) {
+    return history.slice(0, -1);
+  }
+
+  return history;
 }
 
 /**
