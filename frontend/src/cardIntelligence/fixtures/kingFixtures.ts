@@ -111,7 +111,7 @@ export const K03_FIXTURE: FixtureCase = {
     trickAfter: [C.c2],
     ledSuit: null,
     variantFields: kingPtNull,
-    scoreBefore: kingScore('no_king_hearts'),
+    scoreBefore: kingScore('no_hearts'),
   }),
   expected: {
     metricContext: { metricId: 'K03', applicable: true },
