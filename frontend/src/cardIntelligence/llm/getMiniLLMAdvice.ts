@@ -1,18 +1,21 @@
 import { CARD_INTELLIGENCE_LLM_ADVISORY } from '../../config/features';
 import { cardsMatch } from '../shared/clone';
 import { buildPromptTemplate } from './promptTemplate';
-import { getDefaultMockProvider } from './mockProvider';
+import { resolveProvider } from './providers/providerConfig';
 import {
   GetMiniLLMAdviceOptions,
   MiniLLMAdvisoryResult,
   MiniLLMDecisionInput,
+  MiniLLMDecisionOutput,
   MINI_LLM_SCHEMA_VERSION,
+  MiniLLMFallbackReason,
+  ValidationResult,
 } from './types';
 import { validateLLMOutput } from './validateLLMOutput';
 
 function buildDisabledResult(
   input: MiniLLMDecisionInput,
-  reason: import('./types').MiniLLMFallbackReason,
+  reason: MiniLLMFallbackReason,
   warnings: string[] = []
 ): MiniLLMAdvisoryResult {
   const advisoryCardIndex = input.fallbackMoveIndex;
@@ -20,6 +23,7 @@ function buildDisabledResult(
     schemaVersion: MINI_LLM_SCHEMA_VERSION,
     requestId: input.requestId,
     mode: 'disabled',
+    providerId: 'disabled',
     advisoryCard: input.fallbackMove,
     advisoryCardIndex,
     confidence: 'low',
@@ -30,6 +34,43 @@ function buildDisabledResult(
     rawOutput: null,
     validByEngine: false,
     warnings,
+  };
+}
+
+function buildAdvisoryResult(params: {
+  input: MiniLLMDecisionInput;
+  providerId: string;
+  validated: ValidationResult;
+  raw: MiniLLMDecisionOutput | null;
+  confidence: 'high' | 'medium' | 'low';
+  reasonShort: string;
+  consideredMetricIds: string[];
+  fallbackReason: MiniLLMFallbackReason | null;
+  promptText?: string;
+  warnings: string[];
+}): MiniLLMAdvisoryResult {
+  const advisoryCardIndex = params.input.legalMoves.findIndex((c) =>
+    cardsMatch(c, params.validated.appliedCard)
+  );
+
+  return {
+    schemaVersion: MINI_LLM_SCHEMA_VERSION,
+    requestId: params.input.requestId,
+    mode: 'advisory',
+    providerId: params.providerId,
+    providerLatencyMs: params.raw?.latencyMs,
+    advisoryCard: params.validated.appliedCard,
+    advisoryCardIndex:
+      advisoryCardIndex >= 0 ? advisoryCardIndex : params.input.fallbackMoveIndex,
+    confidence: params.confidence,
+    reasonShort: params.reasonShort,
+    consideredMetricIds: params.consideredMetricIds,
+    usedFallback: params.validated.usedFallback,
+    fallbackReason: params.fallbackReason,
+    rawOutput: params.raw,
+    validByEngine: params.validated.validByEngine,
+    promptText: params.promptText,
+    warnings: params.warnings,
   };
 }
 
@@ -57,55 +98,41 @@ export async function getMiniLLMAdvice(
   }
 
   const prompt = buildPromptTemplate(input);
-  const provider = options.provider ?? getDefaultMockProvider();
+  const provider = options.provider ?? resolveProvider();
+  const providerId = options.provider?.id ?? provider.id;
 
   let raw = null;
   try {
     raw = await provider.complete(prompt, input);
   } catch (error) {
-    warnings.push(
-      error instanceof Error ? error.message : String(error)
-    );
+    warnings.push(error instanceof Error ? error.message : String(error));
     const validated = validateLLMOutput(input, null);
-    return {
-      schemaVersion: MINI_LLM_SCHEMA_VERSION,
-      requestId: input.requestId,
-      mode: 'advisory',
-      advisoryCard: validated.appliedCard,
-      advisoryCardIndex: input.legalMoves.findIndex((c) =>
-        cardsMatch(c, validated.appliedCard)
-      ),
+    return buildAdvisoryResult({
+      input,
+      providerId,
+      validated,
+      raw: null,
       confidence: 'low',
       reasonShort: 'Provider error — fallback move.',
       consideredMetricIds: [],
-      usedFallback: true,
       fallbackReason: 'provider_error',
-      rawOutput: null,
-      validByEngine: false,
       promptText: options.includePromptText ? prompt : undefined,
       warnings,
-    };
+    });
   }
 
   const validated = validateLLMOutput(input, raw);
-  const advisoryCardIndex = input.legalMoves.findIndex((c) =>
-    cardsMatch(c, validated.appliedCard)
-  );
 
-  return {
-    schemaVersion: MINI_LLM_SCHEMA_VERSION,
-    requestId: input.requestId,
-    mode: 'advisory',
-    advisoryCard: validated.appliedCard,
-    advisoryCardIndex: advisoryCardIndex >= 0 ? advisoryCardIndex : input.fallbackMoveIndex,
+  return buildAdvisoryResult({
+    input,
+    providerId,
+    validated,
+    raw,
     confidence: raw.confidence,
     reasonShort: raw.reasonShort,
     consideredMetricIds: raw.consideredMetricIds,
-    usedFallback: validated.usedFallback,
     fallbackReason: validated.fallbackReason,
-    rawOutput: raw,
-    validByEngine: validated.validByEngine,
     promptText: options.includePromptText ? prompt : undefined,
     warnings: [...warnings, ...validated.warnings],
-  };
+  });
 }

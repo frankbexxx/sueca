@@ -32,6 +32,7 @@ describe('getMiniLLMAdvice', () => {
     expect(result.mode).toBe('disabled');
     expect(result.usedFallback).toBe(true);
     expect(result.fallbackReason).toBe('disabled');
+    expect(result.providerId).toBe('disabled');
   });
 
   it('runs advisory with forceAdvisory and mock provider', async () => {
@@ -43,6 +44,8 @@ describe('getMiniLLMAdvice', () => {
     expect(result.mode).toBe('advisory');
     expect(result.advisoryCard.id).toBe('2c');
     expect(result.validByEngine).toBe(true);
+    expect(result.providerId).toBe('mock:local-stub-v0');
+    expect(result.providerLatencyMs).toBe(0);
   });
 
   it('falls back on illegal mock output', async () => {
@@ -53,6 +56,18 @@ describe('getMiniLLMAdvice', () => {
     });
     expect(result.usedFallback).toBe(true);
     expect(result.advisoryCard.id).toBe('2c');
+    expect(result.providerId).toBe('mock:local-stub-v0');
+  });
+
+  it('falls back on provider throw with providerId', async () => {
+    const input = makeInput();
+    const result = await getMiniLLMAdvice(input, {
+      forceAdvisory: true,
+      provider: createMockProvider('throw'),
+    });
+    expect(result.usedFallback).toBe(true);
+    expect(result.fallbackReason).toBe('provider_error');
+    expect(result.providerId).toBe('mock:local-stub-v0');
   });
 
   it('does not mutate input event via encoded state reference', async () => {

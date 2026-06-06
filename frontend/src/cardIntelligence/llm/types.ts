@@ -119,6 +119,13 @@ export interface MiniLLMProvider {
   complete(prompt: string, input: MiniLLMDecisionInput): Promise<MiniLLMDecisionOutput>;
 }
 
+export interface ProviderCallMetadata {
+  providerId: string;
+  modelId: string | null;
+  latencyMs: number;
+  aborted: boolean;
+}
+
 export interface MiniLLMAdvisoryResult {
   schemaVersion: typeof MINI_LLM_SCHEMA_VERSION;
   requestId: string;
@@ -136,6 +143,9 @@ export interface MiniLLMAdvisoryResult {
 
   rawOutput: MiniLLMDecisionOutput | null;
   validByEngine: boolean;
+
+  providerId?: string;
+  providerLatencyMs?: number;
 
   promptText?: string;
   warnings: string[];

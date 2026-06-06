@@ -27,6 +27,20 @@ export const CARD_INTELLIGENCE_DEBUG =
 export const CARD_INTELLIGENCE_LLM_ADVISORY =
   process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ADVISORY === 'true';
 
+/** LLM provider kind — mock default; ollama requires model env */
+export const CARD_INTELLIGENCE_LLM_PROVIDER =
+  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_PROVIDER === 'ollama'
+    ? 'ollama'
+    : 'mock';
+
+/** Ollama HTTP endpoint — local dev only */
+export const CARD_INTELLIGENCE_LLM_ENDPOINT =
+  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ENDPOINT || 'http://localhost:11434';
+
+/** Ollama model name — empty disables real provider (falls back to mock) */
+export const CARD_INTELLIGENCE_LLM_MODEL =
+  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_MODEL || '';
+
 /**
  * Dev Seeded Game Lab — default OFF everywhere (including npm start).
  * Requires CARD_INTELLIGENCE_DEBUG for __ciListScenarios / __ciRunScenario helpers.

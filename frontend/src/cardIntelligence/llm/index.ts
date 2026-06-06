@@ -32,3 +32,11 @@ export {
   mapMetricResultsToEvaluatorHints,
 } from './buildMiniLLMInput';
 export { getMiniLLMAdvice } from './getMiniLLMAdvice';
+export {
+  readLlmProviderConfigFromEnv,
+  resolveProvider,
+} from './providers/providerConfig';
+export type { LlmProviderConfig, LlmProviderKind } from './providers/providerConfig';
+export { createOllamaProvider, isOllamaConfigured } from './providers/ollamaProvider';
+export { parseProviderJson } from './providers/parseProviderJson';
+export { ProviderError } from './providers/providerErrors';
