@@ -1,6 +1,6 @@
-import { CardDecisionLogEvent } from '../shared/types/logEvents';
 import {
   CARD_INTELLIGENCE_DEBUG,
+  CARD_INTELLIGENCE_DEV_LAB,
   CARD_INTELLIGENCE_LLM_ADVISORY,
 } from '../../config/features';
 import { buildMiniLLMInputFromStoredEvent } from '../llm/buildMiniLLMInput';
@@ -18,7 +18,20 @@ import {
   evaluateStoredPlayByEventId,
 } from './evaluateStoredEvents';
 import { exportCardIntelligenceJsonl } from './exportJsonl';
-import { buildPostGameReport } from './postGameReport';
+import {
+  ciEventReport,
+  ciExportReport,
+  ciGameReport,
+  ciScenarioReport,
+} from './reportFlow';
+import { DebugReportError } from './reportFlow/errors';
+import type {
+  DebugReportDocument,
+  ExportReportResult,
+  ReportExportOptions,
+  ReportFlowOptions,
+} from './reportFlow/types';
+import { ClearDebugDataOptions } from './types';
 import {
   ingestEvaluationsOffline,
   listMemoryAggregates,
@@ -29,7 +42,6 @@ import {
   splitLogEvents,
   summarizeLogEvents,
 } from './readLogs';
-import { ClearDebugDataOptions } from './types';
 
 export type { CiEncodeOptions } from './evaluateStoredEvents';
 
@@ -45,7 +57,20 @@ export interface CardIntelligenceDebugConsole {
   encodeEvent: typeof encodeStoredPlayByEventId;
   listMemory: typeof listMemoryAggregates;
   ingestEvaluations: typeof ingestEvaluationsOffline;
-  postGameReport: (gameId?: string) => Promise<string>;
+  postGameReport: (gameId?: string, opts?: ReportFlowOptions) => Promise<string | DebugReportDocument>;
+  eventReport: (
+    eventId: string,
+    opts?: ReportFlowOptions
+  ) => Promise<string | DebugReportDocument>;
+  gameReport: (
+    gameId?: string,
+    opts?: ReportFlowOptions
+  ) => Promise<string | DebugReportDocument>;
+  exportReport: (options: ReportExportOptions) => Promise<ExportReportResult>;
+  scenarioReport?: (
+    scenarioId: string,
+    opts?: ReportFlowOptions
+  ) => Promise<string | DebugReportDocument>;
   clearAllData: (opts?: ClearDebugDataOptions) => Promise<{ clearedLogs: boolean; clearedMemory: boolean } | null>;
   getMiniLLMAdvice?: (
     eventId: string,
@@ -65,7 +90,14 @@ declare global {
     __ciEvaluateGame?: typeof evaluateStoredGame;
     __ciListMemory?: typeof listMemoryAggregates;
     __ciIngestEvaluations?: typeof ingestEvaluationsOffline;
-    __ciPostGameReport?: (gameId?: string) => Promise<string>;
+    __ciPostGameReport?: (
+      gameId?: string,
+      opts?: ReportFlowOptions
+    ) => Promise<string | DebugReportDocument>;
+    __ciEventReport?: typeof ciEventReport;
+    __ciGameReport?: typeof ciGameReportForConsole;
+    __ciExportReport?: typeof ciExportReport;
+    __ciScenarioReport?: typeof ciScenarioReport;
     __ciClearAllCardIntelligenceData?: (
       opts?: ClearDebugDataOptions
     ) => Promise<{ clearedLogs: boolean; clearedMemory: boolean } | null>;
@@ -80,35 +112,28 @@ declare global {
   }
 }
 
-async function buildPostGameReportForGame(gameId?: string): Promise<string> {
-  const events = await loadAllLogEvents();
-  const filtered = gameId ? events.filter((e) => e.gameId === gameId) : events;
-  const { plays } = splitLogEvents(filtered);
-  const gamePlays: CardDecisionLogEvent[] = [...plays].sort((a, b) =>
-    a.timestamp.localeCompare(b.timestamp)
-  );
-  const targetGameId = gameId ?? gamePlays[0]?.gameId;
-  const scopedPlays = targetGameId
-    ? gamePlays.filter((p) => p.gameId === targetGameId)
-    : gamePlays;
+async function ciGameReportForConsole(
+  gameId?: string,
+  opts: ReportFlowOptions = {}
+): Promise<string | DebugReportDocument> {
+  let targetGameId = gameId;
+  if (!targetGameId) {
+    const events = await loadAllLogEvents();
+    const { plays } = splitLogEvents(events);
+    const sorted = [...plays].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    targetGameId = sorted[0]?.gameId;
+  }
+  if (!targetGameId) {
+    throw new DebugReportError('No game events found in debug logs');
+  }
+  return ciGameReport(targetGameId, opts);
+}
 
-  const evaluations =
-    targetGameId != null
-      ? (await evaluateStoredGame(targetGameId))
-          .map((r) => r.evaluation)
-          .filter((e): e is NonNullable<typeof e> => e != null)
-      : [];
-
-  const aggregates = await listMemoryAggregates(
-    scopedPlays[0]?.variant ? { variant: scopedPlays[0].variant } : {}
-  );
-
-  return buildPostGameReport({
-    gameId: targetGameId,
-    plays: scopedPlays,
-    evaluations,
-    aggregates,
-  });
+async function buildPostGameReportForGame(
+  gameId?: string,
+  opts?: ReportFlowOptions
+): Promise<string | DebugReportDocument> {
+  return ciGameReportForConsole(gameId, opts);
 }
 
 async function ciGetMiniLLMAdviceForEvent(
@@ -145,8 +170,15 @@ export function installCardIntelligenceDebugConsole(): void {
     listMemory: listMemoryAggregates,
     ingestEvaluations: ingestEvaluationsOffline,
     postGameReport: buildPostGameReportForGame,
+    eventReport: ciEventReport,
+    gameReport: ciGameReportForConsole,
+    exportReport: ciExportReport,
     clearAllData: clearWithConfirm,
   };
+
+  if (CARD_INTELLIGENCE_DEV_LAB) {
+    api.scenarioReport = ciScenarioReport;
+  }
 
   window.__ci = api;
   window.__ciEncode = ciEncode;
@@ -159,6 +191,12 @@ export function installCardIntelligenceDebugConsole(): void {
   window.__ciListMemory = listMemoryAggregates;
   window.__ciIngestEvaluations = ingestEvaluationsOffline;
   window.__ciPostGameReport = buildPostGameReportForGame;
+  window.__ciEventReport = ciEventReport;
+  window.__ciGameReport = ciGameReportForConsole;
+  window.__ciExportReport = ciExportReport;
+  if (CARD_INTELLIGENCE_DEV_LAB) {
+    window.__ciScenarioReport = ciScenarioReport;
+  }
   window.__ciClearAllCardIntelligenceData = clearWithConfirm;
 
   if (CARD_INTELLIGENCE_DEBUG && CARD_INTELLIGENCE_LLM_ADVISORY) {
@@ -168,16 +206,18 @@ export function installCardIntelligenceDebugConsole(): void {
   }
 
   console.info(
-    '[CardIntelligence] Debug console ready (Impl 7–8):\n' +
-      '  await __ciLoadEvents()\n' +
-      '  __ciSummarize(await __ciLoadEvents())\n' +
-      '  await __ciEvaluateEvent("<eventId>")\n' +
-      '  await __ciExportLogsJsonl({ includeEvaluations: true })\n' +
-      '  await __ciListMemory()\n' +
+    '[CardIntelligence] Debug console ready (Impl 10):\n' +
+      '  await __ciEventReport("<eventId>")\n' +
+      '  await __ciGameReport("<gameId>")\n' +
+      (CARD_INTELLIGENCE_DEV_LAB
+        ? '  await __ciScenarioReport("LAB_K02")  // requires DEV_LAB\n'
+        : '') +
+      '  await __ciExportReport({ kind: "game", gameId: "...", format: "text" })\n' +
+      '  await __ciLoadEvents() / __ciEvaluateEvent / __ciExportLogsJsonl\n' +
       (CARD_INTELLIGENCE_LLM_ADVISORY
         ? '  await __ciGetMiniLLMAdvice("<eventId>") — advisory only; no play\n'
         : '') +
-      '  __ci.encode / __ci.exportJsonl / …'
+      '  __ciPostGameReport is an alias of __ciGameReport'
   );
 }
 
@@ -201,6 +241,24 @@ export {
 export { exportCardIntelligenceJsonl, buildJsonlLines, buildExportFilename } from './exportJsonl';
 export { listMemoryAggregates, ingestEvaluationsOffline } from './readMemory';
 export { buildPostGameReport } from './postGameReport';
+export {
+  ciEventReport,
+  ciExportReport,
+  ciGameReport,
+  ciScenarioReport,
+  buildScenarioDebugReport,
+  buildEventDebugReport,
+  buildGameDebugReport,
+  exportDebugReport,
+  formatHumanReport,
+  DEBUG_REPORT_SCHEMA_VERSION,
+} from './reportFlow';
+export type {
+  DebugReportDocument,
+  ReportFlowOptions,
+  ReportExportOptions,
+  ExportReportResult,
+} from './reportFlow';
 export {
   clearAllCardIntelligenceDebugData,
   confirmClearAllCardIntelligenceDebugData,

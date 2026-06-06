@@ -20,6 +20,16 @@ export {
   ingestEvaluationsOffline,
   buildPostGameReport,
   clearAllCardIntelligenceDebugData,
+  ciEventReport,
+  ciExportReport,
+  ciGameReport,
+  ciScenarioReport,
+  buildScenarioDebugReport,
+  buildEventDebugReport,
+  buildGameDebugReport,
+  exportDebugReport,
+  formatHumanReport,
+  DEBUG_REPORT_SCHEMA_VERSION,
 } from './debugConsole';
 export type {
   CiEncodeOptions,
@@ -33,3 +43,9 @@ export type {
   ExportRecordType,
   ClearDebugDataOptions,
 } from './types';
+export type {
+  DebugReportDocument,
+  ReportFlowOptions,
+  ReportExportOptions,
+  ExportReportResult,
+} from './reportFlow';

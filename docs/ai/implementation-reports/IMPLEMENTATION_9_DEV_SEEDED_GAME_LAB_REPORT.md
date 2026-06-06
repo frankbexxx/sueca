@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB`  
 **Prompt:** [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md](../implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md)  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H9 pendente** (validação manual Francisco)
+**Estado:** implementação concluída — **H9 OK** (Francisco, 2026-06-06)
 
 ---
 
@@ -158,7 +158,7 @@ grep -rE "devLab|runScenario|__ciRunScenario|__ciListScenarios" \
 
 Build prod default: `CI=true npm run build` — **OK**.
 
-Com flags lab off, helpers não instalados (`devLabConsole.test.ts`):
+Com flags lab off, helpers não instalados — **confirmado em prod** (Francisco):
 
 - `typeof window.__ciRunScenario === 'undefined'`
 - `typeof window.__ciListScenarios === 'undefined'`
@@ -167,7 +167,19 @@ Com flags lab off, helpers não instalados (`devLabConsole.test.ts`):
 
 ## Checkpoints humanos
 
-**H9:** Pendente — executar script §17 da prompt após `npm start` com dupla flag.
+**H9:** OK — 2026-06-06 (Francisco)
+
+Validação manual:
+
+| Check | Resultado |
+|-------|-----------|
+| `__ciListScenarios()` | 4 presets (LAB_K02, LAB_SP09, LAB_S16, LAB_H13) |
+| `__ciRunScenario` ×4 | Report legível; encode + evaluation; `classification: good` |
+| Seed 42 Sueca | `seed hash match: true` → `4034c6b9` |
+| Jogo real | 2 jogadas Sueca — UX inalterada |
+| Prod helpers off | `__ciRunScenario` / `__ciListScenarios` → `undefined` |
+
+**Nota v0:** todos os presets emitiram warning `trick_end missing for trickIndex N` — aceite (fixtures sem TrickEndEvent; evaluator avaliou na mesma). P1: enriquecer presets se métrica depender de trick_end.
 
 ---
 
@@ -188,9 +200,8 @@ Engine inject v1 documentado fora scope.
 
 ## Próximos passos
 
-1. Francisco: H9 checklist (prompt §17)
-2. Provider LLM real / Evaluator v1 / bots — **após** H9
-3. P1: presets extra (S08, K10, S12), `persistToIdb` opt-in
+1. Provider LLM real / Evaluator v1 / bots — **após** Impl 9 fechada (H9 OK)
+2. P1: presets extra (S08, K10, S12), `persistToIdb` opt-in, TrickEndEvent opcional nos presets
 
 ---
 

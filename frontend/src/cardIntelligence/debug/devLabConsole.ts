@@ -5,6 +5,7 @@ import {
 import { listScenarios } from '../devLab/presetScenarios';
 import { exportScenarioJsonl, runScenario } from '../devLab/runScenario';
 import { generateSeededDeal } from '../devLab/seededRandom';
+import { ciScenarioReport } from './reportFlow/buildScenarioReport';
 import type { ScenarioRunOptions, SeededGameOptions } from '../devLab/types';
 
 declare global {
@@ -12,7 +13,7 @@ declare global {
     __ciListScenarios?: typeof listScenarios;
     __ciRunScenario?: typeof runScenario;
     __ciRunSeededGame?: typeof generateSeededDeal;
-    __ciScenarioReport?: (id: string, opts?: ScenarioRunOptions) => Promise<string>;
+    __ciScenarioReport?: typeof ciScenarioReport;
     __ciExportScenario?: (
       id: string,
       opts?: ScenarioRunOptions
@@ -21,18 +22,13 @@ declare global {
       listScenarios: typeof listScenarios;
       runScenario: typeof runScenario;
       runSeededGame: typeof generateSeededDeal;
-      scenarioReport: (id: string, opts?: ScenarioRunOptions) => Promise<string>;
+      scenarioReport: typeof ciScenarioReport;
       exportScenario: (
         id: string,
         opts?: ScenarioRunOptions
       ) => Promise<{ blob: Blob; filename: string }>;
     };
   }
-}
-
-async function scenarioReport(id: string, opts?: ScenarioRunOptions): Promise<string> {
-  const result = await runScenario(id, opts);
-  return result.reportText;
 }
 
 async function exportScenario(
@@ -53,13 +49,13 @@ export function installCardIntelligenceDevLabConsole(): void {
   window.__ciListScenarios = listScenarios;
   window.__ciRunScenario = runScenario;
   window.__ciRunSeededGame = generateSeededDeal;
-  window.__ciScenarioReport = scenarioReport;
+  window.__ciScenarioReport = ciScenarioReport;
   window.__ciExportScenario = exportScenario;
   window.__ciLab = {
     listScenarios,
     runScenario,
     runSeededGame: generateSeededDeal,
-    scenarioReport,
+    scenarioReport: ciScenarioReport,
     exportScenario,
   };
 
@@ -68,6 +64,7 @@ export function installCardIntelligenceDevLabConsole(): void {
     '[CardIntelligence] Dev Lab ready (Impl 9):\n' +
       '  await __ciListScenarios()\n' +
       '  await __ciRunScenario("LAB_K02")\n' +
+      '  await __ciScenarioReport("LAB_K02")\n' +
       '  await __ciRunSeededGame({ variant: "sueca", seed: 42 })'
   );
 }

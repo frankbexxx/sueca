@@ -14,7 +14,8 @@ export type ExportRecordType =
   | 'encoded_state'
   | 'evaluation'
   | 'memory_aggregate'
-  | 'export_meta';
+  | 'export_meta'
+  | 'debug_report';
 
 export interface CardIntelligenceExportEnvelope {
   exportRecordType: ExportRecordType;

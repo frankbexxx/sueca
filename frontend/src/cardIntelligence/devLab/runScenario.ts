@@ -9,7 +9,7 @@ import { CardDecisionLogEvent } from '../shared/types/logEvents';
 import { DevLabScenarioError } from './errors';
 import { getScenarioById } from './presetScenarios';
 import { generateSeededDeal } from './seededRandom';
-import { buildScenarioReport } from './scenarioReport';
+import { buildScenarioDocumentFromRun } from '../debug/reportFlow/scenarioDocument';
 import {
   DEV_LAB_SCHEMA_VERSION,
   DevLabScenario,
@@ -107,11 +107,13 @@ export async function runScenario(
     memoryIngest = { ingested: 1, warnings: [] };
   }
 
-  const reportText = buildScenarioReport({
+  const doc = buildScenarioDocumentFromRun({
     scenario,
+    play,
+    trickEnd,
     encoded,
     evaluation,
-    warnings,
+    rawWarnings: warnings,
   });
 
   return {
@@ -123,7 +125,7 @@ export async function runScenario(
     evaluation,
     memoryIngest,
     warnings,
-    reportText,
+    reportText: doc.text,
   };
 }
 

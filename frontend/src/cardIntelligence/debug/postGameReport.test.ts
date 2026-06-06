@@ -2,10 +2,19 @@ import { buildPostGameReport } from './postGameReport';
 import { EVALUATOR_SCHEMA_VERSION } from '../evaluator/types';
 
 describe('postGameReport', () => {
-  it('builds readable summary with metric counts', () => {
+  it('builds debug report text with metric highlights', () => {
     const text = buildPostGameReport({
       gameId: 'game-1',
-      plays: [{ variant: 'spades' } as never],
+      plays: [
+        {
+          variant: 'spades',
+          eventId: 'evt-1',
+          gameId: 'game-1',
+          legalMoves: [],
+          trickIndex: null,
+          chosenCard: null,
+        } as never,
+      ],
       evaluations: [
         {
           schemaVersion: EVALUATOR_SCHEMA_VERSION,
@@ -39,7 +48,8 @@ describe('postGameReport', () => {
         },
       ],
     });
+    expect(text).toContain('Card Intelligence — Debug Report');
     expect(text).toContain('SP09');
-    expect(text).toContain('2× SP09 bad');
+    expect(text).toContain('game-1');
   });
 });

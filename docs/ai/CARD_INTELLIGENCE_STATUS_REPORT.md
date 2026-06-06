@@ -1,7 +1,7 @@
 # CARD_INTELLIGENCE_STATUS_REPORT
 
 **Data:** 2026-06-04  
-**Versão:** 1.2 — snapshot pós-Impl 8 + audit P2 + prompt Impl 9 concluída  
+**Versão:** 1.3 — snapshot pós-Impl 9 + H9 OK (2026-06-06)  
 **Scope:** documentação consolidada — **zero alterações de código**
 
 ---
@@ -53,7 +53,7 @@ O pipeline **Logger → History → Encoder → Fixtures → Evaluator → Memor
 
 Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grava eventos quando a flag `CARD_INTELLIGENCE_LOGGER_ENABLED` está activa (default **on**). Tudo o resto é observação offline, debug ou testes.
 
-**Validação:** CI e testes automáticos **OK** em todas as implementações 1–8. Checkpoints humanos H1–H8: validação manual/smoke pendente ou OK parcial (ver §6).
+**Validação:** CI e testes automáticos **OK** em Impl 1–9. Checkpoints humanos H1–H8: pendente/parcial (§6). **H9 OK** (2026-06-06).
 
 **Próximo passo planeado (doc):** [Impl 9 Dev Seeded Game Lab](#impl-9--dev-seeded-game-lab-planeado) — cenários repetíveis antes de provider LLM real ou alteração de bots.
 
@@ -75,7 +75,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | **Impl 6 — Memory v0** | Parcial | Ingest offline; aggregates; trend FIFO 40; IDB `cardIntelligenceMemory`; schema 6.0.0 | Não | CI OK (138 tests cardIntelligence); build OK | [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md) | H6 manual pendente; sem ingest live |
 | **Impl 7 — Debug/Export** | Parcial | JSONL export 7.0.0; evaluate offline; memory helpers; `postGameReport`; `window.__ci*` | Não | CI OK (151 tests cardIntelligence); build OK | [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md) | H7 manual pendente; sem UI visual |
 | **Impl 8 — Mini-LLM Advisory** | Parcial | `getMiniLLMAdvice`; `MockMiniLLMProvider`; validate V1–V9; flags duplas debug+LLM | Não | CI OK (165 tests cardIntelligence); build OK | [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md) | H8 manual pendente; mock only; sem decision assist |
-| **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 pendente**; código `devLab/` implementado; prompt [OK](implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md) |
+| **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 OK** 2026-06-06; trick_end warnings v0 aceites |
 | **Audit técnica P2** | OK | A01–A04: catch promises + sorts imutáveis | Não | tsc OK; 359/359 OK; build OK | [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md) | P3/WONTFIX documentados (A05–A13) |
 
 **Nota sobre «Parcial»:** indica gaps funcionais documentados (Tier B, MP-v0, manual smoke pendente) — **não** indica falha de CI.
@@ -304,7 +304,7 @@ Confirmações com evidência nos relatórios Impl 1–8 e audit P2:
 
 # 6. Validações feitas
 
-## Checkpoints humanos (H1–H8)
+## Checkpoints humanos (H1–H9)
 
 Definidos em [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md) §8. Cada checkpoint separa **validação automática (CI)** de **validação manual/smoke**.
 
@@ -318,8 +318,9 @@ Definidos em [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md) §8. Cada ch
 | **H6** | Memory v0 | **OK** — 14 memory tests; build OK | **Pendente** — review 5 aggregates exemplos; confirmar sem ingest live |
 | **H7** | Debug/Export | **OK** — 13 debug tests; build OK | **OK parcial** — pipeline unit-tested; smoke console end-to-end **pendente** |
 | **H8** | Mini-LLM advisory | **OK** — 14 llm tests; build OK | **Pendente** — smoke dual flags + `__ciGetMiniLLMAdvice`; prod sem helper |
+| **H9** | Dev Seeded Game Lab | **OK** — 18 devLab tests; build OK | **OK** — 4 presets + seed 42 + 2 jogadas Sueca + prod helpers off (2026-06-06) |
 
-**Resumo H1–H8:** CI/testes **OK** em todos. Validação manual/smoke: **pendente** em H1–H6 e H8; **OK parcial** em H7 (código testado; fluxo manual console por fechar).
+**Resumo H1–H9:** CI/testes **OK** em todos. H9 **fechado**. Validação manual/smoke: **pendente** em H1–H6 e H8; **OK parcial** em H7.
 
 ## Audit técnica (2026-05-31)
 
@@ -423,7 +424,7 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 | 6 | Impl 6 Memory | ✅ feito |
 | 7 | Impl 7 Debug/Export | ✅ feito |
 | 8 | Impl 8 Mini-LLM mock/advisory | ✅ feito |
-| **9** | **Impl 9 Dev Seeded Game Lab** | **próximo planeado** |
+| **9** | **Impl 9 Dev Seeded Game Lab** | **feito (H9 OK)** |
 | 10+ | Debug Report Flow · Evaluator v1 · Provider LLM real · melhoria bots | após Impl 9 |
 
 ---
