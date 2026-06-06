@@ -43,6 +43,10 @@ Fase 6 — memória → Impl 6
 Debug/export → Impl 7
     ↓
 Fase 7 — mini-LLM advisory → Impl 8
+    ↓
+Dev Seeded Game Lab → Impl 9
+    ↓
+(depois) Debug Report Flow · Evaluator v1 · Provider LLM real · melhoria bots
 ```
 
 **Princípios:** pequeno, sequencial, reversível, **local-first**, bots existentes intactos, regras do jogo intocadas salvo prompt própria.
@@ -68,7 +72,7 @@ Card Intelligence é camada **nova** e **separada** da AI de gameplay existente.
 
 # 2. Ordem recomendada de implementação
 
-Visão conservadora — **9 blocos** (0–8), cada um com prompt dedicada.
+Visão conservadora — **10 blocos** (0–9), cada um com prompt dedicada.
 
 | # | ID | Nome curto |
 |---|-----|------------|
@@ -81,6 +85,7 @@ Visão conservadora — **9 blocos** (0–8), cada um com prompt dedicada.
 | 6 | `IMPLEMENTATION_6_MEMORY_V0` | Memory v0 |
 | 7 | `IMPLEMENTATION_7_DEBUG_EXPORT` | Debug / export JSONL |
 | 8 | `IMPLEMENTATION_8_MINI_LLM_ADVISORY` | Mini-LLM advisory only |
+| 9 | `IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB` | Dev Seeded Game Lab |
 
 ---
 
@@ -218,6 +223,39 @@ Visão conservadora — **9 blocos** (0–8), cada um com prompt dedicada.
 - Validação engine se sugestão for aplicada; fallback sempre.
 - Rollout: disabled default → advisory; **nunca** decision-only.
 - `decisionSource: mini_llm` só após `validByEngine`.
+
+---
+
+## Implementação 9 — Dev Seeded Game Lab
+
+**Base:** [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · pipeline Impl 1–8
+
+**Problema:** validar regras, métricas, logging, encoder, evaluator e mini-LLM apenas com partidas normais é ineficiente — o shuffle é aleatório e não reproduz facilmente situações como K♥ obrigatório (King), Q♠ (Hearts), bag (Spades), manilha antes do Ás (Sueca), duas últimas (King), cortes/trunfos específicos.
+
+**Objectivo:**
+
+- Área **developer-only** (flag dedicada; **não** visível em produção por defeito) para testar cenários controlados e jogos **seeded**.
+- **Não** alterar regras, bots nem gameplay normal.
+
+**Capacidades futuras (v1 documental → implementação na prompt Impl 9):**
+
+| Capacidade | Descrição |
+|------------|-----------|
+| Cenários pré-construídos | Carregar presets alinhados a fixtures/métricas (S08, K02, SP09, …) |
+| Seed fixa | Gerar jogo random com seed repetível — sempre o mesmo baralho/distribuição |
+| Variante | Sueca, Spades, Hearts, King |
+| Cenário / métrica | Escolher situação-alvo sem jogar manualmente até aparecer |
+| Simulação lógica | Avançar estado/decisões offline ou semi-offline (sem depender só de UI) |
+| Pipeline CI completo | Logs → encode → evaluate → memory → report → preparar advisory LLM |
+
+**Fora de scope Impl 9:**
+
+- Alterar motores de regras ou scoring
+- Substituir ou melhorar bots (`frontend/src/ai/*`)
+- Provider LLM real (Impl posterior)
+- UI em produção
+
+**Posição na ordem:** **após Impl 8**, **antes** de provider LLM real, Evaluator v1 amplo ou melhoria de bots.
 
 ---
 
@@ -368,6 +406,30 @@ Visão conservadora — **9 blocos** (0–8), cada um com prompt dedicada.
 
 ---
 
+## Implementação 9 — `IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB`
+
+| Campo | Conteúdo |
+|-------|----------|
+| **Objectivo** | Lab dev com seeds e presets; cenários repetíveis; alimentar pipeline Card Intelligence sem shuffle aleatório |
+| **Documentos base** | FASE_2B, fixtures existentes, CARD_INTELLIGENCE_STATUS_REPORT, Impl 1–8 reports |
+| **Ficheiros prováveis a tocar** | `frontend/src/config/features.ts`, `cardIntelligence/` (nova subpasta `lab/` ou `devLab/`), routing dev-only |
+| **Novos ficheiros prováveis** | `lab/scenarios/*`, `lab/seededGame.ts`, `lab/runScenario.ts`, testes golden por cenário, prompt dedicada |
+| **Dependências** | Impl 1–8 (logger, encoder, evaluator, memory, debug, LLM mock) |
+| **Riscos** | Confundir lab com gameplay prod; leak de presets em build prod; duplicar fixtures |
+| **Testes mínimos** | Mesmo seed → mesmo estado; cenário K02 → log+encode+eval reprodutível; flag off → zero UI/lab |
+| **Critérios de sucesso** | Repetir cenário métrico em &lt;1 min sem jogar manualmente; pipeline offline verde; prod sem lab |
+| **Prompt antes de código** | **Sim** → `implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md` |
+
+**Cenários-alvo (exemplos):**
+
+- King — K♥ obrigatório na 1.ª oportunidade legal
+- Hearts — Q♠ perigo / limpar
+- Spades — bid cumprido, evitar bag
+- Sueca — manilha antes do Ás; ganhar barato (S08); corte/trunfo específico
+- King — endgame duas últimas
+
+---
+
 # 4. Primeira implementação recomendada
 
 ## Começar aqui (código)
@@ -419,7 +481,8 @@ IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
 | Uma PR / entrega por implementação | Facilita review e revert |
 | Não juntar logger + encoder | Dependência sequencial clara |
 | Não juntar avaliador + memória | Avaliador estável antes de agregados |
-| Não juntar export + mini-LLM | LLM só após pipeline analítico útil |
+| Não juntar export + mini-LLM | LLM mock (Impl 8) antes de provider real |
+| Não juntar game lab + provider LLM real | Lab seeded (Impl 9) antes de Ollama/WebLLM |
 | Bots intocados | Hooks passivos; `frontend/src/ai/` intocado; heurísticas permanecem default |
 | Regras intocadas | Alterar `Game.ts` / scoring = prompt própria explícita |
 
@@ -445,6 +508,7 @@ IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
 | S12 | LLM v0 **advisory only** — decision assist só após rollout F7 |
 | S13 | Debug/export UI **dev-only** — `REACT_APP_CARD_INTELLIGENCE_DEBUG`; nunca prod default |
 | S14 | Logger: **uma** função central — não espalhar hooks |
+| S15 | Game Lab **dev-only** — flag dedicada; nunca activo em produção por defeito; não altera fluxo normal de jogo |
 
 ---
 
@@ -462,6 +526,7 @@ IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
 | Memória | Unit ingest — contagens, badRate, separação partial/unknown |
 | Export | Round-trip JSONL |
 | Mini-LLM | Stub provider; rejeição ilegal; timeout → fallback |
+| Game Lab | Mesmo seed → mesmo baralho; cenário preset → eventos esperados; integração log→eval |
 
 ## 7.2 Regras transversais
 
@@ -507,7 +572,7 @@ Checkpoints **obrigatórios** antes de avançar:
 | Pergunta | Resposta |
 |----------|----------|
 | **Por onde começar?** | Prompt `IMPLEMENTATION_1_LOGGER_V0_PROMPT.md`, depois código Impl 1 |
-| **O que não fazer ainda?** | Encoder, avaliador, memória, LLM, backend, alterar bots |
+| **O que não fazer ainda?** | Provider LLM real, melhoria bots, backend — **próximo doc:** Impl 9 Game Lab |
 | **Que docs guiam cada impl?** | Coluna «Documentos base» §3 |
 | **Que prompt antes de código?** | Uma por implementação em `docs/ai/implementation-prompts/` |
 | **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H7 |
@@ -516,7 +581,8 @@ Checkpoints **obrigatórios** antes de avançar:
 
 | Fora de scope até impl dedicada | Motivo |
 |----------------------------------|--------|
-| Decision assist LLM | Rollout F7 — após advisory estável |
+| Provider LLM real (Ollama/WebLLM) | Após Impl 9 Game Lab + pipeline repetível |
+| Decision assist LLM | Rollout F7 — após advisory estável + lab |
 | Bids/pass/leilão LLM | F7 v1/v2 |
 | Backend sync | ROADMAP local-first |
 | Treino ML / fine-tuning | F6 learning futuro |
@@ -560,3 +626,4 @@ Checkpoints **obrigatórios** antes de avançar:
 |--------|------|------|
 | 1.0 | 2026-05-31 | Plano inicial — Impl 0–8, regra prompt→código→relatório |
 | 1.1 | 2026-05-31 | Decisões fechadas: estrutura módulo, TrickEnd/Impl2, IDB, hook central, golden+humano, debug flag |
+| 1.2 | 2026-06-04 | Impl 9 `DEV_SEEDED_GAME_LAB` — após Impl 8, antes de provider LLM real / bots |

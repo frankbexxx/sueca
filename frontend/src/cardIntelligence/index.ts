@@ -57,3 +57,18 @@ export type {
   MiniLLMDecisionInput,
   MiniLLMFallbackReason,
 } from './llm';
+export {
+  listScenarios,
+  runScenario,
+  generateSeededDeal,
+  getScenarioById,
+  ALL_DEV_LAB_SCENARIOS,
+  DEV_LAB_SCHEMA_VERSION,
+} from './devLab';
+export type {
+  DevLabScenario,
+  ScenarioRunOptions,
+  ScenarioRunResult,
+  SeededGameOptions,
+  SeededGameResult,
+} from './devLab';

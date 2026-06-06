@@ -6,11 +6,17 @@ import './styles/sueca-buttons.css';
 import './styles/dobo-ui.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { CARD_INTELLIGENCE_DEBUG } from './config/features';
+import { CARD_INTELLIGENCE_DEBUG, CARD_INTELLIGENCE_DEV_LAB } from './config/features';
 
 if (CARD_INTELLIGENCE_DEBUG) {
   void import('./cardIntelligence/debug/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {
     installCardIntelligenceDebugConsole();
+  });
+}
+
+if (CARD_INTELLIGENCE_DEBUG && CARD_INTELLIGENCE_DEV_LAB) {
+  void import('./cardIntelligence/debug/devLabConsole').then(({ installCardIntelligenceDevLabConsole }) => {
+    installCardIntelligenceDevLabConsole();
   });
 }
 

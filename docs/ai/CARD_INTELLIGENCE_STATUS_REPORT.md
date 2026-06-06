@@ -1,7 +1,7 @@
 # CARD_INTELLIGENCE_STATUS_REPORT
 
 **Data:** 2026-06-04  
-**Versão:** 1.0 — snapshot pós-Impl 8 + audit técnica P2  
+**Versão:** 1.2 — snapshot pós-Impl 8 + audit P2 + prompt Impl 9 concluída  
 **Scope:** documentação consolidada — **zero alterações de código**
 
 ---
@@ -53,7 +53,9 @@ O pipeline **Logger → History → Encoder → Fixtures → Evaluator → Memor
 
 Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grava eventos quando a flag `CARD_INTELLIGENCE_LOGGER_ENABLED` está activa (default **on**). Tudo o resto é observação offline, debug ou testes.
 
-**Validação:** CI e testes automáticos **OK** em todas as implementações. Checkpoints humanos H1–H8 têm validação manual/smoke **pendente** nos relatórios de implementação (ver §6).
+**Validação:** CI e testes automáticos **OK** em todas as implementações 1–8. Checkpoints humanos H1–H8: validação manual/smoke pendente ou OK parcial (ver §6).
+
+**Próximo passo planeado (doc):** [Impl 9 Dev Seeded Game Lab](#impl-9--dev-seeded-game-lab-planeado) — cenários repetíveis antes de provider LLM real ou alteração de bots.
 
 **Audit técnica (2026-05-31):** quatro hardenings P2 aplicados (promises + sorts imutáveis); zero impacto gameplay. Ver [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md).
 
@@ -73,6 +75,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | **Impl 6 — Memory v0** | Parcial | Ingest offline; aggregates; trend FIFO 40; IDB `cardIntelligenceMemory`; schema 6.0.0 | Não | CI OK (138 tests cardIntelligence); build OK | [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md) | H6 manual pendente; sem ingest live |
 | **Impl 7 — Debug/Export** | Parcial | JSONL export 7.0.0; evaluate offline; memory helpers; `postGameReport`; `window.__ci*` | Não | CI OK (151 tests cardIntelligence); build OK | [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md) | H7 manual pendente; sem UI visual |
 | **Impl 8 — Mini-LLM Advisory** | Parcial | `getMiniLLMAdvice`; `MockMiniLLMProvider`; validate V1–V9; flags duplas debug+LLM | Não | CI OK (165 tests cardIntelligence); build OK | [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md) | H8 manual pendente; mock only; sem decision assist |
+| **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 pendente**; código `devLab/` implementado; prompt [OK](implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md) |
 | **Audit técnica P2** | OK | A01–A04: catch promises + sorts imutáveis | Não | tsc OK; 359/359 OK; build OK | [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md) | P3/WONTFIX documentados (A05–A13) |
 
 **Nota sobre «Parcial»:** indica gaps funcionais documentados (Tier B, MP-v0, manual smoke pendente) — **não** indica falha de CI.
@@ -98,7 +101,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 ## Cadeia Card Intelligence
 
 ```
-Logger → Round History / TrickEnd → Encoder → Fixtures → Evaluator → Memory → Debug/Export → Mini-LLM advisory
+Logger → Round History / TrickEnd → Encoder → Fixtures → Evaluator → Memory → Debug/Export → Mini-LLM advisory → **Dev Seeded Game Lab (Impl 9, planeado)**
 ```
 
 ```mermaid
@@ -196,7 +199,7 @@ flowchart TB
 - `getMiniLLMAdvice` — mock provider; valida output contra `legalMoves`.
 - Advisory only: **sugere**, nunca chama `playCard`.
 - Requer flags duplas: `CARD_INTELLIGENCE_DEBUG && CARD_INTELLIGENCE_LLM_ADVISORY`.
-- Provider real (Ollama, WebLLM) **não existe** — v1 futuro.
+- Provider real (Ollama, WebLLM) **não existe** — v1 futuro; **após Impl 9 Game Lab**
 
 ## Estrutura de pastas
 
@@ -210,8 +213,23 @@ frontend/src/cardIntelligence/
 ├── memory/       # ingest, aggregates, queries
 ├── debug/        # export, evaluate offline, __ci*
 ├── llm/          # mock advisory
+├── lab/          # (Impl 9 planeado) seeded scenarios, presets
 └── shared/       # types, storage, clone, ids
 ```
+
+---
+
+## Impl 9 — Dev Seeded Game Lab (planeado)
+
+| Aspecto | Estado |
+|---------|--------|
+| **Implementação** | Não iniciada — documentação only (2026-06-04) |
+| **Problema** | Partidas normais não reproduzem cenários métricos específicos |
+| **Solução** | Flag dev-only; presets + seed; simulação offline do pipeline |
+| **Gameplay / bots / regras** | Intocados |
+| **Posição** | Após Impl 8; antes de provider LLM real e melhoria bots |
+
+**Cenários-alvo documentados:** K♥ King · Q♠ Hearts · bag Spades · manilha/Ás Sueca · duas últimas King · cortes/trunfos.
 
 ---
 
@@ -393,6 +411,34 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 
 # 8. Próximas opções
 
+## Ordem recomendada (actualizada 2026-06-04)
+
+| # | Intervenção | Notas |
+|---|-------------|-------|
+| 1 | Impl 1 Logger | ✅ feito |
+| 2 | Impl 2 Round History / TrickEnd | ✅ feito |
+| 3 | Impl 3 Encoder | ✅ feito |
+| 4 | Impl 4 Fixtures | ✅ feito |
+| 5 | Impl 5 Evaluator | ✅ feito |
+| 6 | Impl 6 Memory | ✅ feito |
+| 7 | Impl 7 Debug/Export | ✅ feito |
+| 8 | Impl 8 Mini-LLM mock/advisory | ✅ feito |
+| **9** | **Impl 9 Dev Seeded Game Lab** | **próximo planeado** |
+| 10+ | Debug Report Flow · Evaluator v1 · Provider LLM real · melhoria bots | após Impl 9 |
+
+---
+
+## G. Impl 9 — Dev Seeded Game Lab (prioridade recomendada)
+
+| | |
+|--|--|
+| **Valor** | Testes e validação **repetíveis**; cenários métricos sem shuffle; smoke H1–H8 mais rápido |
+| **Risco** | Baixo se dev-only e flag dedicada; confusão lab/prod se mal gated |
+| **Pré-requisitos** | Impl 1–8 ✅; prompt ✅ [`IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md`](implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md) |
+| **Recomendação** | **Prioridade alta** — antes de provider LLM real ou alteração de bots |
+
+---
+
 ## A. Melhorar debug/export com UI simples
 
 | | |
@@ -417,8 +463,8 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 |--|--|
 | **Valor** | Testar advisory com modelo real (Ollama/WebLLM) |
 | **Risco** | Alto — complexidade provider, perf, sanitização prompt |
-| **Pré-requisitos** | H7 pipeline estável; H8 smoke OK |
-| **Recomendação** | Adiar — consolidar observação primeiro |
+| **Pré-requisitos** | **Impl 9 Game Lab**; H7/H8 smoke OK |
+| **Recomendação** | Adiar — criar Game Lab primeiro |
 
 ## D. Ligar evaluator/memory a debug reports mais úteis
 
@@ -426,8 +472,8 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 |--|--|
 | **Valor** | `postGameReport` + evaluate + ingest num fluxo coerente pós-partida |
 | **Risco** | Baixo — tudo offline |
-| **Pré-requisitos** | Impl 5+6+7 já existem |
-| **Recomendação** | Prioridade alta — maior ROI imediato |
+| **Pré-requisitos** | Impl 5+6+7 já existem; **Impl 9** acelera validação |
+| **Recomendação** | Após Impl 9 — complemento ao Game Lab |
 
 ## E. Segunda ronda de audit/refactor técnico
 
@@ -444,8 +490,8 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 |--|--|
 | **Valor** | Gameplay real melhora |
 | **Risco** | Alto — fora escopo Card Intelligence; altera `ai/*` |
-| **Pré-requisitos** | H5–H6 manual OK; decisão produto; métricas estáveis |
-| **Recomendação** | Não agora — requer prompt própria e validação humana |
+| **Pré-requisitos** | **Impl 9 Game Lab**; H5–H6; decisão produto |
+| **Recomendação** | Não agora — lab antes de bots |
 
 ---
 
@@ -453,17 +499,17 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 
 ## Próximo passo técnico (sem implementar)
 
-1. **Completar validação manual H1–H6 e smoke H7–H8** — CI já OK; falta confirmação humana IDB/console conforme checklists dos relatórios.
+1. **Completar validação manual H1–H6 e smoke H7–H8** — CI já OK; smoke consola + prod sem `__ci`.
 
-2. **Prioridade sugerida: opção D (+ A opcional)** — consolidar o fluxo **log → encode → evaluate → memory ingest → postGameReport** numa experiência observável (console hoje; UI mínima amanhã).
+2. **Prioridade documental e de implementação: Impl 9 Dev Seeded Game Lab** — tornar testes e validação **repetíveis** (seeds, presets, cenários métricos) **antes** de provider LLM real ou melhorias de bots. Partidas normais com shuffle aleatório são insuficientes para validar K♥, bag, Q♠, manilha/Ás, etc.
 
-3. **Adiar opção C (LLM real)** até H5 validar veredictos e H7 fechar smoke end-to-end.
+3. **Depois de Impl 9:** consolidar Debug Report Flow (opção D) e/ou UI debug mínima (opção A); só então Evaluator v1 (B).
 
-4. **Adiar opção F (bots)** — requer prompt própria; Card Intelligence mede primeiro, altera bots depois.
+4. **Adiar provider LLM real (C)** até Game Lab + pipeline repetível estarem operacionais.
 
-5. **Não iniciar decision assist** (rollout F7) sem advisory mock validado em H8.
+5. **Adiar melhoria de bots (F)** e decision assist — requer prompt própria; lab e métricas estáveis primeiro.
 
-**Resumo:** consolidar **debug / report / evaluator** antes de **provider LLM real**, porque ainda precisamos observar resultados facilmente e fechar validação manual nos juízos (H5) e no pipeline (H7).
+**Resumo:** **Impl 9 Game Lab** → Debug Report Flow / Evaluator v1 → **provider LLM real** → bots. Não inverter esta ordem.
 
 ---
 

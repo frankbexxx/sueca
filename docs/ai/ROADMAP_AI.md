@@ -246,6 +246,28 @@ A decisão final deve continuar validada pelo motor de regras.
 
 ---
 
+### Intervenção Impl 9 — Dev Seeded Game Lab (pós-Impl 8)
+
+**ID:** `IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB`
+
+**Problema:** o pipeline Card Intelligence (Logger → Encoder → Evaluator → Memory → Debug → Mini-LLM mock) existe, mas validar cenários concretos só com partidas normais é lento — o shuffle é aleatório e situações como K♥ obrigatório, bag Spades, Q♠ Hearts ou manilha antes do Ás na Sueca raramente aparecem à primeira.
+
+**Objectivo:** área **developer-only** (flag; invisível em produção por defeito) para:
+
+* carregar cenários pré-construídos (alinhados a fixtures/métricas);
+* gerar jogos com **seed fixa** e repetir sempre o mesmo baralho;
+* escolher jogo (Sueca, Spades, Hearts, King) e cenário/métrica-alvo;
+* simular avanço lógico sem depender de jogar manualmente até sair a situação;
+* alimentar o pipeline: logs → encode → evaluate → memory → report → testes advisory LLM.
+
+**Regras:** não altera regras de jogo, bots, nem gameplay normal. Dev-only.
+
+**Ordem:** **após Impl 8** (Mini-LLM mock/advisory), **antes** de provider LLM real, Evaluator v1 alargado ou melhoria de bots.
+
+Ver [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md) §2 e §3.
+
+---
+
 ## Regra arquitectural
 
 A Card Intelligence deve ser uma camada acima dos bots existentes.

@@ -26,3 +26,10 @@ export const CARD_INTELLIGENCE_DEBUG =
  */
 export const CARD_INTELLIGENCE_LLM_ADVISORY =
   process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ADVISORY === 'true';
+
+/**
+ * Dev Seeded Game Lab — default OFF everywhere (including npm start).
+ * Requires CARD_INTELLIGENCE_DEBUG for __ciListScenarios / __ciRunScenario helpers.
+ */
+export const CARD_INTELLIGENCE_DEV_LAB =
+  process.env.REACT_APP_CARD_INTELLIGENCE_DEV_LAB === 'true';
