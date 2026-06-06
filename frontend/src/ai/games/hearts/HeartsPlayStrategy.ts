@@ -1,10 +1,8 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
-import { AIDifficulty, Card, GameState } from '../../../types/game';
+import { AIDifficulty, GameState } from '../../../types/game';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
-
-const penaltyScore = (c: Card): number =>
-  (c.suit === 'hearts' ? 10 : 0) + (c.rank === 'Q' && c.suit === 'spades' ? 20 : 0);
+import { playFollow, playLead } from './heartsTrickHelpers';
 
 /**
  * Easy: play a random legal card.
@@ -13,53 +11,26 @@ function playEasy(valid: number[]): number {
   return valid[Math.floor(Math.random() * valid.length)];
 }
 
-/**
- * Medium (original behaviour):
- * Leading → play lowest-penalty card.
- * Following → dump highest-penalty card we legally can.
- */
 function playMedium(
   valid: number[],
   player: GameState['players'][number],
+  state: GameState,
   isLeading: boolean
 ): number {
-  const sorted = [...valid].sort((a, b) => penaltyScore(player.hand[b]) - penaltyScore(player.hand[a]));
-  return isLeading ? sorted[sorted.length - 1] : sorted[0];
+  const hand = player.hand;
+  if (isLeading) return playLead(valid, hand, false);
+  return playFollow(valid, hand, state);
 }
 
-/**
- * Hard: same as medium, but when following and off-suit, prefers to dump
- * Q♠ before hearts (higher value = get rid of it first).
- * When leading, avoids leading hearts unless all remaining cards are hearts.
- */
 function playHard(
   valid: number[],
   player: GameState['players'][number],
   state: GameState,
   isLeading: boolean
 ): number {
-  if (isLeading) {
-    const nonHeartsValid = valid.filter((i) => player.hand[i].suit !== 'hearts');
-    const pool = nonHeartsValid.length > 0 ? nonHeartsValid : valid;
-    const sorted = [...pool].sort(
-      (a, b) => penaltyScore(player.hand[a]) - penaltyScore(player.hand[b])
-    );
-    return sorted[0];
-  }
-
-  const ledSuit = state.currentTrick[0].suit;
-  const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
-  if (inSuit.length > 0) {
-    return inSuit.reduce((best, i) =>
-      penaltyScore(player.hand[i]) > penaltyScore(player.hand[best]) ? i : best,
-      inSuit[0]
-    );
-  }
-
-  const sorted = [...valid].sort(
-    (a, b) => penaltyScore(player.hand[b]) - penaltyScore(player.hand[a])
-  );
-  return sorted[0];
+  const hand = player.hand;
+  if (isLeading) return playLead(valid, hand, true);
+  return playFollow(valid, hand, state);
 }
 
 /**
@@ -81,5 +52,5 @@ export function chooseHeartsCard(
 
   if (shouldPlayRandom(difficulty)) return playEasy(valid);
   if (difficulty === 'hard') return playHard(valid, player, state, isLeading);
-  return playMedium(valid, player, isLeading);
+  return playMedium(valid, player, state, isLeading);
 }

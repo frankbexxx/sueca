@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_14_SPADES_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_14_SPADES_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_14_SPADES_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H14: Pendente** (smoke manual)
+**Estado:** implementação concluída — **H14 OK** 2026-06-06 (Francisco)
 
 ---
 
@@ -101,6 +101,10 @@ Deferido (§4.3 prompt opcional). Fixtures SP06/SP08/SP09 disponíveis para test
 | Medium in-suit `winners[0]` vs min winner (L117) | Defer v0.1 |
 | Score global / memory / LLM decision assist | Roadmap |
 
+### Observação Spades v2 (smoke H14 — Francisco)
+
+**«Mandar putos à escola»** continua com problema **análogo ao Sueca S23** (cf. [Impl 13 §observação](./IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md)): o bot tende a usar **carta demasiado baixa por defeito** (ex. 2♠ / rank mínimo via `lowestCard`) quando o contexto pede carta **média/alta controlada** para forçar adversário — alinhado com **SP15** (destrunfar) e regra FASE_1 «não 2♠ escola». **Fora scope Impl 14 v0**; candidata a **Spades bot v2** — sem alteração de código nesta impl.
+
 ---
 
 ## Checkpoints
@@ -108,16 +112,26 @@ Deferido (§4.3 prompt opcional). Fixtures SP06/SP08/SP09 disponíveis para test
 | Checkpoint | Estado |
 |------------|--------|
 | CI testes + build | OK |
-| **H14** smoke Medium/Hard | **Pendente** |
+| **H14** smoke Medium/Hard | **OK** — 2026-06-06 (Francisco) |
 
-Assinatura H14 (após smoke): `**H14:** OK — YYYY-MM-DD`
+### Evidência H14 (2026-06-06)
+
+| Canal | Resultado |
+|-------|-----------|
+| Jest `ai/games/spades` | **33/33** OK |
+| Smoke manual | Spades **Medium/Hard** — jogo normal OK |
+
+**Notas smoke manual:**
+
+- Parceiro / bags / corte mínimo — comportamento geral OK (SP06/SP09/SP08).
+- Ver observação **Spades v2 / escola** acima (análogo Sueca S23 — deferido).
 
 ---
 
 ## Próximos passos
 
-1. Checkpoint **H14** — partida Spades Medium/Hard; observar parceiro/bags/corte mínimo.
-2. Spades bot v2 — **SP14**, bid **SP01**, medium in-suit min winner.
+1. **Spades bot v2** — **SP14**, **SP01**, **SP15** / «escola» (carta média vs 2♠ por defeito), medium in-suit min winner.
+2. **Sueca bot v2** — S23 (Rei vs intermédia) — mesmo padrão estratégico.
 3. Hearts / King bots (Impl 15+).
 
 ---

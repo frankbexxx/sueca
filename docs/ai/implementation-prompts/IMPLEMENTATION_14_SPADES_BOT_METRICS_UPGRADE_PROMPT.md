@@ -362,6 +362,7 @@ await __ciScenarioReport('LAB_SP14')  // evaluator baseline; bot não implementa
 | Memory / LLM live | Offline only |
 | Hearts / King bots | Impl 15+ |
 | Sueca v2 (S23 Rei vs intermédia) | Impl 13 relatório |
+| Spades «escola» / SP15 (2♠ vs carta média-alta) | **H14 OK** — observação Francisco; análogo S23; Spades v2 |
 
 ---
 
@@ -539,6 +540,7 @@ Esperado: **zero** fora testes.
 |--------|------|------|
 | 1.0 | 2026-06-06 | Prompt inicial pós-H13; Spades SP09/SP08/SP06; inventário + gaps código |
 | 1.1 | 2026-06-06 | Revisão pós-análise: mapa §8 relatório; ordem impl vs métricas; T4/T5/T8 medium+hard; lead lowestCard; gaps medium in-suit / hard trump |
+| — | 2026-06-06 | **H14 OK** — smoke Medium/Hard; nota «escola» análoga S23 → Spades v2 (relatório Impl 14) |
 
 ---
 
