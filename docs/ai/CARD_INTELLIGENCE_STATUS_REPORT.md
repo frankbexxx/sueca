@@ -44,7 +44,7 @@ Documentação de desenho completa (Fases 1–7 do [ROADMAP_AI.md](ROADMAP_AI.md
 |------------|--------|
 | Evaluator | Implementado; só testes e debug offline |
 | Memory | Implementado; ingest **offline** via `__ciIngestEvaluations` |
-| Mini-LLM | Mock advisory; flags default **off**; sem hook em `GameBoard` |
+| Mini-LLM | Mock + Ollama provider (advisory/debug); flags default **off**; sem hook em `GameBoard` |
 | Fixtures | Só regressão CI (Jest golden) |
 | Encoder | Export público + helpers debug; **não** no hot path de jogada |
 
@@ -56,7 +56,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 
 **Validação:** CI e testes automáticos **OK** em Impl 1–11. **H9**, **H10** e **H11 OK** (2026-06-06). Checkpoints H1–H8: CI OK; validação manual **pendente** ou **parcial** (§6).
 
-**Próximo passo planeado:** **Provider LLM real** → melhoria bots.
+**Próximo passo planeado:** **H13** (bot Sueca smoke) → Sueca v2 / outros jogos. Impl 12 **H12A OK** 2026-06-06.
 
 **Excepções processuais (sem prompt dedicada):** Impl **1.1** Logger Hardening, hotfix **H2** (clone snapshot Sueca), patch encoder **3.1** King, hotfix **11.1** Dev Lab Tier B presets — documentadas nos relatórios respectivos; aceites como hotfixes ([ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1).
 
@@ -81,6 +81,8 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 OK** 2026-06-06; trick_end warnings v0 aceites |
 | **Impl 10 — Debug Report Flow** | Parcial | Relatórios legíveis texto/JSON/JSONL; `__ciEventReport`, `__ciGameReport`, `__ciScenarioReport`, `__ciExportReport` | Não | CI OK (196 tests cardIntelligence); build OK | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) | **H10 OK** 2026-06-06; highlights game report cosmético (P1) |
 | **Impl 11 — Evaluator v1 Tier B** | Parcial | Heurísticas S25/SP14/H10/K10; `moonThreatLevel`; agregador sem `tierBPartial`; hotfix 11.1 Dev Lab 8 presets | Não | CI OK (229 tests cardIntelligence); build OK | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) | **H11 OK** 2026-06-06; S25/H10 golden partial intencional; Q7 memory deferido |
+| **Impl 12 — LLM Provider Advisory** | Parcial | Ollama provider + mock fallback; `resolveProvider`; metadata `providerId`/`latencyMs` | Não | CI OK (243 tests cardIntelligence); build OK; prod Vercel OK | [IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md) | **H12A OK** 2026-06-06; **H12B pendente** (Ollama+CORS) |
+| **Impl 13 — Bot Metrics Upgrade** | Parcial | Sueca S16/S08/S19; `suecaTrickHelpers`; testes bot | Sim (Sueca AI only) | CI OK (+13 ai/sueca tests); build OK | [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md](implementation-reports/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md) | **H13 pendente**; Easy intocado |
 | **Audit técnica P2** | OK | A01–A04: catch promises + sorts imutáveis | Não | tsc OK; build OK | [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md) | P3/WONTFIX documentados (A05–A13) |
 
 **Nota sobre «Parcial»:** indica gaps funcionais documentados (Tier B, MP-v0, manual smoke pendente) — **não** indica falha de CI.
@@ -102,6 +104,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | Impl 10 | **196** |
 | Impl 11 | **217** |
 | Impl 11.1 | **229** |
+| Impl 12 | **243** |
 
 ---
 
@@ -316,7 +319,7 @@ Componentes ou caminhos que **não afectam** decisões de jogo, regras ou bots:
 | **Memory live** | Ingest não corre em jogadas; encoder `memoryContext` stub |
 | **Mini-LLM → playCard** | Nunca ligado; decision assist fora de scope v0 |
 | **Fixtures em partida** | Só CI — nunca invocados em runtime |
-| **Provider LLM real** | Inexistente — mock only |
+| **Provider LLM real** | Ollama implementado (debug only); mock default; prod sem flags |
 | **Backend sync CI** | Local-first — sem sync Card Intelligence |
 
 ---
@@ -467,7 +470,8 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 | 9 | Impl 9 Dev Seeded Game Lab | ✅ feito (H9 OK) |
 | 10 | Impl 10 Debug Report Flow | ✅ feito (H10 OK) |
 | 11 | Impl 11 Evaluator v1 Tier B + 11.1 Dev Lab | ✅ feito (H11 OK) |
-| **12+** | **Provider LLM real** · UI debug · melhoria bots | próximo foco |
+| 12 | Impl 12 LLM Provider Advisory | ✅ feito (**H12A OK**; H12B Ollama opcional) |
+| **13+** | **Melhoria bots** · UI debug · decision assist (futuro) | próximo foco pós-H12 |
 
 ---
 

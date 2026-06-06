@@ -1,5 +1,12 @@
 import { GameState, Card, Suit, AIDifficulty, CARD_HIERARCHY } from '../../../types/game';
 import { getDifficultyProfile } from '../../core/DifficultyProfile';
+import {
+  cardWouldWinTrickSueca,
+  isSevenLeadBlocked,
+  pickHighestRank,
+  pickLowestRank,
+  suecaTrickWinnerIndex,
+} from './suecaTrickHelpers';
 
 /**
  * Context supplied by Game.ts to avoid coupling the strategy to the class.
@@ -107,6 +114,22 @@ export function calculateWinProbability(
   return Math.max(0, Math.min(1, 1 - higherCardsRemaining / Math.max(1, suitCardsRemaining)));
 }
 
+function pickCheapestWinner(
+  candidates: Array<{ card: Card; index: number }>,
+  trick: Card[],
+  trickLeader: number,
+  trumpSuit: Suit,
+  filter?: (entry: { card: Card; index: number }) => boolean
+): number | null {
+  const winners = candidates.filter(
+    (v) =>
+      (!filter || filter(v)) &&
+      cardWouldWinTrickSueca(v.card, trick, trickLeader, trumpSuit)
+  );
+  if (winners.length === 0) return null;
+  return pickLowestRank(winners).index;
+}
+
 /**
  * Sueca card-play strategy (easy / medium / hard).
  *
@@ -168,9 +191,12 @@ export function chooseSuecaCard(
       }
     }
 
-    let bestCard = validCards[0];
+    const leadCandidates = validCards.filter((v) => !isSevenLeadBlocked(state, v.card));
+    const leadPool = leadCandidates.length > 0 ? leadCandidates : validCards;
+
+    let bestCard = leadPool[0];
     let bestScore = 0;
-    for (const v of validCards) {
+    for (const v of leadPool) {
       const suit = v.card.suit;
       const rankValue = CARD_HIERARCHY[v.card.rank];
       const suitCount = suitCounts[suit];
@@ -206,6 +232,26 @@ export function chooseSuecaCard(
     (v) => v.card.suit !== leadSuit && v.card.suit !== trumpSuit
   );
 
+  // S19/T05 — partner already winning: do not steal (medium + hard)
+  if (partnerIndex !== null) {
+    const currentWinner = suecaTrickWinnerIndex(trick, state.trickLeader, trumpSuit);
+    if (currentWinner === partnerIndex) {
+      const nonStealing = validCards.filter(
+        (v) => !cardWouldWinTrickSueca(v.card, trick, state.trickLeader, trumpSuit)
+      );
+      if (nonStealing.length > 0) {
+        return pickLowestRank(nonStealing).index;
+      }
+      const forcedWin = pickCheapestWinner(
+        validCards,
+        trick,
+        state.trickLeader,
+        trumpSuit
+      );
+      if (forcedWin !== null) return forcedWin;
+    }
+  }
+
   if (profile.usesPartnerSignals && isPartnerLeading && cardsOfLeadSuit.length > 0) {
     const winningCards = cardsOfLeadSuit.filter(
       (v) => CARD_HIERARCHY[v.card.rank] > leadValue && !isLeadTrump
@@ -213,17 +259,11 @@ export function chooseSuecaCard(
     if (winningCards.length > 0) {
       const partnerSignal = getPartnerSignal(state, playerIndex);
       if (partnerSignal === 'need_help') {
-        return winningCards.reduce((best, cur) =>
-          CARD_HIERARCHY[cur.card.rank] > CARD_HIERARCHY[best.card.rank] ? cur : best
-        ).index;
+        return pickHighestRank(winningCards).index;
       }
-      return winningCards.reduce((best, cur) =>
-        CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-      ).index;
+      return pickLowestRank(winningCards).index;
     }
-    const highestSupport = cardsOfLeadSuit.reduce((best, cur) =>
-      CARD_HIERARCHY[cur.card.rank] > CARD_HIERARCHY[best.card.rank] ? cur : best
-    );
+    const highestSupport = pickHighestRank(cardsOfLeadSuit);
     if (CARD_HIERARCHY[highestSupport.card.rank] < CARD_HIERARCHY['K']) {
       return highestSupport.index;
     }
@@ -236,24 +276,27 @@ export function chooseSuecaCard(
     if (winningLeadCards.length > 0) {
       const likelyWinners = winningLeadCards.filter((v) => isCardLikelyToWin(v.card, leadSuit));
       const pool = likelyWinners.length > 0 ? likelyWinners : winningLeadCards;
-      return pool.reduce((best, cur) =>
-        CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-      ).index;
+      const cheapest = pickCheapestWinner(
+        pool,
+        trick,
+        state.trickLeader,
+        trumpSuit,
+        () => true
+      );
+      if (cheapest !== null) return cheapest;
+      return pickLowestRank(pool).index;
     }
-    return cardsOfLeadSuit.reduce((best, cur) =>
-      CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-    ).index;
+    return pickLowestRank(cardsOfLeadSuit).index;
   }
 
   if (trumpCards.length > 0 && highestTrumpInTrick > 0) {
-    const winningTrumps = trumpCards.filter(
-      (v) => CARD_HIERARCHY[v.card.rank] > highestTrumpInTrick
+    const cheapestTrump = pickCheapestWinner(
+      trumpCards,
+      trick,
+      state.trickLeader,
+      trumpSuit
     );
-    if (winningTrumps.length > 0) {
-      return winningTrumps.reduce((best, cur) =>
-        CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-      ).index;
-    }
+    if (cheapestTrump !== null) return cheapestTrump;
   }
 
   if (trumpCards.length > 0 && highestTrumpInTrick === 0) {
@@ -261,21 +304,15 @@ export function chooseSuecaCard(
       (v) => CARD_HIERARCHY[v.card.rank] < CARD_HIERARCHY['K']
     );
     if (lowTrumps.length > 0) {
-      return lowTrumps.reduce((best, cur) =>
-        CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-      ).index;
+      return pickLowestRank(lowTrumps).index;
     }
     if (trumpCards.length > 3) {
-      return trumpCards.reduce((best, cur) =>
-        CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-      ).index;
+      return pickLowestRank(trumpCards).index;
     }
   }
 
   if (otherCards.length > 0) {
-    return otherCards.reduce((best, cur) =>
-      CARD_HIERARCHY[cur.card.rank] < CARD_HIERARCHY[best.card.rank] ? cur : best
-    ).index;
+    return pickLowestRank(otherCards).index;
   }
 
   return validCards[0].index;

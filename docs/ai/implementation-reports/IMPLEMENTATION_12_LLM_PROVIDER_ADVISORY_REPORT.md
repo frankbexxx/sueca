@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY`  
 **Prompt:** [IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_PROMPT.md](../implementation-prompts/IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_PROMPT.md) v1.1  
 **Data:** 2026-05-31  
-**Estado:** implementação concluída — **H12 pendente** (validação manual Francisco)
+**Estado:** implementação concluída — **H12A OK** 2026-06-06; **H12B pendente** (Ollama real + CORS)
 
 ---
 
@@ -178,19 +178,35 @@ Alternativa: H12 **OK parcial** só com mock (aceite §20).
 | Checkpoint | Estado |
 |------------|--------|
 | CI Impl 12 | OK |
-| **H12** | **Pendente** — Francisco |
+| **H12A** | **OK** — 2026-06-06 (Francisco) |
+| **H12B** | **Pendente** — Ollama real + CORS + latência |
+
+### Evidência H12A (2026-06-06)
+
+| Teste | Resultado |
+|-------|-----------|
+| IDB | 40 plays; evento com `legalMoves: 3` |
+| Helper com flags | `typeof __ciGetMiniLLMAdvice === 'function'` |
+| Mock advisory | `mode: advisory`, `providerId: mock:local-stub-v0`, `validByEngine: true`, `usedFallback: false` |
+| Metadata | `providerLatencyMs: 0`, `modelId: mock:local-stub-v0` |
+| Carta legal | `legal check: true` |
+| Zero gameplay | `cardUnchanged: true` |
+| Flags off (A6) | `typeof __ciGetMiniLLMAdvice === 'undefined'` |
+| Prod Vercel | Jogo normal sem flags LLM — não partido |
+
+**H12B (pendente):** `PROVIDER=ollama` + `OLLAMA_ORIGINS=*` + advice num evento IDB com latência/model reais.
 
 ---
 
 ## Próximos passos
 
-1. H12 manual (mock + Ollama opcional)
+1. **H12B** — Ollama local + CORS (opcional para fecho Impl 12 completo)
 2. P1 Dev Lab / report flow LLM (opcional)
-3. Melhoria bots (roadmap)
+3. **Melhoria bots** — após H12B ou H12A OK (gate roadmap)
 4. Decision assist — **não** antes de gates F7
 
 ---
 
 ## Actualização plano/status
 
-Pendente no fecho H12: `IMPLEMENTATION_PLAN_AI.md` + `CARD_INTELLIGENCE_STATUS_REPORT.md`.
+Actualizado: `IMPLEMENTATION_PLAN_AI.md` + `CARD_INTELLIGENCE_STATUS_REPORT.md` (H12A OK).

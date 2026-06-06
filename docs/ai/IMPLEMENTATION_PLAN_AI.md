@@ -507,9 +507,9 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Estado actual (2026-06-06)
 
-**Impl 1–11 + hotfix 11.1 concluídos.** **H11 OK** 2026-06-06.
+**Impl 1–13 concluídos.** **H12A OK** 2026-06-06. **H13 pendente** (bot Sueca smoke).
 
-**Próximo passo recomendado:** **Provider LLM real** (depois melhoria bots).
+**Próximo passo recomendado:** **H13** manual → Sueca bot v2 ou Spades Impl 14.
 
 ## Se a reiniciar do zero (referência histórica)
 
