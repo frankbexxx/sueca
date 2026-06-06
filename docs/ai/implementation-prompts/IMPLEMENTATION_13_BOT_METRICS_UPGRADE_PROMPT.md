@@ -510,6 +510,7 @@ Jogo normal Sueca Medium ou Hard (local AI). **Sem** flags Card Intelligence obr
 | **Q8** | Commit Easy regression | T6 only |
 | **Q9** | Spades next | Impl 14 prompt separada |
 | **Q10** | H13 vs CI | CI obrigatório; H13 observação mesa recomendada |
+| **Q11** | S23 «putos à escola» — Rei por defeito | **Fechado pós-H13** — preferir carta intermédia/alta controlada; Sueca v2 (relatório Impl 13) |
 
 ---
 
@@ -531,7 +532,8 @@ Jogo normal Sueca Medium ou Hard (local AI). **Sem** flags Card Intelligence obr
 | Versão | Data | Nota |
 |--------|------|------|
 | 1.0 | 2026-06-06 | Prompt inicial pós-H12A; Sueca v0; S16/S08/S19; inventário + mapeamento |
+| — | 2026-06-06 | **H13 OK** — SuecaStrategy 10/10; smoke Medium/Hard; nota S23/Rei → Sueca v2 (relatório Impl 13) |
 
 ---
 
-**Fim da prompt — não implementar código até aprovação explícita.**
+**Fim da prompt — implementação e H13 concluídos (2026-06-06).**

@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_13_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md) v1.0  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H13 pendente** (validação manual Francisco)
+**Estado:** implementação concluída — **H13 OK** 2026-06-06 (Francisco)
 
 ---
 
@@ -94,6 +94,10 @@ Não ligado ao runtime. Fixtures S16/S08/S19 disponíveis para validação manua
 - Spades / Hearts / King bots  
 - Teste integração bot + `evaluateDecision` (opcional)
 
+### Observação Sueca v2 (smoke H13 — Francisco)
+
+Quando a AI tenta evitar **«mandar putos à escola»** (métrica **S23**, Hard — fora scope v0), **não** deve usar **Rei por defeito**; preferir carta **intermédia/alta controlada** quando fizer sentido estrategicamente (cf. [FASE_1_METRICAS.md](../FASE_1_METRICAS.md) §S23). Candidata a **Sueca bot v2** — sem alteração de código nesta impl.
+
 ---
 
 ## Checkpoints
@@ -101,22 +105,31 @@ Não ligado ao runtime. Fixtures S16/S08/S19 disponíveis para validação manua
 | Checkpoint | Estado |
 |------------|--------|
 | CI Impl 13 | OK |
-| **H13** | **Pendente** — Francisco |
+| **H13** | **OK** — 2026-06-06 (Francisco) |
 
-### H13 sugerido
+### Evidência H13 (2026-06-06)
 
-Partida Sueca Medium/Hard; observar lead sem 7 prematuro e descarte baixo com parceiro a ganhar; `npm test -- --testPathPattern=SuecaStrategy`.
+| Canal | Resultado |
+|-------|-----------|
+| Jest `SuecaStrategy.test.ts` | **10/10** OK (T1–T10) |
+| Smoke manual | Sueca **Medium + Hard** — jogo normal OK |
+
+**Notas smoke manual:**
+
+- Nenhuma manilha aberta indevidamente antes do Ás — comportamento correcto (S16).
+- Descarte/jogo geral pareceu correcto (S19/S08 observação qualitativa).
+- Ver observação **Sueca v2 / S23** acima (Rei vs carta intermédia — deferido).
 
 ---
 
 ## Próximos passos
 
-1. H13 manual  
-2. Sueca bot v2 (S05, S25) ou Impl 14 outro jogo  
-3. H12B Ollama (opcional, independente)
+1. **Sueca bot v2** — S05, S25, S23 (Rei vs intermédia), cutRisk S08  
+2. **Impl 14** — Spades ou outro jogo  
+3. **H12B** — Ollama smoke (opcional, independente)
 
 ---
 
 ## Actualização plano/status
 
-Pendente fecho H13: `IMPLEMENTATION_PLAN_AI.md` + `CARD_INTELLIGENCE_STATUS_REPORT.md`.
+Actualizado: `IMPLEMENTATION_PLAN_AI.md` + `CARD_INTELLIGENCE_STATUS_REPORT.md` (H13 OK 2026-06-06).

@@ -507,9 +507,9 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Estado actual (2026-06-06)
 
-**Impl 1–13 concluídos.** **H12A OK** 2026-06-06. **H13 pendente** (bot Sueca smoke).
+**Impl 1–13 concluídos.** **H12A OK** 2026-06-06. **H13 OK** 2026-06-06 (SuecaStrategy 10/10 + smoke Medium/Hard).
 
-**Próximo passo recomendado:** **H13** manual → Sueca bot v2 ou Spades Impl 14.
+**Próximo passo recomendado:** **Sueca bot v2** (S05/S25/S23) ou **Impl 14** Spades.
 
 ## Se a reiniciar do zero (referência histórica)
 

@@ -47,7 +47,7 @@ function makeSpades(team1Bid = 3, team1Tricks = 0, team2Bid = 3, team2Tricks = 0
 }
 
 describe('SpadesPlayStrategy', () => {
-  describe('easy — returns a valid index', () => {
+  describe('T7 — easy returns a valid index', () => {
     it('returns an index present in the hand', () => {
       const hand = [makeCard('2', 'clubs'), makeCard('A', 'spades'), makeCard('K', 'hearts')];
       const state = makeState(hand);
@@ -56,9 +56,19 @@ describe('SpadesPlayStrategy', () => {
     });
   });
 
+  describe('T8 — lead with bid met: lowest non-spade (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s leads lowest non-spade when bid fulfilled', (difficulty) => {
+      const hand = [makeCard('A', 'spades'), makeCard('2', 'clubs')];
+      const state = makeState(hand, [], 1);
+      const spades = makeSpades(2, 2);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
+      expect(hand[idx].rank).toBe('2');
+      expect(hand[idx].suit).toBe('clubs');
+    });
+  });
+
   describe('medium — leading without needing tricks: does not lead ♠ when other suits available', () => {
     it('prefers non-spade when leading and team has enough tricks', () => {
-      // team1Bid=2, team1Tricks=2 → needTricks=false → picks non-spade
       const hand = [makeCard('2', 'clubs'), makeCard('A', 'spades')];
       const state = makeState(hand, [], 1);
       const spades = makeSpades(2, 2);
@@ -67,19 +77,18 @@ describe('SpadesPlayStrategy', () => {
     });
   });
 
-  describe('hard — following in-suit: prefers winning with minimum card', () => {
+  describe('T6 — hard following in-suit: minimum winning card', () => {
     it('picks the lowest card that beats current trick', () => {
-      // Trick led with 5♠ — player has 7♠ and A♠ (both beat 5), should pick 7
       const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
       const trick = [makeCard('5', 'spades')];
       const state = makeState(hand, trick, 1);
-      const spades = makeSpades(3, 0); // needs tricks
+      const spades = makeSpades(3, 0);
       const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'hard');
       expect(hand[idx].rank).toBe('7');
     });
   });
 
-  describe('returns -1 when no legal moves', () => {
+  describe('T9 — returns -1 when no legal moves', () => {
     it('returns -1 if adapter allows no cards', () => {
       const hand = [makeCard('2', 'clubs')];
       const state = makeState(hand);
@@ -88,43 +97,86 @@ describe('SpadesPlayStrategy', () => {
     });
   });
 
-  describe('medium — winning detection fix: 4♥ does not "win" against 8♥', () => {
+  describe('medium — winning detection: plays lowest when cannot beat trick', () => {
     it('plays lowest in-suit when no card can beat the current trick', () => {
-      // Trick led 8♥ (hierarchy=6); player has 4♥ (hierarchy=3) and 5♥ (hierarchy=4) — neither beats 8
-      // (Note: 7 has hierarchy=12 in Sueca/Spades, so we avoid using 7 here)
       const hand = [makeCard('5', 'hearts'), makeCard('4', 'hearts')];
       const trick = [makeCard('8', 'hearts')];
-      const state = makeState(hand, trick, 1, 1); // trickLeader=1 (not player 0)
-      const spades = makeSpades(3, 0); // needs tricks — but can't win
+      const state = makeState(hand, trick, 1, 1);
+      const spades = makeSpades(3, 0);
       const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'medium');
-      // Neither card beats 8♥ so no winners — plays lowest in-suit (4♥)
       expect(hand[idx].rank).toBe('4');
     });
   });
 
-  describe('medium — partner winning: plays low to let partner take the trick', () => {
-    it('plays lowest card when partner (P2) is currently winning', () => {
-      // P0 is playerIndex=0, partner=P2 (index 2)
-      // trickLeader=2, so P2 led the trick with A♥ — P2 is winning
+  describe('T1 — SP06 partner winning: play low (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s plays lowest when partner is winning', (difficulty) => {
       const hand = [makeCard('K', 'hearts'), makeCard('2', 'hearts')];
-      // trick[0] was played by trickLeader=2 (partner), trick is led by partner with A♥
       const trick = [makeCard('A', 'hearts')];
-      const state = makeState(hand, trick, 1, 2); // trickLeader=2 = partner
+      const state = makeState(hand, trick, 1, 2);
       const spades = makeSpades(3, 0);
-      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'medium');
-      // Partner is winning — play lowest
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
       expect(hand[idx].rank).toBe('2');
     });
   });
 
-  describe('hard — partner winning: plays low to let partner keep the trick', () => {
-    it('plays lowest card when partner (P2) is winning', () => {
-      const hand = [makeCard('K', 'hearts'), makeCard('2', 'hearts')];
+  describe('T2 — SP06 forced min winner when only winning cards remain', () => {
+    it.each(['medium', 'hard'] as const)('%s plays lowest winning spade when forced', (difficulty) => {
+      const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
       const trick = [makeCard('A', 'hearts')];
-      const state = makeState(hand, trick, 1, 2); // partner led with A♥
+      const state = makeState(hand, trick, 1, 2);
       const spades = makeSpades(3, 0);
-      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, 'hard');
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
+      expect(hand[idx].rank).toBe('7');
+    });
+  });
+
+  describe('T3 — SP09 bid met: slough instead of winning (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s avoids winning when bid fulfilled', (difficulty) => {
+      const hand = [makeCard('A', 'spades'), makeCard('2', 'clubs')];
+      const trick = [makeCard('K', 'hearts')];
+      const state = makeState(hand, trick, 1, 1);
+      const spades = makeSpades(2, 2);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
       expect(hand[idx].rank).toBe('2');
+    });
+  });
+
+  describe('T4 — SP09 bid met with trump on trick: slough when possible (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s sloughs off-suit when bid fulfilled', (difficulty) => {
+      const hand = [makeCard('7', 'spades'), makeCard('A', 'spades'), makeCard('2', 'clubs')];
+      const trick = [makeCard('A', 'hearts'), makeCard('K', 'spades')];
+      const state = makeState(hand, trick, 1, 0);
+      const spades = makeSpades(2, 2);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
+      expect(hand[idx].rank).toBe('2');
+    });
+  });
+
+  describe('T5 — SP08 void cut with minimum winning spade (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s cuts with lowest winning spade when need tricks', (difficulty) => {
+      const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
+      const trick = [makeCard('K', 'hearts')];
+      const state = makeState(hand, trick, 1, 1);
+      const spades = makeSpades(3, 0);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
+      expect(hand[idx].rank).toBe('7');
+    });
+  });
+
+  describe('T10 — medium/hard always return legal index', () => {
+    it.each(['medium', 'hard'] as const)('%s picks from valid indices', (difficulty) => {
+      const hand = [
+        makeCard('2', 'clubs'),
+        makeCard('5', 'hearts'),
+        makeCard('9', 'diamonds'),
+        makeCard('J', 'spades'),
+      ];
+      const state = makeState(hand, [makeCard('3', 'clubs')], 1, 0);
+      const spades = makeSpades(3, 1);
+      const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
+      expect(idx).toBeGreaterThanOrEqual(0);
+      expect(idx).toBeLessThan(hand.length);
+      expect(hand[idx]).toBeDefined();
     });
   });
 });
