@@ -99,6 +99,7 @@ export interface HeartsEncoding {
   dangerousCardsInHand: Card[];
   trickIsSafeAndPointless: boolean | null;
   canCleanDangerousCard: boolean | null;
+  moonThreatLevel: 'none' | 'possible' | 'likely' | null;
 }
 
 export interface KingEncoding {

@@ -163,14 +163,3 @@ export function detectIncompleteContext(
 
   return false;
 }
-
-export function tierBPartialMetric(
-  ctx: EvaluatorContext,
-  metricId: string,
-  reason: string
-): MetricEvaluationResult | null {
-  if (!isMetricApplicable(ctx, metricId)) {
-    return result(metricId, 'partial', reason);
-  }
-  return null;
-}

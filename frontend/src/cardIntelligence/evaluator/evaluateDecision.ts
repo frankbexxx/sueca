@@ -29,6 +29,7 @@ function buildContext(input: DecisionEvaluationInput): EvaluatorContext {
     fixtureId: input.fixtureId,
     evaluatorMode: input.evaluatorMode ?? 'strict',
     rawLogEvent: input.rawLogEvent,
+    tierBTestContext: input.tierBTestContext,
   };
 }
 

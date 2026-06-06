@@ -69,7 +69,7 @@ export interface AggregateOutput {
 }
 
 export function aggregateMetricResults(input: AggregateInput): AggregateOutput {
-  const { metricResults, fixtureId, hasIncompleteContext } = input;
+  const { metricResults, hasIncompleteContext } = input;
 
   const actionable = metricResults.filter((r) =>
     ACTIONABLE.includes(r.classification)
@@ -102,13 +102,7 @@ export function aggregateMetricResults(input: AggregateInput): AggregateOutput {
 
   const betterAlternatives = actionable.flatMap((r) => r.betterAlternatives);
 
-  const tierBPartial =
-    fixtureId !== undefined &&
-    (TIER_B_FIXTURE_IDS as readonly string[]).includes(fixtureId);
-
-  if (tierBPartial) {
-    classification = 'partial';
-  } else if (
+  if (
     hasIncompleteContext &&
     classification !== 'bad' &&
     classification !== 'partial'

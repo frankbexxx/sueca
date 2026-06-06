@@ -125,9 +125,9 @@ export const H10_FIXTURE: FixtureCase = {
     trickIndex: 6,
     handBefore: [C.h2, C.c3],
     legalMoves: [C.h2, C.c3],
-    chosenCard: C.h2,
+    chosenCard: C.c3,
     trickBefore: [C.h4, C.h5],
-    trickAfter: [C.h4, C.h5, C.h2],
+    trickAfter: [C.h4, C.h5, C.c3],
     ledSuit: 'hearts',
     variantFields: { heartsBroken: true, passDirection: null },
     roundPlayHistory: [

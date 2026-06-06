@@ -38,13 +38,20 @@ describe('aggregateResults', () => {
     expect(out.classification).toBe('unknown');
   });
 
-  it('L5: Tier B fixture → partial', () => {
+  it('L5: Tier B metric partial without force-partial hack', () => {
     const out = aggregateMetricResults({
-      metricResults: [mr('S25', 'partial')],
-      fixtureId: 'S25',
+      metricResults: [mr('K10', 'good'), mr('S25', 'partial')],
       hasIncompleteContext: false,
     });
     expect(out.classification).toBe('partial');
+  });
+
+  it('T13: Tier B bad propagates — not forced partial', () => {
+    const out = aggregateMetricResults({
+      metricResults: [mr('SP14', 'bad'), mr('T01', 'good')],
+      hasIncompleteContext: false,
+    });
+    expect(out.classification).toBe('bad');
   });
 
   it('medium beats good', () => {

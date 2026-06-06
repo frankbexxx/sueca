@@ -20,6 +20,13 @@ import {
   suecaEnc,
   trickLeader,
 } from './evalHelpers';
+import {
+  cardWouldWinTrick,
+  deriveOpponentSpadesPressure,
+  highestRankInHand,
+  isOpponentHighBidThreat,
+  lowestLegalThatLoses,
+} from './tierBHelpers';
 import { EvaluatorContext, MetricEvaluationResult, MetricEvaluatorFn } from './types';
 
 function evaluateT01(ctx: EvaluatorContext): MetricEvaluationResult {
@@ -122,11 +129,86 @@ function evaluateK09(ctx: EvaluatorContext): MetricEvaluationResult | null {
 }
 
 function evaluateK10(ctx: EvaluatorContext): MetricEvaluationResult | null {
-  if (ctx.fixtureId !== 'K10') return notApplicable('K10');
-  if (!isMetricApplicable(ctx, 'K10')) {
-    return result('K10', 'partial', 'Endgame duas últimas — avaliação parcial v0.');
+  if (ctx.fixtureId !== 'K10' && !isMetricApplicable(ctx, 'K10')) {
+    return notApplicable('K10');
   }
-  return result('K10', 'partial', 'Endgame duas últimas — contexto incompleto.');
+
+  const k = kingEnc(ctx);
+  if (
+    k.isLastTwoPhase !== true ||
+    k.penaltyMap === null ||
+    k.trickNumberForLastTwo === null ||
+    (k.trickNumberForLastTwo !== 11 && k.trickNumberForLastTwo !== 12)
+  ) {
+    return result('K10', 'partial', 'Endgame duas últimas — dados em falta.');
+  }
+
+  const leader = trickLeader(ctx);
+  const trickBefore =
+    ctx.state.trickPosition > 0
+      ? ctx.state.currentTrick.slice(0, ctx.state.trickPosition)
+      : [];
+  const trump = ctx.state.trumpSuit;
+  const chosenWins = cardWouldWinTrick(ctx, ctx.chosenCard);
+  const highest = highestRankInHand(ctx.legalMoves);
+  const lowestLoser = lowestLegalThatLoses(
+    ctx.legalMoves,
+    trickBefore,
+    leader,
+    trump
+  );
+
+  if (isLeading(ctx)) {
+    const chosenIsHighest =
+      CARD_HIERARCHY[ctx.chosenCard.rank] >= CARD_HIERARCHY[highest.rank];
+    if (chosenIsHighest && ctx.legalMoves.length > 1) {
+      const lowerAlt = ctx.legalMoves.find(
+        (c) => CARD_HIERARCHY[c.rank] < CARD_HIERARCHY[ctx.chosenCard.rank]
+      );
+      if (lowerAlt) {
+        return result(
+          'K10',
+          'bad',
+          'Subiu demais na penúltima — risco no_last_two.',
+          [lowerAlt]
+        );
+      }
+    }
+    if (!chosenIsHighest) {
+      return result('K10', 'good', 'Abriu com carta baixa nas duas últimas.');
+    }
+  }
+
+  if (!chosenWins && lowestLoser) {
+    return result('K10', 'good', 'Descartou baixo — vaza já perdida.');
+  }
+
+  if (chosenWins && lowestLoser) {
+    return result(
+      'K10',
+      'bad',
+      'Ganhou vaza com carta alta — alternativa baixa existia.',
+      [lowestLoser]
+    );
+  }
+
+  if (chosenWins && k.trickNumberForLastTwo === 11 && ctx.legalMoves.length > 1) {
+    const higherRemaining = ctx.legalMoves.filter(
+      (c) =>
+        !cardsMatch(c, ctx.chosenCard) &&
+        CARD_HIERARCHY[c.rank] > CARD_HIERARCHY[ctx.chosenCard.rank]
+    );
+    if (higherRemaining.length > 0) {
+      return result(
+        'K10',
+        'medium',
+        'Ganhou vaza 11 mas ficou carta alta para a 12.',
+        higherRemaining
+      );
+    }
+  }
+
+  return result('K10', 'good', 'Jogada prudente nas duas últimas.');
 }
 
 function evaluateK12(ctx: EvaluatorContext): MetricEvaluationResult | null {
@@ -214,8 +296,65 @@ function evaluateSP01(ctx: EvaluatorContext): MetricEvaluationResult | null {
 }
 
 function evaluateSP14(ctx: EvaluatorContext): MetricEvaluationResult | null {
-  if (ctx.fixtureId !== 'SP14') return notApplicable('SP14');
-  return result('SP14', 'partial', 'Pressão contra bid alta — avaliação parcial v0.');
+  const isFixture = ctx.fixtureId === 'SP14';
+  if (!isFixture && !isMetricApplicable(ctx, 'SP14')) {
+    return notApplicable('SP14');
+  }
+
+  const pressure = deriveOpponentSpadesPressure(ctx);
+  if (!pressure) {
+    return isFixture
+      ? result('SP14', 'partial', 'Pressão bid adversária — score em falta.')
+      : notApplicable('SP14');
+  }
+
+  if (!isOpponentHighBidThreat(pressure)) {
+    return isFixture
+      ? result('SP14', 'partial', 'Sem ameaça activa de bid adversária alta.')
+      : notApplicable('SP14');
+  }
+
+  const leader = trickLeader(ctx);
+  const trickBefore =
+    ctx.state.trickPosition > 0
+      ? ctx.state.currentTrick.slice(0, ctx.state.trickPosition)
+      : [];
+  const chosenWins = spadesTrumpWin(ctx.chosenCard, trickBefore, leader);
+  const winningAlt = ctx.legalMoves.find((c) =>
+    spadesTrumpWin(c, trickBefore, leader)
+  );
+  const losingAlt = ctx.legalMoves.find(
+    (c) => !spadesTrumpWin(c, trickBefore, leader)
+  );
+  const cheapest = lowestWinningSpade(ctx);
+
+  if (!chosenWins && winningAlt) {
+    return result(
+      'SP14',
+      'bad',
+      'Deixou escapar vaza com bid adversária em jogo.',
+      [winningAlt]
+    );
+  }
+
+  if (
+    chosenWins &&
+    cheapest &&
+    !cardsMatch(ctx.chosenCard, cheapest) &&
+    CARD_HIERARCHY[ctx.chosenCard.rank] > CARD_HIERARCHY[cheapest.rank]
+  ) {
+    return result('SP14', 'medium', 'Bloqueou mas gastou espada alta.', [cheapest]);
+  }
+
+  if (chosenWins && losingAlt) {
+    return result('SP14', 'good', 'Bloqueou pressão da bid adversária.');
+  }
+
+  if (!chosenWins && !winningAlt) {
+    return result('SP14', 'good', 'Não havia forma de ganhar — descarte aceitável.');
+  }
+
+  return result('SP14', 'good', 'Resposta adequada à bid adversária.');
 }
 
 function evaluateS08(ctx: EvaluatorContext): MetricEvaluationResult | null {
@@ -303,8 +442,28 @@ function evaluateS19(ctx: EvaluatorContext): MetricEvaluationResult | null {
 }
 
 function evaluateS25(ctx: EvaluatorContext): MetricEvaluationResult | null {
-  if (ctx.fixtureId !== 'S25') return notApplicable('S25');
-  return result('S25', 'partial', 'Destrunfar parceiro — void parceiro indisponível v0.');
+  if (ctx.fixtureId !== 'S25' && !isMetricApplicable(ctx, 'S25')) {
+    return notApplicable('S25');
+  }
+
+  const synth = ctx.tierBTestContext?.s25;
+  if (!synth) {
+    return result('S25', 'partial', 'Destrunfar parceiro — void parceiro indisponível.');
+  }
+
+  if (synth.partnerWasCutting === true) {
+    return result('S25', 'bad', 'Destrunfou quando parceiro ia cortar.');
+  }
+
+  if (
+    synth.leadingTrump === true &&
+    synth.partnerVoidInLedSuit === true &&
+    isLeading(ctx)
+  ) {
+    return result('S25', 'good', 'Destrunfou trunfo a favor do parceiro void.');
+  }
+
+  return result('S25', 'partial', 'Destrunfar parceiro — sinal void/corte em falta.');
 }
 
 function evaluateH13(ctx: EvaluatorContext): MetricEvaluationResult | null {
@@ -360,8 +519,42 @@ function evaluateH05(ctx: EvaluatorContext): MetricEvaluationResult | null {
 }
 
 function evaluateH10(ctx: EvaluatorContext): MetricEvaluationResult | null {
-  if (ctx.fixtureId !== 'H10') return notApplicable('H10');
-  return result('H10', 'partial', 'Shoot the moon — moonStillPossible indisponível v0.');
+  const isFixture = ctx.fixtureId === 'H10';
+  if (!isFixture && !isMetricApplicable(ctx, 'H10')) {
+    return notApplicable('H10');
+  }
+
+  const h = heartsEnc(ctx);
+  if (h.moonThreatLevel === null || h.moonThreatLevel === 'none') {
+    return isFixture
+      ? result('H10', 'partial', 'Shoot the moon — ameaça moon indisponível.')
+      : notApplicable('H10');
+  }
+
+  const offMoonFeed = ctx.legalMoves.find(
+    (c) => c.suit !== 'hearts' && !(c.rank === 'Q' && c.suit === 'spades')
+  );
+  const feedsMoon =
+    ctx.chosenCard.suit === 'hearts' ||
+    (ctx.chosenCard.rank === 'Q' && ctx.chosenCard.suit === 'spades');
+
+  if (h.moonThreatLevel === 'likely' && feedsMoon && offMoonFeed) {
+    return result('H10', 'bad', 'Alimentou moon quando podia cortar.', [offMoonFeed]);
+  }
+
+  if (!feedsMoon) {
+    return result('H10', 'good', 'Evitou alimentar shoot the moon.');
+  }
+
+  if (
+    feedsMoon &&
+    ctx.state.ledSuit === 'hearts' &&
+    (h.pointsInTrick ?? 0) > 0
+  ) {
+    return result('H10', 'good', 'Levou pontos contra candidato a moon.');
+  }
+
+  return result('H10', 'partial', 'Moon possível — decisão estrategicamente ambígua.');
 }
 
 function evaluateT04(ctx: EvaluatorContext): MetricEvaluationResult | null {

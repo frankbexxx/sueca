@@ -2,8 +2,9 @@
 
 Documento operacional para transformar o [ROADMAP_AI](ROADMAP_AI.md) e os desenhos Fase 0–7 em **código incremental**.
 
-**Data:** 2026-05-31  
-**Scope:** planeamento — **sem implementação**, **sem código**, **sem serviços**, **sem alteração de gameplay**.
+**Data:** 2026-06-06  
+**Versão:** 1.3  
+**Scope:** planeamento operacional — **Impl 1–10 executadas**; próximo foco: Evaluator v1 / provider LLM / bots
 
 ---
 
@@ -46,12 +47,14 @@ Fase 7 — mini-LLM advisory → Impl 8
     ↓
 Dev Seeded Game Lab → Impl 9
     ↓
-(depois) Debug Report Flow · Evaluator v1 · Provider LLM real · melhoria bots
+Debug Report Flow → Impl 10
+    ↓
+(depois) Evaluator v1 · Provider LLM real · melhoria bots
 ```
 
 **Princípios:** pequeno, sequencial, reversível, **local-first**, bots existentes intactos, regras do jogo intocadas salvo prompt própria.
 
-**Estado actual do repo:** módulo `cardIntelligence/` **não existe** — será criado do zero. Docs em `docs/ai/` (12 ficheiros) são a fonte de verdade.
+**Estado actual do repo (2026-06-06):** módulo `frontend/src/cardIntelligence/` **implementado** (~139 ficheiros TS); Impl 1–10 + relatórios; H9/H10 OK; ver [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md).
 
 ## Estrutura de módulo (decisão fechada)
 
@@ -72,7 +75,7 @@ Card Intelligence é camada **nova** e **separada** da AI de gameplay existente.
 
 # 2. Ordem recomendada de implementação
 
-Visão conservadora — **10 blocos** (0–9), cada um com prompt dedicada.
+Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (excepto sub-entregas documentadas §2.1).
 
 | # | ID | Nome curto |
 |---|-----|------------|
@@ -86,6 +89,17 @@ Visão conservadora — **10 blocos** (0–9), cada um com prompt dedicada.
 | 7 | `IMPLEMENTATION_7_DEBUG_EXPORT` | Debug / export JSONL |
 | 8 | `IMPLEMENTATION_8_MINI_LLM_ADVISORY` | Mini-LLM advisory only |
 | 9 | `IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB` | Dev Seeded Game Lab |
+| 10 | `IMPLEMENTATION_10_DEBUG_REPORT_FLOW` | Debug Report Flow |
+
+### 2.1 Excepções processuais (hotfixes sem prompt dedicada)
+
+| Sub-entrega | Relatório | Notas |
+|-------------|-----------|-------|
+| Impl 1.1 Logger Hardening | `IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md` | Excepção aceite — ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 |
+| Impl 2 H2 Hotfix | `IMPLEMENTATION_2_H2_HOTFIX_REPORT.md` | Deep snapshot Sueca trick_end |
+| Impl 3.1 King Encoder Fix | `IMPLEMENTATION_3_ENCODER_V0_REPORT.md` §8.1 | Patch encoder-only |
+
+**Regra futura:** sub-entregas devem ter prompt mínima antes de código.
 
 ---
 
@@ -256,6 +270,29 @@ Visão conservadora — **10 blocos** (0–9), cada um com prompt dedicada.
 - UI em produção
 
 **Posição na ordem:** **após Impl 8**, **antes** de provider LLM real, Evaluator v1 amplo ou melhoria de bots.
+
+**Estado:** ✅ concluída — H9 OK (2026-06-06).
+
+---
+
+## Implementação 10 — Debug Report Flow
+
+**Base:** [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md](implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md) · relatórios Impl 7–9
+
+**Problema:** pipeline offline funcional mas validação humana ainda console-heavy; `postGameReport` e `devLab` report isolados.
+
+**Objectivo:**
+
+- Relatórios legíveis (texto + JSON schema **10.0.0**) para scenario / event / game / export.
+- Helpers `__ciEventReport`, `__ciGameReport`, `__ciExportReport`; `__ciScenarioReport` canónico em `debugConsole`.
+- `postGameReport` delega para game report; único `formatHumanReport.ts`.
+- Warnings `trick_end missing` → `[info]` quando eval OK (H9).
+
+**Fora de scope v0:** LLM real no report; persist report IDB; UI visual.
+
+**Posição na ordem:** **após Impl 9**, **antes** de Evaluator v1 / provider LLM real.
+
+**Estado:** ✅ concluída — H10 OK (2026-06-06).
 
 ---
 
@@ -430,9 +467,52 @@ Visão conservadora — **10 blocos** (0–9), cada um com prompt dedicada.
 
 ---
 
+## Implementação 10 — `IMPLEMENTATION_10_DEBUG_REPORT_FLOW`
+
+| Campo | Conteúdo |
+|-------|----------|
+| **Objectivo** | Relatórios legíveis offline; unificar scenario/event/game/export |
+| **Documentos base** | Impl 7–9 reports, FASE 5/6 §export |
+| **Ficheiros prováveis a tocar** | `debug/reportFlow/*`, `debugConsole.ts`, `postGameReport.ts`, `devLab/scenarioReport.ts` |
+| **Novos ficheiros prováveis** | `reportFlow/build*Report.ts`, `formatHumanReport.ts`, `exportReport.ts`, testes |
+| **Dependências** | Impl 7–9 |
+| **Riscos** | Duplicar formatos devLab vs report; report gigante |
+| **Testes mínimos** | LAB_K02, LAB_H13 informational, event/game synthetic, export text/json/jsonl |
+| **Critérios de sucesso** | CI verde; zero gameplay; H10 smoke; prod sem helpers novos |
+| **Prompt antes de código** | **Sim** → `IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md` |
+| **Checkpoint** | **H10** — scenario lab + event/game IDB; ver prompt §16 |
+
+---
+
+## Implementação 11 — `IMPLEMENTATION_11_EVALUATOR_V1_TIER_B`
+
+| Campo | Conteúdo |
+|-------|----------|
+| **Objectivo** | Descongelar métricas Tier B (S25, SP14, H10, K10); heurísticas conservadoras offline |
+| **Documentos base** | FASE_5 §4.2/§8.5, FASE_2A/2B, Impl 5/10 reports |
+| **Ficheiros prováveis a tocar** | `evaluator/metricEvaluators.ts`, `aggregateResults.ts`, `encoder/heartsEncoder.ts`, fixtures mínimas |
+| **Novos ficheiros prováveis** | `evaluator/tierBHelpers.ts`, `encoder/heartsMoonThreat.ts`, `tierBv1.test.ts` |
+| **Dependências** | Impl 5, Impl 10 (H10 OK recomendado) |
+| **Riscos** | Regressão Tier A; H10 falso positivo moon; SP14 partial em logs reais |
+| **Testes mínimos** | Golden K10/SP14 good, H10/S25 partial; sintéticos T1–T12; grep hot path |
+| **Critérios de sucesso** | CI verde; sem `tierBPartial`; schema evaluator 5.0.0 |
+| **Prompt antes de código** | **Sim** → `IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md` |
+| **Relatório** | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) |
+| **Checkpoint** | **H11** — pós-CI; script prompt §16 |
+
+---
+
 # 4. Primeira implementação recomendada
 
-## Começar aqui (código)
+## Estado actual (2026-06-06)
+
+**Impl 1–11 concluídas (código).** Próximo passo recomendado:
+
+**Checkpoint H11 humano** — validar Tier B via consola/report flow; depois **Provider LLM real**.
+
+~~**Evaluator v1 (Tier B)** — prompt dedicada a criar antes de código (ainda não existe).~~
+
+## Se a reiniciar do zero (referência histórica)
 
 **`IMPLEMENTATION_1_LOGGER_V0`**
 
@@ -483,6 +563,7 @@ IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
 | Não juntar avaliador + memória | Avaliador estável antes de agregados |
 | Não juntar export + mini-LLM | LLM mock (Impl 8) antes de provider real |
 | Não juntar game lab + provider LLM real | Lab seeded (Impl 9) antes de Ollama/WebLLM |
+| Não juntar report flow + Evaluator v1 | Report flow (Impl 10) antes de Tier B evaluator |
 | Bots intocados | Hooks passivos; `frontend/src/ai/` intocado; heurísticas permanecem default |
 | Regras intocadas | Alterar `Game.ts` / scoring = prompt própria explícita |
 
@@ -549,21 +630,25 @@ IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
 
 # 8. Marcos de validação humana (Francisco)
 
-Checkpoints **obrigatórios** antes de avançar:
+Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI vs manual:** CI OK ≠ Humano OK — ver [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md) §6.
 
-| # | Após | Validar |
-|---|------|---------|
-| H1 | **Logger v0** (Impl 1) | Eventos fazem sentido numa partida real; classification unknown; jogo igual |
-| H2 | **roundPlayHistory** (Impl 2) | Histórico correcto em Spades/Hearts/King (não só Sueca) |
-| H3 | **Encoder v0** (Impl 3) | Player View honesta; campos P0 King/Spades ok |
-| H4 | **Fixtures → testes** (Impl 4) | Golden cases representam fixtures 2B acordados |
-| H5 | **Avaliador v0** (Impl 5) | Veredictos P0 intuitivos; partial vs unknown; não punir humano injustamente |
-| H6 | **Antes de Memory** (Impl 6) | Avaliador estável; ordem P0 fechada |
-| H7 | **Antes de mini-LLM** (Impl 8) | Pipeline log→encode→eval→export funcional; advisory não afecta jogadas |
+| # | Após | CI | Manual | Estado global |
+|---|------|-----|--------|---------------|
+| H1 | Logger v0 (Impl 1) | OK | Pendente | Parcial |
+| H2 | roundPlayHistory (Impl 2) | OK | Pendente | Parcial |
+| H3 | Encoder v0 (Impl 3) | OK | Pendente | Parcial |
+| H4 | Fixtures (Impl 4) | OK | Pendente | Parcial |
+| H5 | Avaliador v0 (Impl 5) | OK | Pendente | Parcial |
+| H6 | Memory (Impl 6) | OK | Pendente | Parcial |
+| H7 | Debug/Export (Impl 7) | OK | Parcial | Parcial |
+| H8 | Mini-LLM (Impl 8) | OK | Pendente | Parcial |
+| H9 | Dev Lab (Impl 9) | OK | **OK** 2026-06-06 | **OK** |
+| H10 | Debug Report Flow (Impl 10) | OK | **OK** 2026-06-06 | **OK** |
+| H11 | Evaluator v1 Tier B (Impl 11) | OK | Pendente | Parcial |
 
-**Bloqueio:** não iniciar Impl N+1 sem OK explícito nos checkpoints relevantes.
+**Bloqueio formal:** plano original exige OK explícito antes de Impl N+1. Na prática, Impl 2–10 avançaram com **CI-only** para H1–H8; H9/H10 fechados manualmente. Recomenda-se smoke H1–H8 antes de melhoria de bots.
 
-**Golden tests (CI):** regressão automática de schemas, encoder snapshots, avaliador P0 — complementam, **não substituem**, H1/H3/H5.
+**Golden tests (CI):** regressão automática — complementam, **não substituem**, validação manual.
 
 ---
 
@@ -571,17 +656,17 @@ Checkpoints **obrigatórios** antes de avançar:
 
 | Pergunta | Resposta |
 |----------|----------|
-| **Por onde começar?** | Prompt `IMPLEMENTATION_1_LOGGER_V0_PROMPT.md`, depois código Impl 1 |
-| **O que não fazer ainda?** | Provider LLM real, melhoria bots, backend — **próximo doc:** Impl 9 Game Lab |
-| **Que docs guiam cada impl?** | Coluna «Documentos base» §3 |
+| **Por onde começar?** | **Checkpoint H11** — smoke Tier B consola; depois Provider LLM |
+| **O que não fazer ainda?** | Melhoria bots, decision assist — requer H5–H6 manual |
+| **Impl 1–11** | ✅ Concluídas (código) — ver `implementation-reports/` |
 | **Que prompt antes de código?** | Uma por implementação em `docs/ai/implementation-prompts/` |
-| **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H7 |
+| **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H11 |
 
 ## O que fica de fora (explicitamente)
 
 | Fora de scope até impl dedicada | Motivo |
 |----------------------------------|--------|
-| Provider LLM real (Ollama/WebLLM) | Após Impl 9 Game Lab + pipeline repetível |
+| Provider LLM real (Ollama/WebLLM) | Após Evaluator v1 + smoke H7/H8 |
 | Decision assist LLM | Rollout F7 — após advisory estável + lab |
 | Bids/pass/leilão LLM | F7 v1/v2 |
 | Backend sync | ROADMAP local-first |
@@ -616,7 +701,10 @@ Checkpoints **obrigatórios** antes de avançar:
 - [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)
 - [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)
 - [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
-- [FASE_7_MINI_LLM_DESIGN.md](FASE_7_MINI_LLM_DESIGN.md)
+- [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md)
+- [reviews/ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md)
+- [reviews/TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
+- [implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md](implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md)
 
 ---
 
@@ -627,3 +715,4 @@ Checkpoints **obrigatórios** antes de avançar:
 | 1.0 | 2026-05-31 | Plano inicial — Impl 0–8, regra prompt→código→relatório |
 | 1.1 | 2026-05-31 | Decisões fechadas: estrutura módulo, TrickEnd/Impl2, IDB, hook central, golden+humano, debug flag |
 | 1.2 | 2026-06-04 | Impl 9 `DEV_SEEDED_GAME_LAB` — após Impl 8, antes de provider LLM real / bots |
+| 1.3 | 2026-06-06 | Impl 10 `DEBUG_REPORT_FLOW`; H9/H10 OK; excepções 1.1/H2/3.1; estado repo actualizado |

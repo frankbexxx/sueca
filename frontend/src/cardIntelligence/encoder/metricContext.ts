@@ -232,9 +232,9 @@ const BASE_METRICS: Record<GameVariant, MetricDef[]> = {
     {
       metricId: 'H10',
       metricNameHuman: 'Bloquear shoot the moon',
-      neededFields: ['heartsBroken'],
+      neededFields: ['heartsBroken', 'moonThreatLevel'],
       isApplicable: () => true,
-      reasonShort: () => 'Moon threat (parcial v0)',
+      reasonShort: () => 'Moon threat',
       confidence: () => 0.6,
     },
     {

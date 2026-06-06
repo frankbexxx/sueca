@@ -2,6 +2,7 @@ import { Card } from '../../types/game';
 import { CardDecisionLogEvent } from '../shared/types/logEvents';
 import { TrickEndEvent } from '../shared/types/trickEndEvent';
 import { HeartsLogFields } from '../shared/types/variantLogFields';
+import { deriveMoonThreatLevel } from './heartsMoonThreat';
 import { heartsTrickPoints } from '../history/historySelectors';
 import { HeartsEncoding } from './types';
 import { inferTrickLeader, standardTrickWinnerIndex } from './trickHelpers';
@@ -43,6 +44,8 @@ export function encodeHeartsVariant(
     canCleanDangerousCard = event.legalMoves.some((m) => isDangerousHeartsCard(m));
   }
 
+  const moonThreatLevel = deriveMoonThreatLevel(vf.heartsBroken, plays);
+
   return {
     heartsBroken: vf.heartsBroken,
     queenSpadesPlayed,
@@ -50,6 +53,7 @@ export function encodeHeartsVariant(
     dangerousCardsInHand,
     trickIsSafeAndPointless,
     canCleanDangerousCard,
+    moonThreatLevel,
   };
 }
 

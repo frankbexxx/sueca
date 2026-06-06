@@ -4,6 +4,12 @@ import { EncodedDecisionState, MetricContextEntry } from '../encoder/types';
 
 export const EVALUATOR_SCHEMA_VERSION = '5.0.0' as const;
 
+export interface S25TestContext {
+  partnerVoidInLedSuit?: boolean;
+  leadingTrump?: boolean;
+  partnerWasCutting?: boolean;
+}
+
 export type EvaluationClassification =
   | 'good'
   | 'medium'
@@ -30,6 +36,7 @@ export interface DecisionEvaluationInput {
   evaluationScope?: EvaluationScope;
   viewType?: 'player' | 'engine';
   rawLogEvent?: CardDecisionLogEvent;
+  tierBTestContext?: { s25?: S25TestContext };
 }
 
 export interface MetricEvaluationResult {
@@ -65,6 +72,7 @@ export interface EvaluatorContext {
   fixtureId?: string;
   evaluatorMode: EvaluatorMode;
   rawLogEvent?: CardDecisionLogEvent;
+  tierBTestContext?: { s25?: S25TestContext };
 }
 
 export type MetricEvaluatorFn = (ctx: EvaluatorContext) => MetricEvaluationResult | null;
