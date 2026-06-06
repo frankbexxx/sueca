@@ -152,17 +152,18 @@ Build produção (`CI=true npm run build`) não expõe helpers — instalados ap
 ## Checkpoints humanos
 
 **H9:** OK (pré-requisito — Impl 9)  
-**H10:** **Pendente** — smoke manual §16.2 após arranque com:
+**H10:** **OK — 2026-06-06**
 
-```bash
-cd frontend
-REACT_APP_CARD_INTELLIGENCE_DEBUG=true \
-REACT_APP_CARD_INTELLIGENCE_DEV_LAB=true \
-npm start
-```
+| Check | Resultado |
+|-------|-----------|
+| `__ciScenarioReport('LAB_K02')` | OK — `no_king_hearts`, K02 good, `[info] trick_end` |
+| `__ciScenarioReport('LAB_H13')` | OK — classification good, `[info] trick_end` |
+| `__ciEventReport(eventId)` | OK — evento IDB sueca, eval good, warnings (none) |
+| `__ciGameReport(gameId)` | OK — 12 plays, 3 trick_ends, agregados + highlights |
+| Prod helpers off | (assumido build prod; não re-testado nesta sessão) |
+| Jogo inalterado | OK — partida real com 12 jogadas na IDB |
 
-Script consola (copy-paste): ver prompt §16.2.  
-**OK parcial** aceite se IDB vazio para event/game (§16.3).
+Smoke consola: `H10 smoke OK` (sessão DEBUG + DEV_LAB).
 
 ---
 
