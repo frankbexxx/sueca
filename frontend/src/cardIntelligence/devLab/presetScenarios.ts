@@ -26,6 +26,10 @@ export const ALL_DEV_LAB_SCENARIOS: DevLabScenario[] = [
   labFromFixture('LAB_SP09', 'SP09'),
   labFromFixture('LAB_S16', 'S16'),
   labFromFixture('LAB_H13', 'H13'),
+  labFromFixture('LAB_SP14', 'SP14'),
+  labFromFixture('LAB_K10', 'K10'),
+  labFromFixture('LAB_H10', 'H10'),
+  labFromFixture('LAB_S25', 'S25'),
 ];
 
 export function getScenarioById(id: string): DevLabScenario | undefined {

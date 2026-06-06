@@ -32,4 +32,28 @@ describe('buildScenarioReport', () => {
     expect(typeof doc).toBe('object');
     expect(doc).toHaveProperty('meta');
   });
+
+  it.each([
+    ['LAB_SP14', 'good', 'SP14'],
+    ['LAB_K10', 'good', 'K10'],
+    ['LAB_H10', 'partial', 'H10'],
+    ['LAB_S25', 'partial', 'S25'],
+  ] as const)('Tier B %s report includes classification and metricResults', async (labId, expected, metricId) => {
+    const doc = await buildScenarioDebugReport(labId);
+    expect(doc.text).toContain(labId);
+    expect(doc.text).toContain('classification:');
+    expect(doc.text).toContain('reasonShort');
+    expect(doc.text).toContain('metricResults');
+    expect(doc.summary.classification).toBe(expected);
+    expect(doc.text).toContain(`${metricId} ${expected}`);
+  });
+
+  it.each(['LAB_SP14', 'LAB_K10', 'LAB_H10', 'LAB_S25'] as const)(
+    '%s ciScenarioReport does not throw',
+    async (labId) => {
+      const text = await ciScenarioReport(labId);
+      expect(typeof text).toBe('string');
+      expect(text).toContain('Card Intelligence — Debug Report');
+    }
+  );
 });

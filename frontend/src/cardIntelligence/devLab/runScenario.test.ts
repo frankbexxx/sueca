@@ -7,14 +7,18 @@ import { validateScenario } from './validateScenario';
 import { labFromFixture } from './presetScenarios';
 
 describe('presetScenarios', () => {
-  it('lists four lab scenarios one per game', () => {
+  it('lists eight lab scenarios including Tier B', () => {
     const list = listScenarios();
-    expect(list).toHaveLength(4);
+    expect(list).toHaveLength(8);
     expect(list.map((item) => item.id).sort()).toEqual([
+      'LAB_H10',
       'LAB_H13',
       'LAB_K02',
+      'LAB_K10',
       'LAB_S16',
+      'LAB_S25',
       'LAB_SP09',
+      'LAB_SP14',
     ]);
   });
 
@@ -83,5 +87,44 @@ describe('runScenario', () => {
 
   it('getScenarioById returns undefined for missing id', () => {
     expect(getScenarioById('NOPE')).toBeUndefined();
+  });
+});
+
+describe('runScenario Tier B labs', () => {
+  it('LAB_SP14 evaluates SP14 good', async () => {
+    const result = await runScenario('LAB_SP14');
+    expect(result.evaluation?.classification).toBe('good');
+    expect(
+      result.evaluation?.metricResults.find((m) => m.metricId === 'SP14')?.classification
+    ).toBe('good');
+    expect(result.reportText).toContain('LAB_SP14');
+    expect(result.reportText).toContain('reasonShort');
+  });
+
+  it('LAB_K10 evaluates K10 good', async () => {
+    const result = await runScenario('LAB_K10');
+    expect(result.evaluation?.classification).toBe('good');
+    expect(
+      result.evaluation?.metricResults.find((m) => m.metricId === 'K10')?.classification
+    ).toBe('good');
+    expect(result.reportText).toContain('LAB_K10');
+  });
+
+  it('LAB_H10 evaluates H10 partial', async () => {
+    const result = await runScenario('LAB_H10');
+    expect(result.evaluation?.classification).toBe('partial');
+    const h10 = result.evaluation?.metricResults.find((m) => m.metricId === 'H10');
+    expect(h10?.classification).toBe('partial');
+    expect(h10?.reasonShort).toMatch(/moon/i);
+    expect(result.reportText).toContain('LAB_H10');
+  });
+
+  it('LAB_S25 evaluates S25 partial', async () => {
+    const result = await runScenario('LAB_S25');
+    expect(result.evaluation?.classification).toBe('partial');
+    const s25 = result.evaluation?.metricResults.find((m) => m.metricId === 'S25');
+    expect(s25?.classification).toBe('partial');
+    expect(s25?.reasonShort).toMatch(/void|Destrunfar/i);
+    expect(result.reportText).toContain('LAB_S25');
   });
 });

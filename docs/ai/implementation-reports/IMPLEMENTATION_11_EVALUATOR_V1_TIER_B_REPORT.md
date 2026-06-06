@@ -3,7 +3,80 @@
 **Data:** 2026-06-06  
 **Prompt:** [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md](../implementation-prompts/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md)  
 **Pré-requisito:** H10 OK (Impl 10)  
-**Estado CI:** verde — **217** testes `cardIntelligence`, **411** testes frontend, build OK
+**Estado CI:** verde — **229** testes `cardIntelligence` (pós-hotfix 11.1), **423** frontend, build OK  
+**Checkpoint H11:** **OK — 2026-06-06**
+
+---
+
+## Hotfix 11.1 — Dev Lab Tier B presets (2026-06-06)
+
+**ID:** `IMPLEMENTATION_11.1_TIER_B_DEV_LAB_PRESETS`
+
+### Problema
+
+Dev Lab só expunha 4 presets (`LAB_K02`, `LAB_SP09`, `LAB_S16`, `LAB_H13`). Tier B no browser falhava com `Scenario LAB_SP14 not found`. Além disso, `runScenario` não passava `fixtureId` ao evaluator — H10/S25 no report mostrariam classificação global incorrecta.
+
+### Ficheiros alterados (11.1)
+
+| Ficheiro | Alteração |
+|----------|-----------|
+| `devLab/presetScenarios.ts` | +4 presets: `LAB_SP14`, `LAB_K10`, `LAB_H10`, `LAB_S25` |
+| `devLab/runScenario.ts` | Passa `scenario.fixtureId` a `evaluateDecision` |
+| `devLab/runScenario.test.ts` | Registry 8 LABs; asserts Tier B |
+| `debug/reportFlow/buildScenarioReport.test.ts` | Reports Tier B: classification + reasonShort + metricResults |
+
+**Zero alterações** em evaluator core, GameBoard, gameplay, bots.
+
+### Presets Dev Lab (8 total)
+
+| ID | Fixture | global esperado v1 |
+|----|---------|-------------------|
+| `LAB_K02` | K02 | good |
+| `LAB_SP09` | SP09 | good |
+| `LAB_S16` | S16 | good |
+| `LAB_H13` | H13 | good |
+| **`LAB_SP14`** | SP14 | **good** |
+| **`LAB_K10`** | K10 | **good** |
+| **`LAB_H10`** | H10 | **partial** |
+| **`LAB_S25`** | S25 | **partial** |
+
+### Comandos H11 browser (pós 11.1)
+
+Arranque:
+
+```bash
+cd frontend
+REACT_APP_CARD_INTELLIGENCE_DEBUG=true \
+REACT_APP_CARD_INTELLIGENCE_DEV_LAB=true \
+npm start
+```
+
+Consola:
+
+```javascript
+await __ciListScenarios()  // 8 cenários
+
+await __ciScenarioReport('LAB_SP14')
+await __ciScenarioReport('LAB_K10')
+await __ciScenarioReport('LAB_H10')
+await __ciScenarioReport('LAB_S25')
+```
+
+Regressão Tier A (opcional): `await __ciScenarioReport('LAB_K02')`
+
+**Nota:** script `import('./cardIntelligence/...')` continua inválido no CRA — usar `__ciScenarioReport` acima.
+
+### CI hotfix 11.1
+
+```bash
+cd frontend
+CI=true npm test -- --testPathPattern=cardIntelligence --watchAll=false  # 229 passed
+CI=true npm run build
+grep -rE "evaluateDecision" frontend/src/components \
+  frontend/src/cardIntelligence/logger/playWithLogging.ts \
+  frontend/src/models/games
+# zero matches
+```
 
 ---
 
@@ -135,9 +208,9 @@ Implementação: `encoder/heartsMoonThreat.ts` (Player View — só `roundPlayHi
 
 | ID | Tema | Estado |
 |----|------|--------|
-| **Q7** | Memory `partialCount` drift pós-Tier B | **Deferido** — revalidar após H11 |
-| **Q8** | STATUS test count | Actualizado neste relatório (217 / 411) |
-| **D7** | Dev Lab presets `LAB_K10`, `LAB_SP14` | **P1** — não implementado v1 |
+| **Q7** | Memory `partialCount` drift pós-Tier B | **Deferido** — revalidar quando memory wired |
+| **Q8** | STATUS test count | **229** cardIntelligence / **423** frontend (pós-11.1) |
+| **D7** | Dev Lab presets Tier B | **Fechado** — hotfix 11.1 (`LAB_SP14`, `LAB_K10`, `LAB_H10`, `LAB_S25`) |
 
 ---
 
@@ -146,23 +219,35 @@ Implementação: `encoder/heartsMoonThreat.ts` (Player View — só `roundPlayHi
 | Checkpoint | Estado |
 |------------|--------|
 | **H10** | OK 2026-06-06 (pré-requisito) |
-| **H11** | **Pendente** — script §16 prompt; smoke consola pós-deploy local |
+| **H11** | **OK — 2026-06-06** | Jest golden + tierBv1; browser `__ciScenarioReport` LAB_K02, LAB_S25, LAB_H10 (+ CI golden SP14/K10) |
+
+### Evidência H11 (Francisco)
+
+| Canal | Resultado |
+|-------|-----------|
+| Jest `evaluatorGolden` | Tier A ×20 good; K10/SP14 good; H10/S25 partial |
+| Jest `tierBv1` | T1–T12 OK |
+| Browser Dev Lab | LAB_K02 good; LAB_S25 partial («void parceiro indisponível»); LAB_H10 partial («ameaça moon indisponível») |
+| Hotfix 11.1 | 8 presets; `fixtureId` em `runScenario` |
 
 ---
 
 ## Actualização IMPLEMENTATION_PLAN + STATUS (Impl 11)
 
-- [IMPLEMENTATION_PLAN_AI.md](../IMPLEMENTATION_PLAN_AI.md) v1.4 — secção Impl 11 + H11 pendente
-- [CARD_INTELLIGENCE_STATUS_REPORT.md](../CARD_INTELLIGENCE_STATUS_REPORT.md) v1.5 — Impl 11, 217 testes CI
+- [IMPLEMENTATION_PLAN_AI.md](../IMPLEMENTATION_PLAN_AI.md) v1.4 — Impl 11 + H11 OK
+- [CARD_INTELLIGENCE_STATUS_REPORT.md](../CARD_INTELLIGENCE_STATUS_REPORT.md) v1.6 — Impl 11 + hotfix 11.1, 229 testes CI
 
 ---
 
 ## Próximos passos
 
-1. **H11 humano** — consola §16 prompt; validar K10/SP14 good, H10/S25 partial, `reasonShort` à mesa  
-2. **Provider LLM real** / melhoria bots — fora scope Impl 11  
-3. **Opcional P1:** presets Dev Lab Tier B (D7)
+1. **Provider LLM real** — próximo bloco roadmap  
+2. **Melhoria bots** — após provider / H5–H6 smoke recomendado  
+3. **Q7** — revalidar memory `partialCount` pós-Tier B  
+4. **Cosmético P2** — `humanNote` fixtures Tier B (texto «v0»); game report highlights
 
 ---
+
+**Estado:** Impl 11 + hotfix 11.1 **fechados** — **H11 OK** 2026-06-06.
 
 **Fim do relatório Impl 11.**

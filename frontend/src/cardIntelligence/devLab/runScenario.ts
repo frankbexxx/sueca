@@ -39,7 +39,8 @@ function normalizePlayEvent(scenario: DevLabScenario): CardDecisionLogEvent {
 function evaluateScenarioPlay(
   play: CardDecisionLogEvent,
   trickEnd: DevLabScenario['trickEndEvent'],
-  options: ScenarioRunOptions
+  options: ScenarioRunOptions,
+  fixtureId?: string
 ): {
   encoded?: ScenarioRunResult['encoded'];
   evaluation?: ScenarioRunResult['evaluation'];
@@ -73,6 +74,7 @@ function evaluateScenarioPlay(
       encodedState: encoded,
       chosenCard: play.chosenCard,
       legalMoves: play.legalMoves,
+      fixtureId,
       rawLogEvent: play,
       viewType: engineView ? 'engine' : 'player',
       evaluatorMode: engineView ? 'debug' : 'strict',
@@ -97,7 +99,8 @@ export async function runScenario(
   const { encoded, evaluation, warnings } = evaluateScenarioPlay(
     play,
     trickEnd ?? undefined,
-    options
+    options,
+    scenario.fixtureId
   );
 
   let memoryIngest: ScenarioRunResult['memoryIngest'];

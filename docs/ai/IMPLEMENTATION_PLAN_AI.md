@@ -3,8 +3,8 @@
 Documento operacional para transformar o [ROADMAP_AI](ROADMAP_AI.md) e os desenhos Fase 0–7 em **código incremental**.
 
 **Data:** 2026-06-06  
-**Versão:** 1.3  
-**Scope:** planeamento operacional — **Impl 1–10 executadas**; próximo foco: Evaluator v1 / provider LLM / bots
+**Versão:** 1.4  
+**Scope:** planeamento operacional — **Impl 1–11 + hotfix 11.1 executadas**; **H11 OK**; próximo foco: provider LLM / bots
 
 ---
 
@@ -498,7 +498,8 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Critérios de sucesso** | CI verde; sem `tierBPartial`; schema evaluator 5.0.0 |
 | **Prompt antes de código** | **Sim** → `IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md` |
 | **Relatório** | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) |
-| **Checkpoint** | **H11** — pós-CI; script prompt §16 |
+| **Hotfix 11.1** | Dev Lab Tier B presets — § relatório Impl 11 |
+| **Checkpoint** | **H11** — **OK** 2026-06-06 |
 
 ---
 
@@ -506,11 +507,9 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Estado actual (2026-06-06)
 
-**Impl 1–11 concluídas (código).** Próximo passo recomendado:
+**Impl 1–11 + hotfix 11.1 concluídos.** **H11 OK** 2026-06-06.
 
-**Checkpoint H11 humano** — validar Tier B via consola/report flow; depois **Provider LLM real**.
-
-~~**Evaluator v1 (Tier B)** — prompt dedicada a criar antes de código (ainda não existe).~~
+**Próximo passo recomendado:** **Provider LLM real** (depois melhoria bots).
 
 ## Se a reiniciar do zero (referência histórica)
 
@@ -644,7 +643,7 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | H8 | Mini-LLM (Impl 8) | OK | Pendente | Parcial |
 | H9 | Dev Lab (Impl 9) | OK | **OK** 2026-06-06 | **OK** |
 | H10 | Debug Report Flow (Impl 10) | OK | **OK** 2026-06-06 | **OK** |
-| H11 | Evaluator v1 Tier B (Impl 11) | OK | Pendente | Parcial |
+| H11 | Evaluator v1 Tier B (Impl 11 + 11.1) | OK | **OK** 2026-06-06 | **OK** |
 
 **Bloqueio formal:** plano original exige OK explícito antes de Impl N+1. Na prática, Impl 2–10 avançaram com **CI-only** para H1–H8; H9/H10 fechados manualmente. Recomenda-se smoke H1–H8 antes de melhoria de bots.
 
@@ -656,9 +655,9 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 
 | Pergunta | Resposta |
 |----------|----------|
-| **Por onde começar?** | **Checkpoint H11** — smoke Tier B consola; depois Provider LLM |
-| **O que não fazer ainda?** | Melhoria bots, decision assist — requer H5–H6 manual |
-| **Impl 1–11** | ✅ Concluídas (código) — ver `implementation-reports/` |
+| **Por onde começar?** | **Provider LLM real** — depois melhoria bots |
+| **O que não fazer ainda?** | Melhoria bots sem provider / H5–H6 manual recomendado |
+| **Impl 1–11** | ✅ Concluídas — ver `implementation-reports/` (H11 OK 2026-06-06) |
 | **Que prompt antes de código?** | Uma por implementação em `docs/ai/implementation-prompts/` |
 | **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H11 |
 
@@ -716,3 +715,4 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | 1.1 | 2026-05-31 | Decisões fechadas: estrutura módulo, TrickEnd/Impl2, IDB, hook central, golden+humano, debug flag |
 | 1.2 | 2026-06-04 | Impl 9 `DEV_SEEDED_GAME_LAB` — após Impl 8, antes de provider LLM real / bots |
 | 1.3 | 2026-06-06 | Impl 10 `DEBUG_REPORT_FLOW`; H9/H10 OK; excepções 1.1/H2/3.1; estado repo actualizado |
+| 1.4 | 2026-06-06 | Impl 11 Evaluator Tier B + hotfix 11.1 Dev Lab; H11 OK |

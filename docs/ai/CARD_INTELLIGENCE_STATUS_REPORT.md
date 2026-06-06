@@ -1,8 +1,8 @@
 # CARD_INTELLIGENCE_STATUS_REPORT
 
 **Data:** 2026-06-06  
-**Versão:** 1.5 — snapshot pós-Impl 11 (Evaluator v1 Tier B)  
-**Scope:** documentação consolidada pós-relatório Impl 11  
+**Versão:** 1.6 — snapshot pós-Impl 11 + hotfix 11.1 + **H11 OK**  
+**Scope:** documentação consolidada pós-fecho Impl 11  
 **Revisões:** [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) · [TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
 
 ---
@@ -28,14 +28,14 @@ A AI de gameplay actual (`frontend/src/ai/*`, `aiClient`, estratégias por jogo)
 
 ## O que já existe
 
-Documentação de desenho completa (Fases 1–7 do [ROADMAP_AI.md](ROADMAP_AI.md)) e **implementações 1–10** executadas com prompt → código → relatório ([IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md)):
+Documentação de desenho completa (Fases 1–7 do [ROADMAP_AI.md](ROADMAP_AI.md)) e **implementações 1–11** (+ hotfix 11.1 Dev Lab Tier B) executadas com prompt → código → relatório ([IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md)):
 
 - Catálogo de métricas por jogo ([FASE_1_METRICAS.md](FASE_1_METRICAS.md))
 - Prioridades encoder P0 ([FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md))
 - 23 fixtures golden ([FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md))
 - Desenhos logger, encoder, avaliador, memória, mini-LLM (Fases 3–7)
 - Módulo `cardIntelligence/` com ~139 ficheiros TypeScript
-- **217 testes** cardIntelligence + **411 testes** frontend totais (pós-Impl 11)
+- **229 testes** cardIntelligence + **423 testes** frontend totais (pós-Impl 11 + hotfix 11.1)
 - Build de produção verde (`CI=true npm run build`)
 
 ## O que ainda não está ligado ao gameplay
@@ -54,11 +54,11 @@ O pipeline **Logger → History → Encoder → Fixtures → Evaluator → Memor
 
 Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grava eventos quando a flag `CARD_INTELLIGENCE_LOGGER_ENABLED` está activa (default **on**). Tudo o resto é observação offline, debug ou testes.
 
-**Validação:** CI e testes automáticos **OK** em Impl 1–11. Checkpoints humanos H1–H8: CI OK; validação manual **pendente** ou **parcial** (§6). **H9 OK** e **H10 OK** (2026-06-06). **H11 pendente** pós-Impl 11.
+**Validação:** CI e testes automáticos **OK** em Impl 1–11. **H9**, **H10** e **H11 OK** (2026-06-06). Checkpoints H1–H8: CI OK; validação manual **pendente** ou **parcial** (§6).
 
-**Próximo passo planeado:** **Checkpoint H11** (Tier B reasonShort à mesa) → **Provider LLM real**.
+**Próximo passo planeado:** **Provider LLM real** → melhoria bots.
 
-**Excepções processuais (sem prompt dedicada):** Impl **1.1** Logger Hardening, hotfix **H2** (clone snapshot Sueca), patch encoder **3.1** King — documentadas nos relatórios respectivos; aceites como hotfixes ([ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1).
+**Excepções processuais (sem prompt dedicada):** Impl **1.1** Logger Hardening, hotfix **H2** (clone snapshot Sueca), patch encoder **3.1** King, hotfix **11.1** Dev Lab Tier B presets — documentadas nos relatórios respectivos; aceites como hotfixes ([ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1).
 
 **Audit técnica (2026-05-31):** quatro hardenings P2 aplicados (promises + sorts imutáveis); zero impacto gameplay. Ver [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md).
 
@@ -80,7 +80,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | **Impl 8 — Mini-LLM Advisory** | Parcial | `getMiniLLMAdvice`; `MockMiniLLMProvider`; validate V1–V9; flags duplas debug+LLM | Não | CI OK (165 tests cardIntelligence); build OK | [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md) | H8 manual pendente; mock only; sem decision assist |
 | **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 OK** 2026-06-06; trick_end warnings v0 aceites |
 | **Impl 10 — Debug Report Flow** | Parcial | Relatórios legíveis texto/JSON/JSONL; `__ciEventReport`, `__ciGameReport`, `__ciScenarioReport`, `__ciExportReport` | Não | CI OK (196 tests cardIntelligence); build OK | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) | **H10 OK** 2026-06-06; highlights game report cosmético (P1) |
-| **Impl 11 — Evaluator v1 Tier B** | Parcial | Heurísticas S25/SP14/H10/K10; `moonThreatLevel`; agregador sem `tierBPartial` | Não | CI OK (217 tests cardIntelligence); build OK | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) | **H11 pendente**; S25/H10 golden partial; Dev Lab Tier B P1 |
+| **Impl 11 — Evaluator v1 Tier B** | Parcial | Heurísticas S25/SP14/H10/K10; `moonThreatLevel`; agregador sem `tierBPartial`; hotfix 11.1 Dev Lab 8 presets | Não | CI OK (229 tests cardIntelligence); build OK | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) | **H11 OK** 2026-06-06; S25/H10 golden partial intencional; Q7 memory deferido |
 | **Audit técnica P2** | OK | A01–A04: catch promises + sorts imutáveis | Não | tsc OK; build OK | [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md) | P3/WONTFIX documentados (A05–A13) |
 
 **Nota sobre «Parcial»:** indica gaps funcionais documentados (Tier B, MP-v0, manual smoke pendente) — **não** indica falha de CI.
@@ -101,6 +101,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 | Impl 9 | **183** |
 | Impl 10 | **196** |
 | Impl 11 | **217** |
+| Impl 11.1 | **229** |
 
 ---
 
@@ -341,7 +342,7 @@ Confirmações com evidência nos relatórios Impl 1–8 e audit P2:
 
 # 6. Validações feitas
 
-## Checkpoints humanos (H1–H10)
+## Checkpoints humanos (H1–H11)
 
 Definidos em [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md) §8 e prompts Impl 8–10. Cada checkpoint separa **validação automática (CI)** de **validação manual/smoke**. **Não** marcar manual OK sem smoke real.
 
@@ -357,8 +358,9 @@ Definidos em [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md) §8 e prompt
 | **H8** | Mini-LLM advisory | **OK** — 14 llm tests; build OK | **Pendente** — smoke dual flags + `__ciGetMiniLLMAdvice`; prod sem helper |
 | **H9** | Dev Seeded Game Lab | **OK** — 18 devLab tests; build OK | **OK** — 4 presets + seed 42 + prod helpers off (2026-06-06) |
 | **H10** | Debug Report Flow | **OK** — 12+ reportFlow tests; build OK | **OK** — LAB_K02/H13 + event/game IDB (2026-06-06) |
+| **H11** | Evaluator v1 Tier B (+ 11.1 Dev Lab) | **OK** — 229 cardIntelligence tests; golden + tierBv1 | **OK** — Jest Tier B + browser LAB_K02/S25/H10 (2026-06-06) |
 
-**Resumo H1–H10:** CI/testes **OK** em todos. H9 e H10 **fechados**. Validação manual: **pendente** em H1–H6 e H8; **parcial** em H7.
+**Resumo H1–H11:** CI/testes **OK** em todos. **H9, H10 e H11 fechados.** Validação manual: **pendente** em H1–H6 e H8; **parcial** em H7.
 
 ## Audit técnica (2026-05-31)
 
@@ -388,7 +390,7 @@ Baseline: [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md).
 ## Encoder
 
 - **Voids avançados** — inferência Hard parcial; player view simplificada.
-- **Moon tracking** — H10 Tier B: `moonStillPossible` indisponível → evaluator `partial`.
+- **Moon tracking** — H10 Tier B: `moonThreatLevel` Player View; golden **partial** quando ameaça indisponível (Impl 11); `good` só com história moon sintética.
 - **Spades tricks nullable** — tricks won/bags null at play time em alguns momentos.
 - **King edge cases** — `contract` / `variantFields.contractId` null no log raw (3.1 corrige encoder fallback, não logger).
 - **Engine View** — stub throws salvo testes; P2 deferido.
@@ -396,7 +398,7 @@ Baseline: [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md).
 
 ## Evaluator
 
-- **Tier B partial** — S25, H10, SP14, K10 → agregação `partial` fixa.
+- **Tier B v1 (Impl 11)** — K10/SP14 heurísticas `good` quando dados suficientes; S25/H10 golden **partial** intencional (Player View); agregador worst-wins real (sem `tierBPartial`).
 - **SP01 / H05 proxies** — métricas simplificadas vs desenho Fase 1 completo.
 - **Leilão King fora** — bid/auction/pass não avaliados em v0.
 - **Métricas Hard parciais** — catálogo Fase 1 Hard > cobertura evaluator v0.
@@ -464,22 +466,29 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 | 1–8 | Impl 1–8 | ✅ feito |
 | 9 | Impl 9 Dev Seeded Game Lab | ✅ feito (H9 OK) |
 | 10 | Impl 10 Debug Report Flow | ✅ feito (H10 OK) |
-| **11+** | **Evaluator v1 (Tier B)** · Provider LLM real · UI debug · melhoria bots | próximo foco técnico |
+| 11 | Impl 11 Evaluator v1 Tier B + 11.1 Dev Lab | ✅ feito (H11 OK) |
+| **12+** | **Provider LLM real** · UI debug · melhoria bots | próximo foco |
 
 ---
 
-## G. Evaluator v1 — Tier B (prioridade recomendada)
+## G. Provider LLM real (prioridade recomendada)
 
 | | |
 |--|--|
-| **Valor** | Menos `partial` por gaps encoder; métricas Medium reais |
-| **Risco** | Médio — depende de encoder Tier B |
-| **Pré-requisitos** | Impl 1–10 ✅; H5 manual recomendado |
+| **Valor** | Conselheiro real offline/edge; substituir mock |
+| **Risco** | Médio — latência, scope creep decision assist |
+| **Pré-requisitos** | Impl 1–11 ✅; H11 OK |
 | **Recomendação** | **Próximo passo técnico** — ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) |
 
 ---
 
-## H. Impl 9 + Impl 10 — concluídos
+## H. Evaluator v1 Tier B — concluído (Impl 11 + 11.1)
+
+Impl 11 descongelou métricas Tier B (heurísticas + `moonThreatLevel`). Hotfix 11.1 acrescentou presets Dev Lab (`LAB_SP14`, `LAB_K10`, `LAB_H10`, `LAB_S25`) e `fixtureId` em `runScenario`. **H11 OK** 2026-06-06.
+
+---
+
+## I. Impl 9 + Impl 10 — concluídos
 
 Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK. Opções D abaixo foram **substituídas** por Impl 10.
 
@@ -494,14 +503,12 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 | **Pré-requisitos** | H7 OK parcial; `CARD_INTELLIGENCE_DEBUG` |
 | **Recomendação** | Favorável como complemento à opção D |
 
-## B. Evaluator v1 — completar Tier B e métricas Medium reais
+## B. Evaluator v1 Tier B — concluído (Impl 11)
 
 | | |
 |--|--|
-| **Valor** | Julgamentos mais fiáveis; menos `partial` por gaps encoder |
-| **Risco** | Médio — avaliador demasiado opinativo se encoder ainda incompleto |
-| **Pré-requisitos** | H5 manual OK; reduzir gaps encoder (moon, SP01, S25) |
-| **Recomendação** | Após H5 + observação debug estável |
+| **Estado** | ✅ **Impl 11 + hotfix 11.1** — [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md); **H11 OK** |
+| **Gaps restantes** | S25/H10 golden partial intencional; Q7 memory; métricas Medium alargadas — futuro |
 
 ## C. Mini-LLM provider local real em advisory mode
 
@@ -543,17 +550,15 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 
 ## Próximo passo técnico (sem implementar)
 
-1. **Evaluator v1 (Tier B)** — reduzir `partial` e completar métricas Medium; alinhado com roadmap pós-Impl 10.
+1. **Provider LLM real (advisory)** — próximo bloco roadmap; smoke H7/H8 recomendado.
 
-2. **Fechar smoke manual H1–H8** quando conveniente — CI já OK; usar scripts H9/H10 como modelo; **não** bloqueia Evaluator v1.
+2. **Fechar smoke manual H1–H8** quando conveniente — CI já OK; usar scripts H9–H11 como modelo.
 
-3. **Provider LLM real (advisory)** — após Evaluator v1 estável + smoke H7/H8.
+3. **UI debug mínima (opção A)** — complemento opcional; não bloqueia pipeline.
 
-4. **UI debug mínima (opção A)** — complemento opcional; não bloqueia pipeline.
+4. **Melhoria de bots (F)** — requer prompt própria + H5–H6 manual; **não agora**.
 
-5. **Melhoria de bots (F)** — requer prompt própria + H5–H6 manual; **não agora**.
-
-**Resumo:** **Evaluator v1** → provider LLM real → bots. Impl 9/10 **fechados**.
+**Resumo:** **Provider LLM real** → bots. Impl 9–11 **fechados** (H9/H10/H11 OK).
 
 ---
 
