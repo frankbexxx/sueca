@@ -440,6 +440,7 @@ await __ciScenarioReport('LAB_H13')
 | Memory / LLM live | Offline only |
 | **King** bot | Impl 16+ |
 | Sueca v2 **S23** / Spades v2 **escola** | Impl 13/14 relatórios |
+| **Cartas altas guardadas** (desfazer perigo cedo) | **H15-OK** smoke — Hearts v2; conflito H11 vs slough agressivo |
 
 ---
 
@@ -620,7 +621,8 @@ Esperado: **zero** fora testes.
 | Versão | Data | Nota |
 |--------|------|------|
 | 1.0 | 2026-06-06 | Prompt inicial pós-H14; Hearts H11/H13/H07; inventário + gaps código |
-| 1.1 | 2026-06-06 | Review: §3.7 playFollow; §D11/T2 4.º jogador; §11→D2; H13 fixture note; H07 sem evaluator; H15-OK naming; aprovada para impl |
+| 1.1 | 2026-06-06 | Review: §3.7 playFollow; §D11/T2; H15-OK naming; aprovada para impl |
+| — | 2026-06-06 | **H15-OK parcial** — smoke; gap cartas altas guardadas → Hearts v2 (relatório Impl 15) |
 
 ---
 

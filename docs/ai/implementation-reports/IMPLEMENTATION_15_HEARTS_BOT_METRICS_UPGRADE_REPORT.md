@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H15-OK: Pendente** (smoke manual)
+**Estado:** implementação concluída — **H15-OK: Parcial** 2026-06-06 (Francisco — smoke manual)
 
 ---
 
@@ -103,7 +103,21 @@ Fixtures H11/H13 disponíveis para `HeartsPlayStrategy.metrics.test.ts` futuro.
 | H14 forçar Q♠ | v2 |
 | H13 vaza nossa antes 4.º jogador | v0.1 |
 | H13 fixture 2 cartas vs bot §D11 | Encoder offline only |
+| **Cartas altas guardadas** — desfazer perigo cedo | **H15-OK** — ver observação abaixo |
 | Sueca S23 / Spades escola | Impl 13/14 |
+
+### Observação Hearts v2 (smoke H15-OK — Francisco)
+
+Em jogo real (**Medium/Hard**), comportamento **«assim assim»**: os bots tendem a **guardar cartas altas/perigosas** (Q♠, ♥ altas, honras) quando deveriam **desfazer-se delas** num contexto seguro — padrão humano FASE_1 (limpar perigo, **H12** meninos, **H13** alargado).
+
+**Causas prováveis no código v0:**
+
+- **H13** só dispara no **4.º jogador** (`trick.length === 3`) — muitas vazas «nossas» sem pontos ficam de fora.
+- **H11** seguir ♠ com espada **baixa** mantém Q♠/K♠ na mão (correcto para H11, conflito com «sair cedo do perigo»).
+- **H07** entre non-winners escolhe **menor** penalização → retém altas em vez de slough agressivo (H02 só no fallback).
+- **H12** meninos / pass fino — **fora v0**.
+
+**Fora scope Impl 15 v0** — candidata **Hearts bot v2** (H13 v0.1 + H12 + slough perigo em contexto seguro mais cedo). Sem alteração de código nesta assinalação.
 
 ---
 
@@ -112,23 +126,28 @@ Fixtures H11/H13 disponíveis para `HeartsPlayStrategy.metrics.test.ts` futuro.
 | Checkpoint | Estado |
 |------------|--------|
 | CI testes + build | OK |
-| **H15-OK** smoke Medium/Hard | **Pendente** |
+| **H15-OK** smoke Medium/Hard | **Parcial** — 2026-06-06 (Francisco) |
 
-Assinatura: `**H15-OK:** OK — YYYY-MM-DD`
+Assinatura fechada: `**H15-OK:** OK — YYYY-MM-DD` *(após validação completa ou aceite do gap v2)*
 
-### Smoke sugerido
+### Evidência H15-OK (2026-06-06)
 
-- Não apanhar pontos sem necessidade (H07)
-- Q♠ não jogada à toa em ♠ led (H11)
-- Limpar Q♠/♥ em vaza nossa sem pontos (H13)
+| Canal | Resultado |
+|-------|-----------|
+| Jest `ai/games/hearts` | **34/34** OK |
+| Smoke manual | Medium/Hard — **assim assim**; ver gap **cartas altas guardadas** |
+
+**Notas smoke manual:**
+
+- Melhoria parcial vs baseline (H07/H11 visíveis em casos óbvios).
+- **Gap principal:** bots **retêm** Q♠/♥ altas quando deveriam **limpar** em contexto seguro — defer **Hearts v2**.
 
 ---
 
 ## Próximos passos
 
-1. Checkpoint **H15-OK** — partida Hearts Medium/Hard.
-2. Hearts bot v2 — H10 moon block, H12 meninos, H13 early «vaza nossa».
-3. King bot (Impl 16+).
+1. **Hearts bot v2** — H13 alargado, **H12** meninos, slough perigo cedo (cartas altas guardadas); H10 moon.
+2. King bot (Impl 16+).
 
 ---
 

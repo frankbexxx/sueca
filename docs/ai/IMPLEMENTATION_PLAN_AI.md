@@ -3,8 +3,8 @@
 Documento operacional para transformar o [ROADMAP_AI](ROADMAP_AI.md) e os desenhos Fase 0–7 em **código incremental**.
 
 **Data:** 2026-06-06  
-**Versão:** 1.4  
-**Scope:** planeamento operacional — **Impl 1–11 + hotfix 11.1 executadas**; **H11 OK**; próximo foco: provider LLM / bots
+**Versão:** 1.5  
+**Scope:** planeamento operacional — **Impl 1–15 executadas** (H14 OK · H15-OK parcial); **Impl 16 prompt v1.1 aprovada** — próximo: código King bot
 
 ---
 
@@ -100,6 +100,22 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | Impl 3.1 King Encoder Fix | `IMPLEMENTATION_3_ENCODER_V0_REPORT.md` §8.1 | Patch encoder-only |
 
 **Regra futura:** sub-entregas devem ter prompt mínima antes de código.
+
+### 2.2 Bloco bot metrics + provider (Impl 12–16)
+
+| # | ID | Nome curto | Estado |
+|---|-----|------------|--------|
+| 12 | `IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY` | Provider LLM advisory | ✅ Relatório |
+| 13 | `IMPLEMENTATION_13_BOT_METRICS_UPGRADE` | Sueca bot metrics (S08/S11/S02) | ✅ **H13 OK** |
+| 14 | `IMPLEMENTATION_14_SPADES_BOT_METRICS_UPGRADE` | Spades bot metrics (SP09/SP08/SP06) | ✅ **H14 OK** |
+| 15 | `IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE` | Hearts bot metrics (H11/H13/H07) | ✅ **H15-OK parcial** |
+| 16 | `IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE` | King PT bot metrics (K02/K03/K01) | ✅ Código + CI; **H16-OK pendente** |
+
+**Próximo passo código:** smoke manual → **H16-OK**; depois King v2 / Simplified.
+
+**Pré-requisito Impl 16:** H15-OK parcial registado (Impl 15 relatório 2026-06-06).
+
+**Defer pós-Impl 16:** King Simplified · K10/K06/K07 festa · King v2 · Sueca S23 / Spades escola / Hearts v2.
 
 ---
 
@@ -507,9 +523,11 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Estado actual (2026-06-06)
 
-**Impl 1–13 concluídos.** **H12A OK** 2026-06-06. **H13 OK** 2026-06-06 (SuecaStrategy 10/10 + smoke Medium/Hard).
+**Impl 1–15 concluídos.** **H13 OK** · **H14 OK** · **H15-OK parcial** (Hearts — gap cartas altas → v2).
 
-**Próximo passo recomendado:** **Sueca bot v2** (S05/S25/S23) ou **Impl 14** Spades.
+**Impl 16:** código concluído — [relatório](implementation-reports/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md); **H16-OK pendente** smoke.
+
+**Próximo passo recomendado:** smoke King PT Medium/Hard → **H16-OK** → King v2 / Simplified / gaps transversais.
 
 ## Se a reiniciar do zero (referência histórica)
 
@@ -644,6 +662,10 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | H9 | Dev Lab (Impl 9) | OK | **OK** 2026-06-06 | **OK** |
 | H10 | Debug Report Flow (Impl 10) | OK | **OK** 2026-06-06 | **OK** |
 | H11 | Evaluator v1 Tier B (Impl 11 + 11.1) | OK | **OK** 2026-06-06 | **OK** |
+| H13 | Sueca bot metrics (Impl 13) | OK | **OK** 2026-06-06 | **OK** |
+| H14 | Spades bot metrics (Impl 14) | OK | **OK** 2026-06-06 | **OK** |
+| H15 | Hearts bot metrics (Impl 15) | OK | **Parcial** 2026-06-06 | **Parcial** — cartas altas v2 |
+| H16 | King bot metrics (Impl 16) | — | Pendente | Prompt v1.1 aprovada; código pendente |
 
 **Bloqueio formal:** plano original exige OK explícito antes de Impl N+1. Na prática, Impl 2–10 avançaram com **CI-only** para H1–H8; H9/H10 fechados manualmente. Recomenda-se smoke H1–H8 antes de melhoria de bots.
 
@@ -655,9 +677,10 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 
 | Pergunta | Resposta |
 |----------|----------|
-| **Por onde começar?** | **Provider LLM real** — depois melhoria bots |
-| **O que não fazer ainda?** | Melhoria bots sem provider / H5–H6 manual recomendado |
-| **Impl 1–11** | ✅ Concluídas — ver `implementation-reports/` (H11 OK 2026-06-06) |
+| **Por onde começar?** | **Impl 16 King bot** — prompt v1.1 aprovada |
+| **O que não fazer ainda?** | King Simplified / festa / decision assist LLM |
+| **Impl 1–15** | ✅ Concluídas — ver `implementation-reports/` |
+| **Impl 16** | 📋 Prompt aprovada — código + H16-OK pendente |
 | **Que prompt antes de código?** | Uma por implementação em `docs/ai/implementation-prompts/` |
 | **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H11 |
 
@@ -703,7 +726,8 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 - [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md)
 - [reviews/ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md)
 - [reviews/TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
-- [implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md](implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md)
+- [implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md](implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md)
+- [implementation-reports/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md](implementation-reports/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md)
 
 ---
 
@@ -716,3 +740,4 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | 1.2 | 2026-06-04 | Impl 9 `DEV_SEEDED_GAME_LAB` — após Impl 8, antes de provider LLM real / bots |
 | 1.3 | 2026-06-06 | Impl 10 `DEBUG_REPORT_FLOW`; H9/H10 OK; excepções 1.1/H2/3.1; estado repo actualizado |
 | 1.4 | 2026-06-06 | Impl 11 Evaluator Tier B + hotfix 11.1 Dev Lab; H11 OK |
+| 1.5 | 2026-06-06 | Impl 12–15 concluídas (H13/H14 OK, H15 parcial); Impl 16 prompt v1.1 aprovada; §2.2 bot metrics |

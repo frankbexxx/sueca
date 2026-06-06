@@ -1,52 +1,22 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { AIDifficulty, GameState, CARD_HIERARCHY } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
-import { isMen, mustPlayKingOfHearts } from '../../../models/games/KingPtGame';
 import { KING_NEGATIVE_GAMES } from '../../../models/games/king/kingContracts';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
-
-const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+import {
+  pickLowestRankIndex,
+  playKingPtNegativeFollow,
+  playKingPtNegativeLead,
+  tryPlayK02,
+} from './kingTrickHelpers';
 
 // ---------------------------------------------------------------------------
 // King PT
 // ---------------------------------------------------------------------------
 
-function ptNegativeDump(
-  valid: number[],
-  player: GameState['players'][number],
-  state: GameState,
-  king: KingPtVariantState
-): number {
-  const led = state.currentTrick.length > 0 ? state.currentTrick[0].suit : null;
-  if (led) {
-    const inSuit = valid.filter((i) => player.hand[i].suit === led);
-    if (inSuit.length) return inSuit[0];
-    const kingIdx = valid.findIndex(
-      (i) => player.hand[i].rank === 'K' && player.hand[i].suit === 'hearts'
-    );
-    if (kingIdx >= 0 && mustPlayKingOfHearts(player, led, king)) return kingIdx;
-    const dump = valid.find((i) => {
-      const c = player.hand[i];
-      if (king.contract === 'no_hearts' && c.suit === 'hearts') return true;
-      if (king.contract === 'no_queens' && c.rank === 'Q') return true;
-      if (king.contract === 'no_men' && isMen(c)) return true;
-      if (king.contract === 'no_king_hearts' && c.rank === 'K' && c.suit === 'hearts') return true;
-      return false;
-    });
-    return dump ?? valid[0];
-  }
-  const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
-  const pool = nonHeart.length ? nonHeart : valid;
-  return pool.reduce(
-    (best, i) =>
-      RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank) ? i : best,
-    pool[0]
-  );
-}
-
 /**
- * Hard King PT: in negative mode, scores and ranks penalty cards before dumping.
+ * Hard King PT: in negative mode, uses shared negative pipeline.
  * In positive mode, tries to win with the cheapest card possible.
  */
 function chooseKingPtHard(
@@ -59,7 +29,7 @@ function chooseKingPtHard(
     king.gameIndex < KING_NEGATIVE_GAMES || king.festaMode === 'negative_festa';
 
   if (avoid) {
-    return ptNegativeDump(valid, player, state, king);
+    return mediumNegativeDump(valid, player, state, king);
   }
 
   if (state.currentTrick.length === 0) {
@@ -139,9 +109,7 @@ function mediumPositiveFollow(
 }
 
 /**
- * Medium negative dump, with contract-aware in-suit safe play.
- * For no_tricks: always plays the lowest in-suit card to avoid accidental tricks.
- * For no_last_two in early tricks: plays freely (lowest card).
+ * Medium/Hard negative play — contrato-first pipeline (K02 → contract blocks → K03/K01).
  */
 function mediumNegativeDump(
   valid: number[],
@@ -149,73 +117,47 @@ function mediumNegativeDump(
   state: GameState,
   king: KingPtVariantState
 ): number {
+  const trick = state.currentTrick;
+  const led = trick.length ? trick[0].suit : null;
+
+  const k02 = tryPlayK02(valid, player.hand, player, led, king);
+  if (k02 !== null) return k02;
+
   // no_last_two: early tricks (0-7) play freely; tricks 8-9 play full defensive
   if (king.contract === 'no_last_two') {
     if (king.trickNumber < 8) {
-      if (state.currentTrick.length === 0) {
+      if (trick.length === 0) {
         const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
         const pool = nonHeart.length ? nonHeart : valid;
-        return pool.reduce(
-          (best, i) =>
-            RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-              ? i
-              : best,
-          pool[0]
-        );
+        return pickLowestRankIndex(pool, player.hand);
       }
-      // Follow with lowest in-suit, or lowest overall
-      const led = state.currentTrick[0].suit;
-      const inSuit = valid.filter((i) => player.hand[i].suit === led);
+      const inSuit = valid.filter((i) => player.hand[i].suit === trick[0].suit);
       const pool = inSuit.length ? inSuit : valid;
-      return pool.reduce(
-        (best, i) =>
-          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-            ? i
-            : best,
-        pool[0]
-      );
+      return pickLowestRankIndex(pool, player.hand);
     }
-    // Tricks 9-10: play lowest possible card to avoid winning
-    if (state.currentTrick.length > 0) {
-      const led = state.currentTrick[0].suit;
-      const inSuit = valid.filter((i) => player.hand[i].suit === led);
+    if (trick.length > 0) {
+      const inSuit = valid.filter((i) => player.hand[i].suit === trick[0].suit);
       const pool = inSuit.length ? inSuit : valid;
-      return pool.reduce(
-        (best, i) =>
-          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-            ? i
-            : best,
-        pool[0]
-      );
+      return pickLowestRankIndex(pool, player.hand);
     }
-    // Leading in last 2 tricks: lead lowest non-heart
     const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
     const pool = nonHeart.length ? nonHeart : valid;
-    return pool.reduce(
-      (best, i) =>
-        RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-          ? i
-          : best,
-      pool[0]
-    );
+    return pickLowestRankIndex(pool, player.hand);
   }
 
   // no_tricks: when following in-suit, play lowest to avoid winning
-  if (king.contract === 'no_tricks' && state.currentTrick.length > 0) {
-    const led = state.currentTrick[0].suit;
-    const inSuit = valid.filter((i) => player.hand[i].suit === led);
+  if (king.contract === 'no_tricks' && trick.length > 0) {
+    const inSuit = valid.filter((i) => player.hand[i].suit === trick[0].suit);
     if (inSuit.length > 0) {
-      return inSuit.reduce(
-        (best, i) =>
-          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-            ? i
-            : best,
-        inSuit[0]
-      );
+      return pickLowestRankIndex(inSuit, player.hand);
     }
   }
 
-  return ptNegativeDump(valid, player, state, king);
+  if (trick.length === 0) {
+    return playKingPtNegativeLead(valid, player.hand, king.contract);
+  }
+
+  return playKingPtNegativeFollow(valid, player.hand, king.contract, trick[0].suit);
 }
 
 /**
@@ -254,19 +196,6 @@ export function chooseKingPtCard(
     return mediumPositiveFollow(valid, player, state);
   }
 
-  // Negative phase
-  if (state.currentTrick.length === 0) {
-    const nonHeart = valid.filter((i) => player.hand[i].suit !== 'hearts');
-    const pool = nonHeart.length ? nonHeart : valid;
-    return pool.reduce(
-      (best, i) =>
-        RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank)
-          ? i
-          : best,
-      pool[0]
-    );
-  }
-
   return mediumNegativeDump(valid, player, state, king);
 }
 
@@ -296,11 +225,7 @@ export function chooseKingSimplifiedCard(
 
   if (isNegative) {
     if (state.currentTrick.length === 0) {
-      return valid.reduce(
-        (best, i) =>
-          RANK_ORDER.indexOf(player.hand[i].rank) < RANK_ORDER.indexOf(player.hand[best].rank) ? i : best,
-        valid[0]
-      );
+      return pickLowestRankIndex(valid, player.hand);
     }
     if (difficulty === 'hard') {
       const led = state.currentTrick[0].suit;

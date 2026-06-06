@@ -41,7 +41,7 @@ function makeKing(gameIndex = 0, contract: string | null = 'no_hearts'): KingPtV
 }
 
 describe('KingPlayStrategy — chooseKingPtCard', () => {
-  describe('easy — returns a valid index', () => {
+  describe('T7 — easy returns a valid index', () => {
     it('returns an index present in the hand', () => {
       const hand = [makeCard('2', 'clubs'), makeCard('A', 'hearts'), makeCard('K', 'spades')];
       const state = makeState(hand);
@@ -50,30 +50,86 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
     });
   });
 
-  describe('medium — negative game when leading: avoids ♥ if alternatives exist', () => {
-    it('does not lead ♥ when a non-heart is available', () => {
-      // gameIndex=0 → negative phase; hand has one heart and one club
-      const hand = [makeCard('A', 'hearts'), makeCard('2', 'clubs')];
+  describe('T1 — K02 leads K♥ on first legal opportunity (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s plays K♥ over 3♥ on lead', (difficulty) => {
+      const hand = [makeCard('K', 'hearts'), makeCard('3', 'hearts')];
       const state = makeState(hand, []);
-      const king = makeKing(0, 'no_hearts');
-      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
-      expect(hand[idx].suit).not.toBe('hearts');
+      const king = makeKing(0, 'no_king_hearts');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, difficulty);
+      expect(hand[idx].rank).toBe('K');
+      expect(hand[idx].suit).toBe('hearts');
     });
   });
 
-  describe('hard — positive game when following: wins with minimum card', () => {
+  describe('T2 — K02 plays K♥ when void off-suit', () => {
+    it('medium dumps K♥ on spade lead when void', () => {
+      const hand = [makeCard('K', 'hearts'), makeCard('2', 'clubs')];
+      const trick = [makeCard('5', 'spades')];
+      const state = makeState(hand, trick);
+      const king = makeKing(0, 'no_king_hearts');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].rank).toBe('K');
+      expect(hand[idx].suit).toBe('hearts');
+    });
+  });
+
+  describe('T3 — K03 does not lead ♥ when alternative exists (medium + hard)', () => {
+    it.each(['medium', 'hard'] as const)('%s leads 2♣ over K♥', (difficulty) => {
+      const hand = [makeCard('K', 'hearts'), makeCard('2', 'clubs')];
+      const state = makeState(hand, []);
+      const king = makeKing(0, 'no_hearts');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, difficulty);
+      expect(hand[idx].suit).not.toBe('hearts');
+      expect(hand[idx].rank).toBe('2');
+    });
+  });
+
+  describe('T4 — K01 sloughs safe lowest off-suit when no penalty to dump', () => {
+    it('plays 4♣ not K♠ when void under no_queens', () => {
+      const hand = [makeCard('K', 'spades'), makeCard('4', 'clubs')];
+      const trick = [makeCard('5', 'diamonds')];
+      const state = makeState(hand, trick);
+      const king = makeKing(0, 'no_queens');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].rank).toBe('4');
+      expect(hand[idx].suit).toBe('clubs');
+    });
+  });
+
+  describe('T5 — K00 sloughs non-heart when void on heart lead', () => {
+    it('plays 2♣ when void under no_hearts', () => {
+      const hand = [makeCard('K', 'spades'), makeCard('2', 'clubs')];
+      const trick = [makeCard('3', 'hearts')];
+      const state = makeState(hand, trick);
+      const king = makeKing(0, 'no_hearts');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].suit).toBe('clubs');
+    });
+  });
+
+  describe('T6 — K12 no_tricks regression: lowest in-suit', () => {
+    it('plays 7♠ not A♠ when following spade lead', () => {
+      const hand = [makeCard('A', 'spades'), makeCard('7', 'spades')];
+      const trick = [makeCard('5', 'spades')];
+      const state = makeState(hand, trick);
+      const king = makeKing(0, 'no_tricks');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
+      expect(hand[idx].rank).toBe('7');
+    });
+  });
+
+  describe('T8 — K09 positive hard min winner regression', () => {
     it('wins trick with lowest winning card', () => {
-      // gameIndex=6 → positive phase; led 5♠, player has 7♠ and A♠ — picks 7
       const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
       const trick = [makeCard('5', 'spades')];
       const state = makeState(hand, trick);
-      const king = makeKing(6, null); // gameIndex >= 6 → positive
+      const king = makeKing(6, null);
       const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'hard');
       expect(hand[idx].rank).toBe('7');
     });
   });
 
-  describe('returns -1 when no legal moves', () => {
+  describe('T9 — returns -1 when no legal moves', () => {
     it('returns -1 if adapter allows no cards', () => {
       const hand = [makeCard('2', 'clubs')];
       const state = makeState(hand);
@@ -82,11 +138,21 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
     });
   });
 
+  describe('T10 — K03 medium/hard negative lead avoids hearts', () => {
+    it.each(['medium', 'hard'] as const)('%s does not lead ♥ when club available', (difficulty) => {
+      const hand = [makeCard('A', 'hearts'), makeCard('2', 'clubs')];
+      const state = makeState(hand, []);
+      const king = makeKing(0, 'no_hearts');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, difficulty);
+      expect(hand[idx].suit).not.toBe('hearts');
+    });
+  });
+
   describe('medium — positive phase when leading: chooses highest card', () => {
     it('leads with A over 2 in positive game', () => {
       const hand = [makeCard('2', 'clubs'), makeCard('A', 'clubs')];
       const state = makeState(hand, []);
-      const king = makeKing(6, null); // positive phase
+      const king = makeKing(6, null);
       const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
       expect(hand[idx].rank).toBe('A');
     });
@@ -98,31 +164,17 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
       const state = makeState(hand, []);
       const king = { ...makeKing(0, 'no_last_two'), trickNumber: 7 };
       const idx = chooseKingPtCard(makeAdapter(), state, 0, king as KingPtVariantState, 'medium');
-      // Should avoid hearts and lead lowest non-heart (2♣ not K♣)
       expect(hand[idx].suit).not.toBe('hearts');
       expect(hand[idx].rank).toBe('2');
     });
 
     it('trick 9 (trickNumber=8): switches to defensive — avoids winning in-suit', () => {
-      // Following with 3♥ and K♥ against a led 4♥ trick; defensive → plays 3♥ (lowest)
       const hand = [makeCard('K', 'hearts'), makeCard('3', 'hearts')];
       const trick = [makeCard('4', 'hearts')];
       const state = makeState(hand, trick);
       const king = { ...makeKing(0, 'no_last_two'), trickNumber: 8 };
       const idx = chooseKingPtCard(makeAdapter(), state, 0, king as KingPtVariantState, 'medium');
       expect(hand[idx].rank).toBe('3');
-    });
-  });
-
-  describe('medium — no_tricks: follows in-suit with lowest card', () => {
-    it('plays lowest in-suit card to avoid winning trick', () => {
-      // Led 5♠; player has 7♠ and A♠ — should play 7 (lowest), not A
-      const hand = [makeCard('A', 'spades'), makeCard('7', 'spades')];
-      const trick = [makeCard('5', 'spades')];
-      const state = makeState(hand, trick);
-      const king = makeKing(0, 'no_tricks');
-      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
-      expect(hand[idx].rank).toBe('7');
     });
   });
 });
