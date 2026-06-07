@@ -98,6 +98,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | Impl 1.1 Logger Hardening | `IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md` | Excepção aceite — ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 |
 | Impl 2 H2 Hotfix | `IMPLEMENTATION_2_H2_HOTFIX_REPORT.md` | Deep snapshot Sueca trick_end |
 | Impl 3.1 King Encoder Fix | `IMPLEMENTATION_3_ENCODER_V0_REPORT.md` §8.1 | Patch encoder-only |
+| Impl 16.1 King negative contract fix | `IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md` | Hotfix pós-smoke FAIL Impl 16 |
 
 **Regra futura:** sub-entregas devem ter prompt mínima antes de código.
 

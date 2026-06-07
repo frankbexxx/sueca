@@ -8,6 +8,8 @@ import {
   pickLowestRankIndex,
   playKingPtNegativeFollow,
   playKingPtNegativeLead,
+  playNoHeartsNegative,
+  playNoTricksNegative,
   tryPlayK02,
 } from './kingTrickHelpers';
 
@@ -23,13 +25,14 @@ function chooseKingPtHard(
   valid: number[],
   player: GameState['players'][number],
   state: GameState,
-  king: KingPtVariantState
+  king: KingPtVariantState,
+  playerIndex: number
 ): number {
   const avoid =
     king.gameIndex < KING_NEGATIVE_GAMES || king.festaMode === 'negative_festa';
 
   if (avoid) {
-    return mediumNegativeDump(valid, player, state, king);
+    return mediumNegativeDump(valid, player, state, king, playerIndex);
   }
 
   if (state.currentTrick.length === 0) {
@@ -115,7 +118,8 @@ function mediumNegativeDump(
   valid: number[],
   player: GameState['players'][number],
   state: GameState,
-  king: KingPtVariantState
+  king: KingPtVariantState,
+  playerIndex: number
 ): number {
   const trick = state.currentTrick;
   const led = trick.length ? trick[0].suit : null;
@@ -145,12 +149,12 @@ function mediumNegativeDump(
     return pickLowestRankIndex(pool, player.hand);
   }
 
-  // no_tricks: when following in-suit, play lowest to avoid winning
-  if (king.contract === 'no_tricks' && trick.length > 0) {
-    const inSuit = valid.filter((i) => player.hand[i].suit === trick[0].suit);
-    if (inSuit.length > 0) {
-      return pickLowestRankIndex(inSuit, player.hand);
-    }
+  if (king.contract === 'no_tricks') {
+    return playNoTricksNegative(valid, player.hand, state, playerIndex, king);
+  }
+
+  if (king.contract === 'no_hearts' || king.contract === 'no_king_hearts') {
+    return playNoHeartsNegative(valid, player.hand, state, playerIndex, king);
   }
 
   if (trick.length === 0) {
@@ -181,7 +185,7 @@ export function chooseKingPtCard(
   }
 
   if (difficulty === 'hard') {
-    return chooseKingPtHard(valid, player, state, king);
+    return chooseKingPtHard(valid, player, state, king, playerIndex);
   }
 
   // Medium
@@ -196,7 +200,7 @@ export function chooseKingPtCard(
     return mediumPositiveFollow(valid, player, state);
   }
 
-  return mediumNegativeDump(valid, player, state, king);
+  return mediumNegativeDump(valid, player, state, king, playerIndex);
 }
 
 // ---------------------------------------------------------------------------

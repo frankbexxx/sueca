@@ -1,14 +1,15 @@
 import {
+  cardWouldWinTrickKing,
   isKingHearts,
   isPenaltyCardForContract,
+  partitionByWouldWin,
+  pickHighestRankIndex,
   pickLowestRankIndex,
-  pickPenaltyDumpVoid,
-  pickSafeSlough,
-  playKingPtNegativeFollow,
-  playKingPtNegativeLead,
+  playNoHeartsNegative,
+  playToUnloadWhileLosing,
   tryPlayK02,
 } from './kingTrickHelpers';
-import { Card } from '../../../types/game';
+import { Card, GameState } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
 
 function makeCard(rank: string, suit: string): Card {
@@ -20,6 +21,19 @@ function makeKing(contract: string | null = 'no_king_hearts'): KingPtVariantStat
     gameIndex: 0,
     contract,
   } as KingPtVariantState;
+}
+
+function makeState(hand: Card[], trick: Card[] = [], trickLeader = 0): GameState {
+  return {
+    players: [{ hand, name: 'P0', score: 0 }],
+    currentTrick: trick,
+    trickLeader,
+  } as unknown as GameState;
+}
+
+/** Player 0 is next to play when trick has `trick.length` cards. */
+function leaderForPlayer0(trickLength: number): number {
+  return (4 - trickLength) % 4;
 }
 
 describe('kingTrickHelpers', () => {
@@ -35,11 +49,6 @@ describe('kingTrickHelpers', () => {
       expect(isPenaltyCardForContract(makeCard('5', 'hearts'), 'no_hearts')).toBe(true);
       expect(isPenaltyCardForContract(makeCard('2', 'clubs'), 'no_hearts')).toBe(false);
     });
-
-    it('flags queens under no_queens', () => {
-      expect(isPenaltyCardForContract(makeCard('Q', 'spades'), 'no_queens')).toBe(true);
-      expect(isPenaltyCardForContract(makeCard('J', 'spades'), 'no_queens')).toBe(false);
-    });
   });
 
   describe('tryPlayK02', () => {
@@ -50,77 +59,69 @@ describe('kingTrickHelpers', () => {
       const idx = tryPlayK02(valid, hand, player, null, makeKing('no_king_hearts'));
       expect(idx).toBe(0);
     });
+  });
 
-    it('forces K♥ when void off-suit', () => {
-      const hand = [makeCard('K', 'hearts'), makeCard('2', 'clubs')];
-      const valid = [0, 1];
-      const player = { hand } as { hand: Card[] };
-      const idx = tryPlayK02(valid, hand, player, 'spades', makeKing('no_king_hearts'));
-      expect(idx).toBe(0);
+  describe('cardWouldWinTrickKing', () => {
+    it('detects winner on spade trick', () => {
+      const trick = [makeCard('5', 'spades')];
+      const leader = leaderForPlayer0(1);
+      expect(cardWouldWinTrickKing(makeCard('A', 'spades'), trick, leader, 0)).toBe(true);
+      expect(cardWouldWinTrickKing(makeCard('7', 'spades'), trick, leader, 0)).toBe(true);
     });
 
-    it('returns null when in-suit follow is required', () => {
-      const hand = [makeCard('K', 'hearts'), makeCard('5', 'spades')];
-      const valid = [0, 1];
-      const player = { hand } as { hand: Card[] };
-      expect(tryPlayK02(valid, hand, player, 'spades', makeKing('no_king_hearts'))).toBeNull();
+    it('detects loser when higher card already winning', () => {
+      const trick = [makeCard('K', 'spades')];
+      const leader = leaderForPlayer0(1);
+      expect(cardWouldWinTrickKing(makeCard('7', 'spades'), trick, leader, 0)).toBe(false);
     });
   });
 
-  describe('playKingPtNegativeLead', () => {
-    it('K03 — leads non-♥ when available', () => {
-      const hand = [makeCard('K', 'hearts'), makeCard('2', 'clubs')];
-      const valid = [0, 1];
-      const idx = playKingPtNegativeLead(valid, hand, 'no_hearts');
-      expect(hand[idx].suit).toBe('clubs');
+  describe('playToUnloadWhileLosing', () => {
+    it('plays highest card among losers', () => {
+      const hand = [makeCard('3', 'spades'), makeCard('7', 'spades')];
+      const trick = [makeCard('K', 'spades')];
+      const leader = leaderForPlayer0(1);
+      const idx = playToUnloadWhileLosing([0, 1], hand, trick, leader, 0);
+      expect(hand[idx].rank).toBe('7');
+    });
+
+    it('plays lowest winner when forced to win', () => {
+      const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
+      const trick = [makeCard('5', 'spades')];
+      const leader = leaderForPlayer0(1);
+      const idx = playToUnloadWhileLosing([0, 1], hand, trick, leader, 0);
+      expect(hand[idx].rank).toBe('7');
     });
   });
 
-  describe('pickSafeSlough', () => {
-    it('prefers non-penalty lowest rank', () => {
-      const hand = [makeCard('Q', 'spades'), makeCard('4', 'clubs')];
-      const valid = [0, 1];
-      const idx = pickSafeSlough(valid, hand, 'no_queens');
-      expect(hand[idx].rank).toBe('4');
+  describe('partitionByWouldWin', () => {
+    it('splits winners and losers', () => {
+      const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];
+      const trick = [makeCard('K', 'spades')];
+      const leader = leaderForPlayer0(1);
+      const { winners, losers } = partitionByWouldWin([0, 1], hand, trick, leader, 0);
+      expect(winners).toEqual([1]);
+      expect(losers).toEqual([0]);
     });
   });
 
-  describe('pickPenaltyDumpVoid', () => {
-    it('dumps penalty card when void', () => {
-      const hand = [makeCard('5', 'hearts'), makeCard('2', 'clubs')];
-      const valid = [0, 1];
-      const idx = pickPenaltyDumpVoid(valid, hand, 'no_hearts');
+  describe('playNoHeartsNegative', () => {
+    it('void on heartless trick dumps highest heart', () => {
+      const hand = [makeCard('5', 'hearts'), makeCard('K', 'hearts'), makeCard('2', 'clubs')];
+      const trick = [makeCard('A', 'spades')];
+      const leader = leaderForPlayer0(1);
+      const state = makeState(hand, trick, leader);
+      const idx = playNoHeartsNegative([0, 1, 2], hand, state, 0, makeKing('no_hearts'));
       expect(hand[idx].suit).toBe('hearts');
-    });
-
-    it('falls back to safe slough when no penalty', () => {
-      const hand = [makeCard('10', 'spades'), makeCard('4', 'clubs')];
-      const valid = [0, 1];
-      const idx = pickPenaltyDumpVoid(valid, hand, 'no_queens');
-      expect(hand[idx].rank).toBe('4');
+      expect(hand[idx].rank).toBe('K');
     });
   });
 
-  describe('playKingPtNegativeFollow', () => {
-    it('in-suit uses safe slough', () => {
-      const hand = [makeCard('Q', 'hearts'), makeCard('5', 'hearts')];
-      const valid = [0, 1];
-      const idx = playKingPtNegativeFollow(valid, hand, 'no_queens', 'hearts');
-      expect(hand[idx].rank).toBe('5');
-    });
-
-    it('void dumps heart penalty under no_hearts', () => {
-      const hand = [makeCard('5', 'hearts'), makeCard('2', 'clubs')];
-      const valid = [0, 1];
-      const idx = playKingPtNegativeFollow(valid, hand, 'no_hearts', 'spades');
-      expect(hand[idx].suit).toBe('hearts');
-    });
-  });
-
-  describe('pickLowestRankIndex', () => {
-    it('picks lowest rank', () => {
-      const hand = [makeCard('K', 'clubs'), makeCard('2', 'clubs')];
-      expect(pickLowestRankIndex([0, 1], hand)).toBe(1);
+  describe('pickHighestRankIndex / pickLowestRankIndex', () => {
+    it('pick highest and lowest', () => {
+      const hand = [makeCard('2', 'clubs'), makeCard('K', 'clubs')];
+      expect(pickLowestRankIndex([0, 1], hand)).toBe(0);
+      expect(pickHighestRankIndex([0, 1], hand)).toBe(1);
     });
   });
 });

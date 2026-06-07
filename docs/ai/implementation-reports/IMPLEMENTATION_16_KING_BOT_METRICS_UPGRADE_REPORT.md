@@ -3,7 +3,24 @@
 **ID:** `IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H16-OK: Pendente** (smoke manual)
+**Estado:** implementação concluída — smoke manual **FAIL** → hotfix [16.1](./IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md)
+
+---
+
+## Smoke manual (FAIL — 2026-06-06)
+
+Francisco testou `no_tricks` e `no_hearts`:
+
+| Contrato | Problema |
+|----------|----------|
+| **no_tricks** | Baixavam no início; honras presas para o fim; vazas ganhas evitáveis |
+| **no_hearts** | Baixavam em vazas perdidas sem livrar copas |
+
+**Causa:** Impl 16 usou `pickLowestRankIndex` / `pickSafeSlough` sem `trickWinnerIndex` — não distinguia ganhar/perder.
+
+**Correcção:** [IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md](./IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md)
+
+**H16-OK:** Pendente até smoke pós-16.1 (CI verde ≠ H16 OK).
 
 ---
 
@@ -105,12 +122,13 @@ Deferido (§4.3 opcional). Fixtures K02/K03/K01 + `LAB_K02` disponíveis para te
 
 ## Checkpoints
 
-**H16-OK:** Pendente — smoke manual King PT Medium/Hard recomendado:
+**H16-OK:** **Pendente** — smoke Impl 16 **FAIL**; hotfix 16.1 aplicado; aguarda re-smoke manual:
 
+- [ ] `no_tricks` — unload altas em vazas perdidas
+- [ ] `no_hearts` — livrar copas em void perdedor
 - [ ] K♥ na 1.ª oportunidade (`no_king_hearts`)
-- [ ] Não puxa copas com alternativa
-- [ ] Nulos / `no_tricks` sem regressão óbvia
-- [ ] Sem cartas ilegais / erros UI
+- [ ] Não puxa copas no lead
+- [ ] `no_last_two` sem regressão
 
 ---
 
