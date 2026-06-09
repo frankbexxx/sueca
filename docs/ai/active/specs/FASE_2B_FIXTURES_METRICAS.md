@@ -1,9 +1,9 @@
 # Fase 2B — Fixtures Prioritários (exemplos avaliáveis)
 
-Documento de saída da **Fase 2B** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 2B** do [ROADMAP_AI](../ROADMAP_AI.md).
 
 **Prioridades:** [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · **Catálogo:** [FASE_1_METRICAS.md](FASE_1_METRICAS.md)  
-**Arquivo (fixtures diferidos):** [FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md)  
+**Arquivo (fixtures diferidos):** [FASE_2B_ARQUIVO_FIXTURES.md](../../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md)  
 **Data:** 2026-05-31  
 **Scope:** 20 fixtures jogo-específicos + 3 transversais — **sem código**, **sem JSON**.
 
@@ -488,7 +488,7 @@ Notação: `A♠` = Ás de espadas; `7♦` = manilha; trunfo Sueca indicado expl
 
 **Próximo passo (Fase 3):** logger com campos P0 de [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md).
 
-**Fixtures diferidos:** [FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md) (corpus ~40 fixtures da antiga Fase 2).
+**Fixtures diferidos:** [FASE_2B_ARQUIVO_FIXTURES.md](../../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md) (corpus ~40 fixtures da antiga Fase 2).
 
 ---
 

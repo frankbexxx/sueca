@@ -1,8 +1,8 @@
 # Fase 4 — Encoder de Estado (desenho)
 
-Documento de saída da **Fase 4** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 4** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md)  
+**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md)  
 **Data:** 2026-05-31  
 **Scope:** desenho documental — **sem implementação**, **sem código**, **sem backend**.
 
@@ -511,7 +511,7 @@ CardDecisionLogEvent
 
 # 9. Relação com fixtures 2B
 
-Fixtures: [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md). Campos **mínimos** do encoder (Player View salvo nota).
+Fixtures: [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md). Campos **mínimos** do encoder (Player View salvo nota).
 
 ## 9.1 Sueca
 
@@ -681,9 +681,9 @@ interface EvaluationResult {
 ## Referências
 
 - [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) — eventos, `roundPlayHistory`, logger v0
-- [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) — 23 fixtures
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) — P0 encoder fields
-- [FASE_1_METRICAS.md](FASE_1_METRICAS.md) — catálogo métricas
+- [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) — 23 fixtures
+- [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) — P0 encoder fields
+- [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) — catálogo métricas
 - `frontend/src/types/game.ts` — tipos existentes
 
 ---

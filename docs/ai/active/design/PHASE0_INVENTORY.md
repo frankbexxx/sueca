@@ -1,6 +1,6 @@
 # Fase 0 — Inventário da inteligência existente
 
-Documento de saída da **Fase 0** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 0** do [ROADMAP_AI](../ROADMAP_AI.md).
 
 Objectivo: identificar tudo o que já existe no projecto relacionado com decisão inteligente, com foco especial na **Sueca Hard AI**, e produzir uma **lista explícita de métricas/heurísticas implícitas** já codificadas.
 
@@ -369,6 +369,6 @@ Este documento (Fase 0) fornece a matéria-prima: IDs S01–S22, comparação Su
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md) — fases 0–7
+- [ROADMAP_AI.md](../ROADMAP_AI.md) — fases 0–7
 - [AI_INTEGRATION_PLAN.md](../_archives/parallel-ai/AI_INTEGRATION_PLAN.md) — plano histórico ML/integração
 - [PRODUCT_BACKLOG.md](../plan/PRODUCT_BACKLOG.md) — Monte Carlo / personalidade (futuro, não implementado)

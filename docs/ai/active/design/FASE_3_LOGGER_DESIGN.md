@@ -1,8 +1,8 @@
 # Fase 3 — Logger de Partidas e Decisões (desenho)
 
-Documento de saída da **Fase 3** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 3** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md)  
+**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md)  
 **Data:** 2026-05-31  
 **Scope:** desenho documental — **sem implementação**, **sem código**, **sem backend**.
 
@@ -522,7 +522,7 @@ Documentação de **pontos de gancho** — não implementar agora.
 
 # 10. Relação com Fase 2B
 
-Fixtures activos: [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) (23). Campos **mínimos** do logger para avaliação posterior.
+Fixtures activos: [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) (23). Campos **mínimos** do logger para avaliação posterior.
 
 ## 10.1 Transversais
 
@@ -632,9 +632,9 @@ Ordem implementação (2A): **T01 → K02/K03 → SP09 → H13 → S08 → SP06 
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md) — Fase 3 roadmap
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) — campos P0/P1
-- [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) — 23 fixtures
+- [ROADMAP_AI.md](../ROADMAP_AI.md) — Fase 3 roadmap
+- [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) — campos P0/P1
+- [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) — 23 fixtures
 - [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) — `GameState`, G01 legal moves
 - `frontend/src/types/game.ts` — tipos existentes
 

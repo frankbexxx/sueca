@@ -1,0 +1,27 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "docs/ai/repo-review/packs/generated/ai-decisions-context.md",
+    "style": "markdown",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": false,
+    "showLineNumbers": false,
+    "headerText": "Suecão Card Intelligence — lean context pack for external AI review (Repomix). Regenerate: npx repomix --config repomix.config.json"
+  },
+  "include": [
+    "docs/ai/active/**",
+    "frontend/src/cardIntelligence/**"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "docs/ai/archive/**",
+      "docs/ai/repo-review/packs/generated/**"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

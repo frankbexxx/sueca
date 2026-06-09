@@ -3,7 +3,7 @@
 **Data:** 2026-06-06  
 **Versão:** 1.7 — snapshot pós-Impl 13 + **H13 OK**  
 **Scope:** documentação consolidada pós-fecho Impl 11  
-**Revisões:** [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) · [TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
+**Revisões:** [ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) · [TECHNICAL_INTEGRITY_REVIEW.md](../archive/reviews/TECHNICAL_INTEGRITY_REVIEW.md)
 
 ---
 
@@ -13,7 +13,7 @@
 
 **Card Intelligence** é a camada de inteligência estratégica do Suecão: regista decisões de jogo, traduz o estado para métricas explícitas, avalia jogadas, agrega padrões ao longo do tempo e (no futuro) pode sugerir cartas — **sem substituir** o motor de regras nem os bots existentes.
 
-Metáforas acordadas no desenho ([FASE_7_MINI_LLM_DESIGN.md](FASE_7_MINI_LLM_DESIGN.md)):
+Metáforas acordadas no desenho ([FASE_7_MINI_LLM_DESIGN.md](design/FASE_7_MINI_LLM_DESIGN.md)):
 
 | Camada | Papel |
 |--------|-------|
@@ -30,9 +30,9 @@ A AI de gameplay actual (`frontend/src/ai/*`, `aiClient`, estratégias por jogo)
 
 Documentação de desenho completa (Fases 1–7 do [ROADMAP_AI.md](ROADMAP_AI.md)) e **implementações 1–11** (+ hotfix 11.1 Dev Lab Tier B) executadas com prompt → código → relatório ([IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md)):
 
-- Catálogo de métricas por jogo ([FASE_1_METRICAS.md](FASE_1_METRICAS.md))
-- Prioridades encoder P0 ([FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md))
-- 23 fixtures golden ([FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md))
+- Catálogo de métricas por jogo ([FASE_1_METRICAS.md](specs/FASE_1_METRICAS.md))
+- Prioridades encoder P0 ([FASE_2A_PRIORIDADES_METRICAS.md](specs/FASE_2A_PRIORIDADES_METRICAS.md))
+- 23 fixtures golden ([FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md))
 - Desenhos logger, encoder, avaliador, memória, mini-LLM (Fases 3–7)
 - Módulo `cardIntelligence/` com ~139 ficheiros TypeScript
 - **229 testes** cardIntelligence + **423 testes** frontend totais (pós-Impl 11 + hotfix 11.1)
@@ -58,7 +58,7 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 
 **Próximo passo planeado:** **Sueca bot v2** (S05/S25/S23) ou **Impl 14** outro jogo. **H13 OK** 2026-06-06; **H12B** Ollama opcional.
 
-**Excepções processuais (sem prompt dedicada):** Impl **1.1** Logger Hardening, hotfix **H2** (clone snapshot Sueca), patch encoder **3.1** King, hotfix **11.1** Dev Lab Tier B presets — documentadas nos relatórios respectivos; aceites como hotfixes ([ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1).
+**Excepções processuais (sem prompt dedicada):** Impl **1.1** Logger Hardening, hotfix **H2** (clone snapshot Sueca), patch encoder **3.1** King, hotfix **11.1** Dev Lab Tier B presets — documentadas nos relatórios respectivos; aceites como hotfixes ([ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1).
 
 **Audit técnica (2026-05-31):** quatro hardenings P2 aplicados (promises + sorts imutáveis); zero impacto gameplay. Ver [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md).
 
@@ -68,21 +68,21 @@ Em runtime de jogo, **apenas** o logger (+ trick_end via `playWithLogging`) grav
 
 | Implementação | Estado | O que entrega | Gameplay | Testes / build | Relatório | Gaps relevantes |
 |---------------|--------|---------------|----------|----------------|-----------|-----------------|
-| **Impl 1 — Logger v0** | Parcial | `CardDecisionLogEvent` schema 3.0.0; IndexedDB `cardIntelligenceLogs`; hook pós-jogada; `classification: unknown` | Não | CI OK (7 tests); build OK | [IMPLEMENTATION_1_LOGGER_V0_REPORT.md](implementation-reports/IMPLEMENTATION_1_LOGGER_V0_REPORT.md) | TrickEnd só tipos na Impl 1; joiner skip; H1 manual pendente |
-| **Impl 1.1 — Logger hardening** | OK | `playWithLogging.ts` choke point; `legalMoves` obrigatório; `logFailureTelemetry`; paths GameBoard unificados | Não | CI OK (15 tests); build OK | [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md) | H1 manual pendente; H1-D1 GameActions warning |
-| **Impl 2 — Round History / TrickEnd** | Parcial | `RoundHistoryEngine`; `TrickEndEvent` persistido; `roundPlayHistory` transversal (4 jogos) | Não | CI OK (28 tests pós-hotfix); build OK | [IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md](implementation-reports/IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md) + [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md) | H2 manual pendente; MP-v0 joiner; voids avançados |
-| **Impl 3 — Encoder v0** | Parcial | `EncodedDecisionState` 4.0.0; encoders Sueca/Spades/Hearts/King P0; Player View default | Não | CI OK (46+ tests); build OK | [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md) | H3 manual pendente; Engine View stub; `memoryContext` stub |
+| **Impl 1 — Logger v0** | Parcial | `CardDecisionLogEvent` schema 3.0.0; IndexedDB `cardIntelligenceLogs`; hook pós-jogada; `classification: unknown` | Não | CI OK (7 tests); build OK | [IMPLEMENTATION_1_LOGGER_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_1_LOGGER_V0_REPORT.md) | TrickEnd só tipos na Impl 1; joiner skip; H1 manual pendente |
+| **Impl 1.1 — Logger hardening** | OK | `playWithLogging.ts` choke point; `legalMoves` obrigatório; `logFailureTelemetry`; paths GameBoard unificados | Não | CI OK (15 tests); build OK | [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md) | H1 manual pendente; H1-D1 GameActions warning |
+| **Impl 2 — Round History / TrickEnd** | Parcial | `RoundHistoryEngine`; `TrickEndEvent` persistido; `roundPlayHistory` transversal (4 jogos) | Não | CI OK (28 tests pós-hotfix); build OK | [IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md) + [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md) | H2 manual pendente; MP-v0 joiner; voids avançados |
+| **Impl 3 — Encoder v0** | Parcial | `EncodedDecisionState` 4.0.0; encoders Sueca/Spades/Hearts/King P0; Player View default | Não | CI OK (46+ tests); build OK | [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md) | H3 manual pendente; Engine View stub; `memoryContext` stub |
 | **Impl 3.1 — King Encoder Fix** | OK | Patch encoder-only: `contractId` fallback; K♥ obligation history-before-current | Não | CI OK (52 tests cardIntelligence) | §8.1 do relatório Impl 3 | Logger ainda não preenche `contract` no log raw |
-| **Impl 4 — Fixtures 2B** | Parcial | 23 fixtures `ALL_FIXTURES`; golden encode tests; 5 MetricDef novos | Não | CI OK (87 tests cardIntelligence); build OK | [IMPLEMENTATION_4_FIXTURES_2B_REPORT.md](implementation-reports/IMPLEMENTATION_4_FIXTURES_2B_REPORT.md) | H4 manual pendente; Tier B gaps (SP01, H10, S25) |
-| **Impl 5 — Evaluator v0** | Parcial | `evaluateDecision`; métricas P0; agregação worst-wins; schema 5.0.0 | Não | CI OK (124 tests cardIntelligence); build OK | [IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md](implementation-reports/IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md) | H5 manual pendente; Tier B → partial; sem hook live |
-| **Impl 6 — Memory v0** | Parcial | Ingest offline; aggregates; trend FIFO 40; IDB `cardIntelligenceMemory`; schema 6.0.0 | Não | CI OK (138 tests cardIntelligence); build OK | [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md) | H6 manual pendente; sem ingest live |
-| **Impl 7 — Debug/Export** | Parcial | JSONL export 7.0.0; evaluate offline; memory helpers; `postGameReport`; `window.__ci*` | Não | CI OK (151 tests cardIntelligence); build OK | [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md) | H7 manual pendente; sem UI visual |
-| **Impl 8 — Mini-LLM Advisory** | Parcial | `getMiniLLMAdvice`; `MockMiniLLMProvider`; validate V1–V9; flags duplas debug+LLM | Não | CI OK (165 tests cardIntelligence); build OK | [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md) | H8 manual pendente; mock only; sem decision assist |
-| **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 OK** 2026-06-06; trick_end warnings v0 aceites |
-| **Impl 10 — Debug Report Flow** | Parcial | Relatórios legíveis texto/JSON/JSONL; `__ciEventReport`, `__ciGameReport`, `__ciScenarioReport`, `__ciExportReport` | Não | CI OK (196 tests cardIntelligence); build OK | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) | **H10 OK** 2026-06-06; highlights game report cosmético (P1) |
-| **Impl 11 — Evaluator v1 Tier B** | Parcial | Heurísticas S25/SP14/H10/K10; `moonThreatLevel`; agregador sem `tierBPartial`; hotfix 11.1 Dev Lab 8 presets | Não | CI OK (229 tests cardIntelligence); build OK | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) | **H11 OK** 2026-06-06; S25/H10 golden partial intencional; Q7 memory deferido |
-| **Impl 12 — LLM Provider Advisory** | Parcial | Ollama provider + mock fallback; `resolveProvider`; metadata `providerId`/`latencyMs` | Não | CI OK (243 tests cardIntelligence); build OK; prod Vercel OK | [IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md) | **H12A OK** 2026-06-06; **H12B pendente** (Ollama+CORS) |
-| **Impl 13 — Bot Metrics Upgrade** | Parcial | Sueca S16/S08/S19; `suecaTrickHelpers`; testes bot | Sim (Sueca AI only) | CI OK (+13 ai/sueca tests); build OK | [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md](implementation-reports/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md) | **H13 OK** 2026-06-06; Sueca v2 S23/Rei deferido |
+| **Impl 4 — Fixtures 2B** | Parcial | 23 fixtures `ALL_FIXTURES`; golden encode tests; 5 MetricDef novos | Não | CI OK (87 tests cardIntelligence); build OK | [IMPLEMENTATION_4_FIXTURES_2B_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_4_FIXTURES_2B_REPORT.md) | H4 manual pendente; Tier B gaps (SP01, H10, S25) |
+| **Impl 5 — Evaluator v0** | Parcial | `evaluateDecision`; métricas P0; agregação worst-wins; schema 5.0.0 | Não | CI OK (124 tests cardIntelligence); build OK | [IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md) | H5 manual pendente; Tier B → partial; sem hook live |
+| **Impl 6 — Memory v0** | Parcial | Ingest offline; aggregates; trend FIFO 40; IDB `cardIntelligenceMemory`; schema 6.0.0 | Não | CI OK (138 tests cardIntelligence); build OK | [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md) | H6 manual pendente; sem ingest live |
+| **Impl 7 — Debug/Export** | Parcial | JSONL export 7.0.0; evaluate offline; memory helpers; `postGameReport`; `window.__ci*` | Não | CI OK (151 tests cardIntelligence); build OK | [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md) | H7 manual pendente; sem UI visual |
+| **Impl 8 — Mini-LLM Advisory** | Parcial | `getMiniLLMAdvice`; `MockMiniLLMProvider`; validate V1–V9; flags duplas debug+LLM | Não | CI OK (165 tests cardIntelligence); build OK | [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md) | H8 manual pendente; mock only; sem decision assist |
+| **Impl 9 — Dev Seeded Game Lab** | Parcial | Lab dev: presets LAB_*, seeded deal, pipeline offline encode/eval/report | Não | CI OK (183 tests cardIntelligence); build OK | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) | **H9 OK** 2026-06-06; trick_end warnings v0 aceites |
+| **Impl 10 — Debug Report Flow** | Parcial | Relatórios legíveis texto/JSON/JSONL; `__ciEventReport`, `__ciGameReport`, `__ciScenarioReport`, `__ciExportReport` | Não | CI OK (196 tests cardIntelligence); build OK | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) | **H10 OK** 2026-06-06; highlights game report cosmético (P1) |
+| **Impl 11 — Evaluator v1 Tier B** | Parcial | Heurísticas S25/SP14/H10/K10; `moonThreatLevel`; agregador sem `tierBPartial`; hotfix 11.1 Dev Lab 8 presets | Não | CI OK (229 tests cardIntelligence); build OK | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](current-work/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) | **H11 OK** 2026-06-06; S25/H10 golden partial intencional; Q7 memory deferido |
+| **Impl 12 — LLM Provider Advisory** | Parcial | Ollama provider + mock fallback; `resolveProvider`; metadata `providerId`/`latencyMs` | Não | CI OK (243 tests cardIntelligence); build OK; prod Vercel OK | [IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_12_LLM_PROVIDER_ADVISORY_REPORT.md) | **H12A OK** 2026-06-06; **H12B pendente** (Ollama+CORS) |
+| **Impl 13 — Bot Metrics Upgrade** | Parcial | Sueca S16/S08/S19; `suecaTrickHelpers`; testes bot | Sim (Sueca AI only) | CI OK (+13 ai/sueca tests); build OK | [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md](current-work/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_REPORT.md) | **H13 OK** 2026-06-06; Sueca v2 S23/Rei deferido |
 | **Audit técnica P2** | OK | A01–A04: catch promises + sorts imutáveis | Não | tsc OK; build OK | [TECH_DEBT_AUDIT_REPORT.md](../audits/TECH_DEBT_AUDIT_REPORT.md) | P3/WONTFIX documentados (A05–A13) |
 
 **Nota sobre «Parcial»:** indica gaps funcionais documentados (Tier B, MP-v0, manual smoke pendente) — **não** indica falha de CI.
@@ -186,7 +186,7 @@ flowchart TB
 
 ### Fixtures (`fixtures/`)
 
-- 23 casos golden de [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md).
+- 23 casos golden de [FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md).
 - Regressão CI automática — **não** executam em partida real.
 
 ### Evaluator (`evaluator/`)
@@ -245,11 +245,11 @@ frontend/src/cardIntelligence/
 
 | Sub-entrega | Relatório | Notas |
 |-------------|-----------|-------|
-| Impl 1.1 Logger Hardening | [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md) | `playWithLogging` choke point; sem prompt própria |
-| Impl 2 H2 Hotfix | [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md) | Deep snapshot Sueca trick_end; sem prompt própria |
-| Impl 3.1 King Encoder Fix | [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md) §8.1 | Patch encoder-only K♥; sem prompt própria |
+| Impl 1.1 Logger Hardening | [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md) | `playWithLogging` choke point; sem prompt própria |
+| Impl 2 H2 Hotfix | [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md) | Deep snapshot Sueca trick_end; sem prompt própria |
+| Impl 3.1 King Encoder Fix | [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md) §8.1 | Patch encoder-only K♥; sem prompt própria |
 
-Ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 — aceites como excepção documentada; futuras sub-entregas devem ter prompt mínima.
+Ver [ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 — aceites como excepção documentada; futuras sub-entregas devem ter prompt mínima.
 
 ---
 
@@ -258,7 +258,7 @@ Ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 �
 | Aspecto | Estado |
 |---------|--------|
 | **Implementação** | ✅ Impl 9 + **H9 OK** (2026-06-06) |
-| **Relatório** | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) |
+| **Relatório** | [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md) |
 
 ---
 
@@ -267,7 +267,7 @@ Ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 �
 | Aspecto | Estado |
 |---------|--------|
 | **Implementação** | ✅ Impl 10 + **H10 OK** (2026-06-06) |
-| **Relatório** | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) |
+| **Relatório** | [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) |
 | **Helpers** | `__ciEventReport`, `__ciGameReport`, `__ciPostGameReport` (alias), `__ciScenarioReport`, `__ciExportReport` |
 
 ---
@@ -485,7 +485,7 @@ Ver [TECH_DEBT_ATTACK_PLAN.md](../audits/TECH_DEBT_ATTACK_PLAN.md) e [TECH_DEBT_
 | **Valor** | Conselheiro real offline/edge; substituir mock |
 | **Risco** | Médio — latência, scope creep decision assist |
 | **Pré-requisitos** | Impl 1–11 ✅; H11 OK |
-| **Recomendação** | **Próximo passo técnico** — ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) |
+| **Recomendação** | **Próximo passo técnico** — ver [ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) |
 
 ---
 
@@ -514,7 +514,7 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 
 | | |
 |--|--|
-| **Estado** | ✅ **Impl 11 + hotfix 11.1** — [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md); **H11 OK** |
+| **Estado** | ✅ **Impl 11 + hotfix 11.1** — [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](current-work/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md); **H11 OK** |
 | **Gaps restantes** | S25/H10 golden partial intencional; Q7 memory; métricas Medium alargadas — futuro |
 
 ## C. Mini-LLM provider local real em advisory mode
@@ -530,7 +530,7 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 
 | | |
 |--|--|
-| **Estado** | ✅ **Impl 10 concluída** — [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) |
+| **Estado** | ✅ **Impl 10 concluída** — [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md) |
 | **Recomendação** | Manutenção apenas; gaps Q4–Q8 em v1 |
 
 ## E. Segunda ronda de audit/refactor técnico
@@ -571,8 +571,8 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 
 ## Revisões de conformidade (2026-06-06)
 
-- [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) — conformidade processual e roadmap
-- [TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md) — integridade arquitectural; recomendação **avançar**
+- [ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) — conformidade processual e roadmap
+- [TECHNICAL_INTEGRITY_REVIEW.md](../archive/reviews/TECHNICAL_INTEGRITY_REVIEW.md) — integridade arquitectural; recomendação **avançar**
 
 ---
 
@@ -582,35 +582,35 @@ Impl 9 (Dev Lab) e Impl 10 (Debug Report Flow) estão **fechados** com H9/H10 OK
 
 - [ROADMAP_AI.md](ROADMAP_AI.md)
 - [IMPLEMENTATION_PLAN_AI.md](IMPLEMENTATION_PLAN_AI.md)
-- [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md)
-- [FASE_1_METRICAS.md](FASE_1_METRICAS.md)
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md)
-- [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md)
-- [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md)
-- [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)
-- [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)
-- [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
-- [FASE_7_MINI_LLM_DESIGN.md](FASE_7_MINI_LLM_DESIGN.md)
+- [PHASE0_INVENTORY.md](design/PHASE0_INVENTORY.md)
+- [FASE_1_METRICAS.md](specs/FASE_1_METRICAS.md)
+- [FASE_2A_PRIORIDADES_METRICAS.md](specs/FASE_2A_PRIORIDADES_METRICAS.md)
+- [FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md)
+- [FASE_3_LOGGER_DESIGN.md](design/FASE_3_LOGGER_DESIGN.md)
+- [FASE_4_ENCODER_DESIGN.md](design/FASE_4_ENCODER_DESIGN.md)
+- [FASE_5_AVALIADOR_DESIGN.md](design/FASE_5_AVALIADOR_DESIGN.md)
+- [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](design/FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
+- [FASE_7_MINI_LLM_DESIGN.md](design/FASE_7_MINI_LLM_DESIGN.md)
 
 ## Relatórios de implementação
 
-- [IMPLEMENTATION_1_LOGGER_V0_REPORT.md](implementation-reports/IMPLEMENTATION_1_LOGGER_V0_REPORT.md)
-- [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md)
-- [IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md](implementation-reports/IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md)
-- [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md)
-- [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md)
-- [IMPLEMENTATION_4_FIXTURES_2B_REPORT.md](implementation-reports/IMPLEMENTATION_4_FIXTURES_2B_REPORT.md)
-- [IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md](implementation-reports/IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md)
-- [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md)
-- [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md)
-- [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md)
-- [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md)
-- [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md)
+- [IMPLEMENTATION_1_LOGGER_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_1_LOGGER_V0_REPORT.md)
+- [IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md)
+- [IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_2_ROUND_HISTORY_REPORT.md)
+- [IMPLEMENTATION_2_H2_HOTFIX_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md)
+- [IMPLEMENTATION_3_ENCODER_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md)
+- [IMPLEMENTATION_4_FIXTURES_2B_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_4_FIXTURES_2B_REPORT.md)
+- [IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_5_EVALUATOR_V0_REPORT.md)
+- [IMPLEMENTATION_6_MEMORY_V0_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_6_MEMORY_V0_REPORT.md)
+- [IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_7_DEBUG_EXPORT_REPORT.md)
+- [IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_8_MINI_LLM_ADVISORY_REPORT.md)
+- [IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_REPORT.md)
+- [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md](../archive/implementation-reports/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_REPORT.md)
 
 ## Revisões
 
-- [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md)
-- [TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
+- [ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md)
+- [TECHNICAL_INTEGRITY_REVIEW.md](../archive/reviews/TECHNICAL_INTEGRITY_REVIEW.md)
 
 ## Audit
 

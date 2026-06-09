@@ -1,7 +1,7 @@
 # IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE — Relatório final
 
 **ID:** `IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE`  
-**Prompt:** [IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
+**Prompt:** [IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md](../../archive/implementation-prompts/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
 **Estado:** implementação concluída — **H15-OK: Parcial** 2026-06-06 (Francisco — smoke manual)
 

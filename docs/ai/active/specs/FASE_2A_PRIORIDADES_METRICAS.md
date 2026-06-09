@@ -1,8 +1,8 @@
 # Fase 2A — Prioridades de Métricas
 
-Documento de saída da **Fase 2A** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 2A** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md)  
+**Base:** [PHASE0_INVENTORY.md](../design/PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md)  
 **Data:** 2026-05-31  
 **Scope:** priorização documental — **sem código**, **sem fixtures**, **sem JSON**.
 
@@ -285,7 +285,7 @@ Critérios de selecção: utilidade para avaliador v0, avaliação automática o
 
 **Total Fase 2B:** 23 fixtures documentais (20 jogo-específicos + 3 transversais reutilizáveis).
 
-**Fixtures implementados:** [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · **Diferidos:** [FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md)
+**Fixtures implementados:** [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · **Diferidos:** [FASE_2B_ARQUIVO_FIXTURES.md](../../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md)
 
 **Explicitamente fora da Fase 2B inicial:** S23, H15, K06 leilão, SP03 nil, T11 — ficam no arquivo para Fase 2B estendida ou Fase 5 v2.
 
@@ -295,11 +295,11 @@ Critérios de selecção: utilidade para avaliador v0, avaliação automática o
 
 ## Fase 2B — Fixtures avaliáveis (prioritários)
 
-Usa **este documento** como filtro: só métricas da secção «Recomendação para Fase 2B». Saída: [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) (23 fixtures). Fixtures restantes: [FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md). Formato boa/média/má — ver [FASE_1_METRICAS.md](FASE_1_METRICAS.md) §Convenções.
+Usa **este documento** como filtro: só métricas da secção «Recomendação para Fase 2B». Saída: [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) (23 fixtures). Fixtures restantes: [FASE_2B_ARQUIVO_FIXTURES.md](../../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md). Formato boa/média/má — ver [FASE_1_METRICAS.md](FASE_1_METRICAS.md) §Convenções.
 
 ## Fase 3 — Logger de partidas
 
-Desenho: [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md).
+Desenho: [FASE_3_LOGGER_DESIGN.md](../design/FASE_3_LOGGER_DESIGN.md).
 
 Campos mínimos derivados de **P0 + P1**:
 
@@ -373,9 +373,9 @@ Recebe encoder + métricas aplicáveis + avaliação heurística; **nunca** esco
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md)
+- [ROADMAP_AI.md](../ROADMAP_AI.md)
 - [FASE_1_METRICAS.md](FASE_1_METRICAS.md)
-- [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md)
+- [PHASE0_INVENTORY.md](../design/PHASE0_INVENTORY.md)
 - [docs/rules/king.md](../rules/king.md)
 
 ---

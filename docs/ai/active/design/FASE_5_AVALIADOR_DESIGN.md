@@ -1,8 +1,8 @@
 # Fase 5 — Avaliador de Decisões (desenho)
 
-Documento de saída da **Fase 5** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 5** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)  
+**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)  
 **Data:** 2026-05-31  
 **Scope:** desenho documental — **sem implementação**, **sem código**, **sem backend**.
 
@@ -281,7 +281,7 @@ flowchart TD
 
 # 6. Avaliador v0 — escopo limitado
 
-v0 cobre métricas **P0** alinhadas com [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) (23 fixtures).
+v0 cobre métricas **P0** alinhadas com [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) (23 fixtures).
 
 ## 6.1 Transversal
 
@@ -497,7 +497,7 @@ Formato compacto — não substituem fixtures completos.
 | Matching | `fixtureReferences` no input sugere comparação; implementação futura: diff `chosenCard` vs fixture |
 | Testes | Transformar fixtures 2B em casos automatizados **após** implementação (§14) |
 
-Fixtures **arquivados** ([FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md)) — fora do v0 excepto como referência v1.
+Fixtures **arquivados** ([FASE_2B_ARQUIVO_FIXTURES.md](../../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md)) — fora do v0 excepto como referência v1.
 
 ---
 
@@ -513,7 +513,7 @@ Ordem após v0 documental:
 | 4 | P1 parcial | S19, SP08, SP01 pós-mão, K00 meta |
 | 5 | Hard / P2 / P3 | SP14, H10, S25, K10, S23, T11 |
 
-Cross-ref: tabelas P0/P1 em [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md).
+Cross-ref: tabelas P0/P1 em [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md).
 
 **Agregação multi-métrica v0:** regra **«pior vence»** (§4.3) — métrica crítica `bad` impede global `good`. **v1:** ponderação ou métrica dominante.
 
@@ -626,10 +626,10 @@ A memória **não** substitui o avaliador. **Consome** decisões já julgadas.
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md)
-- [FASE_1_METRICAS.md](FASE_1_METRICAS.md) — boa / média / má
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) — ordem P0
-- [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) — golden cases
+- [ROADMAP_AI.md](../ROADMAP_AI.md)
+- [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) — boa / média / má
+- [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) — ordem P0
+- [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) — golden cases
 - [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) — logger v0, unknown/null
 - [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) — post_decision, Player View, mustPlayKingHeartsNow
 

@@ -1,8 +1,8 @@
 # Fase 2B — Arquivo de Fixtures (diferidos)
 
-Fixtures **fora** da seleção inicial de 23 definida em [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md).
+Fixtures **fora** da seleção inicial de 23 definida em [FASE_2A_PRIORIDADES_METRICAS.md](../../../active/specs/FASE_2A_PRIORIDADES_METRICAS.md).
 
-**Fixtures activos (prioritários):** [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md)  
+**Fixtures activos (prioritários):** [FASE_2B_FIXTURES_METRICAS.md](../../../active/specs/FASE_2B_FIXTURES_METRICAS.md)  
 **Origem:** antiga Fase 2 completa (40 fixtures) — preservada para Fase 2B estendida / Fase 5 v2.
 
 **Data arquivo:** 2026-05-31 · **Scope:** documentação apenas — **sem código**.
@@ -790,7 +790,7 @@ Notação: `A♠` = Ás de espadas; `7♦` = manilha; trunfo Sueca indicado expl
 
 # Resumo (corpus arquivado)
 
-Este ficheiro preserva o **catálogo completo** da antiga Fase 2 (~40 fixtures). Para avaliador v0, usar apenas [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) (23 prioritários).
+Este ficheiro preserva o **catálogo completo** da antiga Fase 2 (~40 fixtures). Para avaliador v0, usar apenas [FASE_2B_FIXTURES_METRICAS.md](../../../active/specs/FASE_2B_FIXTURES_METRICAS.md) (23 prioritários).
 
 ---
 

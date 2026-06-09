@@ -1,8 +1,8 @@
 # Fase 6 — Memória / Aprendizagem (desenho)
 
-Documento de saída da **Fase 6** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 6** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) · [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)  
+**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) · [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)  
 **Data:** 2026-05-31  
 **Scope:** desenho documental — **sem implementação**, **sem código**, **sem ML**, **sem LLM**, **sem backend**.
 
@@ -589,12 +589,12 @@ Motor valida legalidade
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md)
+- [ROADMAP_AI.md](../ROADMAP_AI.md)
 - [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md) — partial vs unknown, pior vence
 - [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) — Player View
 - [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) — IndexedDB logs
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) — métricas P0
-- [FASE_1_METRICAS.md](FASE_1_METRICAS.md) — catálogo
+- [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) — métricas P0
+- [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) — catálogo
 
 ---
 

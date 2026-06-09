@@ -3,8 +3,8 @@
 Documento operacional para transformar o [ROADMAP_AI](ROADMAP_AI.md) e os desenhos Fase 0–7 em **código incremental**.
 
 **Data:** 2026-06-06  
-**Versão:** 1.5  
-**Scope:** planeamento operacional — **Impl 1–15 executadas** (H14 OK · H15-OK parcial); **Impl 16 prompt v1.1 aprovada** — próximo: código King bot
+**Versão:** 1.6  
+**Scope:** planeamento operacional — **Impl 1–16 executadas** (H14 OK · H15-OK parcial); **H16-OK pendente** (smoke pós-hotfix 16.1)
 
 ---
 
@@ -20,7 +20,7 @@ Antes de **qualquer** fase passar a código:
 
 **Nunca saltar directamente para código.**
 
-Cada implementação abaixo tem coluna **Prompt antes de código: sim** — significa criar ficheiro em `docs/ai/implementation-prompts/` **antes** de tocar no repositório.
+Cada implementação abaixo tem coluna **Prompt antes de código: sim** — significa criar ficheiro em `docs/ai/archive/implementation-prompts/` **antes** de tocar no repositório.
 
 ---
 
@@ -95,10 +95,10 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 | Sub-entrega | Relatório | Notas |
 |-------------|-----------|-------|
-| Impl 1.1 Logger Hardening | `IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md` | Excepção aceite — ver [ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 |
-| Impl 2 H2 Hotfix | `IMPLEMENTATION_2_H2_HOTFIX_REPORT.md` | Deep snapshot Sueca trick_end |
-| Impl 3.1 King Encoder Fix | `IMPLEMENTATION_3_ENCODER_V0_REPORT.md` §8.1 | Patch encoder-only |
-| Impl 16.1 King negative contract fix | `IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md` | Hotfix pós-smoke FAIL Impl 16 |
+| Impl 1.1 Logger Hardening | `archive/implementation-reports/IMPLEMENTATION_1_1_LOGGER_HARDENING_REPORT.md` | Excepção aceite — ver [archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md) §D1 |
+| Impl 2 H2 Hotfix | `archive/implementation-reports/IMPLEMENTATION_2_H2_HOTFIX_REPORT.md` | Deep snapshot Sueca trick_end |
+| Impl 3.1 King Encoder Fix | `archive/implementation-reports/IMPLEMENTATION_3_ENCODER_V0_REPORT.md` §8.1 | Patch encoder-only |
+| Impl 16.1 King negative contract fix | `active/current-work/IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md` | Hotfix pós-smoke FAIL Impl 16 |
 
 **Regra futura:** sub-entregas devem ter prompt mínima antes de código.
 
@@ -125,7 +125,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 **Objectivo:** confirmar paths, nomes, consistência `docs/ai/` — **zero código**.
 
 - Confirmar que desenhos F3–F7 têm versões alinhadas (schema 3.0.0 … 7.0.0).
-- Confirmar lista de 23 fixtures activos ([FASE_2B](FASE_2B_FIXTURES_METRICAS.md)).
+- Confirmar lista de 23 fixtures activos ([FASE_2B](specs/FASE_2B_FIXTURES_METRICAS.md)).
 - Confirmar gaps PHASE0 (`playedCards` Sueca-only, `history` vazio).
 - Definir convenção de pasta: `frontend/src/cardIntelligence/` (subpastas §1).
 - **Não código.**
@@ -146,7 +146,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 1 — Logger v0
 
-**Base:** [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md)
+**Base:** [FASE_3_LOGGER_DESIGN.md](design/FASE_3_LOGGER_DESIGN.md)
 
 **Objectivo:**
 
@@ -162,7 +162,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 2 — Histórico transversal de cartas
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) §6 · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) §3
+**Base:** [PHASE0_INVENTORY.md](design/PHASE0_INVENTORY.md) §6 · [FASE_3_LOGGER_DESIGN.md](design/FASE_3_LOGGER_DESIGN.md) §3
 
 **Objectivo:**
 
@@ -175,7 +175,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 3 — Encoder v0
 
-**Base:** [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)
+**Base:** [FASE_4_ENCODER_DESIGN.md](design/FASE_4_ENCODER_DESIGN.md)
 
 **Objectivo:**
 
@@ -188,7 +188,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 4 — Fixtures 2B como testes / golden cases
 
-**Base:** [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · [FASE_2B_ARQUIVO_FIXTURES.md](FASE_2B_ARQUIVO_FIXTURES.md)
+**Base:** [specs/FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md) · [archive/specs/FASE_2B_ARQUIVO_FIXTURES.md](../archive/specs/FASE_2B_ARQUIVO_FIXTURES.md)
 
 **Objectivo:**
 
@@ -201,7 +201,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 5 — Avaliador v0
 
-**Base:** [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)
+**Base:** [FASE_5_AVALIADOR_DESIGN.md](design/FASE_5_AVALIADOR_DESIGN.md)
 
 **Objectivo:**
 
@@ -219,7 +219,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 6 — Memory v0
 
-**Base:** [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
+**Base:** [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](design/FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
 
 **Objectivo:**
 
@@ -244,7 +244,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 8 — Mini-LLM advisory only
 
-**Base:** [FASE_7_MINI_LLM_DESIGN.md](FASE_7_MINI_LLM_DESIGN.md)
+**Base:** [FASE_7_MINI_LLM_DESIGN.md](design/FASE_7_MINI_LLM_DESIGN.md)
 
 **Objectivo:**
 
@@ -259,7 +259,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 9 — Dev Seeded Game Lab
 
-**Base:** [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · pipeline Impl 1–8
+**Base:** [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md) · [FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md) · pipeline Impl 1–8
 
 **Problema:** validar regras, métricas, logging, encoder, evaluator e mini-LLM apenas com partidas normais é ineficiente — o shuffle é aleatório e não reproduz facilmente situações como K♥ obrigatório (King), Q♠ (Hearts), bag (Spades), manilha antes do Ás (Sueca), duas últimas (King), cortes/trunfos específicos.
 
@@ -294,7 +294,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 ## Implementação 10 — Debug Report Flow
 
-**Base:** [IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md](implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md) · relatórios Impl 7–9
+**Base:** [archive/implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md](../archive/implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md) · relatórios Impl 7–9 em `archive/implementation-reports/`
 
 **Problema:** pipeline offline funcional mas validação humana ainda console-heavy; `postGameReport` e `devLab` report isolados.
 
@@ -322,12 +322,12 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Objectivo** | Validar docs/paths; zero código |
 | **Documentos base** | ROADMAP_AI, PHASE0, FASE_1–7, FASE_2A/2B |
 | **Ficheiros prováveis a tocar** | Nenhum código — só `docs/ai/` se correcções menores |
-| **Novos ficheiros prováveis** | Este plano; pasta `docs/ai/implementation-prompts/` (vazia até Impl 1) |
+| **Novos ficheiros prováveis** | Este plano; pasta `docs/ai/archive/implementation-prompts/` (vazia até Impl 1) |
 | **Dependências** | Docs F3–F7 fechados |
 | **Riscos** | Inconsistência schema entre fases; drift nomes métricas |
 | **Testes mínimos** | Checklist manual: 23 fixtures listados; schema versions |
 | **Critérios de sucesso** | Francisco confirma docs consistentes; paths acordados |
-| **Prompt antes de código** | **Sim** — `IMPLEMENTATION_0_PREP_PROMPT.md` (opcional se só checklist) |
+| **Prompt antes de código** | **Sim** — `archive/implementation-prompts/IMPLEMENTATION_0_PREP_PROMPT.md` (opcional se só checklist) |
 
 ---
 
@@ -344,7 +344,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Testes mínimos** | Schema validation; evento após play; classification sempre unknown; jogo termina igual logger on/off; **sem** TrickEnd obrigatório |
 | **Critérios de sucesso** | Eventos play persistidos (IDB); zero classificação; zero impacto resultado; função central única |
 | **Hook** | v0: `GameBoard`/play flow → chama `logCardDecision()` central; fail-silent; tendência adapter boundary |
-| **Prompt antes de código** | **Sim** → `implementation-prompts/IMPLEMENTATION_1_LOGGER_V0_PROMPT.md` |
+| **Prompt antes de código** | **Sim** → `archive/implementation-prompts/IMPLEMENTATION_1_LOGGER_V0_PROMPT.md` |
 
 ---
 
@@ -385,7 +385,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | Campo | Conteúdo |
 |-------|----------|
 | **Objectivo** | Golden tests a partir fixtures 2B |
-| **Documentos base** | FASE_2B, FASE_2B_ARQUIVO, FASE_4 |
+| **Documentos base** | `specs/FASE_2B`, `archive/specs/FASE_2B_ARQUIVO`, `design/FASE_4` |
 | **Ficheiros prováveis a tocar** | `cardIntelligence/__fixtures__/*`, testes encoder |
 | **Novos ficheiros prováveis** | `fixtures/T01_*.ts`, `fixtures/S08_*.ts`, …; `encoder/fixtures.test.ts` |
 | **Dependências** | Impl 3 |
@@ -472,7 +472,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Riscos** | Confundir lab com gameplay prod; leak de presets em build prod; duplicar fixtures |
 | **Testes mínimos** | Mesmo seed → mesmo estado; cenário K02 → log+encode+eval reprodutível; flag off → zero UI/lab |
 | **Critérios de sucesso** | Repetir cenário métrico em &lt;1 min sem jogar manualmente; pipeline offline verde; prod sem lab |
-| **Prompt antes de código** | **Sim** → `implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md` |
+| **Prompt antes de código** | **Sim** → `archive/implementation-prompts/IMPLEMENTATION_9_DEV_SEEDED_GAME_LAB_PROMPT.md` |
 
 **Cenários-alvo (exemplos):**
 
@@ -496,7 +496,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Riscos** | Duplicar formatos devLab vs report; report gigante |
 | **Testes mínimos** | LAB_K02, LAB_H13 informational, event/game synthetic, export text/json/jsonl |
 | **Critérios de sucesso** | CI verde; zero gameplay; H10 smoke; prod sem helpers novos |
-| **Prompt antes de código** | **Sim** → `IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md` |
+| **Prompt antes de código** | **Sim** → `archive/implementation-prompts/IMPLEMENTATION_10_DEBUG_REPORT_FLOW_PROMPT.md` |
 | **Checkpoint** | **H10** — scenario lab + event/game IDB; ver prompt §16 |
 
 ---
@@ -513,8 +513,8 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 | **Riscos** | Regressão Tier A; H10 falso positivo moon; SP14 partial em logs reais |
 | **Testes mínimos** | Golden K10/SP14 good, H10/S25 partial; sintéticos T1–T12; grep hot path |
 | **Critérios de sucesso** | CI verde; sem `tierBPartial`; schema evaluator 5.0.0 |
-| **Prompt antes de código** | **Sim** → `IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md` |
-| **Relatório** | [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](implementation-reports/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) |
+| **Prompt antes de código** | **Sim** → `archive/implementation-prompts/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md` |
+| **Relatório** | [current-work/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md](current-work/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_REPORT.md) |
 | **Hotfix 11.1** | Dev Lab Tier B presets — § relatório Impl 11 |
 | **Checkpoint** | **H11** — **OK** 2026-06-06 |
 
@@ -526,7 +526,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 
 **Impl 1–15 concluídos.** **H13 OK** · **H14 OK** · **H15-OK parcial** (Hearts — gap cartas altas → v2).
 
-**Impl 16:** código concluído — [relatório](implementation-reports/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md); **H16-OK pendente** smoke.
+**Impl 16:** código concluído — [current-work/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md](current-work/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md); **H16-OK pendente** smoke.
 
 **Próximo passo recomendado:** smoke King PT Medium/Hard → **H16-OK** → King v2 / Simplified / gaps transversais.
 
@@ -541,7 +541,7 @@ Visão conservadora — **11 blocos** (0–10), cada um com prompt dedicada (exc
 A **próxima tarefa documental** deve ser:
 
 ```
-docs/ai/implementation-prompts/IMPLEMENTATION_1_LOGGER_V0_PROMPT.md
+docs/ai/archive/implementation-prompts/IMPLEMENTATION_1_LOGGER_V0_PROMPT.md
 ```
 
 Essa prompt deve conter, no mínimo:
@@ -557,15 +557,15 @@ Essa prompt deve conter, no mínimo:
 **Ordem de trabalho:**
 
 ```
-IMPLEMENTATION_PLAN_AI.md          ← este documento (feito)
+active/IMPLEMENTATION_PLAN_AI.md          ← este documento (feito)
         ↓
-IMPLEMENTATION_1_LOGGER_V0_PROMPT.md   ← próximo passo
+archive/implementation-prompts/IMPLEMENTATION_1_LOGGER_V0_PROMPT.md   ← próximo passo
         ↓
 código logger v0
         ↓
-relatório final Impl 1
+archive/implementation-reports/relatório final Impl 1
         ↓
-IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
+archive/implementation-prompts/IMPLEMENTATION_2_ROUND_HISTORY_PROMPT.md
         ↓
 …
 ```
@@ -666,7 +666,7 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | H13 | Sueca bot metrics (Impl 13) | OK | **OK** 2026-06-06 | **OK** |
 | H14 | Spades bot metrics (Impl 14) | OK | **OK** 2026-06-06 | **OK** |
 | H15 | Hearts bot metrics (Impl 15) | OK | **Parcial** 2026-06-06 | **Parcial** — cartas altas v2 |
-| H16 | King bot metrics (Impl 16) | — | Pendente | Prompt v1.1 aprovada; código pendente |
+| H16 | King bot metrics (Impl 16 + 16.1) | OK | Pendente | Código + hotfix 16.1 concluídos; smoke H16-OK pendente |
 
 **Bloqueio formal:** plano original exige OK explícito antes de Impl N+1. Na prática, Impl 2–10 avançaram com **CI-only** para H1–H8; H9/H10 fechados manualmente. Recomenda-se smoke H1–H8 antes de melhoria de bots.
 
@@ -678,11 +678,11 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 
 | Pergunta | Resposta |
 |----------|----------|
-| **Por onde começar?** | **Impl 16 King bot** — prompt v1.1 aprovada |
+| **Por onde começar?** | Smoke King PT Medium/Hard → **H16-OK** |
 | **O que não fazer ainda?** | King Simplified / festa / decision assist LLM |
-| **Impl 1–15** | ✅ Concluídas — ver `implementation-reports/` |
-| **Impl 16** | 📋 Prompt aprovada — código + H16-OK pendente |
-| **Que prompt antes de código?** | Uma por implementação em `docs/ai/implementation-prompts/` |
+| **Impl 1–16** | ✅ Código concluído — ver `docs/ai/archive/implementation-reports/` e `docs/ai/active/current-work/` |
+| **Impl 16** | ✅ Código + hotfix 16.1 — **H16-OK pendente** (smoke manual) |
+| **Que prompt antes de código?** | Uma por implementação em `docs/ai/archive/implementation-prompts/` |
 | **Como evitar scope creep?** | Granularidade §5; P0 only avaliador; LLM advisory only; checkpoints H1–H11 |
 
 ## O que fica de fora (explicitamente)
@@ -716,19 +716,19 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 ## Referências
 
 - [ROADMAP_AI.md](ROADMAP_AI.md)
-- [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md)
-- [FASE_1_METRICAS.md](FASE_1_METRICAS.md)
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md)
-- [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md)
-- [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md)
-- [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md)
-- [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md)
-- [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
+- [PHASE0_INVENTORY.md](design/PHASE0_INVENTORY.md)
+- [FASE_1_METRICAS.md](specs/FASE_1_METRICAS.md)
+- [FASE_2A_PRIORIDADES_METRICAS.md](specs/FASE_2A_PRIORIDADES_METRICAS.md)
+- [FASE_2B_FIXTURES_METRICAS.md](specs/FASE_2B_FIXTURES_METRICAS.md)
+- [FASE_3_LOGGER_DESIGN.md](design/FASE_3_LOGGER_DESIGN.md)
+- [FASE_4_ENCODER_DESIGN.md](design/FASE_4_ENCODER_DESIGN.md)
+- [FASE_5_AVALIADOR_DESIGN.md](design/FASE_5_AVALIADOR_DESIGN.md)
+- [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](design/FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)
 - [CARD_INTELLIGENCE_STATUS_REPORT.md](CARD_INTELLIGENCE_STATUS_REPORT.md)
-- [reviews/ROADMAP_COMPLIANCE_REVIEW.md](reviews/ROADMAP_COMPLIANCE_REVIEW.md)
-- [reviews/TECHNICAL_INTEGRITY_REVIEW.md](reviews/TECHNICAL_INTEGRITY_REVIEW.md)
-- [implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md](implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md)
-- [implementation-reports/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md](implementation-reports/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md)
+- [archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md](../archive/reviews/ROADMAP_COMPLIANCE_REVIEW.md)
+- [archive/reviews/TECHNICAL_INTEGRITY_REVIEW.md](../archive/reviews/TECHNICAL_INTEGRITY_REVIEW.md)
+- [archive/implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md](../archive/implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md)
+- [current-work/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md](current-work/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_REPORT.md)
 
 ---
 
@@ -742,3 +742,4 @@ Checkpoints **obrigatórios** antes de avançar (regra formal). **Distinção CI
 | 1.3 | 2026-06-06 | Impl 10 `DEBUG_REPORT_FLOW`; H9/H10 OK; excepções 1.1/H2/3.1; estado repo actualizado |
 | 1.4 | 2026-06-06 | Impl 11 Evaluator Tier B + hotfix 11.1 Dev Lab; H11 OK |
 | 1.5 | 2026-06-06 | Impl 12–15 concluídas (H13/H14 OK, H15 parcial); Impl 16 prompt v1.1 aprovada; §2.2 bot metrics |
+| 1.6 | 2026-06-09 | Impl 16 + hotfix 16.1 concluídos; H16 alinhado (smoke pendente); reestruturação `active/` + `archive/` |

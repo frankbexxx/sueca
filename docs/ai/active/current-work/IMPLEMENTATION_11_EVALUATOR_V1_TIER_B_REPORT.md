@@ -1,7 +1,7 @@
 # IMPLEMENTATION_11_EVALUATOR_V1_TIER_B — Relatório final
 
 **Data:** 2026-06-06  
-**Prompt:** [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md](../implementation-prompts/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md)  
+**Prompt:** [IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md](../../archive/implementation-prompts/IMPLEMENTATION_11_EVALUATOR_V1_TIER_B_PROMPT.md)  
 **Pré-requisito:** H10 OK (Impl 10)  
 **Estado CI:** verde — **229** testes `cardIntelligence` (pós-hotfix 11.1), **423** frontend, build OK  
 **Checkpoint H11:** **OK — 2026-06-06**

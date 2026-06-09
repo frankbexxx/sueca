@@ -1,8 +1,8 @@
 # Fase 7 — Mini-LLM local / fallback (desenho)
 
-Documento de saída da **Fase 7** do [ROADMAP_AI](ROADMAP_AI.md).
+Documento de saída da **Fase 7** do [ROADMAP_AI](../ROADMAP_AI.md).
 
-**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) · [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md) · [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)  
+**Base:** [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) · [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) · [FASE_2B_FIXTURES_METRICAS.md](../specs/FASE_2B_FIXTURES_METRICAS.md) · [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) · [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) · [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md) · [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md)  
 **Data:** 2026-05-31  
 **Scope:** desenho documental — **sem implementação**, **sem código**, **sem APIs externas**, **sem escolha de provider** (Ollama, WebLLM, etc.).
 
@@ -380,7 +380,7 @@ Ordem **fixa** — não saltar etapas:
 
 # 8. Integração com AI existente
 
-Os **bots actuais não são destruídos**. Card Intelligence é camada **acima** ([ROADMAP_AI](ROADMAP_AI.md) regra arquitectural).
+Os **bots actuais não são destruídos**. Card Intelligence é camada **acima** ([ROADMAP_AI](../ROADMAP_AI.md) regra arquitectural).
 
 ## 8.1 Cadeia desejada (Decision assist)
 
@@ -603,7 +603,7 @@ O avaliador **não** deve ser substituído pela LLM:
 
 - LLM **não** escreve `classification` no logger (F3 mantém `unknown` até pipeline offline)
 - Ground truth heurístico para treino = F5 + fixtures 2B
-- Métricas **P3** (S23, H15, K06) — contexto explicativo LLM, não auto-veredicto ([FASE_2A](FASE_2A_PRIORIDADES_METRICAS.md))
+- Métricas **P3** (S23, H15, K06) — contexto explicativo LLM, não auto-veredicto ([FASE_2A](../specs/FASE_2A_PRIORIDADES_METRICAS.md))
 
 ---
 
@@ -677,12 +677,12 @@ No fim desta fase documental fica claro:
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md) — regra arquitectural Card Intelligence acima dos bots
+- [ROADMAP_AI.md](../ROADMAP_AI.md) — regra arquitectural Card Intelligence acima dos bots
 - [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) — cadeia fallback actual
 - [FASE_4_ENCODER_DESIGN.md](FASE_4_ENCODER_DESIGN.md) — `pre_decision`, Player View
 - [FASE_5_AVALIADOR_DESIGN.md](FASE_5_AVALIADOR_DESIGN.md) — juiz pós-decisão only
 - [FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md](FASE_6_MEMORIA_APRENDIZAGEM_DESIGN.md) — memória como contexto
-- [FASE_2A_PRIORIDADES_METRICAS.md](FASE_2A_PRIORIDADES_METRICAS.md) — P0/P3 para LLM
+- [FASE_2A_PRIORIDADES_METRICAS.md](../specs/FASE_2A_PRIORIDADES_METRICAS.md) — P0/P3 para LLM
 - [FASE_3_LOGGER_DESIGN.md](FASE_3_LOGGER_DESIGN.md) — `aiSource` P1
 
 ---

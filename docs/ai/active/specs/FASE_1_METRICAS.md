@@ -1,7 +1,7 @@
 # Fase 1 — Catálogo de Métricas por Jogo (validação humana)
 
-Documento de saída da **Fase 1** do [ROADMAP_AI](ROADMAP_AI.md).  
-Base: [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md) · Actualização: validação humana (2026-05-31).
+Documento de saída da **Fase 1** do [ROADMAP_AI](../ROADMAP_AI.md).  
+Base: [PHASE0_INVENTORY.md](../design/PHASE0_INVENTORY.md) · Actualização: validação humana (2026-05-31).
 
 **Scope:** documentação apenas — nenhuma alteração de código.
 
@@ -843,8 +843,8 @@ Aplicam-se a vários jogos; **não** são métricas genéricas de ML.
 
 ## Referências
 
-- [ROADMAP_AI.md](ROADMAP_AI.md)
-- [PHASE0_INVENTORY.md](PHASE0_INVENTORY.md)
+- [ROADMAP_AI.md](../ROADMAP_AI.md)
+- [PHASE0_INVENTORY.md](../design/PHASE0_INVENTORY.md)
 - [docs/rules/king.md](../rules/king.md)
 - [docs/rules/sueca.md](../rules/sueca.md)
 - Código (referência): `frontend/src/ai/games/*`, `sueca-ai/engine/heuristics.py`

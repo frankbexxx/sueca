@@ -1,7 +1,7 @@
 # IMPLEMENTATION_13_BOT_METRICS_UPGRADE — Relatório final
 
 **ID:** `IMPLEMENTATION_13_BOT_METRICS_UPGRADE`  
-**Prompt:** [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md](../implementation-prompts/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md) v1.0  
+**Prompt:** [IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md](../../archive/implementation-prompts/IMPLEMENTATION_13_BOT_METRICS_UPGRADE_PROMPT.md) v1.0  
 **Data:** 2026-06-06  
 **Estado:** implementação concluída — **H13 OK** 2026-06-06 (Francisco)
 
@@ -96,7 +96,7 @@ Não ligado ao runtime. Fixtures S16/S08/S19 disponíveis para validação manua
 
 ### Observação Sueca v2 (smoke H13 — Francisco)
 
-Quando a AI tenta evitar **«mandar putos à escola»** (métrica **S23**, Hard — fora scope v0), **não** deve usar **Rei por defeito**; preferir carta **intermédia/alta controlada** quando fizer sentido estrategicamente (cf. [FASE_1_METRICAS.md](../FASE_1_METRICAS.md) §S23). Candidata a **Sueca bot v2** — sem alteração de código nesta impl.
+Quando a AI tenta evitar **«mandar putos à escola»** (métrica **S23**, Hard — fora scope v0), **não** deve usar **Rei por defeito**; preferir carta **intermédia/alta controlada** quando fizer sentido estrategicamente (cf. [FASE_1_METRICAS.md](../specs/FASE_1_METRICAS.md) §S23). Candidata a **Sueca bot v2** — sem alteração de código nesta impl.
 
 ---
 
