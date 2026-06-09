@@ -95,6 +95,16 @@ Se não tiveres informação suficiente, diz exactamente o que falta.
 
 ---
 
+## Regra de output
+
+Relatórios e prompts devem ser produzidos como texto Markdown no chat.
+
+Gemini não deve escrever relatórios directamente em ficheiros físicos.
+
+A gravação em `docs/ai/repo-review/reports/` deve ser feita pelo utilizador ou por Cursor depois de revisão humana.
+
+---
+
 ## Prompt base
 
 ```text

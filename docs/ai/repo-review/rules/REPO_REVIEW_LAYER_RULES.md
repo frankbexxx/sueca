@@ -69,7 +69,7 @@ Inclui normalmente:
 
 frontend/src/components/**
 frontend/src/styles/**
-frontend/src/themes/**
+
 4. Docs / Histórico
 
 Usar quando a pergunta for sobre:

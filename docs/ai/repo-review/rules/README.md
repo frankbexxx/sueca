@@ -34,7 +34,7 @@ Evita packs gigantes e obriga a escolher o contexto certo antes de consultar AI 
 ## Fluxo recomendado
 
 1. Escolher a camada de análise.
-2. Gerar pack Repomix focado.
+2. Gerar pack Repomix focado, executado pelo utilizador no terminal.
 3. Enviar para Gemini em modo REVIEW ONLY.
 4. Validar conclusões.
 5. Criar prompt para Cursor.
