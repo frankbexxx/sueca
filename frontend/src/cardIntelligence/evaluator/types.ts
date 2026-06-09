@@ -76,3 +76,45 @@ export interface EvaluatorContext {
 }
 
 export type MetricEvaluatorFn = (ctx: EvaluatorContext) => MetricEvaluationResult | null;
+
+export interface HypotheticalEvaluationInput {
+  encodedState: EncodedDecisionState;
+  hypotheticalCard: Card;
+  legalMoves: Card[];
+  metricContext?: MetricContextEntry[];
+  fixtureId?: string;
+  evaluatorMode?: EvaluatorMode;
+  viewType?: 'player' | 'engine';
+  rawLogEvent?: CardDecisionLogEvent;
+  tierBTestContext?: { s25?: S25TestContext };
+}
+
+export interface LegalMoveRiskEntry {
+  card: Card;
+  classification: EvaluationClassification;
+  confidence: ConfidenceLevel;
+  reasonShort: string;
+  metricResults: MetricEvaluationResult[];
+  betterAlternatives: Card[];
+  equivalentAlternatives: Card[];
+  riskRank: number;
+}
+
+export interface LegalMoveRiskMapInput {
+  encodedState: EncodedDecisionState;
+  legalMoves: Card[];
+  metricContext?: MetricContextEntry[];
+  fixtureId?: string;
+  evaluatorMode?: EvaluatorMode;
+  viewType?: 'player' | 'engine';
+  rawLogEvent?: CardDecisionLogEvent;
+  tierBTestContext?: { s25?: S25TestContext };
+}
+
+export interface LegalMoveRiskMapResult {
+  entries: LegalMoveRiskEntry[];
+  sortedByRisk: LegalMoveRiskEntry[];
+  bestEntry: LegalMoveRiskEntry | null;
+  worstEntry: LegalMoveRiskEntry | null;
+  warnings: string[];
+}

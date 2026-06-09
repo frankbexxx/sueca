@@ -1,23 +1,11 @@
 import { cardsMatch } from '../shared/clone';
-import { aggregateMetricResults } from './aggregateResults';
-import { detectIncompleteContext } from './evalHelpers';
-import {
-  evaluateMetric,
-  METRIC_EVALUATORS,
-  P0_EVALUATION_ORDER,
-} from './metricEvaluators';
+import { runMetricEvaluation } from './evaluateHypotheticalMove';
 import {
   DecisionEvaluationInput,
   DecisionEvaluationResult,
   EvaluatorContext,
   EVALUATOR_SCHEMA_VERSION,
-  MetricEvaluationResult,
 } from './types';
-
-const PROXY_WARNING_METRICS: Record<string, string> = {
-  SP01: 'Avaliação de bid conservador — proxy play-phase; bid real fora v0.',
-  H05: 'Avaliação de pass — proxy play; pass real fora v0.',
-};
 
 function buildContext(input: DecisionEvaluationInput): EvaluatorContext {
   return {
@@ -105,54 +93,11 @@ export function evaluateDecision(
   }
 
   const ctx = buildContext(input);
-  const metricResults: MetricEvaluationResult[] = [];
-  const warnings: string[] = [];
-
-  for (const metricId of P0_EVALUATION_ORDER) {
-    if (!METRIC_EVALUATORS[metricId]) continue;
-    const entry = ctx.metricContext.find((m) => m.metricId === metricId);
-    if (!entry) continue;
-
-    const evaluated = evaluateMetric(ctx, metricId);
-    if (evaluated) {
-      metricResults.push(evaluated);
-    }
-
-    if (PROXY_WARNING_METRICS[metricId] && entry.applicable) {
-      warnings.push(PROXY_WARNING_METRICS[metricId]);
-    }
-  }
-
-  const incomplete = detectIncompleteContext(ctx, metricResults);
-  const aggregated = aggregateMetricResults({
-    metricResults,
+  return runMetricEvaluation({
+    ctx,
+    chosenCard: input.chosenCard,
+    legalMoves: input.legalMoves,
     fixtureId: input.fixtureId,
-    hasIncompleteContext: incomplete,
-  });
-
-  const equivalentAlternatives = input.legalMoves.filter(
-    (m) =>
-      !cardsMatch(m, input.chosenCard!) &&
-      !aggregated.betterAlternatives.some((b) => cardsMatch(b, m))
-  );
-
-  const allMissing = ctx.metricContext.flatMap((m) => m.missingFields);
-
-  return {
-    schemaVersion: EVALUATOR_SCHEMA_VERSION,
-    evaluatorVersion: EVALUATOR_SCHEMA_VERSION,
-    classification: aggregated.classification,
-    confidence: aggregated.confidence,
-    reasonShort: aggregated.reasonShort,
-    metricResults,
-    activatedMetricIds: aggregated.activatedMetricIds,
-    failedMetricIds: aggregated.failedMetricIds,
-    betterAlternatives: aggregated.betterAlternatives,
-    equivalentAlternatives,
-    missingFields: Array.from(new Set(allMissing)),
-    evaluatorWarnings: warnings,
     viewTypeUsed,
-    partialEvaluation: aggregated.partialEvaluation,
-    evaluatedAt: new Date().toISOString(),
-  };
+  });
 }

@@ -12,6 +12,12 @@ const PRIORITY: Record<EvaluationClassification, number> = {
   unknown: 1,
 };
 
+export function getClassificationRiskRank(
+  classification: EvaluationClassification
+): number {
+  return PRIORITY[classification];
+}
+
 const ACTIONABLE: MetricClassification[] = ['good', 'medium', 'bad', 'partial'];
 
 export const TIER_B_FIXTURE_IDS = ['S25', 'H10', 'SP14', 'K10'] as const;
