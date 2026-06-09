@@ -52,7 +52,7 @@ export function buildPlaySection(
   const ledSuit = encoded?.ledSuit ?? play?.ledSuit ?? null;
   const trumpSuit = encoded?.trumpSuit ?? play?.trumpSuit ?? null;
   const trickPosition =
-    encoded?.trickPosition ?? (play ? play.trickBefore.length : undefined);
+    encoded?.trickPosition ?? play?.trickBefore?.length;
 
   const section: DebugReportPlaySection = {
     chosenCard: formatCard(play?.chosenCard ?? encoded?.chosenCard),
