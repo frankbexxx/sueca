@@ -1,4 +1,5 @@
-import { GameVariant } from '../../../types/game';
+import { Card, GameVariant, Suit } from '../../../types/game';
+import { RoundPlayEntry } from '../../shared/types/logEvents';
 import { EncodedDecisionState } from '../../encoder/types';
 import {
   DecisionEvaluationResult,
@@ -40,6 +41,20 @@ export interface DebugReportMeta {
   variant?: GameVariant;
 }
 
+export interface DebugReportPlaySection {
+  chosenCard: string;
+  legalMovesCount: number;
+  trickIndex: number | null;
+  eventId?: string;
+  hand?: Card[];
+  legalMoves?: Card[];
+  currentTrick?: Card[];
+  ledSuit?: Suit | null;
+  trumpSuit?: Suit | null;
+  trickPosition?: number;
+  visiblePlayedCards?: RoundPlayEntry[];
+}
+
 export interface DebugReportSummary {
   classification?: EvaluationClassification;
   reasonShort?: string;
@@ -53,12 +68,7 @@ export interface DebugReportDocument {
   summary: DebugReportSummary;
   sections: {
     scenario?: { primaryMetricId: string; humanNote: string; fixtureId?: string };
-    play?: {
-      chosenCard: string;
-      legalMovesCount: number;
-      trickIndex: number | null;
-      eventId?: string;
-    };
+    play?: DebugReportPlaySection;
     encode?: Record<string, unknown>;
     evaluation?: Pick<
       DecisionEvaluationResult,

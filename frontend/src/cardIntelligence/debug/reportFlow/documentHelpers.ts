@@ -7,6 +7,7 @@ import { formatCard } from './formatCard';
 import { formatHumanReport } from './formatHumanReport';
 import {
   DebugReportDocument,
+  DebugReportPlaySection,
   DebugReportSummary,
   ReportKind,
   ReportSource,
@@ -36,6 +37,41 @@ export function buildSummaryFromEvaluation(
     failedMetricIds: evaluation?.failedMetricIds ?? [],
     topIssues,
   };
+}
+
+export function buildPlaySection(
+  play?: CardDecisionLogEvent,
+  encoded?: EncodedDecisionState
+): DebugReportPlaySection | undefined {
+  if (!play && !encoded) return undefined;
+
+  const hand = encoded?.hand ?? play?.handBefore;
+  const legalMoves = encoded?.legalMoves ?? play?.legalMoves ?? [];
+  const currentTrick = encoded?.currentTrick ?? play?.trickBefore;
+  const visiblePlayedCards = encoded?.visiblePlayedCards ?? play?.roundPlayHistory;
+  const ledSuit = encoded?.ledSuit ?? play?.ledSuit ?? null;
+  const trumpSuit = encoded?.trumpSuit ?? play?.trumpSuit ?? null;
+  const trickPosition =
+    encoded?.trickPosition ?? (play ? play.trickBefore.length : undefined);
+
+  const section: DebugReportPlaySection = {
+    chosenCard: formatCard(play?.chosenCard ?? encoded?.chosenCard),
+    legalMovesCount: legalMoves.length,
+    trickIndex: play?.trickIndex ?? encoded?.trickIndex ?? null,
+    eventId: play?.eventId,
+  };
+
+  if (hand && hand.length > 0) section.hand = hand;
+  if (legalMoves.length > 0) section.legalMoves = legalMoves;
+  if (currentTrick && currentTrick.length > 0) section.currentTrick = currentTrick;
+  if (ledSuit) section.ledSuit = ledSuit;
+  if (trumpSuit) section.trumpSuit = trumpSuit;
+  if (trickPosition !== undefined) section.trickPosition = trickPosition;
+  if (visiblePlayedCards && visiblePlayedCards.length > 0) {
+    section.visiblePlayedCards = visiblePlayedCards;
+  }
+
+  return section;
 }
 
 export function formatMetricResultsLine(evaluation?: DecisionEvaluationResult): string {
@@ -86,14 +122,7 @@ export function buildDebugReportDocument(input: BuildDocumentInput): DebugReport
     summary,
     sections: {
       scenario: input.scenarioSection,
-      play: input.play
-        ? {
-            chosenCard: formatCard(input.play.chosenCard),
-            legalMovesCount: input.play.legalMoves.length,
-            trickIndex: input.play.trickIndex,
-            eventId: input.play.eventId,
-          }
-        : undefined,
+      play: buildPlaySection(input.play, input.encoded),
       encode: summarizeEncodedState(input.encoded),
       evaluation: input.evaluation
         ? {

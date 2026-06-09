@@ -1,4 +1,4 @@
-import { formatCardList } from './formatCard';
+import { formatCardList, formatPlayedCardsHistory } from './formatCard';
 import { DebugReportDocument } from './types';
 import { formatWarningLine } from './warningTaxonomy';
 
@@ -41,11 +41,32 @@ export function formatHumanReport(doc: DebugReportDocument): string {
   }
 
   if (doc.sections.play) {
-    lines.push(
-      '',
-      '--- Play ---',
-      `chosen: ${doc.sections.play.chosenCard} | legal moves: ${doc.sections.play.legalMovesCount} | trickIndex: ${doc.sections.play.trickIndex ?? 'null'}`
-    );
+    const p = doc.sections.play;
+    lines.push('', '--- Play ---', `chosen: ${p.chosenCard}`);
+    if (p.hand && p.hand.length > 0) {
+      lines.push(`hand: ${formatCardList(p.hand)}`);
+    }
+    if (p.legalMoves && p.legalMoves.length > 0) {
+      lines.push(`legalMoves: ${formatCardList(p.legalMoves)}`);
+    }
+    if (p.currentTrick && p.currentTrick.length > 0) {
+      lines.push(`currentTrick: ${formatCardList(p.currentTrick)}`);
+    }
+    if (p.ledSuit) {
+      lines.push(`ledSuit: ${p.ledSuit}`);
+    }
+    if (p.trumpSuit) {
+      lines.push(`trumpSuit: ${p.trumpSuit}`);
+    }
+    if (p.trickPosition !== undefined) {
+      lines.push(`trickPosition: ${p.trickPosition}`);
+    }
+    if (p.visiblePlayedCards && p.visiblePlayedCards.length > 0) {
+      lines.push(`visiblePlayedCards: ${formatPlayedCardsHistory(p.visiblePlayedCards)}`);
+    }
+    if (p.trickIndex !== null && p.trickIndex !== undefined) {
+      lines.push(`trickIndex: ${p.trickIndex}`);
+    }
   }
 
   lines.push('', '--- Encode (Player View) ---', ...formatEncodeSection(doc.sections.encode));
