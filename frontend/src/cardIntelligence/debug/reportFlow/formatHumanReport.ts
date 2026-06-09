@@ -1,3 +1,4 @@
+import { formatCardList } from './formatCard';
 import { DebugReportDocument } from './types';
 import { formatWarningLine } from './warningTaxonomy';
 
@@ -56,6 +57,18 @@ export function formatHumanReport(doc: DebugReportDocument): string {
     `reasonShort: ${doc.summary.reasonShort ?? doc.sections.evaluation?.reasonShort ?? '(skipped)'}`,
     `metricResults: ${doc.sections.metricResultsLine ?? '(skipped)'}`
   );
+
+  const better = doc.sections.evaluation?.betterAlternatives ?? [];
+  const equivalent = doc.sections.evaluation?.equivalentAlternatives ?? [];
+  if (better.length > 0 || equivalent.length > 0) {
+    lines.push('', '--- Alternatives ---');
+    if (better.length > 0) {
+      lines.push(`better: ${formatCardList(better)}`);
+    }
+    if (equivalent.length > 0) {
+      lines.push(`equivalent: ${formatCardList(equivalent)}`);
+    }
+  }
 
   if (doc.sections.highlights && doc.sections.highlights.length > 0) {
     lines.push('', '--- Highlights ---', ...doc.sections.highlights.map((h) => `- ${h}`));

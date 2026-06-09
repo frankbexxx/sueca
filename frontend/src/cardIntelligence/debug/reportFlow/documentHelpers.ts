@@ -1,9 +1,9 @@
-import { Card } from '../../../types/game';
 import { EncodedDecisionState } from '../../encoder/types';
 import { DecisionEvaluationResult } from '../../evaluator/types';
 import { CardDecisionLogEvent } from '../../shared/types/logEvents';
 import { TrickEndEvent } from '../../shared/types/trickEndEvent';
 import { summarizeEncodedState } from './encodeSummary';
+import { formatCard } from './formatCard';
 import { formatHumanReport } from './formatHumanReport';
 import {
   DebugReportDocument,
@@ -13,10 +13,8 @@ import {
   ReportWarning,
 } from './types';
 import { classifyWarnings } from './warningTaxonomy';
-export function formatCard(card: Card | null | undefined): string {
-  if (!card) return '(none)';
-  return card.id || `${card.rank}${card.suit[0]}`;
-}
+
+export { formatCard } from './formatCard';
 
 export function buildSummaryFromEvaluation(
   evaluation?: DecisionEvaluationResult
@@ -102,6 +100,8 @@ export function buildDebugReportDocument(input: BuildDocumentInput): DebugReport
             classification: input.evaluation.classification,
             reasonShort: input.evaluation.reasonShort,
             partialEvaluation: input.evaluation.partialEvaluation,
+            betterAlternatives: input.evaluation.betterAlternatives,
+            equivalentAlternatives: input.evaluation.equivalentAlternatives,
           }
         : undefined,
       gameStats: input.gameStats,

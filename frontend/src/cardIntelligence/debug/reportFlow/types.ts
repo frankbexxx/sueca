@@ -62,7 +62,11 @@ export interface DebugReportDocument {
     encode?: Record<string, unknown>;
     evaluation?: Pick<
       DecisionEvaluationResult,
-      'classification' | 'reasonShort' | 'partialEvaluation'
+      | 'classification'
+      | 'reasonShort'
+      | 'partialEvaluation'
+      | 'betterAlternatives'
+      | 'equivalentAlternatives'
     >;
     gameStats?: {
       playCount: number;
