@@ -26,3 +26,4 @@ _temp/
 
 # Repomix generated packs (regenerate via: npx repomix --config repomix.config.json)
 docs/ai/repo-review/packs/generated/
+.aider*
