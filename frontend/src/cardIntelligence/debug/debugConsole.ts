@@ -45,6 +45,9 @@ import {
 
 export type { CiEncodeOptions } from './evaluateStoredEvents';
 
+import { mapLegalMoveRisks } from '../evaluator/mapLegalMoveRisks';
+import type { LegalMoveRiskMapInput } from '../evaluator/types';
+
 export interface CardIntelligenceDebugConsole {
   loadEvents: typeof loadAllLogEvents;
   summarize: typeof summarizeLogEvents;
@@ -76,6 +79,7 @@ export interface CardIntelligenceDebugConsole {
     eventId: string,
     opts?: { fallbackMoveIndex?: number; memoryQuery?: MemoryQuery; includeMemoryHints?: boolean }
   ) => Promise<MiniLLMAdvisoryResult | null>;
+  mapLegalMoveRisks?: (input: LegalMoveRiskMapInput) => ReturnType<typeof mapLegalMoveRisks>;
 }
 
 declare global {
@@ -109,6 +113,7 @@ declare global {
         includeMemoryHints?: boolean;
       }
     ) => Promise<MiniLLMAdvisoryResult | null>;
+    __ciMapLegalRisks?: (input: LegalMoveRiskMapInput) => ReturnType<typeof mapLegalMoveRisks>;
   }
 }
 
@@ -147,6 +152,10 @@ async function ciGetMiniLLMAdviceForEvent(
   const input = await buildMiniLLMInputFromStoredEvent(eventId, opts);
   if (!input) return null;
   return getMiniLLMAdvice(input, { includePromptText: true, forceAdvisory: true });
+}
+
+function mapLegalMoveRisksForConsole(input: LegalMoveRiskMapInput) {
+  return mapLegalMoveRisks(input);
 }
 
 export function installCardIntelligenceDebugConsole(): void {
@@ -205,6 +214,11 @@ export function installCardIntelligenceDebugConsole(): void {
     window.__ciGetMiniLLMAdvice = getAdvice;
   }
 
+  if (CARD_INTELLIGENCE_DEBUG) {
+    api.mapLegalMoveRisks = mapLegalMoveRisksForConsole;
+    window.__ciMapLegalRisks = mapLegalMoveRisksForConsole;
+  }
+
   console.info(
     '[CardIntelligence] Debug console ready (Impl 10):\n' +
       '  await __ciEventReport("<eventId>")\n' +
@@ -217,7 +231,10 @@ export function installCardIntelligenceDebugConsole(): void {
       (CARD_INTELLIGENCE_LLM_ADVISORY
         ? '  await __ciGetMiniLLMAdvice("<eventId>") — advisory only; no play\n'
         : '') +
-      '  __ciPostGameReport is an alias of __ciGameReport'
+      '  __ciPostGameReport is an alias of __ciGameReport\n' +
+      (CARD_INTELLIGENCE_DEBUG
+        ? '  await __ciMapLegalRisks({...}) — debug legal move risk map\n'
+        : '')
   );
 }
 
