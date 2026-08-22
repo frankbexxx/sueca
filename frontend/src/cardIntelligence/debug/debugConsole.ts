@@ -3,6 +3,8 @@ import {
   CARD_INTELLIGENCE_DEV_LAB,
   CARD_INTELLIGENCE_LLM_ADVISORY,
 } from '../../config/features';
+import { mapLegalMoveRisks } from '../evaluator/mapLegalMoveRisks';
+import type { LegalMoveRiskMapInput } from '../evaluator/types';
 import { buildMiniLLMInputFromStoredEvent } from '../llm/buildMiniLLMInput';
 import { getMiniLLMAdvice } from '../llm/getMiniLLMAdvice';
 import type { MiniLLMAdvisoryResult } from '../llm/types';
@@ -44,9 +46,6 @@ import {
 } from './readLogs';
 
 export type { CiEncodeOptions } from './evaluateStoredEvents';
-
-import { mapLegalMoveRisks } from '../evaluator/mapLegalMoveRisks';
-import type { LegalMoveRiskMapInput } from '../evaluator/types';
 
 export interface CardIntelligenceDebugConsole {
   loadEvents: typeof loadAllLogEvents;
