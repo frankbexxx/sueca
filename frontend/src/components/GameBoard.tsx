@@ -19,6 +19,7 @@ import {
 } from '../constants/gameConstants';
 import { createGameOverExitController } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
+import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -293,31 +294,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     [gameVariant, rulesPresetId, gameState]
   );
 
-  const waitingForEarlyEnd = useMemo(
+  const boardFlow = useMemo(
     () =>
-      Boolean(kingPtState?.waitingForEarlyEnd) ||
-      Boolean(
-        gameVariant === 'hearts' &&
-          getHeartsState(gameState).waitingForEarlyEnd
-      ),
-    [kingPtState, gameVariant, gameState]
+      resolveGameBoardFlow({
+        gameState,
+        variant: gameVariant,
+        rulesPresetId
+      }),
+    [gameState, gameVariant, rulesPresetId]
   );
 
-  const festaSheetActive = useMemo(
-    () =>
-      Boolean(
-        kingPtState &&
-          gameState.waitingForRoundStart &&
-          kingPtState.phase !== 'koh_reveal' &&
-          (kingPtState.festaPhase === 'auction' ||
-            kingPtState.festaPhase === 'negotiation' ||
-            kingPtState.festaPhase === 'negotiation_counter' ||
-            kingPtState.waitingForFallback ||
-            kingPtState.waitingForFestaSetup ||
-            kingPtState.eightOrNullsPending)
-      ),
-    [kingPtState, gameState.waitingForRoundStart]
-  );
+  const {
+    heartsPassActive,
+    spadesBidActive,
+    festaSheetActive,
+    waitingForEarlyEnd,
+    flowOverlayActive
+  } = boardFlow;
 
   const gameLabel =
     getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
@@ -840,7 +833,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, [gameAdapter, gameVariant, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
 
   const spadesState = gameVariant === 'spades' ? getSpadesState(gameState) : undefined;
-  const spadesBidActive = gameVariant === 'spades' && Boolean(spadesState?.waitingForBids);
   const spadesLocalBidTurn =
     spadesBidActive && spadesState?.currentBidderIndex === localPlayerIndex;
 
@@ -945,7 +937,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
   const heartsState = gameVariant === 'hearts' ? getHeartsState(gameState) : undefined;
-  const heartsPassActive = gameVariant === 'hearts' && Boolean(heartsState?.waitingForPass);
 
   const boardClassName = [
     'game-board',
@@ -1067,12 +1058,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <GameActions
         gameState={gameState}
         variant={gameVariant}
-        flowOverlayActive={
-          heartsPassActive ||
-          spadesBidActive ||
-          festaSheetActive ||
-          Boolean(waitingForEarlyEnd)
-        }
+        flowOverlayActive={flowOverlayActive}
         onContinueTrick={() => {
           if (!gameAdapter || !gameState.waitingForTrickEnd) return;
           if (isJoiner) {
