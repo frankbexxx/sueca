@@ -4,6 +4,11 @@ import { chooseKingSimplifiedCard } from '../../ai/games/king/KingPlayStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import { applyHandSortToState } from '../../utils/handSort';
+import {
+  createKingVariantFlow,
+  createNoopKingFlowHost
+} from './variantFlowApi';
+import { getKingPtState } from './KingPtGame';
 
 const NEGATIVE_HANDS = 6;
 const POSITIVE_HANDS = 4;
@@ -36,6 +41,10 @@ function getState(state: GameState): KingSimplifiedState {
 export class KingSimplifiedGame extends BaseGameAdapter {
   variant = 'king' as const;
   private state?: GameState;
+
+  getVariantFlow() {
+    return createKingVariantFlow(createNoopKingFlowHost(), getKingPtState);
+  }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     this.state = this.createHandState(playerNames, options, 0, [0, 0, 0, 0]);

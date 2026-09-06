@@ -3,10 +3,19 @@ import { Game } from '../Game';
 import { AIDifficulty, DealingDirection, DealingMethod, GameState } from '../../types/game';
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
 import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
+import { SuecaVariantFlow } from './variantFlowApi';
 
 export class SuecaGame extends BaseGameAdapter {
   variant = 'sueca' as const;
   private game?: Game;
+
+  getVariantFlow(): SuecaVariantFlow {
+    return {
+      kind: 'sueca',
+      setDealingMethod: (method) => this.setDealingMethod(method),
+      setDealingDirection: (direction) => this.setDealingDirection(direction)
+    };
+  }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     const dealingMethod = (options?.dealingMethod as DealingMethod) || 'A';

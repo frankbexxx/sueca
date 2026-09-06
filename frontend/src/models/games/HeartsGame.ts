@@ -11,6 +11,7 @@ import {
   trickHasQueenSpades
 } from '../../utils/earlyRoundEnd';
 import { settleHeartsRoundDeltas } from './heartsRoundDisplay';
+import { HeartsVariantFlow } from './variantFlowApi';
 
 const TARGET_SCORE = 100;
 
@@ -79,6 +80,18 @@ function trickPoints(trick: Card[]): number {
 export class HeartsGame extends BaseGameAdapter {
   variant = 'hearts' as const;
   private state?: GameState;
+
+  getVariantFlow(): HeartsVariantFlow {
+    return {
+      kind: 'hearts',
+      readState: getHeartsState,
+      togglePassCard: (cardIndex, localPlayerIndex) =>
+        this.togglePassCard(cardIndex, localPlayerIndex),
+      confirmPass: (localPlayerIndex) => this.confirmPass(localPlayerIndex),
+      acceptEarlyEnd: () => this.acceptEarlyEnd(),
+      declineEarlyEnd: () => this.declineEarlyEnd()
+    };
+  }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     this.state = this.createRoundState(playerNames, options, 1, [0, 0, 0, 0]);

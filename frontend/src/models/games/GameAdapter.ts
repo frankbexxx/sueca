@@ -18,6 +18,7 @@
 
 import { Card, GameState, GameVariant, Player, AIDifficulty, DealingMethod } from '../../types/game';
 import { cloneGameState } from './cloneGameState';
+import { VariantFlowApi } from './variantFlowApi';
 
 export interface GameInitOptions {
   dealingMethod?: DealingMethod;
@@ -35,6 +36,11 @@ export interface GameAdapter {
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState;
   /** Deep snapshot — safe for UI; do not mutate expecting engine updates. */
   getCurrentState(): GameState;
+  /**
+   * Typed variant flow boundary for the shared board shell (C3).
+   * Prefer this over casting adapters to SuecaGame / SpadesGame / …
+   */
+  getVariantFlow(): VariantFlowApi;
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean;
   playCard(state: GameState, playerIndex: number, cardIndex: number): boolean;
   finishTrick(state: GameState): void;
@@ -57,6 +63,8 @@ export abstract class BaseGameAdapter implements GameAdapter {
   abstract initialize(playerNames: string[], options?: Record<string, unknown>): GameState;
 
   abstract getCurrentState(): GameState;
+
+  abstract getVariantFlow(): VariantFlowApi;
 
   abstract canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean;
 

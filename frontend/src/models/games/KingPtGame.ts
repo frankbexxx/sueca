@@ -50,6 +50,7 @@ import {
 } from './king/kingScoring';
 import { applyHandSortToState } from '../../utils/handSort';
 import { canKingEndRoundEarly } from '../../utils/earlyRoundEnd';
+import { createKingVariantFlow } from './variantFlowApi';
 
 export interface KingPtVariantState {
   phase: KingPhase;
@@ -219,6 +220,10 @@ function isFestaFlowBlocking(king: KingPtVariantState): boolean {
 export class KingPtGame extends BaseGameAdapter {
   variant = 'king' as const;
   private state?: GameState;
+
+  getVariantFlow() {
+    return createKingVariantFlow(this, getKingPtState);
+  }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     this.state = this.buildState(playerNames, options, empty4(), 0, true);

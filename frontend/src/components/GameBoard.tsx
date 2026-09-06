@@ -22,6 +22,12 @@ import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
+import {
+  isHeartsFlow,
+  isKingFlow,
+  isSpadesFlow,
+  isSuecaFlow
+} from '../models/games/variantFlowApi';
 import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
@@ -35,11 +41,6 @@ import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
 import { EarlyRoundEndModal } from './EarlyRoundEndModal';
-import { SpadesGame, getSpadesState } from '../models/games/SpadesGame';
-import { HeartsGame, getHeartsState } from '../models/games/HeartsGame';
-import { KingGame } from '../models/games/KingGame';
-import { SuecaGame } from '../models/games/SuecaGame';
-import { getKingPtState } from '../models/games/KingPtGame';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
@@ -286,13 +287,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const freshStartRef = useRef(false);
   const [gameInitKey, setGameInitKey] = useState(0);
 
-  const kingPtState = useMemo(
-    () =>
-      gameVariant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal'
-        ? getKingPtState(gameState)
-        : null,
-    [gameVariant, rulesPresetId, gameState]
+  const variantFlow = useMemo(
+    () => gameAdapter?.getVariantFlow() ?? null,
+    [gameAdapter]
   );
+
+  const kingPtState = useMemo(() => {
+    if (!variantFlow || !isKingFlow(variantFlow) || !variantFlow.isPtNormal(rulesPresetId)) {
+      return null;
+    }
+    return variantFlow.readPtState(gameState);
+  }, [variantFlow, rulesPresetId, gameState]);
 
   const boardFlow = useMemo(
     () =>
@@ -633,11 +638,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    */
   const handleCardClick = (cardIndex: number) => {
     // Only allow if game exists
-    if (!gameAdapter) return;
+    if (!gameAdapter || !variantFlow) return;
 
-    if (gameVariant === 'hearts') {
-      if (getHeartsState(gameState).waitingForPass) {
-        (gameAdapter as HeartsGame).togglePassCard(cardIndex, localPlayerIndex);
+    if (isHeartsFlow(variantFlow)) {
+      if (variantFlow.readState(gameState).waitingForPass) {
+        variantFlow.togglePassCard(cardIndex, localPlayerIndex);
         setGameState(gameAdapter.getCurrentState());
         return;
       }
@@ -714,7 +719,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       gameOverStatsRecordedRef.current = false;
       return;
     }
-    if (!gameAdapter || !gameState.winner) return;
+    if (!gameAdapter || !gameState.winner || !variantFlow) return;
     if (gameOverStatsRecordedRef.current) return;
     gameOverStatsRecordedRef.current = true;
 
@@ -722,8 +727,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     void showInterstitialIfDue();
     const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
 
-    if (gameVariant === 'hearts') {
-      const scores = getHeartsState(gameState).playerScores;
+    if (isHeartsFlow(variantFlow)) {
+      const scores = variantFlow.readState(gameState).playerScores;
       const winnerIndex = scores.indexOf(Math.min(...scores));
       const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
       const playerWon = winnerIndex === localIdx;
@@ -734,10 +739,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         playerWon,
         summary: `${winnerName} · ${scores.join('/')}`
       });
-    } else if (gameVariant === 'king') {
-      const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
-      const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
-      const scores = kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
+    } else if (isKingFlow(variantFlow)) {
+      const scores = variantFlow.readPlayerScores(gameState);
       const winnerIndex = scores.indexOf(Math.max(...scores));
       const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
       const playerWon = winnerIndex === localIdx;
@@ -766,6 +769,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameOverExitRef.current.schedule();
   }, [
     gameAdapter,
+    variantFlow,
     gameState,
     gameState.isGameOver,
     gameState.winner,
@@ -789,9 +793,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
 
   const kingPtFestaKey =
-    gameVariant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal'
+    variantFlow && isKingFlow(variantFlow) && variantFlow.isPtNormal(rulesPresetId)
       ? (() => {
-          const k = getKingPtState(gameState);
+          const k = variantFlow.readPtState(gameState);
           return [
             k.festaPhase,
             k.auctionTurnIndex,
@@ -807,11 +811,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       : '';
 
   useEffect(() => {
-    if (!gameAdapter || gameVariant !== 'king') return;
-    if (resolvePresetId('king', rulesPresetId) !== 'king-pt-normal') return;
+    if (!gameAdapter || !variantFlow || !isKingFlow(variantFlow)) return;
+    if (!variantFlow.isPtNormal(rulesPresetId)) return;
     if (!gameState.waitingForRoundStart) return;
 
-    const king = getKingPtState(gameState);
+    const king = variantFlow.readPtState(gameState);
     const inFestaFlow =
       king.festaPhase === 'auction' ||
       king.festaPhase === 'negotiation' ||
@@ -822,7 +826,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!inFestaFlow) return;
 
     const timer = window.setTimeout(() => {
-      const acted = (gameAdapter as KingGame).tickFestaAi();
+      const acted = variantFlow.tickFestaAi();
       if (acted) {
         setGameState(gameAdapter.getCurrentState());
       }
@@ -830,14 +834,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     return () => window.clearTimeout(timer);
     // kingPtFestaKey tracks festa state; full gameState would retrigger on unrelated clones
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameAdapter, gameVariant, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
+  }, [gameAdapter, variantFlow, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
 
-  const spadesState = gameVariant === 'spades' ? getSpadesState(gameState) : undefined;
+  const spadesState =
+    variantFlow && isSpadesFlow(variantFlow)
+      ? variantFlow.readState(gameState)
+      : undefined;
   const spadesLocalBidTurn =
     spadesBidActive && spadesState?.currentBidderIndex === localPlayerIndex;
 
   useEffect(() => {
-    if (!gameAdapter || !gameStarted || gameVariant !== 'spades') return;
+    if (!gameAdapter || !gameStarted || !variantFlow || !isSpadesFlow(variantFlow)) return;
     if (!spadesBidActive) return;
 
     const bidderIndex = spadesState?.currentBidderIndex ?? 0;
@@ -846,14 +853,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!bidder || bidder.type === 'human' || isLocalBidTurn) return;
 
     const timer = window.setTimeout(() => {
-      (gameAdapter as SpadesGame).tickBidAi();
+      variantFlow.tickBidAi();
       setGameState(gameAdapter.getCurrentState());
     }, AI_PLAY_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [
     gameAdapter,
+    variantFlow,
     gameStarted,
-    gameVariant,
     spadesBidActive,
     spadesState?.currentBidderIndex,
     localPlayerIndex,
@@ -936,7 +943,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
   const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
-  const heartsState = gameVariant === 'hearts' ? getHeartsState(gameState) : undefined;
+  const heartsState =
+    variantFlow && isHeartsFlow(variantFlow)
+      ? variantFlow.readState(gameState)
+      : undefined;
 
   const boardClassName = [
     'game-board',
@@ -1043,12 +1053,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           nilEnabled={spadesState.nilEnabled}
           blindNilEnabled={spadesState.blindNilEnabled}
           onConfirm={(bid, bidType) => {
-            if (!gameAdapter) return;
+            if (!gameAdapter || !variantFlow || !isSpadesFlow(variantFlow)) return;
             if (isJoiner) {
               submitAction({ type: 'submitBid', playerIndex: localPlayerIndex, bid, bidType });
               return;
             }
-            (gameAdapter as SpadesGame).submitBid(localPlayerIndex, bid, bidType);
+            variantFlow.submitBid(localPlayerIndex, bid, bidType);
             afterHostMutation();
           }}
         />
@@ -1074,9 +1084,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {gameState.waitingForRoundEnd &&
         !gameState.isGameOver &&
         !(
-          gameVariant === 'king' &&
-          resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
-          getKingPtState(gameState).showScorePopup
+          variantFlow &&
+          isKingFlow(variantFlow) &&
+          variantFlow.isPtNormal(rulesPresetId) &&
+          variantFlow.readPtState(gameState).showScorePopup
         ) && (
         <RoundEndModal
           gameState={gameState}
@@ -1091,8 +1102,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               return;
             }
             gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
-            if (gameVariant === 'king') {
-              (gameAdapter as KingGame).tickFestaAi();
+            if (variantFlow && isKingFlow(variantFlow)) {
+              variantFlow.tickFestaAi();
             }
             afterHostMutation();
           }}
@@ -1106,22 +1117,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             localPlayerIndex={localPlayerIndex}
             selectedCount={heartsState?.humanPassIndices?.length ?? 0}
             onConfirm={() => {
-              if (!gameAdapter) return;
+              if (!gameAdapter || !variantFlow || !isHeartsFlow(variantFlow)) return;
               if (isJoiner) {
                 submitAction({ type: 'confirmPass', playerIndex: localPlayerIndex });
                 return;
               }
-              (gameAdapter as HeartsGame).confirmPass(localPlayerIndex);
+              variantFlow.confirmPass(localPlayerIndex);
               afterHostMutation();
             }}
           />
         )}
 
-      {!isJoiner && gameVariant === 'king' &&
-        resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
+      {!isJoiner &&
+        variantFlow &&
+        isKingFlow(variantFlow) &&
+        variantFlow.isPtNormal(rulesPresetId) &&
         (() => {
-          const king = getKingPtState(gameState);
-          const kingAdapter = gameAdapter as KingGame;
+          const king = variantFlow.readPtState(gameState);
           const inFestaFlow =
             king.festaPhase === 'auction' ||
             king.festaPhase === 'negotiation' ||
@@ -1136,11 +1148,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 gameState={gameState}
                 getCardImage={getCardImage}
                 onNext={() => {
-                  kingAdapter.advanceKohRevealStep();
+                  variantFlow.advanceKohRevealStep();
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onConfirm={() => {
-                  kingAdapter.confirmKohReveal();
+                  variantFlow.confirmKohReveal();
                   setGameState(gameAdapter!.getCurrentState());
                 }}
               />
@@ -1153,45 +1165,45 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 gameState={gameState}
                 localPlayerIndex={localPlayerIndex}
                 onAuctionPass={() => {
-                  kingAdapter.submitAuctionPass(localPlayerIndex);
+                  variantFlow.submitAuctionPass(localPlayerIndex);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAuctionBid={(bidType, amount) => {
-                  kingAdapter.submitAuctionBid(localPlayerIndex, bidType, amount);
+                  variantFlow.submitAuctionBid(localPlayerIndex, bidType, amount);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAcceptContract={() => {
-                  kingAdapter.acceptContract();
+                  variantFlow.acceptContract();
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRejectContract={() => {
-                  kingAdapter.rejectContract();
+                  variantFlow.rejectContract();
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRequestHigherBid={(bidType, amount) => {
-                  kingAdapter.requestHigherBid(bidType, amount);
+                  variantFlow.requestHigherBid(bidType, amount);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRespondHigherBid={(raise, bidType, amount) => {
-                  kingAdapter.respondToHigherBid(raise, bidType, amount);
+                  variantFlow.respondToHigherBid(raise, bidType, amount);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onEightOrNulls={() => {
-                  kingAdapter.declareEightOrNulls();
+                  variantFlow.declareEightOrNulls();
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRespondEight={(offerEight) => {
                   if (king.eightOrNullsTarget !== null) {
-                    kingAdapter.respondEightOrNulls(king.eightOrNullsTarget, offerEight);
+                    variantFlow.respondEightOrNulls(king.eightOrNullsTarget, offerEight);
                     setGameState(gameAdapter!.getCurrentState());
                   }
                 }}
                 onFallback={(choice) => {
-                  kingAdapter.chooseFallback(choice);
+                  variantFlow.chooseFallback(choice);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onSetup={(trump, noTrump, firstPlayer) => {
-                  kingAdapter.setupFesta(trump, noTrump, firstPlayer);
+                  variantFlow.setupFesta(trump, noTrump, firstPlayer);
                   setGameState(gameAdapter!.getCurrentState());
                 }}
               />
@@ -1204,15 +1216,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 showContinue={gameState.waitingForRoundEnd}
                 onDismiss={() => {
                   if (gameAdapter) {
-                    (gameAdapter as KingGame).dismissScorePopup();
+                    variantFlow.dismissScorePopup();
                     setGameState(gameAdapter.getCurrentState());
                   }
                 }}
                 onContinue={() => {
                   if (gameAdapter) {
-                    (gameAdapter as KingGame).dismissScorePopup();
+                    variantFlow.dismissScorePopup();
                     gameAdapter.continueToNextRound(gameAdapter.getCurrentState());
-                    (gameAdapter as KingGame).tickFestaAi();
+                    variantFlow.tickFestaAi();
                     setGameState(gameAdapter.getCurrentState());
                   }
                 }}
@@ -1230,7 +1242,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <div className="variant-modal dobo-panel">
               <h2>
                 King simplificado — mão {gameState.round}/10 (
-                {(gameState.variantState?.kingSimplified as { handType?: string })?.handType || '…'})
+                {(variantFlow && isKingFlow(variantFlow)
+                  ? variantFlow.readSimplifiedHandType(gameState)
+                  : undefined) || '…'}
+                )
               </h2>
               <button
                 type="button"
@@ -1255,9 +1270,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           onMethodChange={setRoundDealingMethod}
           onDirectionChange={setDealingDirection}
           onConfirm={() => {
-            if (!gameAdapter) return;
-            (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
-            (gameAdapter as SuecaGame).setDealingDirection(dealingDirection);
+            if (!gameAdapter || !variantFlow || !isSuecaFlow(variantFlow)) return;
+            variantFlow.setDealingMethod(roundDealingMethod);
+            variantFlow.setDealingDirection(dealingDirection);
             gameAdapter.startRound(gameAdapter.getCurrentState());
             if (isHost) {
               mpLog('[MP] host publish deal', {
@@ -1297,20 +1312,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {waitingForEarlyEnd && (
         <EarlyRoundEndModal
           onAccept={() => {
-            if (!gameAdapter) return;
-            if (gameVariant === 'king') {
-              (gameAdapter as KingGame).acceptEarlyEnd();
-            } else if (gameVariant === 'hearts') {
-              (gameAdapter as HeartsGame).acceptEarlyEnd();
+            if (!gameAdapter || !variantFlow) return;
+            if (isKingFlow(variantFlow) || isHeartsFlow(variantFlow)) {
+              variantFlow.acceptEarlyEnd();
             }
             setGameState(gameAdapter.getCurrentState());
           }}
           onDecline={() => {
-            if (!gameAdapter) return;
-            if (gameVariant === 'king') {
-              (gameAdapter as KingGame).declineEarlyEnd();
-            } else if (gameVariant === 'hearts') {
-              (gameAdapter as HeartsGame).declineEarlyEnd();
+            if (!gameAdapter || !variantFlow) return;
+            if (isKingFlow(variantFlow) || isHeartsFlow(variantFlow)) {
+              variantFlow.declineEarlyEnd();
             }
             setGameState(gameAdapter.getCurrentState());
           }}

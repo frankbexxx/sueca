@@ -1,9 +1,10 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Suit } from '../../types/game';
 import { resolvePresetId } from '../../constants/rulesPresets';
-import { KingPtGame } from './KingPtGame';
+import { KingPtGame, getKingPtState } from './KingPtGame';
 import { KingSimplifiedGame } from './KingSimplifiedGame';
 import { KingBidType, KingFestaChoice } from './king/kingContracts';
+import { createKingVariantFlow, KingVariantFlow } from './variantFlowApi';
 
 type KingImpl = KingPtGame | KingSimplifiedGame;
 
@@ -15,6 +16,10 @@ function isPtGame(game: KingImpl): game is KingPtGame {
 export class KingGame extends BaseGameAdapter {
   variant = 'king' as const;
   private impl?: KingImpl;
+
+  getVariantFlow(): KingVariantFlow {
+    return createKingVariantFlow(this, getKingPtState);
+  }
 
   private ensureImpl(options?: Record<string, unknown>): KingImpl {
     if (this.impl) return this.impl;

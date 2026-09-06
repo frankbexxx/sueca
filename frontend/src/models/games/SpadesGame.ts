@@ -10,6 +10,7 @@ import {
   getSpadesPresetOptions,
   SpadesBidType
 } from './spades/spadesRules';
+import { SpadesVariantFlow } from './variantFlowApi';
 
 const WINNING_SCORE = 500;
 const BAG_PENALTY_EVERY = 10;
@@ -84,6 +85,15 @@ function nilRoundBonus(bidType: SpadesBidType, tricksTaken: number): number {
 export class SpadesGame extends BaseGameAdapter {
   variant = 'spades' as const;
   private state?: GameState;
+
+  getVariantFlow(): SpadesVariantFlow {
+    return {
+      kind: 'spades',
+      readState: getSpadesState,
+      submitBid: (playerIndex, bid, bidType) => this.submitBid(playerIndex, bid, bidType),
+      tickBidAi: () => this.tickBidAi()
+    };
+  }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     this.state = this.createRoundState(playerNames, options, 1, { team1: 0, team2: 0 }, {
