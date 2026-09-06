@@ -1,6 +1,7 @@
 import { HeartsGame, getHeartsState } from './HeartsGame';
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
 import { Card } from '../../types/game';
+import { getHeartsRoundEndDisplayDeltas } from './heartsRoundDisplay';
 
 function c(rank: Card['rank'], suit: Card['suit'], id: string): Card {
   return { id, rank, suit };
@@ -195,5 +196,51 @@ describe('HeartsGame', () => {
     internal.state = internal.createRoundState(['A', 'B', 'C', 'D'], {}, 2, [0, 0, 0, 0]);
     const hearts = internal.state.variantState?.hearts as { penaltyCardsTaken: unknown[][] };
     expect(hearts.penaltyCardsTaken).toEqual([[], [], [], []]);
+  });
+
+  it('shoot the moon: raw stays 26, lastRoundDeltas are adjusted, totals match', () => {
+    const game = new HeartsGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as {
+      state: ReturnType<HeartsGame['getCurrentState']>;
+      endRound: (s: ReturnType<HeartsGame['getCurrentState']>) => void;
+    };
+    const s = internal.state;
+    const hearts = getHeartsState(s);
+    hearts.playerScores = [40, 55, 70, 10];
+    hearts.roundPoints = [26, 0, 0, 0];
+    s.variantState = { ...s.variantState, hearts };
+    s.players.forEach((p) => {
+      p.hand = [];
+    });
+    internal.endRound(s);
+    const after = getHeartsState(game.getCurrentState());
+    expect(after.roundPoints).toEqual([26, 0, 0, 0]);
+    expect(after.lastRoundDeltas).toEqual([0, 26, 26, 26]);
+    expect(after.playerScores).toEqual([40, 81, 96, 36]);
+    expect(getHeartsRoundEndDisplayDeltas(after)).toEqual([0, 26, 26, 26]);
+    expect(s.waitingForRoundEnd).toBe(true);
+  });
+
+  it('normal round: lastRoundDeltas equal raw round points', () => {
+    const game = new HeartsGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as {
+      state: ReturnType<HeartsGame['getCurrentState']>;
+      endRound: (s: ReturnType<HeartsGame['getCurrentState']>) => void;
+    };
+    const s = internal.state;
+    const hearts = getHeartsState(s);
+    hearts.playerScores = [10, 20, 30, 40];
+    hearts.roundPoints = [5, 8, 10, 3];
+    s.variantState = { ...s.variantState, hearts };
+    s.players.forEach((p) => {
+      p.hand = [];
+    });
+    internal.endRound(s);
+    const after = getHeartsState(game.getCurrentState());
+    expect(after.lastRoundDeltas).toEqual([5, 8, 10, 3]);
+    expect(after.playerScores).toEqual([15, 28, 40, 43]);
+    expect(getHeartsRoundEndDisplayDeltas(after)).toEqual([5, 8, 10, 3]);
   });
 });

@@ -10,6 +10,7 @@ import {
   countHeartsInTrick,
   trickHasQueenSpades
 } from '../../utils/earlyRoundEnd';
+import { settleHeartsRoundDeltas } from './heartsRoundDisplay';
 
 const TARGET_SCORE = 100;
 
@@ -19,6 +20,8 @@ export interface HeartsVariantState {
   heartsBroken: boolean;
   playerScores: number[];
   roundPoints: number[];
+  /** Deltas applied to totals at round end (moon-adjusted). */
+  lastRoundDeltas: number[];
   waitingForPass: boolean;
   passDirection: PassDirection;
   humanPassIndices: number[];
@@ -46,6 +49,7 @@ export function getHeartsState(state: GameState): HeartsVariantState {
     heartsBroken: false,
     playerScores: [0, 0, 0, 0],
     roundPoints: [0, 0, 0, 0],
+    lastRoundDeltas: [0, 0, 0, 0],
     waitingForPass: true,
     passDirection: 'left',
     humanPassIndices: [],
@@ -244,6 +248,7 @@ export class HeartsGame extends BaseGameAdapter {
           heartsBroken: false,
           playerScores,
           roundPoints: [0, 0, 0, 0],
+          lastRoundDeltas: [0, 0, 0, 0],
           waitingForPass: passDirection !== 'hold',
           passDirection,
           humanPassIndices: [],
@@ -410,18 +415,10 @@ export class HeartsGame extends BaseGameAdapter {
 
   private endRound(s: GameState): void {
     const hearts = getHeartsState(s);
-    const roundTotal = hearts.roundPoints.reduce((a, b) => a + b, 0);
-    const shooter = hearts.roundPoints.findIndex((p) => p === 26);
-
-    if (shooter >= 0 && roundTotal === 26) {
-      for (let i = 0; i < 4; i++) {
-        if (i === shooter) continue;
-        hearts.playerScores[i] += 26;
-      }
-    } else {
-      for (let i = 0; i < 4; i++) {
-        hearts.playerScores[i] += hearts.roundPoints[i];
-      }
+    const deltas = settleHeartsRoundDeltas(hearts.roundPoints);
+    hearts.lastRoundDeltas = deltas;
+    for (let i = 0; i < 4; i++) {
+      hearts.playerScores[i] += deltas[i];
     }
 
     s.variantState = { ...s.variantState, hearts };

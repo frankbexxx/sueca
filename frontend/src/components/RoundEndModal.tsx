@@ -1,4 +1,5 @@
 import { getHeartsState } from '../models/games/HeartsGame';
+import { getHeartsRoundEndDisplayDeltas } from '../models/games/heartsRoundDisplay';
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
@@ -116,7 +117,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   if (variant === 'hearts') {
     const hearts = getHeartsState(gameState);
     const totals = hearts.playerScores;
-    const roundPts = hearts.roundPoints;
+    const roundPts = getHeartsRoundEndDisplayDeltas(hearts);
 
     return (
       <IndividualRoundEndModal
