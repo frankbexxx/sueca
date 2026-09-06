@@ -6,6 +6,8 @@ frontend/src/generated/buildInfo.ts
 dist/
 *.log
 .DS_Store
+desktop.ini
+folderico*.ico
 .env
 
 # Python cache
