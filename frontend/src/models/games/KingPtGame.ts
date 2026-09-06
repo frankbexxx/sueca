@@ -621,6 +621,7 @@ export class KingPtGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
+      dealingDirection: 'left',
       waitingForRoundStart: withKohReveal || isFesta,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

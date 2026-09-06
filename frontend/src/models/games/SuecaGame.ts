@@ -1,6 +1,6 @@
 import { BaseGameAdapter, RestoreStateOptions } from './GameAdapter';
 import { Game } from '../Game';
-import { AIDifficulty, DealingMethod, GameState } from '../../types/game';
+import { AIDifficulty, DealingDirection, DealingMethod, GameState } from '../../types/game';
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
 import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
 
@@ -81,6 +81,10 @@ export class SuecaGame extends BaseGameAdapter {
 
   setDealingMethod(method: DealingMethod): void {
     this.game?.setDealingMethod(method);
+  }
+
+  setDealingDirection(direction: DealingDirection): void {
+    this.game?.setDealingDirection(direction);
   }
 
   restoreState(state: GameState, options?: RestoreStateOptions): GameState {

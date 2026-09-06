@@ -20,6 +20,8 @@ export interface Player {
 }
 
 export type DealingMethod = 'A' | 'B';
+/** Sueca deal sense around the table: left = anti-horário (default), right = horário. */
+export type DealingDirection = 'left' | 'right';
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameState {
@@ -41,6 +43,7 @@ export interface GameState {
   nextTrickLeader: number | null;
   isFirstTrick: boolean; // Track if this is the first trick of the round
   dealingMethod: DealingMethod; // Current dealing method
+  dealingDirection: DealingDirection; // Sueca deal sense (left/right)
   waitingForRoundStart: boolean; // Pause before starting new round
   waitingForRoundEnd: boolean; // Pause to show round results
   waitingForGameStart: boolean; // Pause before starting new game

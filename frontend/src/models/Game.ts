@@ -1,6 +1,7 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, AIDifficulty } from '../types/game';
-import { applyHandSortToState } from '../utils/handSort';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty } from '../types/game';
 import { Deck } from './Deck';
+import { applyHandSortToState } from '../utils/handSort';
+import { dealSuecaFromCardOrder } from './games/suecaDeal';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
 
 export class Game {
@@ -103,79 +104,27 @@ export class Game {
   }
 
   /**
-   * Deal cards using Method A (standard) or Method B (dealer gets first card)
-   * Returns: { suit: Suit | null, card: Card | null }
+   * Deal cards using Method A/B and left/right direction around the table.
    */
-  private dealCards(players: Player[], dealerIndex: number, method: DealingMethod): { suit: Suit | null, card: Card | null } {
+  private dealCards(
+    players: Player[],
+    dealerIndex: number,
+    method: DealingMethod,
+    direction: DealingDirection = 'left'
+  ): { suit: Suit | null; card: Card | null } {
     this.deck = new Deck();
     // According to Sueca rules: after shuffling, the deck is cut by the partner of the shuffler
-    // The shuffler is the player to the right of the dealer
-    // For simplicity, we apply a random cut before dealing
     this.deck.cut();
-    
-    if (method === 'A') {
-      // Method A: Standard dealing - one card at a time, counterclockwise
-      // The last card dealt (40th card) determines trump suit
-      let lastCardDealt: Card | null = null;
-      
-      for (let round = 0; round < 10; round++) {
-        for (let i = 0; i < 4; i++) {
-          const playerIndex = (dealerIndex + 1 + i) % 4; // Start to the right of dealer, counterclockwise
-          const card = this.deck.deal(1)[0];
-          players[playerIndex].hand.push(card);
-          // Track the last card dealt (this will be the 40th card)
-          lastCardDealt = card;
-        }
-      }
-      
-      // Last card dealt determines trump suit
-      // Create a copy for display (since original is in a player's hand)
-      const trumpCard: Card | null = lastCardDealt ? {
-        suit: lastCardDealt.suit,
-        rank: lastCardDealt.rank,
-        id: `trump_${lastCardDealt.suit}_${lastCardDealt.rank}_${Date.now()}`
-      } : null;
-      
-      return {
-        suit: trumpCard ? trumpCard.suit : null,
-        card: trumpCard
-      };
-    } else {
-      // Method B: Dealer receives first card (trump), then 9 more, rest dealt clockwise
-      const dealer = players[dealerIndex];
-      
-      // Dealer gets first card (this becomes trump)
-      const trumpCard = this.deck.deal(1)[0];
-      dealer.hand.push(trumpCard);
-      const trumpSuit = trumpCard.suit;
-      
-      // Create a copy of the trump card for display (since original is in dealer's hand)
-      const trumpCardForDisplay: Card = {
-        suit: trumpCard.suit,
-        rank: trumpCard.rank,
-        id: `trump_${trumpCard.suit}_${trumpCard.rank}_${Date.now()}`
-      };
-      
-      // Dealer gets 9 more cards
-      for (let i = 0; i < 9; i++) {
-        const card = this.deck.deal(1)[0];
-        dealer.hand.push(card);
-      }
-      
-      // Rest of cards dealt clockwise (to the left) to remaining players
-      // Following the pseudocode pattern: distribute to players in order after dealer
-      // Clockwise order: dealer+1, dealer+2, dealer+3 (in sequence)
-      for (let round = 0; round < 10; round++) {
-        // Deal clockwise: go in order after dealer (dealer+1, dealer+2, dealer+3)
-        for (let i = 1; i <= 3; i++) {
-          const playerIndex = (dealerIndex + i) % 4;
-          const card = this.deck.deal(1)[0];
-          players[playerIndex].hand.push(card);
-        }
-      }
-      
-      return { suit: trumpSuit, card: trumpCardForDisplay };
+
+    const remaining: Card[] = [];
+    while (this.deck.getRemaining() > 0) {
+      remaining.push(this.deck.deal(1)[0]);
     }
+    const result = dealSuecaFromCardOrder(remaining, dealerIndex, method, direction);
+    for (let i = 0; i < 4; i++) {
+      players[i].hand.push(...result.hands[i]);
+    }
+    return { suit: result.trumpSuit, card: result.trumpCard };
   }
 
   private initializeGame(
@@ -232,6 +181,7 @@ export class Game {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: dealingMethod,
+      dealingDirection: 'left',
       waitingForRoundStart: true, // Pause before starting (show trump card)
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -557,6 +507,10 @@ export class Game {
     this.state.dealingMethod = method;
   }
 
+  setDealingDirection(direction: DealingDirection): void {
+    this.state.dealingDirection = direction;
+  }
+
   private startNewRound(): void {
     this.state.nextRoundValue = undefined;
     this.state.round++;
@@ -589,7 +543,8 @@ export class Game {
         const trumpResult = this.dealCards(
           this.state.players,
           this.state.dealerIndex,
-          this.state.dealingMethod
+          this.state.dealingMethod,
+          this.state.dealingDirection ?? 'left'
         );
         this.state.trumpSuit = trumpResult.suit;
         this.state.trumpCard = trumpResult.card;

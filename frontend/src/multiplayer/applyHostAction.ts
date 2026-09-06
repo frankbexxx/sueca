@@ -4,11 +4,12 @@ import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
 import { GameAction } from '../types/multiplayerActions';
-import { DealingMethod } from '../types/game';
+import { DealingDirection, DealingMethod } from '../types/game';
 import { resolvePresetId } from '../constants/rulesPresets';
 
 export interface ApplyHostActionOptions {
   roundDealingMethod?: DealingMethod;
+  dealingDirection?: DealingDirection;
   rulesPresetId?: string;
 }
 
@@ -33,6 +34,9 @@ export function applyHostAction(
         (adapter as SuecaGame).setDealingMethod(
           options.roundDealingMethod ?? action.dealingMethod
         );
+        if (options.dealingDirection) {
+          (adapter as SuecaGame).setDealingDirection(options.dealingDirection);
+        }
       }
       adapter.startRound(adapter.getCurrentState());
       return true;

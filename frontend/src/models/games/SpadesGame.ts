@@ -264,6 +264,7 @@ export class SpadesGame extends BaseGameAdapter {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
+      dealingDirection: 'left',
       waitingForRoundStart: waitingForBids,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

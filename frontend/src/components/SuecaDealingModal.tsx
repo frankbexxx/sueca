@@ -1,9 +1,9 @@
 import React from 'react';
-import { DealingMethod } from '../types/game';
+import { DealingDirection, DealingMethod } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import './VariantModals.css';
 
-export type DealingDirection = 'left' | 'right';
+export type { DealingDirection };
 
 interface SuecaDealingModalProps {
   round: number;

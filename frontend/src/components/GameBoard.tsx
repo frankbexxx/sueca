@@ -93,6 +93,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const processedActionIdsRef = useRef<Set<string>>(new Set());
   const roundDealingMethodRef = useRef(dealingMethod);
   roundDealingMethodRef.current = roundDealingMethod;
+  const dealingDirectionRef = useRef(dealingDirection);
+  dealingDirectionRef.current = dealingDirection;
 
   /**
    * Game state snapshot - reactive state for UI updates
@@ -119,6 +121,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
+      dealingDirection: 'left',
       waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -252,6 +255,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       const ok = applyHostAction(adapter, action, {
         roundDealingMethod: roundDealingMethodRef.current,
+        dealingDirection: dealingDirectionRef.current,
         rulesPresetId,
       });
       if (!ok) {
@@ -1233,6 +1237,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           onConfirm={() => {
             if (!gameAdapter) return;
             (gameAdapter as SuecaGame).setDealingMethod(roundDealingMethod);
+            (gameAdapter as SuecaGame).setDealingDirection(dealingDirection);
             gameAdapter.startRound(gameAdapter.getCurrentState());
             if (isHost) {
               mpLog('[MP] host publish deal', {

@@ -46,6 +46,7 @@ As regras variam por mesa. Para este projeto, definimos dois modos suportados ex
 
 - Distribui-se 1 carta de cada vez ate 10 por jogador.
 - Ordem de distribuicao definida pela implementacao (consistente e documentada no motor).
+- Sentido: **esquerda (anti-horario, padrao)** = dealer+1 primeiro; **direita (horario)** = dealer-1 primeiro (escolha no modal de distribuicao).
 - O naipe de trunfo e determinado pela carta de referencia definida no processo (na implementacao atual: ultima carta distribuida).
 
 ## Metodo B (variante suportada)
