@@ -1,0 +1,41 @@
+.sueca-phaser-root {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  height: min(62vh, 640px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #14532d;
+}
+
+.sueca-phaser-canvas-host {
+  width: 100%;
+  height: 100%;
+}
+
+.sueca-phaser-canvas-host canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.sueca-phaser-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 2px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #f5f5f0;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .sueca-phaser-root {
+    min-height: 360px;
+    height: min(58vh, 520px);
+  }
+}

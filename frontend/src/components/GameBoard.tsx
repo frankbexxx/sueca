@@ -27,6 +27,7 @@ import {
   mapTableModelToDomHandProps,
   mapTableModelToDomSurfaceProps
 } from '../table/mapTableModelToDomProps';
+import { shouldUseSuecaPhaserTable } from '../renderers/phaser/rendererFlag';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -65,6 +66,12 @@ export interface GameBoardProps {
   onExit: () => void;
   onRestartAsSolo?: (variant: import('../types/game').GameVariant) => void;
 }
+
+const SuecaPhaserRenderer = React.lazy(() =>
+  import('../renderers/phaser/SuecaPhaserRenderer').then((m) => ({
+    default: m.SuecaPhaserRenderer
+  }))
+);
 
 /**
  * Main game board component - renders the entire Sueca game interface
@@ -705,6 +712,55 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   /**
+   * Phaser POC: single tap plays a legal card (engine still validates).
+   * Keeps double-tap confirm on the DOM hand.
+   */
+  const handlePhaserCardClick = (cardIndex: number) => {
+    if (!gameAdapter) return;
+    const isLocalTurn = isMultiplayer
+      ? gameState.currentPlayerIndex === multiplayerPlayerIndex
+      : gameState.currentPlayerIndex === 0;
+    if (
+      !isLocalTurn ||
+      gameState.isGameOver ||
+      gameState.isPaused ||
+      gameState.waitingForTrickEnd ||
+      gameState.waitingForRoundStart ||
+      gameState.waitingForRoundEnd ||
+      gameState.waitingForGameStart
+    ) {
+      return;
+    }
+    const playerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
+    const player = gameState.players[playerIndex];
+    if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return;
+
+    const currentState = gameAdapter.getCurrentState();
+    if (!gameAdapter.canPlayCard(currentState, playerIndex, cardIndex)) {
+      playErrorSound();
+      return;
+    }
+    if (isJoiner) {
+      submitAction({ type: 'playCard', playerIndex, cardIndex });
+      playCardSound();
+      setSelectedCard(null);
+      return;
+    }
+    if (
+      playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, {
+        gameConfigMode: config.rulesPresetId,
+        isMultiplayer: isMultiplayerActive
+      })
+    ) {
+      playCardSound();
+      setSelectedCard(null);
+      afterHostMutation();
+    } else {
+      playErrorSound();
+    }
+  };
+
+  /**
    * Generates the image path for a card
    * Maps card rank/suit to asset filename
    * Handles special case for face cards (J, Q, K) which use "_2" suffix
@@ -974,6 +1030,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const dockProps = mapTableModelToDomDockProps(tableModel, gameState, spadesState);
   const handProps = mapTableModelToDomHandProps(tableModel);
 
+  const usePhaserTable =
+    shouldUseSuecaPhaserTable(gameVariant) && !isMultiplayerActive;
+
+  const isLocalCardPlayable = (cardIndex: number) => {
+    if (!gameAdapter) return false;
+    if (heartsPassActive) return true;
+    if (!isHandPlayActionAllowed(gameState)) return false;
+    return gameAdapter.canPlayCard(
+      gameAdapter.getCurrentState(),
+      localPlayerIndex,
+      cardIndex
+    );
+  };
+
   const tableSurface = (
     <TableSurface
       {...tableSurfaceProps}
@@ -1005,34 +1075,54 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         rulesPresetId={rulesPresetId}
       />
 
-      {isTeamTableLayout ? <div className="game-table-zone">{tableSurface}</div> : tableSurface}
-
-      {/* Human player dock + hand (South position) - displayed below table */}
-      {gameAdapter && gameState.players[localPlayerIndex] && (
+      {usePhaserTable ? (
+        <React.Suspense
+          fallback={
+            <div className="game-table-zone sueca-phaser-root">A carregar mesa Phaser…</div>
+          }
+        >
+          <div className="game-table-zone">
+            <SuecaPhaserRenderer
+              model={tableModel}
+              getCardImage={getCardImage}
+              getTeamName={getTeamName}
+              selectedCardIndex={selectedCard}
+              isLocalCardPlayable={isLocalCardPlayable}
+              events={{
+                onLocalCardClick: handlePhaserCardClick,
+                onContinueTrick: () => {
+                  if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                  gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                  afterHostMutation();
+                }
+              }}
+            />
+          </div>
+        </React.Suspense>
+      ) : (
         <>
-          <LocalPlayerDock
-            {...dockProps}
-            getTeamName={getTeamName}
-          />
-          <PlayerHand
-            gameState={gameState}
-            localPlayerIndex={localPlayerIndex}
-            selectedCard={selectedCard}
-            readOnly={handProps.readOnly}
-            selectedPassIndices={handProps.selectedPassIndices}
-            canPlayCard={(cardIndex: number) => {
-              if (heartsPassActive) return true;
-              if (!isHandPlayActionAllowed(gameState)) return false;
-              return gameAdapter.canPlayCard(
-                gameAdapter.getCurrentState(),
-                localPlayerIndex,
-                cardIndex
-              );
-            }}
-            onCardClick={handleCardClick}
-            getCardImage={getCardImage}
-            layoutSnapshot={layoutSnapshot}
-          />
+          {isTeamTableLayout ? (
+            <div className="game-table-zone">{tableSurface}</div>
+          ) : (
+            tableSurface
+          )}
+
+          {gameAdapter && gameState.players[localPlayerIndex] && (
+            <>
+              <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
+              <PlayerHand
+                gameState={gameState}
+                localPlayerIndex={localPlayerIndex}
+                selectedCard={selectedCard}
+                readOnly={handProps.readOnly}
+                selectedPassIndices={handProps.selectedPassIndices}
+                canPlayCard={isLocalCardPlayable}
+                onCardClick={handleCardClick}
+                getCardImage={getCardImage}
+                layoutSnapshot={layoutSnapshot}
+              />
+            </>
+          )}
         </>
       )}
 

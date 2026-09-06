@@ -121,4 +121,7 @@ export interface TableRendererBoundaryProps {
   events?: TableRendererEvents;
   getCardImage: (card: Card) => string;
   getTeamName: (team: 1 | 2) => string;
+  /** Shell-supplied playability hints for local hand (not engine methods). */
+  isLocalCardPlayable?: (cardIndex: number) => boolean;
+  selectedCardIndex?: number | null;
 }
