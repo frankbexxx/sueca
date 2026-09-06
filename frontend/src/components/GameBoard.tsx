@@ -21,6 +21,12 @@ import { createGameOverExitController } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
 import { createVariantFlowControllers } from '../flow/createVariantFlowControllers';
+import { buildTableRenderModel } from '../table/buildTableRenderModel';
+import {
+  mapTableModelToDomDockProps,
+  mapTableModelToDomHandProps,
+  mapTableModelToDomSurfaceProps
+} from '../table/mapTableModelToDomProps';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -814,6 +820,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, [gameAdapter, kingCtrl, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
 
   const spadesState = spadesCtrl ? spadesCtrl.readState(gameState) : undefined;
+  const heartsState = heartsCtrl ? heartsCtrl.readState(gameState) : undefined;
   const spadesLocalBidTurn = spadesState
     ? spadesCtrl!.isLocalBidTurn(spadesState, spadesBidActive, localPlayerIndex)
     : false;
@@ -922,38 +929,56 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
-  const showTeamLabels = gameVariant === 'sueca' || gameVariant === 'hearts';
-  const isTeamTableLayout = gameVariant === 'sueca' || gameVariant === 'spades';
-  const heartsState = heartsCtrl ? heartsCtrl.readState(gameState) : undefined;
+  const tableModel = useMemo(
+    () =>
+      buildTableRenderModel({
+        gameState,
+        variant: gameVariant,
+        rulesPresetId,
+        localPlayerIndex,
+        usTeam,
+        themTeam,
+        boardFlow,
+        auctionLocale: language === 'pt' ? 'pt' : 'en',
+        kingPt: kingPtState,
+        spadesState,
+        heartsPassIndices: heartsState?.humanPassIndices
+      }),
+    [
+      gameState,
+      gameVariant,
+      rulesPresetId,
+      localPlayerIndex,
+      usTeam,
+      themTeam,
+      boardFlow,
+      language,
+      kingPtState,
+      spadesState,
+      heartsState?.humanPassIndices
+    ]
+  );
 
-  const boardClassName = [
-    'game-board',
-    festaSheetActive ? 'game-board--festa-sheet' : '',
-    isTeamTableLayout ? 'game-board--team-table' : '',
-    heartsPassActive ? 'game-board--hearts-pass' : ''
-  ]
+  const showTeamLabels = tableModel.chrome.showTeamLabels;
+  const isTeamTableLayout = tableModel.chrome.isTeamTableLayout;
+
+  const boardClassName = ['game-board', ...tableModel.chrome.boardModifiers]
     .filter(Boolean)
     .join(' ');
 
+  const tableSurfaceProps = mapTableModelToDomSurfaceProps(
+    tableModel,
+    gameState,
+    spadesState
+  );
+  const dockProps = mapTableModelToDomDockProps(tableModel, gameState, spadesState);
+  const handProps = mapTableModelToDomHandProps(tableModel);
+
   const tableSurface = (
     <TableSurface
-      gameState={gameState}
-      variant={gameVariant}
-      localPlayerIndex={localPlayerIndex}
-      usTeam={usTeam}
+      {...tableSurfaceProps}
       getCardImage={getCardImage}
       getTeamName={getTeamName}
-      showTeamLabels={showTeamLabels}
-      showAuctionBadges={
-        gameVariant === 'king' &&
-        resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
-        kingPtState?.festaPhase === 'auction'
-      }
-      auctionActions={kingPtState?.auctionPlayerActions}
-      auctionLocale={language === 'pt' ? 'pt' : 'en'}
-      compactSeats={heartsPassActive}
-      spadesBidPhase={spadesBidActive}
-      spadesState={spadesState}
       layoutSnapshot={layoutSnapshot}
     />
   );
@@ -986,29 +1011,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {gameAdapter && gameState.players[localPlayerIndex] && (
         <>
           <LocalPlayerDock
-            gameState={gameState}
-            variant={gameVariant}
-            localPlayerIndex={localPlayerIndex}
-            usTeam={usTeam}
+            {...dockProps}
             getTeamName={getTeamName}
-            showTeamLabels={showTeamLabels}
-            compactSeats={heartsPassActive}
-            spadesBidPhase={spadesBidActive}
-            spadesState={spadesState}
-            showAuctionBadges={
-              gameVariant === 'king' &&
-              resolvePresetId('king', rulesPresetId) === 'king-pt-normal' &&
-              kingPtState?.festaPhase === 'auction'
-            }
-            auctionActions={kingPtState?.auctionPlayerActions}
-            auctionLocale={language === 'pt' ? 'pt' : 'en'}
           />
           <PlayerHand
             gameState={gameState}
             localPlayerIndex={localPlayerIndex}
             selectedCard={selectedCard}
-            readOnly={festaSheetActive && !heartsPassActive}
-            selectedPassIndices={heartsPassActive ? heartsState?.humanPassIndices : undefined}
+            readOnly={handProps.readOnly}
+            selectedPassIndices={handProps.selectedPassIndices}
             canPlayCard={(cardIndex: number) => {
               if (heartsPassActive) return true;
               if (!isHandPlayActionAllowed(gameState)) return false;
