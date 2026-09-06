@@ -772,6 +772,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameOverExitRef.current.schedule();
   }, [
     gameAdapter,
+    gameState,
     gameState.isGameOver,
     gameState.winner,
     gameState.players,
