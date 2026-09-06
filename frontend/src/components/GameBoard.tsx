@@ -18,6 +18,7 @@ import {
   TRICK_WIN_DELAY_MS
 } from '../constants/gameConstants';
 import { createGameOverExitController } from '../utils/gameOverExitTimer';
+import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -1031,7 +1032,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             selectedPassIndices={heartsPassActive ? heartsState?.humanPassIndices : undefined}
             canPlayCard={(cardIndex: number) => {
               if (heartsPassActive) return true;
-              return gameAdapter.canPlayCard(gameAdapter.getCurrentState(), localPlayerIndex, cardIndex);
+              if (!isHandPlayActionAllowed(gameState)) return false;
+              return gameAdapter.canPlayCard(
+                gameAdapter.getCurrentState(),
+                localPlayerIndex,
+                cardIndex
+              );
             }}
             onCardClick={handleCardClick}
             getCardImage={getCardImage}

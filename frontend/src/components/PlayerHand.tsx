@@ -4,6 +4,10 @@ import { SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
 import { useHandLayout } from '../hooks/useMobileLayout';
 import { LayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { handleCardImageError } from '../utils/cardImageError';
+import {
+  handCardVisualClassName,
+  resolveHandCardVisualState
+} from '../utils/handCardVisual';
 
 interface PlayerHandProps {
   gameState: GameState;
@@ -37,13 +41,27 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   const { isNarrow, cardSpacing, useScrollLayout } = useHandLayout(cardCount, layoutSnapshot);
   if (!player) return null;
 
+  const playableFlags = player.hand.map((_, cardIndex) => !readOnly && canPlayCard(cardIndex));
+  const handHasPlayable = playableFlags.some(Boolean);
+
   return (
-    <div className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}`}>
+    <div
+      className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}${
+        handHasPlayable && !readOnly ? '' : ' player-hand-bar--inactive'
+      }`}
+    >
       <div className={`hand-row${useScrollLayout ? ' hand-row--scroll' : ''}`}>
         {player.hand.map((card: Card, cardIndex: number) => {
-          const isPlayable = !readOnly && canPlayCard(cardIndex);
+          const isPlayable = playableFlags[cardIndex];
           const isSelected = selectedCard === cardIndex;
           const isPassSelected = selectedPassIndices?.includes(cardIndex) ?? false;
+          const visualState = resolveHandCardVisualState({
+            readOnly,
+            isPlayable,
+            handHasPlayable,
+            isPassSelected
+          });
+          const visualClass = handCardVisualClassName(visualState);
 
           let fixedTransform: string | undefined;
           if (!useScrollLayout) {
@@ -57,7 +75,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               key={card.id}
               src={getCardImage(card)}
               alt={`${card.rank} of ${card.suit}`}
-              className={`card-hand ${isSelected ? 'selected' : ''} ${isPassSelected ? 'card-hand--pass-selected' : ''} ${!isPlayable && !isPassSelected ? 'not-playable' : ''}`}
+              className={`card-hand ${visualClass} ${isSelected ? 'selected' : ''} ${
+                isPassSelected ? 'card-hand--pass-selected' : ''
+              }`}
               style={{
                 transform: fixedTransform,
                 zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1
