@@ -221,6 +221,10 @@ export class KingPtGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
+  protected getMutableEngineState(): GameState | undefined {
+    return this.state;
+  }
+
   getCurrentAuctionPlayer(king: KingPtVariantState): number | null {
     if (king.festaPhase !== 'auction') return null;
     return king.auctionOrder[king.auctionTurnIndex] ?? null;

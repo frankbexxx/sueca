@@ -67,17 +67,28 @@ export abstract class BaseGameAdapter implements GameAdapter {
     return -1;
   }
 
+  /**
+   * Adapters that clone in getCurrentState() must return their mutable engine state.
+   * Sueca overrides pause/resume directly and does not need this.
+   */
+  protected getMutableEngineState(): GameState | undefined {
+    return undefined;
+  }
+
   pauseGame(state: GameState): void {
-    state.isPaused = true;
+    const target = this.getMutableEngineState() ?? state;
+    target.isPaused = true;
   }
 
   resumeGame(state: GameState): void {
-    state.isPaused = false;
+    const target = this.getMutableEngineState() ?? state;
+    target.isPaused = false;
   }
 
   quitGame(state: GameState): void {
-    state.isGameOver = true;
-    state.isPaused = false;
+    const target = this.getMutableEngineState() ?? state;
+    target.isGameOver = true;
+    target.isPaused = false;
   }
 
   updatePlayerNames(state: GameState, names: string[]): void {

@@ -99,6 +99,10 @@ export class SpadesGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
+  protected getMutableEngineState(): GameState | undefined {
+    return this.state;
+  }
+
   /** @deprecated Use submitBid sequentially. Kept for tests. */
   applyBids(playerBids: number[]): void {
     if (!this.state) return;

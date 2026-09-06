@@ -34,6 +34,18 @@ export class KingGame extends BaseGameAdapter {
     return this.impl.getCurrentState();
   }
 
+  pauseGame(state: GameState): void {
+    this.impl?.pauseGame(state);
+  }
+
+  resumeGame(state: GameState): void {
+    this.impl?.resumeGame(state);
+  }
+
+  quitGame(state: GameState): void {
+    this.impl?.quitGame(state);
+  }
+
   advanceKohRevealStep(): void {
     if (this.impl && isPtGame(this.impl)) this.impl.advanceKohRevealStep();
   }

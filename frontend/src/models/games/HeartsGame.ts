@@ -86,6 +86,10 @@ export class HeartsGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
+  protected getMutableEngineState(): GameState | undefined {
+    return this.state;
+  }
+
   /** Human selects up to 3 cards to pass (toggle indices). */
   togglePassCard(cardIndex: number, localPlayerIndex = 0): void {
     if (!this.state) return;

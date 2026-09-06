@@ -47,6 +47,10 @@ export class KingSimplifiedGame extends BaseGameAdapter {
     return this.cloneState(this.state);
   }
 
+  protected getMutableEngineState(): GameState | undefined {
+    return this.state;
+  }
+
   private createHandState(
     playerNames: string[],
     options: Record<string, unknown> | undefined,
