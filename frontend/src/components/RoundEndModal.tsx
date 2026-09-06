@@ -161,6 +161,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   const usGames = gameState.gameScore[usTeam === 1 ? 'team1' : 'team2'];
   const themGames = gameState.gameScore[themTeam === 1 ? 'team1' : 'team2'];
   const pts = t.gameBoard.points.toLowerCase().replace(':', '');
+  const isSpades = variant === 'spades';
 
   return (
     <div className="modal-overlay modal-overlay-round-end">
@@ -179,15 +180,17 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
           </li>
         </ul>
 
-        <p className="modal-section-title">{t.modals.games}</p>
+        <p className="modal-section-title">
+          {isSpades ? t.modals.heartsTotalScores : t.modals.games}
+        </p>
         <ul className="hearts-modal-scores">
           <li className="hearts-modal-score-row">
             <span>{t.gameBoard.us}</span>
-            <span>{usGames}/4</span>
+            <span>{isSpades ? usGames : `${usGames}/4`}</span>
           </li>
           <li className="hearts-modal-score-row">
             <span>{t.gameBoard.them}</span>
-            <span>{themGames}/4</span>
+            <span>{isSpades ? themGames : `${themGames}/4`}</span>
           </li>
         </ul>
 

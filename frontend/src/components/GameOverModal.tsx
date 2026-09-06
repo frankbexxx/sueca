@@ -148,40 +148,48 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   const usGames = gameState.gameScore[usTeam === 1 ? 'team1' : 'team2'];
   const themGames = gameState.gameScore[themTeam === 1 ? 'team1' : 'team2'];
+  const isSpades = variant === 'spades';
+  const pts = t.gameBoard.points.toLowerCase().replace(':', '');
 
   return (
     <div className="modal-overlay modal-overlay-game-over">
       <div className="modal-container modal-container-large dobo-panel">
-        <h2 className="modal-title modal-title-large">{t.modals.gamesComplete}</h2>
+        <h2 className="modal-title modal-title-large">
+          {isSpades ? t.modals.heartsFinalScores : t.modals.gamesComplete}
+        </h2>
         <p className="modal-winner-text">
           {getTeamName(gameState.winner!)} {t.modals.won}
         </p>
 
-        <p className="modal-section-title">{t.modals.finalGames}</p>
+        <p className="modal-section-title">
+          {isSpades ? t.modals.heartsTotalScores : t.modals.finalGames}
+        </p>
         <ul className="hearts-modal-scores">
           <li className="hearts-modal-score-row">
             <span>{t.gameBoard.us}</span>
-            <span>{usGames}/4</span>
+            <span>{isSpades ? `${usGames} ${pts}` : `${usGames}/4`}</span>
           </li>
           <li className="hearts-modal-score-row">
             <span>{t.gameBoard.them}</span>
-            <span>{themGames}/4</span>
+            <span>{isSpades ? `${themGames} ${pts}` : `${themGames}/4`}</span>
           </li>
         </ul>
 
-        <div className="modal-new-game-options">
-          <label className="modal-select-label">
-            <strong>{t.modals.dealingMethodNext}</strong>
-            <select
-              value={dealingMethod}
-              onChange={(e) => onDealingMethodChange(e.target.value as DealingMethod)}
-              className="modal-select"
-            >
-              <option value="A">{t.startMenu.methodA}</option>
-              <option value="B">{t.startMenu.methodB}</option>
-            </select>
-          </label>
-        </div>
+        {!isSpades && (
+          <div className="modal-new-game-options">
+            <label className="modal-select-label">
+              <strong>{t.modals.dealingMethodNext}</strong>
+              <select
+                value={dealingMethod}
+                onChange={(e) => onDealingMethodChange(e.target.value as DealingMethod)}
+                className="modal-select"
+              >
+                <option value="A">{t.startMenu.methodA}</option>
+                <option value="B">{t.startMenu.methodB}</option>
+              </select>
+            </label>
+          </div>
+        )}
 
         <button
           type="button"
