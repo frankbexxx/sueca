@@ -1067,6 +1067,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <GameActions
         gameState={gameState}
         variant={gameVariant}
+        flowOverlayActive={
+          heartsPassActive ||
+          spadesBidActive ||
+          festaSheetActive ||
+          Boolean(waitingForEarlyEnd)
+        }
         onContinueTrick={() => {
           if (!gameAdapter || !gameState.waitingForTrickEnd) return;
           if (isJoiner) {

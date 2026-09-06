@@ -83,6 +83,8 @@ export interface Translations {
     continue: string;
     autoPause: string;
     autoPauseHint: string;
+    continueTrickHint: string;
+    continueTrickAria: string;
     aiExternal: string;
     aiLocal: string;
     roundPointsShort: (points: number) => string;
@@ -614,6 +616,8 @@ export const translations: Record<Language, Translations> = {
       continue: 'Continuar',
       autoPause: 'Pausa auto',
       autoPauseHint: 'Quando activo, não avança automaticamente entre vazas',
+      continueTrickHint: 'Vaza terminada',
+      continueTrickAria: 'Continuar para a próxima vaza',
       aiExternal: 'AI Externa (Render)',
       aiLocal: 'AI Local (fallback)',
       roundPointsShort: (points) => `Ronda: ${points}`,
@@ -962,6 +966,8 @@ export const translations: Record<Language, Translations> = {
       continue: 'Continue',
       autoPause: 'Auto-pause',
       autoPauseHint: 'When on, tricks no longer advance automatically',
+      continueTrickHint: 'Trick complete',
+      continueTrickAria: 'Continue to the next trick',
       aiExternal: 'External AI (Render)',
       aiLocal: 'Local AI (fallback)',
       roundPointsShort: (points) => `Round: ${points}`,

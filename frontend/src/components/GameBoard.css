@@ -693,6 +693,17 @@
   justify-content: center;
   width: 100%;
   padding: 8px 12px 16px;
+  box-sizing: border-box;
+}
+
+/* Fixed slot — idle vs waiting keeps similar footprint (less jump). */
+.action-buttons-bar--slot {
+  min-height: 64px;
+  align-items: center;
+}
+
+.action-buttons-bar--waiting {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.18));
 }
 
 .action-buttons-group {
@@ -708,12 +719,40 @@
 .action-continue-btn {
   flex: 1;
   min-width: 0;
+  min-height: 48px;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.action-continue-btn__label {
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.action-continue-btn__hint {
+  font-size: 0.72em;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1.1;
+}
+
+.action-continue-placeholder {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
 }
 
 .action-auto-pause-btn {
   flex-shrink: 0;
   max-width: 42%;
   white-space: nowrap;
+  min-height: 48px;
+}
+
+.action-buttons-bar--idle .action-auto-pause-btn {
+  max-width: none;
 }
 
 .continue-button {
@@ -1373,7 +1412,15 @@
     padding: 6px 8px 10px;
     position: sticky;
     bottom: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.25));
+    z-index: 40;
+  }
+
+  .action-buttons-bar--waiting {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.32));
+  }
+
+  .action-buttons-bar--slot {
+    min-height: 60px;
   }
 }
 
