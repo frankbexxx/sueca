@@ -79,7 +79,7 @@ export function settleNullAuctionFesta(
   return deltas;
 }
 
-/** Positive auction: beneficiary gets contracted tricks; bidder funds the top-up. */
+/** Positive auction: fixed transfer offered×25 from bidder to beneficiary; real tricks still count. */
 export function settlePositiveAuctionRound(
   offeredTricks: number,
   tricksWon: number[],
@@ -87,14 +87,16 @@ export function settlePositiveAuctionRound(
   bidderIndex: number
 ): number[] {
   const deltas = tricksWon.map((t) => t * FESTA_POSITIVE_TRICK);
-  const target = offeredTricks * FESTA_POSITIVE_TRICK;
-  const topUp = target - deltas[beneficiaryIndex];
-  deltas[beneficiaryIndex] = target;
-  deltas[bidderIndex] -= topUp;
+  const transfer = offeredTricks * FESTA_POSITIVE_TRICK;
+  deltas[beneficiaryIndex] += transfer;
+  deltas[bidderIndex] -= transfer;
   return deltas;
 }
 
-/** @deprecated use settlePositiveAuctionRound */
+/**
+ * @deprecated Incomplete legacy helper (buyer-trick shortfall / ownerGain only).
+ * Does NOT implement the live rule. Use settlePositiveAuctionRound (fixed offered×25 transfer).
+ */
 export function settlePositiveAuction(
   offeredTricks: number,
   bidderTricks: number

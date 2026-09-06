@@ -49,7 +49,7 @@ export const KING_PT_RULES_SECTIONS: KingRulesSection[] = [
       'Negociação: aceitar, recusar, pedir subida, ou «8 ou nulos».',
       '«8 ou nulos»: adversário deve oferecer 8 positivas; se oferecer, beneficiário aceita.',
       '4×3×3 só se melhor oferta &lt; 4 positivas equivalentes.',
-      'Positivo: +25/vaza. Nulos: 325 − 75×vazas (sempre sem trunfo).'
+      'Positivo: +25/vaza; oferta = transferência fixa oferta×25 do comprador ao beneficiário. Nulos: 325 − 75×vazas (sempre sem trunfo).'
     ],
     bodyEn: [
       'Auction always first (3 bidders). Equivalence: 3 positive = 1 null.',
@@ -57,7 +57,7 @@ export const KING_PT_RULES_SECTIONS: KingRulesSection[] = [
       'Negotiation: accept, reject, request raise, or "8 or nulls".',
       '"8 or nulls": opponent must offer 8 positive; if offered, must accept.',
       '4×3×3 only if best bid &lt; 4 positive equivalent.',
-      'Positive: +25/trick. Nulls: 325 − 75×tricks (always no trump).'
+      'Positive: +25/trick; bid = fixed transfer bid×25 from buyer to beneficiary. Nulls: 325 − 75×tricks (always no trump).'
     ]
   },
   {
@@ -65,12 +65,12 @@ export const KING_PT_RULES_SECTIONS: KingRulesSection[] = [
     titleEn: 'Invariants',
     body: [
       'Cada negativo tem total fixo; cada festa +325; soma global 0.',
-      'Contrato positivo: beneficiário recebe sempre o contratado; leiloado paga shortfall.',
+      'Contrato positivo: transferência integral oferta×25 (comprador → beneficiário); vazas reais de todos continuam a contar.',
       'Leilão nulo: transferência contabilística (ex. 2 nulos → +475 / +175 vs base 325).'
     ],
     bodyEn: [
       'Each negative has fixed total; each festa +325; global sum 0.',
-      'Positive contract: beneficiary always gets contracted; bidder pays shortfall.',
+      'Positive contract: full transfer offer×25 (buyer → beneficiary); all real tricks still score.',
       'Null auction: accounting transfer (e.g. 2 nulls → +475 / +175 vs base 325).'
     ]
   }

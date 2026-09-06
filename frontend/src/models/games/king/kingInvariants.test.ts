@@ -23,8 +23,9 @@ describe('kingInvariants', () => {
     expect(sumScores(settleNegativeFesta([3, 4, 3, 3]))).toBe(325);
     const split = settleFourByThree();
     expect(split.owner + split.others * 3).toBe(325);
-    const pos = settlePositiveAuctionRound(6, [0, 4, 4, 5], 0, 1);
-    expect(sumScores(pos)).toBe(325);
+    expect(sumScores(settlePositiveAuctionRound(6, [0, 4, 4, 5], 0, 1))).toBe(325);
+    expect(sumScores(settlePositiveAuctionRound(5, [2, 3, 4, 4], 0, 1))).toBe(325);
+    expect(sumScores(settlePositiveAuctionRound(8, [1, 4, 4, 4], 0, 1))).toBe(325);
     const nul = settleNullAuctionFesta([2, 4, 3, 4], 0, 1, 2);
     expect(sumScores(nul)).toBe(325);
   });

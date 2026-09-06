@@ -33,7 +33,7 @@ Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplif
 ## Leilão
 
 - Preferência sequencial (jogador a seguir ao beneficiário); equivalência **3 positivas = 1 nulo**
-- Positivo: oferta 1–8 vazas; beneficiário recebe sempre o contratado; incumprimento −25/vaza ao leiloado
+- Positivo: oferta 1–8 vazas; **transferência fixa** `oferta × 25` do comprador para o beneficiário; as vazas reais de todos continuam a contar (+25 cada); total da festa = 325
 - Nulo: ajuste inicial (+475 beneficiário, +175 leiloado para 2 nulos) ou equivalente no fim
 - **8 ou nulos**: beneficiário pode forçar 8 positivas; se oferecidas, é obrigado a aceitar
 - Proibição de puxar Copas (com outro naipe); obrigação de jogar K♥ na 1.ª oportunidade legal (negativos relevantes)
