@@ -154,6 +154,94 @@ describe('SpadesGame', () => {
     expect(s.gameScore.team1).toBeGreaterThan(0);
   });
 
+  it('carries bags into the next round', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    game.applyBids([2, 2, 2, 2]);
+    const internal = game as unknown as {
+      state: ReturnType<SpadesGame['getCurrentState']>;
+      endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+    };
+    const s = internal.state;
+    // bid 4 each team; team1 takes 7 → +3 bags; team2 takes 6 → +2 bags
+    getSpades(s).team1Bid = 4;
+    getSpades(s).team2Bid = 4;
+    getSpades(s).team1Tricks = 7;
+    getSpades(s).team2Tricks = 6;
+    internal.endRound(s);
+    expect(getSpades(s).team1Bags).toBe(3);
+    expect(getSpades(s).team2Bags).toBe(2);
+    expect(s.waitingForRoundEnd).toBe(true);
+
+    game.continueToNextRound(s);
+    const next = getSpades(game.getCurrentState());
+    expect(next.team1Bags).toBe(3);
+    expect(next.team2Bags).toBe(2);
+  });
+
+  it('accumulates bags across rounds and applies −100 at 10 bags', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const internal = game as unknown as {
+      state: ReturnType<SpadesGame['getCurrentState']>;
+      endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+    };
+
+    // Round 1: start 0 bags, make 7 overtricks → 7 bags, score 40+7=47
+    game.applyBids([2, 2, 2, 2]);
+    getSpades(internal.state).team1Bid = 4;
+    getSpades(internal.state).team2Bid = 4;
+    getSpades(internal.state).team1Tricks = 11;
+    getSpades(internal.state).team2Tricks = 2;
+    internal.endRound(internal.state);
+    expect(getSpades(internal.state).team1Bags).toBe(7);
+    expect(internal.state.gameScore.team1).toBe(47);
+    expect(internal.state.waitingForRoundEnd).toBe(true);
+
+    game.continueToNextRound(internal.state);
+    expect(getSpades(game.getCurrentState()).team1Bags).toBe(7);
+
+    // Round 2: +4 overtricks → 11 bags → penalty −100, remainder 1 bag
+    // score: 40 + 4 − 100 = −56; gameScore 47 − 56 = −9
+    game.applyBids([2, 2, 2, 2]);
+    getSpades(internal.state).team1Bid = 4;
+    getSpades(internal.state).team2Bid = 4;
+    getSpades(internal.state).team1Tricks = 8;
+    getSpades(internal.state).team2Tricks = 5;
+    const scoreBefore = internal.state.gameScore.team1;
+    internal.endRound(internal.state);
+    expect(getSpades(internal.state).team1Bags).toBe(1);
+    expect(internal.state.scores.team1).toBe(-56);
+    expect(internal.state.gameScore.team1).toBe(scoreBefore - 56);
+
+    game.continueToNextRound(internal.state);
+    expect(getSpades(game.getCurrentState()).team1Bags).toBe(1);
+  });
+
+  it('rotating bidder still works after bag carry', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const leader1 = getSpades(game.getCurrentState()).bidLeaderIndex;
+    submitAllBidsInOrder(game, [{ bid: 2 }, { bid: 2 }, { bid: 2 }, { bid: 2 }]);
+    const internal = game as unknown as {
+      state: ReturnType<SpadesGame['getCurrentState']>;
+      endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+    };
+    getSpades(internal.state).team1Bid = 4;
+    getSpades(internal.state).team2Bid = 4;
+    getSpades(internal.state).team1Tricks = 5;
+    getSpades(internal.state).team2Tricks = 8;
+    internal.endRound(internal.state);
+    expect(getSpades(internal.state).team1Bags).toBe(1);
+    expect(getSpades(internal.state).team2Bags).toBe(4);
+    game.continueToNextRound(internal.state);
+    const next = game.getCurrentState();
+    expect(getSpades(next).bidLeaderIndex).toBe((leader1 + 1) % 4);
+    expect(getSpades(next).team1Bags).toBe(1);
+    expect(getSpades(next).team2Bags).toBe(4);
+    expect(getSpades(next).waitingForBids).toBe(true);
+  });
+
   it('applies nil bonus when nil player takes zero tricks', () => {
     const game = new SpadesGame();
     game.initialize(names, { rulesPresetId: 'spades-pt-nil' });

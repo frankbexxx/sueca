@@ -89,7 +89,8 @@ export class SpadesGame extends BaseGameAdapter {
     this.state = this.createRoundState(playerNames, options, 1, { team1: 0, team2: 0 }, {
       prevDealerIndex: undefined,
       prevBidLeaderIndex: undefined,
-      waitingForBids: true
+      waitingForBids: true,
+      carriedBags: { team1: 0, team2: 0 }
     });
     return this.cloneState(this.state);
   }
@@ -196,6 +197,7 @@ export class SpadesGame extends BaseGameAdapter {
       prevDealerIndex?: number;
       prevBidLeaderIndex?: number;
       waitingForBids: boolean;
+      carriedBags?: { team1: number; team2: number };
     }
   ): GameState {
     const deck = new Deck('standard52');
@@ -240,6 +242,7 @@ export class SpadesGame extends BaseGameAdapter {
     }
 
     const waitingForBids = roundOptions.waitingForBids;
+    const carriedBags = roundOptions.carriedBags ?? { team1: 0, team2: 0 };
 
     const state: GameState = {
       variant: 'spades',
@@ -280,8 +283,8 @@ export class SpadesGame extends BaseGameAdapter {
           team1Tricks: 0,
           team2Tricks: 0,
           playerTricks: [0, 0, 0, 0],
-          team1Bags: 0,
-          team2Bags: 0,
+          team1Bags: carriedBags.team1,
+          team2Bags: carriedBags.team2,
           waitingForBids,
           spadesBroken: false,
           nilEnabled: presetOptions.nilEnabled,
@@ -437,7 +440,8 @@ export class SpadesGame extends BaseGameAdapter {
       {
         prevDealerIndex: s.dealerIndex,
         prevBidLeaderIndex: prev.bidLeaderIndex,
-        waitingForBids: true
+        waitingForBids: true,
+        carriedBags: { team1: prev.team1Bags, team2: prev.team2Bags }
       }
     );
   }
