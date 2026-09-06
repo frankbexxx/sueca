@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameState, GameVariant } from '../types/game';
+import { GameState, GameVariant, Suit } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import { getKingPtState } from '../models/games/KingPtGame';
 import {
@@ -15,11 +15,26 @@ import { SuitBrokenBadge } from './table/SuitBrokenBadge';
 import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 import { getCardImagePath } from '../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../utils/cardMappings';
+import { resolveTrumpSuitBadge } from '../utils/trumpSuitDisplay';
+import type { Translations } from '../i18n/translations';
 
 interface GameInfoProps {
   gameState: GameState;
   variant: GameVariant;
   rulesPresetId?: string;
+}
+
+function suitLabelFor(t: Translations, suit: Suit): string {
+  switch (suit) {
+    case 'clubs':
+      return t.gameBoard.suitClubs;
+    case 'diamonds':
+      return t.gameBoard.suitDiamonds;
+    case 'hearts':
+      return t.gameBoard.suitHearts;
+    case 'spades':
+      return t.gameBoard.suitSpades;
+  }
 }
 
 export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPresetId }) => {
@@ -110,24 +125,47 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
     );
   }
 
-  if (variant === 'sueca' && gameState.trumpCard && gameState.trumpSuit) {
-    const rankName = RANK_TO_IMAGE_NAME[gameState.trumpCard.rank as keyof typeof RANK_TO_IMAGE_NAME];
-    const suitName = SUIT_TO_NAME[gameState.trumpCard.suit as keyof typeof SUIT_TO_NAME];
+  if (variant === 'sueca') {
+    const trumpBadge = resolveTrumpSuitBadge(gameState.trumpSuit);
+    const trumpCard = gameState.trumpCard;
+    if (!trumpBadge && !trumpCard) return null;
+
+    const rankName = trumpCard
+      ? RANK_TO_IMAGE_NAME[trumpCard.rank as keyof typeof RANK_TO_IMAGE_NAME]
+      : undefined;
+    const suitName = trumpCard
+      ? SUIT_TO_NAME[trumpCard.suit as keyof typeof SUIT_TO_NAME]
+      : undefined;
     const trumpSrc = rankName && suitName ? getCardImagePath(rankName, suitName) : '';
     const dealerName = gameState.players[gameState.dealerIndex]?.name ?? '';
+    const aria =
+      trumpBadge != null
+        ? t.gameBoard.trumpAria(suitLabelFor(t, trumpBadge.suit))
+        : undefined;
+
     return (
       <div className="game-info trump-info-in-team">
-        <span className="dealer-name">{dealerName}</span>
+        {dealerName ? <span className="dealer-name">{dealerName}</span> : null}
+        {trumpBadge ? (
+          <span
+            className={`sueca-trump-badge sueca-trump-badge--${trumpBadge.tone}`}
+            aria-label={aria}
+            title={aria}
+          >
+            <span className="sueca-trump-badge__label">{t.gameBoard.trump}</span>
+            <span className="sueca-trump-badge__symbol" aria-hidden="true">
+              {trumpBadge.symbol}
+            </span>
+          </span>
+        ) : null}
         {trumpSrc ? (
           <img
             src={trumpSrc}
-            alt={`Trunfo ${gameState.trumpCard.rank} ${gameState.trumpCard.suit}`}
+            alt={aria ?? `Trump ${trumpCard?.rank} ${trumpCard?.suit}`}
             className="trump-card-mini"
             draggable={false}
           />
-        ) : (
-          <span className="trump-minimal">{gameState.trumpCard.rank}</span>
-        )}
+        ) : null}
       </div>
     );
   }

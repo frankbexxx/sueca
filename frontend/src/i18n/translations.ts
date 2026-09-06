@@ -87,6 +87,12 @@ export interface Translations {
     aiLocal: string;
     roundPointsShort: (points: number) => string;
     nowPlaying: string;
+    trump: string;
+    suitClubs: string;
+    suitDiamonds: string;
+    suitHearts: string;
+    suitSpades: string;
+    trumpAria: (suitLabel: string) => string;
   };
 
   heartsPass: {
@@ -611,7 +617,13 @@ export const translations: Record<Language, Translations> = {
       aiExternal: 'AI Externa (Render)',
       aiLocal: 'AI Local (fallback)',
       roundPointsShort: (points) => `Ronda: ${points}`,
-      nowPlaying: 'A jogar'
+      nowPlaying: 'A jogar',
+      trump: 'Trunfo',
+      suitClubs: 'Paus',
+      suitDiamonds: 'Ouros',
+      suitHearts: 'Copas',
+      suitSpades: 'Espadas',
+      trumpAria: (suitLabel) => `Trunfo: ${suitLabel}`
     },
     heartsPass: {
       title: 'Copas — passar 3 cartas',
@@ -953,7 +965,13 @@ export const translations: Record<Language, Translations> = {
       aiExternal: 'External AI (Render)',
       aiLocal: 'Local AI (fallback)',
       roundPointsShort: (points) => `Round: ${points}`,
-      nowPlaying: 'Playing'
+      nowPlaying: 'Playing',
+      trump: 'Trump',
+      suitClubs: 'Clubs',
+      suitDiamonds: 'Diamonds',
+      suitHearts: 'Hearts',
+      suitSpades: 'Spades',
+      trumpAria: (suitLabel) => `Trump: ${suitLabel}`
     },
     heartsPass: {
       title: 'Hearts — pass 3 cards',
