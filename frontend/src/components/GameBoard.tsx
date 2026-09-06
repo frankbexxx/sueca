@@ -17,6 +17,7 @@ import {
   SHUFFLE_DELAY_MS,
   TRICK_WIN_DELAY_MS
 } from '../constants/gameConstants';
+import { createGameOverExitController } from '../utils/gameOverExitTimer';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -95,6 +96,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   roundDealingMethodRef.current = roundDealingMethod;
   const dealingDirectionRef = useRef(dealingDirection);
   dealingDirectionRef.current = dealingDirection;
+  const onExitRef = useRef(onExit);
+  onExitRef.current = onExit;
+  const gameOverExitRef = useRef(
+    createGameOverExitController(() => onExitRef.current(), GAME_OVER_DELAY_MS)
+  );
+  const gameOverStatsRecordedRef = useRef(false);
 
   /**
    * Game state snapshot - reactive state for UI updates
@@ -705,61 +712,66 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   /**
-   * Effect to handle game over — record stats and return to dashboard
+   * Effect to handle game over — record stats once and schedule delayed exit.
+   * Timer is cancelled on New Game / leave / unmount so it cannot affect a new match.
    */
   useEffect(() => {
-    if (gameAdapter && gameState.isGameOver && gameState.winner) {
-      recordGameFinished();
-      void showInterstitialIfDue();
-      const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
-
-      if (gameVariant === 'hearts') {
-        const scores = getHeartsState(gameState).playerScores;
-        const winnerIndex = scores.indexOf(Math.min(...scores));
-        const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
-        const playerWon = winnerIndex === localIdx;
-        recordGameResult(gameVariant, playerWon);
-        recordFinishedGame({
-          variant: gameVariant,
-          finishedAt: Date.now(),
-          playerWon,
-          summary: `${winnerName} · ${scores.join('/')}`
-        });
-      } else if (gameVariant === 'king') {
-        const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
-        const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
-        const scores = kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
-        const winnerIndex = scores.indexOf(Math.max(...scores));
-        const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
-        const playerWon = winnerIndex === localIdx;
-        recordGameResult(gameVariant, playerWon);
-        recordFinishedGame({
-          variant: gameVariant,
-          finishedAt: Date.now(),
-          playerWon,
-          summary: `${winnerName} · ${scores.join('/')}`
-        });
-      } else {
-        const us = gameState.players[localIdx]?.team;
-        const playerWon = us === gameState.winner;
-        recordGameResult(gameVariant, playerWon);
-        const winnerLabel = gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
-        const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
-        recordFinishedGame({
-          variant: gameVariant,
-          finishedAt: Date.now(),
-          playerWon,
-          summary: `${winnerLabel} · ${scoreSummary}`
-        });
-      }
-
-      clearGameSession(gameVariant);
-      const timer = setTimeout(() => onExit(), GAME_OVER_DELAY_MS);
-      return () => clearTimeout(timer);
+    if (!gameState.isGameOver) {
+      gameOverStatsRecordedRef.current = false;
+      return;
     }
+    if (!gameAdapter || !gameState.winner) return;
+    if (gameOverStatsRecordedRef.current) return;
+    gameOverStatsRecordedRef.current = true;
+
+    recordGameFinished();
+    void showInterstitialIfDue();
+    const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
+
+    if (gameVariant === 'hearts') {
+      const scores = getHeartsState(gameState).playerScores;
+      const winnerIndex = scores.indexOf(Math.min(...scores));
+      const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
+      const playerWon = winnerIndex === localIdx;
+      recordGameResult(gameVariant, playerWon);
+      recordFinishedGame({
+        variant: gameVariant,
+        finishedAt: Date.now(),
+        playerWon,
+        summary: `${winnerName} · ${scores.join('/')}`
+      });
+    } else if (gameVariant === 'king') {
+      const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
+      const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
+      const scores = kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
+      const winnerIndex = scores.indexOf(Math.max(...scores));
+      const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
+      const playerWon = winnerIndex === localIdx;
+      recordGameResult(gameVariant, playerWon);
+      recordFinishedGame({
+        variant: gameVariant,
+        finishedAt: Date.now(),
+        playerWon,
+        summary: `${winnerName} · ${scores.join('/')}`
+      });
+    } else {
+      const us = gameState.players[localIdx]?.team;
+      const playerWon = us === gameState.winner;
+      recordGameResult(gameVariant, playerWon);
+      const winnerLabel = gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
+      const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
+      recordFinishedGame({
+        variant: gameVariant,
+        finishedAt: Date.now(),
+        playerWon,
+        summary: `${winnerLabel} · ${scoreSummary}`
+      });
+    }
+
+    clearGameSession(gameVariant);
+    gameOverExitRef.current.schedule();
   }, [
     gameAdapter,
-    gameState,
     gameState.isGameOver,
     gameState.winner,
     gameState.players,
@@ -768,10 +780,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameVariant,
     isMultiplayer,
     multiplayerPlayerIndex,
-    onExit,
     t.gameBoard.them,
     t.gameBoard.us
   ]);
+
+  useEffect(() => {
+    const ctrl = gameOverExitRef.current;
+    return () => {
+      ctrl.cancel();
+    };
+  }, []);
 
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
 
@@ -885,6 +903,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    * Leaves the game screen and keeps the saved session for Continue.
    */
   const handleLeaveScreen = () => {
+    gameOverExitRef.current.cancel();
     if (!isMultiplayerActive) {
       saveGameSession(
         stripMultiplayerFields({ ...config, playerNames, aiDifficulty, dealingMethod, gameVariant }),
@@ -895,6 +914,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const restartFreshGame = () => {
+    gameOverExitRef.current.cancel();
     clearGameSession(gameVariant);
     freshStartRef.current = true;
     setSelectedCard(null);
@@ -902,6 +922,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const handleNewGame = () => {
+    gameOverExitRef.current.cancel();
     if (isMultiplayerActive && onRestartAsSolo) {
       onRestartAsSolo(gameVariant);
       return;
