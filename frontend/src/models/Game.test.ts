@@ -104,6 +104,64 @@ describe('Game Sueca invariants', () => {
     expect(internal.state.winner).toBe(1);
   });
 
+  it('awards 4 game wins on capote (120) and ends the match', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.gameScore = { team1: 0, team2: 0 };
+    internal.state.scores = { team1: 120, team2: 0 };
+    internal.endRound();
+    expect(internal.state.gameScore.team1).toBe(4);
+    expect(internal.state.gameScore.team2).toBe(0);
+    expect(internal.state.isGameOver).toBe(true);
+    expect(internal.state.winner).toBe(1);
+    expect(internal.state.completedPentes).toContainEqual({ team1: 4, team2: 0 });
+  });
+
+  it('awards 4 game wins on capote for team2', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.scores = { team1: 0, team2: 120 };
+    internal.endRound();
+    expect(internal.state.gameScore.team2).toBe(4);
+    expect(internal.state.isGameOver).toBe(true);
+    expect(internal.state.winner).toBe(2);
+  });
+
+  it('awards 2 game wins for 91–119 points', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.scores = { team1: 91, team2: 29 };
+    internal.endRound();
+    expect(internal.state.gameScore.team1).toBe(2);
+    expect(internal.state.isGameOver).toBe(false);
+    expect(internal.state.waitingForRoundEnd).toBe(true);
+  });
+
+  it('awards 1 game win for 61–90 points', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.scores = { team1: 61, team2: 59 };
+    internal.endRound();
+    expect(internal.state.gameScore.team1).toBe(1);
+    expect(internal.state.isGameOver).toBe(false);
+    expect(internal.state.waitingForRoundEnd).toBe(true);
+  });
+
+  it('60-60 does not award games and sets pending multiplier', () => {
+    const game = new Game(['You', 'East', 'Partner', 'West']);
+    game.startRound();
+    const internal = game as unknown as { state: GameState; endRound: () => void };
+    internal.state.scores = { team1: 60, team2: 60 };
+    internal.endRound();
+    expect(internal.state.gameScore).toEqual({ team1: 0, team2: 0 });
+    expect(internal.state.pendingRoundMultiplier).toBe(2);
+    expect(internal.state.isGameOver).toBe(false);
+  });
+
   it('Sueca hierarchy: A > 7 > K > J > Q > 6 > 2', () => {
     expect(CARD_HIERARCHY['A']).toBeGreaterThan(CARD_HIERARCHY['7']);
     expect(CARD_HIERARCHY['7']).toBeGreaterThan(CARD_HIERARCHY['K']);

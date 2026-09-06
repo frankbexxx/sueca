@@ -492,7 +492,8 @@ export class Game {
         if (team1 === 120) {
           this.state.completedPentes.push({ team1: 4, team2: 0 });
           isStandAlonePente = true;
-          roundValue = 0;
+          roundValue = 4;
+          award('team1', roundValue);
         } else if (team1 >= 91) {
           roundValue = 2;
           award('team1', roundValue);
@@ -504,7 +505,8 @@ export class Game {
         if (team2 === 120) {
           this.state.completedPentes.push({ team1: 0, team2: 4 });
           isStandAlonePente = true;
-          roundValue = 0;
+          roundValue = 4;
+          award('team2', roundValue);
         } else if (team2 >= 91) {
           roundValue = 2;
           award('team2', roundValue);
