@@ -188,8 +188,12 @@ function heartsLeadForbidden(king: KingPtVariantState): boolean {
 
 export function mustPlayKingOfHearts(player: Player, ledSuit: Suit | null, king: KingPtVariantState): boolean {
   if (king.gameIndex >= KING_NEGATIVE_GAMES || king.contract !== 'no_king_hearts') return false;
-  if (ledSuit && player.hand.some((c) => c.suit === ledSuit)) return false;
-  return player.hand.some((c) => c.rank === 'K' && c.suit === 'hearts');
+  if (!player.hand.some((c) => c.rank === 'K' && c.suit === 'hearts')) return false;
+  // Lead: first legal chance only when the hand is hearts-only (cannot open another suit).
+  if (ledSuit === null) return !hasNonHeart(player);
+  // Follow: dump when void in the led suit.
+  if (player.hand.some((c) => c.suit === ledSuit)) return false;
+  return true;
 }
 
 function hasNonHeart(player: Player): boolean {
@@ -717,6 +721,9 @@ export class KingPtGame extends BaseGameAdapter {
     if (s.currentTrick.length === 0) {
       if (heartsLeadForbidden(king) && card.suit === 'hearts' && hasNonHeart(player)) {
         return false;
+      }
+      if (mustPlayKingOfHearts(player, null, king)) {
+        return card.rank === 'K' && card.suit === 'hearts';
       }
       return true;
     }

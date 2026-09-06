@@ -70,6 +70,90 @@ describe('KingPtGame', () => {
     expect(game.canPlayCard(internal.state, 0, 1)).toBe(true);
   });
 
+  function setupNoKingHeartsLead(
+    hand: Array<{ id: string; rank: 'K' | '2' | '3' | 'A'; suit: 'hearts' | 'clubs' | 'spades' }>
+  ) {
+    const game = new KingPtGame();
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
+    game.confirmKohReveal();
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.contract = 'no_king_hearts';
+    king.gameIndex = 4;
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+    internal.state.waitingForRoundStart = false;
+    internal.state.waitingForTrickEnd = false;
+    internal.state.isPaused = false;
+    internal.state.currentTrick = [];
+    internal.state.currentPlayerIndex = 0;
+    internal.state.players[0].hand = hand.map((c) => ({ ...c }));
+    return { game, state: internal.state };
+  }
+
+  it('no_king_hearts lead: hearts-only with K♥ requires K♥', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'kh', rank: 'K', suit: 'hearts' },
+      { id: 'h2', rank: '2', suit: 'hearts' },
+      { id: 'h3', rank: '3', suit: 'hearts' }
+    ]);
+    expect(game.canPlayCard(state, 0, 0)).toBe(true);
+    expect(game.canPlayCard(state, 0, 1)).toBe(false);
+    expect(game.canPlayCard(state, 0, 2)).toBe(false);
+  });
+
+  it('no_king_hearts lead: K♥ + other suit cannot open hearts', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'kh', rank: 'K', suit: 'hearts' },
+      { id: 'c3', rank: '3', suit: 'clubs' }
+    ]);
+    expect(game.canPlayCard(state, 0, 0)).toBe(false);
+    expect(game.canPlayCard(state, 0, 1)).toBe(true);
+  });
+
+  it('no_king_hearts lead: hearts-only without K♥ allows any heart', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'h2', rank: '2', suit: 'hearts' },
+      { id: 'h3', rank: '3', suit: 'hearts' }
+    ]);
+    expect(game.canPlayCard(state, 0, 0)).toBe(true);
+    expect(game.canPlayCard(state, 0, 1)).toBe(true);
+  });
+
+  it('no_king_hearts void: must dump K♥ when cannot follow', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'kh', rank: 'K', suit: 'hearts' },
+      { id: 'h2', rank: '2', suit: 'hearts' },
+      { id: 's3', rank: '3', suit: 'spades' }
+    ]);
+    state.currentTrick = [{ id: 'cA', rank: 'A', suit: 'clubs' }];
+    expect(game.canPlayCard(state, 0, 0)).toBe(true);
+    expect(game.canPlayCard(state, 0, 1)).toBe(false);
+    expect(game.canPlayCard(state, 0, 2)).toBe(false);
+  });
+
+  it('no_king_hearts follow: must follow suit instead of dumping K♥', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'kh', rank: 'K', suit: 'hearts' },
+      { id: 'c2', rank: '2', suit: 'clubs' }
+    ]);
+    state.currentTrick = [{ id: 'cA', rank: 'A', suit: 'clubs' }];
+    expect(game.canPlayCard(state, 0, 0)).toBe(false);
+    expect(game.canPlayCard(state, 0, 1)).toBe(true);
+  });
+
+  it('no_tricks does not force K♥ on hearts-only lead', () => {
+    const { game, state } = setupNoKingHeartsLead([
+      { id: 'kh', rank: 'K', suit: 'hearts' },
+      { id: 'h2', rank: '2', suit: 'hearts' }
+    ]);
+    const king = getKingPtState(state);
+    king.contract = 'no_tricks';
+    king.gameIndex = 0;
+    state.variantState = { ...state.variantState, kingPt: king };
+    expect(game.canPlayCard(state, 0, 0)).toBe(true);
+    expect(game.canPlayCard(state, 0, 1)).toBe(true);
+  });
+
   it('requestHigherBid moves to negotiation_counter', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
