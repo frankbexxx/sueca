@@ -379,11 +379,11 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (!king.waitingForFallback) return;
-    king.waitingForFallback = false;
-    king.benefitOwnerIndex = king.festaOwnerIndex;
 
     if (choice === 'four_by_three') {
       if (!canUseFourThreeThree(king.bestBid)) return;
+      king.waitingForFallback = false;
+      king.benefitOwnerIndex = king.festaOwnerIndex;
       const split = settleFourByThree();
       const deltas = empty4();
       deltas[king.festaOwnerIndex] = split.owner;
@@ -396,9 +396,16 @@ export class KingPtGame extends BaseGameAdapter {
         `Outros +${split.others} cada`
       ];
       this.applyDeltas(king, deltas);
-      this.appendHistory(king);
       this.advanceOrFinish(king);
-    } else if (choice === 'nulos') {
+      this.syncKing(king);
+      this.runAiFestaSteps();
+      return;
+    }
+
+    king.waitingForFallback = false;
+    king.benefitOwnerIndex = king.festaOwnerIndex;
+
+    if (choice === 'nulos') {
       king.festaMode = 'negative_festa';
       king.festaPhase = 'setup';
       king.waitingForFestaSetup = true;

@@ -331,6 +331,72 @@ describe('KingPtGame', () => {
     expect(after.chosenTrump).toBeNull();
   });
 
+  it('valid four_by_three applies once with a single history entry', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      waitingForFallback: true,
+      festaPhase: null,
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 3 },
+      gameHistory: [],
+      playerScores: [0, 0, 0, 0],
+      lastRoundDeltas: [0, 0, 0, 0]
+    });
+    const beforeScores = [...getKingPtState(game.getCurrentState()).playerScores];
+    game.chooseFallback('four_by_three');
+    const after = game.getCurrentState();
+    const king = getKingPtState(after);
+    expect(king.waitingForFallback).toBe(false);
+    expect(king.gameHistory).toHaveLength(1);
+    expect(king.playerScores[0]).toBe(beforeScores[0] + 100);
+    expect(king.playerScores[1]).toBe(beforeScores[1] + 75);
+    expect(king.playerScores[2]).toBe(beforeScores[2] + 75);
+    expect(king.playerScores[3]).toBe(beforeScores[3] + 75);
+    expect(after.waitingForRoundEnd).toBe(true);
+  });
+
+  it('invalid four_by_three keeps fallback open without scoring or history', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      waitingForFallback: true,
+      festaPhase: null,
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 4 },
+      gameHistory: [],
+      playerScores: [10, 20, 30, 40],
+      lastRoundDeltas: [0, 0, 0, 0]
+    });
+    const before = getKingPtState(game.getCurrentState());
+    const scoresBefore = [...before.playerScores];
+    game.chooseFallback('four_by_three');
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.waitingForFallback).toBe(true);
+    expect(after.gameHistory).toHaveLength(0);
+    expect(after.playerScores).toEqual(scoresBefore);
+    // Still usable: nulos fallback works
+    game.chooseFallback('nulos');
+    const next = getKingPtState(game.getCurrentState());
+    expect(next.waitingForFallback).toBe(false);
+    expect(next.festaMode).toBe('negative_festa');
+    expect(next.waitingForFestaSetup).toBe(true);
+  });
+
+  it('fallback trump still enters positive setup', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      waitingForFallback: true,
+      festaPhase: null,
+      bestBid: null,
+      gameIndex: 6
+    });
+    game.chooseFallback('trump');
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.waitingForFallback).toBe(false);
+    expect(after.festaMode).toBe('positive');
+    expect(after.waitingForFestaSetup).toBe(true);
+    expect(after.noTrumpChosen).toBe(false);
+  });
+
   it('positive trump and no-trump setups still work', () => {
     const gameTrump = new KingPtGame();
     enterFestaSetup(gameTrump, {
