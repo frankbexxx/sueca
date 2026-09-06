@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { GameState, Suit } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { KingBidType, KingFestaChoice } from '../models/games/king/kingContracts';
-import { canUseFourThreeThree, formatBid } from '../models/games/king/kingAuction';
+import { formatBid } from '../models/games/king/kingAuction';
 import { kingFallbackBody } from '../models/games/king/kingFestaFallbackCopy';
+import {
+  resolveFallbackActionsAvailability,
+  resolveKingFestaUiView,
+  resolveNegotiationOwnerActionsAvailability
+} from '../models/games/king/kingFestaActionAvailability';
 import './VariantModals.css';
 
 const FestaSheet: React.FC<{ children: React.ReactNode; compact?: boolean }> = ({
@@ -25,6 +30,40 @@ const SUITS: { id: Suit; label: string }[] = [
   { id: 'hearts', label: '♥ Copas' },
   { id: 'spades', label: '♠ Espadas' }
 ];
+
+interface FestaActionButtonProps {
+  label: string;
+  onClick: () => void;
+  primary?: boolean;
+  enabled?: boolean;
+  disabledReason?: string;
+}
+
+const FestaActionButton: React.FC<FestaActionButtonProps> = ({
+  label,
+  onClick,
+  primary = false,
+  enabled = true,
+  disabledReason
+}) => (
+  <div className={`king-festa-action-wrap${!enabled ? ' king-festa-action-wrap--disabled' : ''}`}>
+    <button
+      type="button"
+      className={`dobo-btn${primary ? ' variant-modal-primary' : ''}${
+        !enabled ? ' king-festa-action--disabled' : ''
+      }`}
+      disabled={!enabled}
+      aria-disabled={!enabled}
+      title={!enabled ? disabledReason : undefined}
+      onClick={enabled ? onClick : undefined}
+    >
+      {label}
+    </button>
+    {!enabled && disabledReason ? (
+      <span className="king-festa-action-hint">{disabledReason}</span>
+    ) : null}
+  </div>
+);
 
 interface AuctionToolbarProps {
   bidType: KingBidType;
@@ -118,12 +157,11 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   const [raiseType, setRaiseType] = useState<KingBidType>('positive');
   const [raiseAmount, setRaiseAmount] = useState(5);
 
+  const view = resolveKingFestaUiView(king, localPlayerIndex);
   const currentAuctionPlayer =
-    king.festaPhase === 'auction'
-      ? king.auctionOrder[king.auctionTurnIndex]
-      : null;
+    king.festaPhase === 'auction' ? king.auctionOrder[king.auctionTurnIndex] : null;
 
-  if (king.festaPhase === 'auction' && currentAuctionPlayer === localPlayerIndex) {
+  if (view === 'auction_turn') {
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
@@ -144,7 +182,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
-  if (king.festaPhase === 'auction') {
+  if (view === 'auction_waiting') {
     const waiting = gameState.players[currentAuctionPlayer ?? 0]?.name ?? '…';
     return (
       <FestaSheet compact>
@@ -158,23 +196,24 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
-  if (king.eightOrNullsPending) {
-    if (king.eightOrNullsTarget === localPlayerIndex) {
-      return (
-        <FestaSheet>
-          <h2>8 ou nulos</h2>
-          <p className="variant-modal-hint">{owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?</p>
-          <div className="king-festa-actions">
-            <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onRespondEight(true)}>
-              Oferecer 8
-            </button>
-            <button type="button" className="dobo-btn" onClick={() => onRespondEight(false)}>
-              Não ofereço 8
-            </button>
-          </div>
-        </FestaSheet>
-      );
-    }
+  if (view === 'eight_respond') {
+    return (
+      <FestaSheet>
+        <h2>8 ou nulos</h2>
+        <p className="variant-modal-hint">{owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?</p>
+        <div className="king-festa-actions">
+          <FestaActionButton
+            primary
+            label="Oferecer 8"
+            onClick={() => onRespondEight(true)}
+          />
+          <FestaActionButton label="Não ofereço 8" onClick={() => onRespondEight(false)} />
+        </div>
+      </FestaSheet>
+    );
+  }
+
+  if (view === 'eight_waiting') {
     const targetName =
       king.eightOrNullsTarget !== null
         ? gameState.players[king.eightOrNullsTarget]?.name
@@ -191,49 +230,49 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
-  if (king.festaPhase === 'negotiation_counter' && king.bestBid && king.requestedBid) {
+  if (view === 'counter_owner_waiting' && king.bestBid && king.requestedBid) {
     const bidderIdx = king.bestBid.bidderIndex;
-    if (king.festaOwnerIndex === localPlayerIndex) {
-      return (
-        <FestaSheet>
-          <h2>A aguardar resposta</h2>
-          <p className="variant-modal-hint">
-            Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
-          </p>
-        </FestaSheet>
-      );
-    }
-    if (bidderIdx === localPlayerIndex) {
-      return (
-        <FestaSheet compact>
-          <h2 className="king-festa-sheet-title">Pedido de subida</h2>
-          <p className="variant-modal-hint king-auction-current-bid">
-            {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
-          </p>
-          <AuctionToolbar
-            bidType={raiseType}
-            bidAmount={raiseAmount}
-            onBidTypeChange={setRaiseType}
-            onBidAmountChange={setRaiseAmount}
-            onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
-            onPass={() => onRespondHigherBid(false)}
-            passLabel="Recusar subida"
-            offerLabel="Subir oferta"
-          />
-        </FestaSheet>
-      );
-    }
+    return (
+      <FestaSheet>
+        <h2>A aguardar resposta</h2>
+        <p className="variant-modal-hint">
+          Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
+        </p>
+      </FestaSheet>
+    );
   }
 
-  if (king.festaPhase === 'negotiation' && !king.eightOrNullsPending && king.festaOwnerIndex === localPlayerIndex && king.bestBid) {
+  if (view === 'counter_bidder' && king.bestBid && king.requestedBid) {
+    return (
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Pedido de subida</h2>
+        <p className="variant-modal-hint king-auction-current-bid">
+          {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
+        </p>
+        <AuctionToolbar
+          bidType={raiseType}
+          bidAmount={raiseAmount}
+          onBidTypeChange={setRaiseType}
+          onBidAmountChange={setRaiseAmount}
+          onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
+          onPass={() => onRespondHigherBid(false)}
+          passLabel="Recusar subida"
+          offerLabel="Subir oferta"
+        />
+      </FestaSheet>
+    );
+  }
+
+  if (view === 'negotiation_owner' && king.bestBid) {
     const bidder = gameState.players[king.bestBid.bidderIndex];
+    const actions = resolveNegotiationOwnerActionsAvailability(king.eightOrNullsPending);
     return (
       <FestaSheet>
         <h2>Negociação</h2>
         <p className="variant-modal-hint">
           {bidder?.name} oferece {formatBid(king.bestBid)}.
         </p>
-        {showRaiseForm && (
+        {showRaiseForm && actions.askMore.enabled && (
           <div className="king-auction-bid-form">
             <AuctionToolbar
               bidType={raiseType}
@@ -249,52 +288,78 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
           </div>
         )}
         <div className="king-festa-actions">
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={onAcceptContract}>
-            Aceitar
-          </button>
-          <button type="button" className="dobo-btn" onClick={() => setShowRaiseForm(!showRaiseForm)}>
-            Pedir mais
-          </button>
-          <button type="button" className="dobo-btn" onClick={onRejectContract}>
-            Recusar
-          </button>
-          <button type="button" className="dobo-btn" onClick={onEightOrNulls}>
-            8 ou nulos
-          </button>
+          <FestaActionButton
+            primary
+            label="Aceitar"
+            enabled={actions.accept.enabled}
+            disabledReason={actions.accept.disabledReason}
+            onClick={onAcceptContract}
+          />
+          <FestaActionButton
+            label="Pedir mais"
+            enabled={actions.askMore.enabled}
+            disabledReason={actions.askMore.disabledReason}
+            onClick={() => setShowRaiseForm(!showRaiseForm)}
+          />
+          <FestaActionButton
+            label="Recusar"
+            enabled={actions.reject.enabled}
+            disabledReason={actions.reject.disabledReason}
+            onClick={onRejectContract}
+          />
+          <FestaActionButton
+            label="8 ou nulos"
+            enabled={actions.eightOrNulls.enabled}
+            disabledReason={actions.eightOrNulls.disabledReason}
+            onClick={onEightOrNulls}
+          />
         </div>
       </FestaSheet>
     );
   }
 
-  if (king.waitingForFallback && king.festaOwnerIndex === localPlayerIndex) {
-    const allow433 = canUseFourThreeThree(king.bestBid);
+  if (view === 'fallback_owner') {
+    const fallbackActions = resolveFallbackActionsAvailability(king.bestBid, 'pt');
     return (
       <FestaSheet>
         <h2>Festa de {owner?.name}</h2>
         <p className="variant-modal-hint">
-          {kingFallbackBody(king.fallbackReason, !!king.bestBid, allow433, 'pt')}
+          {kingFallbackBody(
+            king.fallbackReason,
+            !!king.bestBid,
+            fallbackActions.fourByThree.enabled,
+            'pt'
+          )}
         </p>
         <div className="king-festa-actions">
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onFallback('trump')}>
-            Trunfo
-          </button>
-          <button type="button" className="dobo-btn" onClick={() => onFallback('no_trump')}>
-            Sem trunfo
-          </button>
-          <button type="button" className="dobo-btn" onClick={() => onFallback('nulos')}>
-            Nulos
-          </button>
-          {allow433 && (
-            <button type="button" className="dobo-btn" onClick={() => onFallback('four_by_three')}>
-              4×3×3
-            </button>
-          )}
+          <FestaActionButton
+            primary
+            label="Trunfo"
+            enabled={fallbackActions.trump.enabled}
+            onClick={() => onFallback('trump')}
+          />
+          <FestaActionButton
+            label="Sem trunfo"
+            enabled={fallbackActions.noTrump.enabled}
+            onClick={() => onFallback('no_trump')}
+          />
+          <FestaActionButton
+            label="Nulos"
+            enabled={fallbackActions.nulos.enabled}
+            onClick={() => onFallback('nulos')}
+          />
+          <FestaActionButton
+            label="4×3×3"
+            enabled={fallbackActions.fourByThree.enabled}
+            disabledReason={fallbackActions.fourByThree.disabledReason}
+            onClick={() => onFallback('four_by_three')}
+          />
         </div>
       </FestaSheet>
     );
   }
 
-  if (king.waitingForFestaSetup && (king.benefitOwnerIndex ?? king.festaOwnerIndex) === localPlayerIndex) {
+  if (view === 'setup_owner') {
     return (
       <FestaSheet>
         <h2>Configurar festa</h2>
@@ -352,13 +417,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
-  if (
-    king.festaPhase === 'negotiation' ||
-    king.festaPhase === 'negotiation_counter' ||
-    king.waitingForFallback ||
-    king.waitingForFestaSetup ||
-    king.eightOrNullsPending
-  ) {
+  if (view === 'spectator_waiting') {
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>

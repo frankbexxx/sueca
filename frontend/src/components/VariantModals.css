@@ -327,6 +327,44 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.king-festa-action-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  max-width: 100%;
+}
+
+.king-festa-action-wrap .dobo-btn {
+  min-height: 44px;
+}
+
+.dobo-btn.king-festa-action--disabled,
+.dobo-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.dobo-btn.king-festa-action--disabled:hover,
+.dobo-btn:disabled:hover {
+  transform: none;
+  filter: grayscale(0.35);
+  opacity: 0.45;
+}
+
+.king-festa-action-hint {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  opacity: 0.85;
+  max-width: 11rem;
 }
 
 .king-auction-bid-form {
