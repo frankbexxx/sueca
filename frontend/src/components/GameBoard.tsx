@@ -28,6 +28,7 @@ import {
   mapTableModelToDomSurfaceProps
 } from '../table/mapTableModelToDomProps';
 import { shouldUseSuecaPhaserTable } from '../renderers/phaser/rendererFlag';
+import { shouldUseSuecaPixiTable } from '../renderers/pixi/rendererFlag';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { PlayerHand } from './PlayerHand';
@@ -70,6 +71,11 @@ export interface GameBoardProps {
 const SuecaPhaserRenderer = React.lazy(() =>
   import('../renderers/phaser/SuecaPhaserRenderer').then((m) => ({
     default: m.SuecaPhaserRenderer
+  }))
+);
+const SuecaPixiRenderer = React.lazy(() =>
+  import('../renderers/pixi/SuecaPixiRenderer').then((m) => ({
+    default: m.SuecaPixiRenderer
   }))
 );
 
@@ -1032,6 +1038,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const usePhaserTable =
     shouldUseSuecaPhaserTable(gameVariant) && !isMultiplayerActive;
+  const usePixiTable =
+    !usePhaserTable &&
+    shouldUseSuecaPixiTable(gameVariant) &&
+    !isMultiplayerActive;
 
   const isLocalCardPlayable = (cardIndex: number) => {
     if (!gameAdapter) return false;
@@ -1075,28 +1085,52 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         rulesPresetId={rulesPresetId}
       />
 
-      {usePhaserTable ? (
+      {usePhaserTable || usePixiTable ? (
         <React.Suspense
           fallback={
-            <div className="game-table-zone sueca-phaser-root">A carregar mesa Phaser…</div>
+            <div
+              className={`game-table-zone ${
+                usePixiTable ? 'sueca-pixi-root' : 'sueca-phaser-root'
+              }`}
+            >
+              {usePixiTable ? 'A carregar mesa Pixi…' : 'A carregar mesa Phaser…'}
+            </div>
           }
         >
           <div className="game-table-zone">
-            <SuecaPhaserRenderer
-              model={tableModel}
-              getCardImage={getCardImage}
-              getTeamName={getTeamName}
-              selectedCardIndex={selectedCard}
-              isLocalCardPlayable={isLocalCardPlayable}
-              events={{
-                onLocalCardClick: handlePhaserCardClick,
-                onContinueTrick: () => {
-                  if (!gameAdapter || !gameState.waitingForTrickEnd) return;
-                  gameAdapter.finishTrick(gameAdapter.getCurrentState());
-                  afterHostMutation();
-                }
-              }}
-            />
+            {usePixiTable ? (
+              <SuecaPixiRenderer
+                model={tableModel}
+                getCardImage={getCardImage}
+                getTeamName={getTeamName}
+                selectedCardIndex={selectedCard}
+                isLocalCardPlayable={isLocalCardPlayable}
+                events={{
+                  onLocalCardClick: handlePhaserCardClick,
+                  onContinueTrick: () => {
+                    if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                    gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                    afterHostMutation();
+                  }
+                }}
+              />
+            ) : (
+              <SuecaPhaserRenderer
+                model={tableModel}
+                getCardImage={getCardImage}
+                getTeamName={getTeamName}
+                selectedCardIndex={selectedCard}
+                isLocalCardPlayable={isLocalCardPlayable}
+                events={{
+                  onLocalCardClick: handlePhaserCardClick,
+                  onContinueTrick: () => {
+                    if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                    gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                    afterHostMutation();
+                  }
+                }}
+              />
+            )}
           </div>
         </React.Suspense>
       ) : (
