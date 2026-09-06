@@ -31,6 +31,7 @@ import {
   KingActiveContract,
   KingBid,
   KingBidType,
+  KingFallbackReason,
   KingFestaChoice,
   KingFestaMode,
   KingFestaPhase,
@@ -70,6 +71,8 @@ export interface KingPtVariantState {
   eightOrNullsPending: boolean;
   eightOrNullsTarget: number | null;
   waitingForFallback: boolean;
+  /** Why fallback opened — UI copy only; does not change rules. */
+  fallbackReason: KingFallbackReason | null;
   waitingForFestaSetup: boolean;
   chosenTrump: Suit | null;
   noTrumpChosen: boolean;
@@ -112,6 +115,7 @@ function defaultKingState(): KingPtVariantState {
     eightOrNullsPending: false,
     eightOrNullsTarget: null,
     waitingForFallback: false,
+    fallbackReason: null,
     waitingForFestaSetup: false,
     chosenTrump: null,
     noTrumpChosen: false,
@@ -304,7 +308,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'negotiation' || king.eightOrNullsPending) return;
-    this.enterFallback(king);
+    this.enterFallback(king, 'negotiation_failed');
     this.syncKing(king);
     this.runAiFestaSteps();
   }
@@ -342,7 +346,7 @@ export class KingPtGame extends BaseGameAdapter {
       }
     } else {
       king.requestedBid = null;
-      this.enterFallback(king);
+      this.enterFallback(king, 'negotiation_failed');
     }
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -370,7 +374,7 @@ export class KingPtGame extends BaseGameAdapter {
       this.applyContractFromBid(king, bid);
     } else {
       king.benefitOwnerIndex = king.festaOwnerIndex;
-      this.enterFallback(king);
+      this.enterFallback(king, 'eight_or_nulls_declined');
     }
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -384,6 +388,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (choice === 'four_by_three') {
       if (!canUseFourThreeThree(king.bestBid)) return;
       king.waitingForFallback = false;
+      king.fallbackReason = null;
       king.benefitOwnerIndex = king.festaOwnerIndex;
       const split = settleFourByThree();
       const deltas = empty4();
@@ -404,6 +409,7 @@ export class KingPtGame extends BaseGameAdapter {
     }
 
     king.waitingForFallback = false;
+    king.fallbackReason = null;
     king.benefitOwnerIndex = king.festaOwnerIndex;
 
     if (choice === 'nulos') {
@@ -492,15 +498,16 @@ export class KingPtGame extends BaseGameAdapter {
 
   private finishAuction(king: KingPtVariantState): void {
     if (!king.bestBid) {
-      this.enterFallback(king);
+      this.enterFallback(king, 'no_bids');
       return;
     }
     king.festaPhase = 'negotiation';
   }
 
-  private enterFallback(king: KingPtVariantState): void {
+  private enterFallback(king: KingPtVariantState, reason: KingFallbackReason): void {
     king.festaPhase = 'fallback';
     king.waitingForFallback = true;
+    king.fallbackReason = reason;
     king.eightOrNullsPending = false;
     king.requestedBid = null;
   }
@@ -516,6 +523,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.eightOrNullsPending = false;
     king.eightOrNullsTarget = null;
     king.waitingForFallback = false;
+    king.fallbackReason = null;
     king.waitingForFestaSetup = false;
     king.nullAuctionStartNote = null;
     king.auctionPlayerActions = {};

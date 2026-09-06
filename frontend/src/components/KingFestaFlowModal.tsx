@@ -3,6 +3,7 @@ import { GameState, Suit } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { KingBidType, KingFestaChoice } from '../models/games/king/kingContracts';
 import { canUseFourThreeThree, formatBid } from '../models/games/king/kingAuction';
+import { kingFallbackBody } from '../models/games/king/kingFestaFallbackCopy';
 import './VariantModals.css';
 
 const FestaSheet: React.FC<{ children: React.ReactNode; compact?: boolean }> = ({
@@ -270,7 +271,9 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet>
         <h2>Festa de {owner?.name}</h2>
-        <p className="variant-modal-hint">Ninguém licitou. Escolhe como jogar.</p>
+        <p className="variant-modal-hint">
+          {kingFallbackBody(king.fallbackReason, !!king.bestBid, allow433, 'pt')}
+        </p>
         <div className="king-festa-actions">
           <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onFallback('trump')}>
             Trunfo

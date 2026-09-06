@@ -475,8 +475,68 @@ describe('KingPtGame', () => {
     const after = getKingPtState(game.getCurrentState());
     expect(after.eightOrNullsPending).toBe(false);
     expect(after.waitingForFallback).toBe(true);
+    expect(after.fallbackReason).toBe('eight_or_nulls_declined');
     expect(after.benefitOwnerIndex).toBe(0);
     expect(after.activeContract).toBeNull();
+  });
+
+  it('all-pass auction sets fallbackReason no_bids', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'auction',
+      festaOwnerIndex: 0,
+      auctionOrder: [1, 2, 3],
+      auctionTurnIndex: 2,
+      bestBid: null,
+      auctionPlayerActions: { 1: 'pass', 2: 'pass' }
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.submitAuctionPass(3);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.waitingForFallback).toBe(true);
+    expect(after.fallbackReason).toBe('no_bids');
+    expect(after.bestBid).toBeNull();
+  });
+
+  it('rejectContract sets fallbackReason negotiation_failed', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 4 },
+      eightOrNullsPending: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.rejectContract();
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.waitingForFallback).toBe(true);
+    expect(after.fallbackReason).toBe('negotiation_failed');
+    expect(after.bestBid?.amount).toBe(4);
+  });
+
+  it('declined raise sets fallbackReason negotiation_failed', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation_counter',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 3 },
+      requestedBid: { bidderIndex: 1, bidType: 'positive', amount: 5 },
+      eightOrNullsPending: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.respondToHigherBid(false);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.waitingForFallback).toBe(true);
+    expect(after.fallbackReason).toBe('negotiation_failed');
   });
 
   it('normal accept of positive bid still works without eight-or-nulls', () => {

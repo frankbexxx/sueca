@@ -44,6 +44,12 @@ export type KingFestaChoice =
   | 'nulos'
   | 'four_by_three';
 
+/** Why the beneficiary is choosing in fallback (presentation / flow only). */
+export type KingFallbackReason =
+  | 'no_bids'
+  | 'negotiation_failed'
+  | 'eight_or_nulls_declined';
+
 export interface KingNegativeContractDef {
   id: KingNegativeContract;
   namePt: string;

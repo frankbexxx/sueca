@@ -4,7 +4,8 @@ import {
   kingContractLabel,
   KING_NEGATIVE_GAMES
 } from '../models/games/king/kingContracts';
-import { formatBid } from '../models/games/king/kingAuction';
+import { formatBid, canUseFourThreeThree } from '../models/games/king/kingAuction';
+import { kingFallbackBody } from '../models/games/king/kingFestaFallbackCopy';
 
 export interface KingRulesHint {
   title: string;
@@ -117,11 +118,10 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
   }
 
   if (king.waitingForFallback) {
+    const allow433 = canUseFourThreeThree(king.bestBid);
     return {
       title: isPt ? 'Decisão do beneficiário' : 'Beneficiary choice',
-      body: isPt
-        ? 'Ninguém licitou. Escolhe trunfo, sem trunfo, nulos ou 4×3×3.'
-        : 'No bids were made. Choose trump, no trump, nulls, or 4×3×3.'
+      body: kingFallbackBody(king.fallbackReason, !!king.bestBid, allow433, locale)
     };
   }
 

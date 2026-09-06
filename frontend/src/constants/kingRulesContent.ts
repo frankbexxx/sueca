@@ -47,6 +47,7 @@ export const KING_PT_RULES_SECTIONS: KingRulesSection[] = [
       'Leilão sempre primeiro (3 licitadores). Equivalência: 3 positivas = 1 nulo.',
       'Preferência sequencial; se todos passarem → beneficiário decide.',
       'Negociação: aceitar, recusar, pedir subida, ou «8 ou nulos».',
+      'Se a negociação falhar ou «8 ou nulos» for recusado → o beneficiário recupera a festa e escolhe.',
       '«8 ou nulos»: adversário deve oferecer 8 positivas; se oferecer, beneficiário aceita.',
       '4×3×3 só se melhor oferta &lt; 4 positivas equivalentes.',
       'Positivo: +25/vaza; oferta = transferência fixa oferta×25 do comprador ao beneficiário. Nulos: 325 − 75×vazas (sempre sem trunfo).'
@@ -55,6 +56,7 @@ export const KING_PT_RULES_SECTIONS: KingRulesSection[] = [
       'Auction always first (3 bidders). Equivalence: 3 positive = 1 null.',
       'Sequential preference; if all pass → beneficiary decides.',
       'Negotiation: accept, reject, request raise, or "8 or nulls".',
+      'If negotiation fails or "8 or nulls" is declined → beneficiary keeps the festa and chooses.',
       '"8 or nulls": opponent must offer 8 positive; if offered, must accept.',
       '4×3×3 only if best bid &lt; 4 positive equivalent.',
       'Positive: +25/trick; bid = fixed transfer bid×25 from buyer to beneficiary. Nulls: 325 − 75×tricks (always no trump).'
