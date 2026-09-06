@@ -289,10 +289,6 @@ export class HeartsGame extends BaseGameAdapter {
       if (s.currentTrick.length === 0 && must2c && !(card.rank === '2' && card.suit === 'clubs')) {
         return false;
       }
-      if (s.currentTrick.length > 0) {
-        if (card.suit === 'hearts') return false;
-        if (card.rank === 'Q' && card.suit === 'spades') return false;
-      }
     }
 
     if (s.currentTrick.length === 0 && card.suit === 'hearts' && !hearts.heartsBroken) {
@@ -303,7 +299,22 @@ export class HeartsGame extends BaseGameAdapter {
     if (s.currentTrick.length > 0) {
       const ledSuit = s.currentTrick[0].suit;
       const canFollow = player.hand.some((c) => c.suit === ledSuit);
-      return !canFollow || card.suit === ledSuit;
+      if (canFollow && card.suit !== ledSuit) return false;
+
+      // First trick: hearts/Q♠ banned only while a non-penalty follow-legal card exists.
+      if (s.isFirstTrick) {
+        const isFirstTrickPenalty =
+          card.suit === 'hearts' || (card.rank === 'Q' && card.suit === 'spades');
+        if (isFirstTrickPenalty) {
+          const hasNonPenaltyLegal = player.hand.some((c) => {
+            if (canFollow && c.suit !== ledSuit) return false;
+            return !(c.suit === 'hearts' || (c.rank === 'Q' && c.suit === 'spades'));
+          });
+          if (hasNonPenaltyLegal) return false;
+        }
+      }
+
+      return true;
     }
 
     return true;

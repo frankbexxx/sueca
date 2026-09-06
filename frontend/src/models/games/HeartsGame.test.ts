@@ -1,4 +1,10 @@
-import { HeartsGame } from './HeartsGame';
+import { HeartsGame, getHeartsState } from './HeartsGame';
+import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
+import { Card } from '../../types/game';
+
+function c(rank: Card['rank'], suit: Card['suit'], id: string): Card {
+  return { id, rank, suit };
+}
 
 describe('HeartsGame', () => {
   it('requires pass before play', () => {
@@ -36,7 +42,7 @@ describe('HeartsGame', () => {
     expect((state.variantState?.hearts as { waitingForPass: boolean }).waitingForPass).toBe(false);
   });
 
-  it('blocks hearts on first trick follow', () => {
+  function setupFirstTrickFollow(hand: Card[]) {
     const game = new HeartsGame();
     game.initialize(['A', 'B', 'C', 'D'], {});
     const g = game as HeartsGame;
@@ -45,16 +51,114 @@ describe('HeartsGame', () => {
     const s = internal.state;
     s.isFirstTrick = true;
     s.waitingForRoundStart = false;
-    (s.variantState?.hearts as { waitingForPass: boolean }).waitingForPass = false;
-    s.currentTrick = [{ id: '1', rank: '2', suit: 'clubs' }];
+    const hearts = getHeartsState(s);
+    hearts.waitingForPass = false;
+    hearts.waitingForEarlyEnd = false;
+    s.variantState = { ...s.variantState, hearts };
+    s.currentTrick = [c('2', 'clubs', '2c')];
+    s.trickLeader = 0;
     s.currentPlayerIndex = 1;
-    s.players[1].hand = [
-      { id: 'h', rank: '3', suit: 'hearts' },
-      { id: 'c', rank: '4', suit: 'clubs' }
-    ];
+    s.players[1].hand = hand.map((card) => ({ ...card }));
     internal.state = s;
-    expect(game.canPlayCard(s, 1, 0)).toBe(false);
-    expect(game.canPlayCard(s, 1, 1)).toBe(true);
+    return { game, state: s };
+  }
+
+  function legalCards(game: HeartsGame, state: ReturnType<HeartsGame['getCurrentState']>, player = 1) {
+    return getLegalIndices(game, state, player).map((i) => state.players[player].hand[i].id);
+  }
+
+  it('blocks hearts on first trick follow when clubs remain', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('3', 'hearts', 'h'),
+      c('4', 'clubs', 'club')
+    ]);
+    expect(game.canPlayCard(state, 1, 0)).toBe(false);
+    expect(game.canPlayCard(state, 1, 1)).toBe(true);
+  });
+
+  it('Caso 1: void clubs + neutra + hearts + Q♠ → only neutra legal', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('5', 'diamonds', 'd5'),
+      c('3', 'hearts', 'h3'),
+      c('Q', 'spades', 'qs')
+    ]);
+    expect(legalCards(game, state).sort()).toEqual(['d5']);
+  });
+
+  it('Caso 2: void clubs + hearts only → hearts legal', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('3', 'hearts', 'h3'),
+      c('K', 'hearts', 'hk')
+    ]);
+    expect(legalCards(game, state).sort()).toEqual(['h3', 'hk']);
+  });
+
+  it('Caso 3: void clubs + Q♠ only → Q♠ legal', () => {
+    const { game, state } = setupFirstTrickFollow([c('Q', 'spades', 'qs')]);
+    expect(legalCards(game, state)).toEqual(['qs']);
+  });
+
+  it('Caso 4: void clubs + hearts + Q♠ → all legal (no hearts>Q♠ priority)', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('2', 'hearts', 'h2'),
+      c('A', 'hearts', 'ha'),
+      c('Q', 'spades', 'qs')
+    ]);
+    expect(legalCards(game, state).sort()).toEqual(['h2', 'ha', 'qs']);
+  });
+
+  it('Caso 5: has clubs → must follow clubs', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('9', 'clubs', 'c9'),
+      c('3', 'hearts', 'h3'),
+      c('Q', 'spades', 'qs'),
+      c('5', 'diamonds', 'd5')
+    ]);
+    expect(legalCards(game, state)).toEqual(['c9']);
+  });
+
+  it('Caso 6: second trick — first-trick penalty ban no longer applies', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('5', 'diamonds', 'd5'),
+      c('3', 'hearts', 'h3'),
+      c('Q', 'spades', 'qs')
+    ]);
+    state.isFirstTrick = false;
+    state.currentTrick = [c('2', 'clubs', '2c')];
+    // Void clubs on later trick: may dump any offsuit including hearts/Q♠
+    expect(legalCards(game, state).sort()).toEqual(['d5', 'h3', 'qs']);
+  });
+
+  it('first-trick void escape never yields zero legal moves', () => {
+    const hands: Card[][] = [
+      [c('3', 'hearts', 'h3'), c('Q', 'spades', 'qs')],
+      [c('A', 'hearts', 'ha')],
+      [c('Q', 'spades', 'qs')],
+      [c('4', 'diamonds', 'd4'), c('2', 'hearts', 'h2')]
+    ];
+    for (const hand of hands) {
+      const { game, state } = setupFirstTrickFollow(hand);
+      expect(getLegalIndices(game, state, 1).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('escape play of heart sets heartsBroken', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('3', 'hearts', 'h3'),
+      c('Q', 'spades', 'qs')
+    ]);
+    expect(getHeartsState(state).heartsBroken).toBe(false);
+    expect(game.playCard(state, 1, 0)).toBe(true);
+    expect(getHeartsState(game.getCurrentState()).heartsBroken).toBe(true);
+  });
+
+  it('escape play of Q♠ sets heartsBroken', () => {
+    const { game, state } = setupFirstTrickFollow([
+      c('3', 'hearts', 'h3'),
+      c('Q', 'spades', 'qs')
+    ]);
+    expect(game.playCard(state, 1, 1)).toBe(true);
+    expect(getHeartsState(game.getCurrentState()).heartsBroken).toBe(true);
   });
 
   it('tracks penalty cards taken by trick winner', () => {
@@ -73,7 +177,7 @@ describe('HeartsGame', () => {
     game.finishTrick(s);
     const hearts = s.variantState?.hearts as { penaltyCardsTaken: { id: string }[][] };
     expect(hearts.penaltyCardsTaken[2]).toHaveLength(2);
-    expect(hearts.penaltyCardsTaken[2].map((c) => c.id)).toEqual(['1', '2']);
+    expect(hearts.penaltyCardsTaken[2].map((card) => card.id)).toEqual(['1', '2']);
   });
 
   it('resets penalty cards on new round', () => {

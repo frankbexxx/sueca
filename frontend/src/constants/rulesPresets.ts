@@ -97,13 +97,13 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
     bullets: [
       '4 individual players. Avoid hearts (1 pt) and Q♠ (13 pts).',
       'Pass 3 cards: left → right → across → hold.',
-      '2♣ opens; no hearts or Q♠ on first trick (ever).',
+      '2♣ opens; on first trick, hearts/Q♠ may not be discarded while another legal card exists; if void in clubs with only penalty cards, one of them may be played.',
       'Shoot the moon: 26 pts → shooter 0, others +26. Game ends at 100+; lowest wins.'
     ],
     bulletsPt: [
       '4 jogadores individuais. Evitar copas (1 pt) e Q♠ (13 pts).',
       'Passar 3 cartas: esquerda → direita → frente → sem passagem.',
-      '2♣ abre; copas e Q♠ proibidas na 1ª vaza (sempre).',
+      '2♣ abre; na 1ª vaza, Copas/Q♠ só são legais se não houver outra carta legal (void em ♣ só com cartas de penalização).',
       'Shoot the moon: 26 pts → shooter 0, outros +26. Fim aos 100+; ganha quem tem menos.'
     ]
   },
