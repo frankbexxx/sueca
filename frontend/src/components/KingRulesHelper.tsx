@@ -94,6 +94,14 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
   }
 
   if (king.festaPhase === 'negotiation' || king.festaPhase === 'negotiation_counter') {
+    if (king.eightOrNullsPending) {
+      return {
+        title: isPt ? '8 ou nulos' : '8 or nulls',
+        body: isPt
+          ? 'A aguardar resposta do licitante a «8 ou nulos».'
+          : 'Waiting for the bidder to answer "8 or nulls".'
+      };
+    }
     const bidText = king.bestBid ? formatBid(king.bestBid, locale) : '';
     const reqText = king.requestedBid ? formatBid(king.requestedBid, locale) : '';
     return {

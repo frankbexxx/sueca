@@ -397,6 +397,127 @@ describe('KingPtGame', () => {
     expect(after.noTrumpChosen).toBe(false);
   });
 
+  it('declareEightOrNulls blocks owner negotiation until bidder answers', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 3 },
+      eightOrNullsPending: false,
+      eightOrNullsTarget: null
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+
+    game.declareEightOrNulls();
+    let king = getKingPtState(game.getCurrentState());
+    expect(king.eightOrNullsPending).toBe(true);
+    expect(king.eightOrNullsTarget).toBe(1);
+    expect(king.festaPhase).toBe('negotiation');
+
+    // Owner negotiation APIs are no-ops while pending
+    game.acceptContract();
+    game.rejectContract();
+    game.requestHigherBid('positive', 5);
+    game.declareEightOrNulls();
+    king = getKingPtState(game.getCurrentState());
+    expect(king.eightOrNullsPending).toBe(true);
+    expect(king.waitingForFallback).toBe(false);
+    expect(king.waitingForFestaSetup).toBe(false);
+    expect(king.requestedBid).toBeNull();
+    expect(king.activeContract).toBeNull();
+  });
+
+  it('respondEightOrNulls with 8 auto-accepts positive-8 contract', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 3 },
+      eightOrNullsPending: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.declareEightOrNulls();
+    game.respondEightOrNulls(1, true);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.eightOrNullsPending).toBe(false);
+    expect(after.eightOrNullsTarget).toBeNull();
+    expect(after.activeContract).toEqual({
+      bidType: 'positive',
+      amount: 8,
+      bidderIndex: 1,
+      beneficiaryIndex: 0
+    });
+    expect(after.festaMode).toBe('positive');
+    expect(after.waitingForFestaSetup).toBe(true);
+    expect(after.benefitOwnerIndex).toBe(1);
+  });
+
+  it('respondEightOrNulls decline returns festa to owner fallback', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 2, bidType: 'positive', amount: 2 },
+      eightOrNullsPending: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.declareEightOrNulls();
+    game.respondEightOrNulls(2, false);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.eightOrNullsPending).toBe(false);
+    expect(after.waitingForFallback).toBe(true);
+    expect(after.benefitOwnerIndex).toBe(0);
+    expect(after.activeContract).toBeNull();
+  });
+
+  it('normal accept of positive bid still works without eight-or-nulls', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'positive', amount: 5 },
+      eightOrNullsPending: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.acceptContract();
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.activeContract?.amount).toBe(5);
+    expect(after.waitingForFestaSetup).toBe(true);
+    expect(after.eightOrNullsPending).toBe(false);
+  });
+
+  it('normal accept of null bid still works without eight-or-nulls', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      festaOwnerIndex: 0,
+      bestBid: { bidderIndex: 1, bidType: 'null', amount: 2 },
+      eightOrNullsPending: false,
+      noTrumpChosen: false
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+    game.acceptContract();
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.festaMode).toBe('negative_festa');
+    expect(after.noTrumpChosen).toBe(true);
+    expect(after.waitingForFestaSetup).toBe(true);
+  });
+
   it('positive trump and no-trump setups still work', () => {
     const gameTrump = new KingPtGame();
     enterFestaSetup(gameTrump, {

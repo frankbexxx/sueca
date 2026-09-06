@@ -157,19 +157,35 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
-  if (king.eightOrNullsPending && king.eightOrNullsTarget === localPlayerIndex) {
+  if (king.eightOrNullsPending) {
+    if (king.eightOrNullsTarget === localPlayerIndex) {
+      return (
+        <FestaSheet>
+          <h2>8 ou nulos</h2>
+          <p className="variant-modal-hint">{owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?</p>
+          <div className="king-festa-actions">
+            <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onRespondEight(true)}>
+              Oferecer 8
+            </button>
+            <button type="button" className="dobo-btn" onClick={() => onRespondEight(false)}>
+              Não ofereço 8
+            </button>
+          </div>
+        </FestaSheet>
+      );
+    }
+    const targetName =
+      king.eightOrNullsTarget !== null
+        ? gameState.players[king.eightOrNullsTarget]?.name
+        : '…';
+    const waitingHint =
+      king.festaOwnerIndex === localPlayerIndex
+        ? `Declaraste «8 ou nulos». A aguardar resposta de ${targetName}…`
+        : `A aguardar resposta de ${targetName} a «8 ou nulos»…`;
     return (
       <FestaSheet>
-        <h2>8 ou nulos</h2>
-        <p className="variant-modal-hint">{owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?</p>
-        <div className="king-festa-actions">
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={() => onRespondEight(true)}>
-            Oferecer 8
-          </button>
-          <button type="button" className="dobo-btn" onClick={() => onRespondEight(false)}>
-            Não ofereço 8
-          </button>
-        </div>
+        <h2>A aguardar resposta</h2>
+        <p className="variant-modal-hint">{waitingHint}</p>
       </FestaSheet>
     );
   }
@@ -208,7 +224,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     }
   }
 
-  if (king.festaPhase === 'negotiation' && king.festaOwnerIndex === localPlayerIndex && king.bestBid) {
+  if (king.festaPhase === 'negotiation' && !king.eightOrNullsPending && king.festaOwnerIndex === localPlayerIndex && king.bestBid) {
     const bidder = gameState.players[king.bestBid.bidderIndex];
     return (
       <FestaSheet>

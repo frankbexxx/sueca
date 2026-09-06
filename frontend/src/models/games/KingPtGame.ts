@@ -294,7 +294,7 @@ export class KingPtGame extends BaseGameAdapter {
   acceptContract(): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
-    if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
+    if (king.festaPhase !== 'negotiation' || !king.bestBid || king.eightOrNullsPending) return;
     this.applyContractFromBid(king, king.bestBid);
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -303,7 +303,7 @@ export class KingPtGame extends BaseGameAdapter {
   rejectContract(): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
-    if (king.festaPhase !== 'negotiation') return;
+    if (king.festaPhase !== 'negotiation' || king.eightOrNullsPending) return;
     this.enterFallback(king);
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -312,7 +312,7 @@ export class KingPtGame extends BaseGameAdapter {
   requestHigherBid(bidType: KingBidType, amount: number): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
-    if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
+    if (king.festaPhase !== 'negotiation' || !king.bestBid || king.eightOrNullsPending) return;
     const requested: KingBid = {
       bidderIndex: king.bestBid.bidderIndex,
       bidType,
@@ -351,7 +351,7 @@ export class KingPtGame extends BaseGameAdapter {
   declareEightOrNulls(): void {
     if (!this.state) return;
     const king = getKingPtState(this.state);
-    if (king.festaPhase !== 'negotiation' || !king.bestBid) return;
+    if (king.festaPhase !== 'negotiation' || !king.bestBid || king.eightOrNullsPending) return;
     king.eightOrNullsPending = true;
     king.eightOrNullsTarget = king.bestBid.bidderIndex;
     this.syncKing(king);
@@ -363,6 +363,7 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(this.state);
     if (!king.eightOrNullsPending || king.eightOrNullsTarget !== bidderIndex) return;
     king.eightOrNullsPending = false;
+    king.eightOrNullsTarget = null;
     if (offerEight) {
       const bid: KingBid = { bidderIndex, bidType: 'positive', amount: 8 };
       king.bestBid = bid;
