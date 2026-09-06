@@ -148,6 +148,129 @@ describe('KingPtGame', () => {
     expect(after.trumpSuit).toBe('hearts');
   });
 
+  function enterFestaSetup(
+    game: KingPtGame,
+    patch: Partial<ReturnType<typeof getKingPtState>>
+  ): void {
+    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
+    game.confirmKohReveal();
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const king = getKingPtState(internal.state);
+    king.gameIndex = 6;
+    king.festaOwnerIndex = 0;
+    king.phase = 'festa_setup';
+    Object.assign(king, patch);
+    internal.state.waitingForRoundStart = true;
+    internal.state.variantState = { ...internal.state.variantState, kingPt: king };
+  }
+
+  it('accepting null bid forces no-trump before setup', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaPhase: 'negotiation',
+      bestBid: { bidderIndex: 1, bidType: 'null', amount: 2 },
+      waitingForFestaSetup: false,
+      noTrumpChosen: false,
+      chosenTrump: 'clubs'
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    internal.state.players.forEach((p) => {
+      p.type = 'human';
+    });
+
+    game.acceptContract();
+    const afterState = game.getCurrentState();
+    const after = getKingPtState(afterState);
+    expect(after.festaMode).toBe('negative_festa');
+    expect(after.waitingForFestaSetup).toBe(true);
+    expect(after.noTrumpChosen).toBe(true);
+    expect(after.chosenTrump).toBeNull();
+    expect(afterState.trumpSuit).toBeNull();
+  });
+
+  it('setupFesta ignores trump when festa is nulls', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'negative_festa',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      noTrumpChosen: true,
+      chosenTrump: null,
+      benefitOwnerIndex: 1,
+      activeContract: {
+        bidType: 'null',
+        amount: 2,
+        bidderIndex: 1,
+        beneficiaryIndex: 0
+      }
+    });
+    game.setupFesta('hearts', false, 1);
+    const after = game.getCurrentState();
+    const king = getKingPtState(after);
+    expect(king.festaMode).toBe('negative_festa');
+    expect(king.noTrumpChosen).toBe(true);
+    expect(king.chosenTrump).toBeNull();
+    expect(after.trumpSuit).toBeNull();
+    expect(king.phase).toBe('festa_play');
+  });
+
+  it('confirmFestaSetup keeps nulls without inventing trump', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'negative_festa',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      noTrumpChosen: false,
+      chosenTrump: 'spades',
+      benefitOwnerIndex: 1
+    });
+    game.confirmFestaSetup();
+    const after = game.getCurrentState();
+    expect(getKingPtState(after).noTrumpChosen).toBe(true);
+    expect(after.trumpSuit).toBeNull();
+  });
+
+  it('fallback nulos forces no-trump', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      waitingForFallback: true,
+      festaPhase: null,
+      bestBid: null,
+      noTrumpChosen: false,
+      chosenTrump: 'diamonds'
+    });
+    game.chooseFallback('nulos');
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.festaMode).toBe('negative_festa');
+    expect(after.waitingForFestaSetup).toBe(true);
+    expect(after.noTrumpChosen).toBe(true);
+    expect(after.chosenTrump).toBeNull();
+  });
+
+  it('positive trump and no-trump setups still work', () => {
+    const gameTrump = new KingPtGame();
+    enterFestaSetup(gameTrump, {
+      festaMode: 'positive',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      benefitOwnerIndex: 0
+    });
+    gameTrump.setupFesta('spades', false, 0);
+    expect(gameTrump.getCurrentState().trumpSuit).toBe('spades');
+    expect(getKingPtState(gameTrump.getCurrentState()).noTrumpChosen).toBe(false);
+
+    const gameNoTrump = new KingPtGame();
+    enterFestaSetup(gameNoTrump, {
+      festaMode: 'positive',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      benefitOwnerIndex: 0
+    });
+    gameNoTrump.setupFesta(null, true, 0);
+    expect(gameNoTrump.getCurrentState().trumpSuit).toBeNull();
+    expect(getKingPtState(gameNoTrump.getCurrentState()).noTrumpChosen).toBe(true);
+  });
+
   it('records auction player actions on bid and pass', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0, kohPlayerIndex: 0 });

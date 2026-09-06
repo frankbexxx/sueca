@@ -399,6 +399,7 @@ export class KingPtGame extends BaseGameAdapter {
       king.festaPhase = 'setup';
       king.waitingForFestaSetup = true;
       king.noTrumpChosen = true;
+      king.chosenTrump = null;
     } else {
       king.festaMode = 'positive';
       king.festaPhase = 'setup';
@@ -417,8 +418,9 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (!king.waitingForFestaSetup) return;
-    king.chosenTrump = trump;
-    king.noTrumpChosen = noTrump;
+    const forceNoTrump = king.festaMode === 'negative_festa';
+    king.chosenTrump = forceNoTrump ? null : trump;
+    king.noTrumpChosen = forceNoTrump || noTrump || trump === null;
     king.firstPlayerIndex = firstPlayerIndex;
     king.waitingForFestaSetup = false;
     this.startPlay(king);
@@ -430,6 +432,10 @@ export class KingPtGame extends BaseGameAdapter {
     const king = getKingPtState(this.state);
     if (!king.waitingForFestaSetup) return;
     const owner = king.benefitOwnerIndex ?? king.festaOwnerIndex;
+    if (king.festaMode === 'negative_festa') {
+      king.noTrumpChosen = true;
+      king.chosenTrump = null;
+    }
     const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
     const trump = king.noTrumpChosen ? null : king.chosenTrump ?? suits[king.gameIndex % 4];
     const first = king.firstPlayerIndex ?? owner;
@@ -455,6 +461,10 @@ export class KingPtGame extends BaseGameAdapter {
     king.festaPhase = 'setup';
     king.waitingForFestaSetup = true;
     king.requestedBid = null;
+    if (bid.bidType === 'null') {
+      king.noTrumpChosen = true;
+      king.chosenTrump = null;
+    }
   }
 
   private syncKing(king: KingPtVariantState): void {

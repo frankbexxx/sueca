@@ -318,7 +318,14 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
         <button
           type="button"
           className="variant-modal-primary dobo-btn"
-          onClick={() => onSetup(setupNoTrump ? null : setupTrump, setupNoTrump, firstPlayer)}
+          onClick={() => {
+            const forceNoTrump = king.festaMode === 'negative_festa';
+            onSetup(
+              forceNoTrump || setupNoTrump ? null : setupTrump,
+              forceNoTrump || setupNoTrump,
+              firstPlayer
+            );
+          }}
         >
           Começar
         </button>
