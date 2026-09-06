@@ -86,6 +86,7 @@ export interface Translations {
     aiExternal: string;
     aiLocal: string;
     roundPointsShort: (points: number) => string;
+    nowPlaying: string;
   };
 
   heartsPass: {
@@ -597,7 +598,8 @@ export const translations: Record<Language, Translations> = {
       autoPauseHint: 'Quando activo, não avança automaticamente entre vazas',
       aiExternal: 'AI Externa (Render)',
       aiLocal: 'AI Local (fallback)',
-      roundPointsShort: (points) => `Ronda: ${points}`
+      roundPointsShort: (points) => `Ronda: ${points}`,
+      nowPlaying: 'A jogar'
     },
     heartsPass: {
       title: 'Copas — passar 3 cartas',
@@ -928,7 +930,8 @@ export const translations: Record<Language, Translations> = {
       autoPauseHint: 'When on, tricks no longer advance automatically',
       aiExternal: 'External AI (Render)',
       aiLocal: 'Local AI (fallback)',
-      roundPointsShort: (points) => `Round: ${points}`
+      roundPointsShort: (points) => `Round: ${points}`,
+      nowPlaying: 'Playing'
     },
     heartsPass: {
       title: 'Hearts — pass 3 cards',

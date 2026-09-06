@@ -95,7 +95,7 @@
 }
 
 
-.player-seat.player-seat--bidding .player-info {
+.player-seat.player-seat--bidding:not(.player-seat--active) .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);
   outline-offset: 1px;
 }
@@ -120,7 +120,7 @@
   font-size: 0.78em;
 }
 
-.local-player-dock--bidding .player-info {
+.local-player-dock--bidding:not(.local-player-dock--active) .player-info {
   outline: 2px solid rgba(196, 181, 253, 0.75);
   outline-offset: 1px;
 }
@@ -131,6 +131,64 @@
 
 .player-seat.player-seat--bidding .player-name-line-2 {
   color: #e9d5ff;
+}
+
+/* Active turn seat — outline + soft ring (theme token); badge reinforces */
+.player-seat--active .player-info,
+.local-player-dock--active .player-info,
+.player-info--active {
+  position: relative;
+  outline: 2px solid var(--theme-turn-indicator);
+  outline-offset: 2px;
+}
+
+.player-info--active::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 10px;
+  border: 1px solid var(--theme-turn-indicator);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: player-active-ring 2.4s ease-in-out infinite;
+}
+
+.turn-now-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 3px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.turn-now-label {
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  padding: 1px 4px;
+  border-radius: 999px;
+  color: var(--theme-turn-indicator);
+  border: 1px solid var(--theme-turn-indicator);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.player-info.mobile-layout .turn-now-label {
+  font-size: 0.62em;
+  padding: 0 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-info--active::after {
+    animation: none;
+    opacity: 0.45;
+  }
+
+  .turn-indicator {
+    animation: none;
+  }
 }
 
 .spades-info__partial {
@@ -357,6 +415,15 @@
 
 .player-info .team-badge:empty {
   display: none;
+}
+
+.player-info.mobile-layout .player-name-line-2 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
 }
 
 .player-info.mobile-layout .player-name-line-2:empty {
@@ -762,8 +829,8 @@
 }
 
 .player-info.mobile-layout .turn-indicator {
-  font-size: 0.9em;
-  margin-left: 3px;
+  font-size: 0.75em;
+  margin-left: 0;
 }
 
 .player-name {
@@ -802,12 +869,13 @@
 }
 
 .turn-indicator {
-  font-size: 1em;
+  font-size: 0.85em;
   color: var(--theme-turn-indicator);
   animation: pulse-glow 1.5s ease-in-out infinite;
-  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
-  margin-left: 4px;
+  text-shadow: 0 0 6px currentColor;
+  margin-left: 0;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 @keyframes pulse-glow {
@@ -817,7 +885,18 @@
   }
   50% {
     opacity: 0.7;
-    transform: scale(1.15);
+    transform: scale(1.12);
+  }
+}
+
+@keyframes player-active-ring {
+  0%, 100% {
+    opacity: 0.28;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.03);
   }
 }
 

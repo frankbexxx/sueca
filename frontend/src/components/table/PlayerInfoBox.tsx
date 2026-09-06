@@ -25,6 +25,8 @@ export interface PlayerInfoBoxProps {
   auctionLocale?: 'pt' | 'en';
   forceMobileLayout?: boolean;
   layoutSnapshot?: LayoutSnapshot;
+  /** Engine-derived active turn / bid seat highlight. */
+  isActiveTurn?: boolean;
 }
 
 export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
@@ -40,14 +42,14 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   auctionActions,
   auctionLocale = 'pt',
   forceMobileLayout = false,
-  layoutSnapshot
+  layoutSnapshot,
+  isActiveTurn = false
 }) => {
   const { t } = useLanguage();
   const player = gameState.players[playerIndex];
   const useMobileLayout = true;
   const showTeamLabel = shouldShowTeamLabel(variant, showTeamLabels);
   const isDealer = playerIndex === gameState.dealerIndex;
-  const isCurrentPlayer = playerIndex === gameState.currentPlayerIndex;
   const heartsRoundPoints =
     !compactSeats && variant === 'hearts' ? getHeartsState(gameState).roundPoints : null;
 
@@ -78,9 +80,23 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
     );
   };
 
+  const renderTurnCue = () => {
+    if (!isActiveTurn || compactSeats) return null;
+    return (
+      <span className="turn-now-badge" aria-label={t.gameBoard.nowPlaying}>
+        <span className="turn-indicator" aria-hidden="true">
+          ⚡
+        </span>
+        <span className="turn-now-label">{t.gameBoard.nowPlaying}</span>
+      </span>
+    );
+  };
+
   return (
     <div
-      className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}`}
+      className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}${
+        isActiveTurn ? ' player-info--active' : ''
+      }`}
     >
       {useMobileLayout || spadesBidPhase ? (
         <>
@@ -90,12 +106,10 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
               <span className="dealer-badge">🃏</span>
             )}
           </div>
-          {(spadesBidPhase || !compactSeats) && (
+          {(spadesBidPhase || !compactSeats || isActiveTurn) && (
             <div className="player-name-line-2">
               {renderSecondaryLine()}
-              {!compactSeats && !spadesBidPhase && isCurrentPlayer && (
-                <span className="turn-indicator">⚡</span>
-              )}
+              {renderTurnCue()}
               {!spadesBidPhase && renderAuctionBadge()}
             </div>
           )}
@@ -105,7 +119,7 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
           <h3 className="player-name">
             {truncatePlayerName(player.name)}
             {!compactSeats && isDealer && <span className="dealer-badge">🃏</span>}
-            {!compactSeats && isCurrentPlayer && <span className="turn-indicator">⚡</span>}
+            {renderTurnCue()}
           </h3>
           {!compactSeats && (
             <>

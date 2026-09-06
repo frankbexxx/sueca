@@ -1,7 +1,8 @@
 import React from 'react';
 import { GameState, GameVariant } from '../../types/game';
 import {
-  getPlayerSeatTeamClass
+  getPlayerSeatTeamClass,
+  isActiveTurnSeat
 } from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
@@ -62,14 +63,20 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
           );
         };
 
+        const isActive = isActiveTurnSeat(gameState, index, {
+          spadesBidPhase,
+          currentBidderIndex: spadesState?.currentBidderIndex ?? null,
+          suppress: compactSeats
+        });
+        const isBidding =
+          spadesBidPhase && spadesState?.currentBidderIndex === index;
+
         return (
           <div
             key={player.id}
             className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}${
-              spadesBidPhase && spadesState?.currentBidderIndex === index
-                ? ' player-seat--bidding'
-                : ''
-            }`}
+              isActive ? ' player-seat--active' : ''
+            }${isBidding ? ' player-seat--bidding' : ''}`}
           >
             <PlayerInfoBox
               gameState={gameState}
@@ -85,6 +92,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
               auctionActions={auctionActions}
               auctionLocale={auctionLocale}
               layoutSnapshot={layoutSnapshot}
+              isActiveTurn={isActive}
             />
             {renderAICards()}
           </div>
