@@ -123,6 +123,11 @@ export interface Translations {
     spadesBroken: string;
   };
 
+  heartsStatus: {
+    heartsClosed: string;
+    heartsBroken: string;
+  };
+
   menu: {
     selectGame: string;
   };
@@ -639,6 +644,10 @@ export const translations: Record<Language, Translations> = {
       spadesClosed: '♠ Fechadas',
       spadesBroken: '♠ Quebradas'
     },
+    heartsStatus: {
+      heartsClosed: '♥ Fechadas',
+      heartsBroken: '♥ Quebradas'
+    },
     modals: {
       roundComplete: 'Jogo {round} Completo!',
       gamePoints: 'Pontos do Jogo:',
@@ -976,6 +985,10 @@ export const translations: Record<Language, Translations> = {
       bagsLine: (bags) => `${bags} bags`,
       spadesClosed: '♠ Closed',
       spadesBroken: '♠ Broken'
+    },
+    heartsStatus: {
+      heartsClosed: '♥ Closed',
+      heartsBroken: '♥ Broken'
     },
     modals: {
       roundComplete: 'Game {round} Complete!',

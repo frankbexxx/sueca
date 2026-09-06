@@ -14,6 +14,7 @@ import { KingGameHistoryPanel } from '../KingGameHistoryPanel';
 import { getHeartsState } from '../../models/games/HeartsGame';
 import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
+import { SuitBrokenBadge } from './SuitBrokenBadge';
 
 export interface UnifiedGameStatusPanelProps {
   gameState: GameState;
@@ -45,7 +46,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   variant,
   rulesPresetId
 }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
   const isPt = locale === 'pt';
 
@@ -65,6 +66,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   let heartsRuleLines: string[] = [];
   let kingContract: KingNegativeContract | null = null;
   let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
+  let heartsBroken = false;
   const kingPreset = variant === 'king' ? resolvePresetId('king', rulesPresetId) : null;
   const showKingPtExtras = variant === 'king' && kingPreset === 'king-pt-normal';
   const kingPtState = showKingPtExtras ? getKingPtState(gameState) : null;
@@ -99,6 +101,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
     contractLine = heartsHint.title;
     heartsRuleLines = heartsHint.lines;
     penaltyCardsByPlayer = heartsState.penaltyCardsTaken;
+    heartsBroken = heartsState.heartsBroken;
   }
 
   const showPenaltyCards =
@@ -161,6 +164,15 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                 )
               )}
             </div>
+            {variant === 'hearts' && (
+              <div className="game-status-panel__suit-status">
+                <SuitBrokenBadge
+                  broken={heartsBroken}
+                  closedLabel={t.heartsStatus.heartsClosed}
+                  brokenLabel={t.heartsStatus.heartsBroken}
+                />
+              </div>
+            )}
             {showKingPtExtras && kingPtState?.nullAuctionStartNote && (
               <div className="king-null-start-note">{kingPtState.nullAuctionStartNote}</div>
             )}

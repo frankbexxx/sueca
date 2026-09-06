@@ -198,14 +198,15 @@
   margin-top: 2px;
 }
 
-.spades-info {
+.spades-info,
+.hearts-info {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
 }
 
-.spades-broken-badge {
+.suit-broken-badge {
   display: inline-block;
   min-width: 6.5em;
   font-size: 0.68em;
@@ -220,16 +221,20 @@
   white-space: nowrap;
 }
 
-.spades-broken-badge--closed {
+.suit-broken-badge--closed {
   opacity: 0.88;
   border-style: dashed;
 }
 
-.spades-broken-badge--broken {
+.suit-broken-badge--broken {
   opacity: 1;
   border-style: solid;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.game-status-panel__suit-status {
+  margin-top: 4px;
 }
 
 .score-block .line.spades-bags {
