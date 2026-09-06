@@ -28,6 +28,8 @@ export interface KingRoundBreakdown {
   contractLabel: string | null;
   festaMode: KingFestaMode | null;
   nullTransfer: { beneficiary: number; bidder: number; amount: number } | null;
+  /** Sold positive festa transfer (offer amount in tricks); presentation only. */
+  positiveTransfer: { beneficiary: number; bidder: number; amount: number } | null;
   lines: string[];
 }
 
@@ -51,6 +53,7 @@ export function emptyBreakdown(): KingRoundBreakdown {
     contractLabel: null,
     festaMode: null,
     nullTransfer: null,
+    positiveTransfer: null,
     lines: []
   };
 }

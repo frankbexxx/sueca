@@ -331,6 +331,101 @@ describe('KingPtGame', () => {
     expect(after.chosenTrump).toBeNull();
   });
 
+  it('null festa startPlay seeds running scores at +325', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'negative_festa',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      benefitOwnerIndex: 0,
+      activeContract: null,
+      playerScores: [10, 20, 30, 40]
+    });
+    game.setupFesta(null, true, 0);
+    const king = getKingPtState(game.getCurrentState());
+    expect(king.lastRoundDeltas).toEqual([325, 325, 325, 325]);
+    expect(king.playerScores).toEqual([335, 345, 355, 365]);
+    expect(king.roundStartScores).toEqual([10, 20, 30, 40]);
+  });
+
+  it('null festa mid-round subtracts 75 from seeded base', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'negative_festa',
+      festaPhase: 'setup',
+      waitingForFestaSetup: true,
+      benefitOwnerIndex: 0,
+      activeContract: null,
+      playerScores: [0, 0, 0, 0]
+    });
+    game.setupFesta(null, true, 0);
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const state = internal.state;
+    state.waitingForTrickEnd = true;
+    state.nextTrickLeader = 1;
+    state.currentTrick = [
+      { id: '1', rank: '2', suit: 'clubs' },
+      { id: '2', rank: '3', suit: 'clubs' },
+      { id: '3', rank: '4', suit: 'clubs' },
+      { id: '4', rank: '5', suit: 'clubs' }
+    ];
+    // Keep hands non-empty so endGame is not triggered
+    state.players.forEach((p) => {
+      p.hand = [{ id: `${p.id}-x`, rank: 'A', suit: 'spades' }];
+    });
+    game.finishTrick(state);
+    const king = getKingPtState(game.getCurrentState());
+    expect(king.lastRoundDeltas[1]).toBe(250);
+    expect(king.playerScores[1]).toBe(250);
+    expect(king.lastRoundDeltas[0]).toBe(325);
+  });
+
+  it('sold positive endGame breakdown lines include contract transfer', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'positive',
+      festaPhase: null,
+      phase: 'festa_play',
+      waitingForFestaSetup: false,
+      activeContract: {
+        bidType: 'positive',
+        amount: 5,
+        bidderIndex: 1,
+        beneficiaryIndex: 0
+      },
+      tricksWonThisGame: [2, 3, 4, 4],
+      roundStartScores: [0, 0, 0, 0],
+      playerScores: [0, 0, 0, 0],
+      roundBreakdown: {
+        tricksWon: [2, 3, 4, 4],
+        heartsTaken: [0, 0, 0, 0],
+        queensTaken: [0, 0, 0, 0],
+        menTaken: [0, 0, 0, 0],
+        kingTakenBy: null,
+        lastTwoWinners: [],
+        penaltyCardsTaken: [[], [], [], []],
+        contractLabel: 'Contrato: 5 positivas',
+        festaMode: 'positive',
+        nullTransfer: null,
+        positiveTransfer: { beneficiary: 0, bidder: 1, amount: 5 },
+        lines: []
+      }
+    });
+    const internal = game as unknown as {
+      state: ReturnType<KingPtGame['getCurrentState']>;
+      endGame: (k: ReturnType<typeof getKingPtState>) => void;
+    };
+    internal.state.players.forEach((p) => {
+      p.hand = [];
+    });
+    const king = getKingPtState(internal.state);
+    internal.endGame(king);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.lastRoundDeltas).toEqual([175, -50, 100, 100]);
+    expect(after.roundBreakdown.lines.some((l) => l.includes('total +175'))).toBe(true);
+    expect(after.roundBreakdown.lines.some((l) => l.includes('contrato -125'))).toBe(true);
+  });
+
   it('valid four_by_three applies once with a single history entry', () => {
     const game = new KingPtGame();
     enterFestaSetup(game, {

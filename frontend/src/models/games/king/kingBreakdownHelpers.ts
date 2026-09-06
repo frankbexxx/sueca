@@ -20,6 +20,12 @@ import {
   kingContractLabel
 } from './kingContracts';
 import { formatBid } from './kingAuction';
+import {
+  formatNullFestaBreakdownLine,
+  formatPositiveFestaBreakdownLine,
+  nullFestaPlayerBreakdowns,
+  positiveFestaPlayerBreakdowns
+} from './kingFestaScoreDisplay';
 
 export function initBreakdownForRound(
   gameIndex: number,
@@ -154,28 +160,31 @@ export function buildBreakdownLines(
     );
   }
 
-  if (breakdown.festaMode === 'positive' && !breakdown.nullTransfer) {
-    breakdown.tricksWon.forEach((t, i) => {
-      if (t > 0) lines.push(locale === 'pt' ? `J${i + 1}: ${t} vaza(s) (+${t * 25})` : `P${i + 1}: ${t} trick(s)`);
-    });
-  }
-  if (breakdown.festaMode === 'negative_festa') {
-    breakdown.tricksWon.forEach((t, i) => {
-      if (t > 0) {
-        lines.push(
-          locale === 'pt' ? `J${i + 1}: ${t} vaza(s) (−${t * 75} sobre 325)` : `P${i + 1}: ${t} null trick(s)`
-        );
+  if (breakdown.festaMode === 'positive') {
+    const transfer = breakdown.positiveTransfer;
+    const parts = positiveFestaPlayerBreakdowns(
+      breakdown.tricksWon,
+      transfer?.amount ?? null,
+      transfer?.beneficiary ?? null,
+      transfer?.bidder ?? null
+    );
+    parts.forEach((part) => {
+      if (part.trickPts !== 0 || part.contractPts !== 0) {
+        lines.push(formatPositiveFestaBreakdownLine(part, locale));
       }
     });
   }
-  if (breakdown.nullTransfer) {
-    const { beneficiary, bidder, amount } = breakdown.nullTransfer;
-    const transfer = amount * 75;
-    lines.push(
-      locale === 'pt'
-        ? `Transferência nulos: J${beneficiary + 1} +${325 + transfer} · J${bidder + 1} +${325 - transfer} (base 325)`
-        : `Null transfer: P${beneficiary + 1} +${325 + transfer} · P${bidder + 1} +${325 - transfer}`
+  if (breakdown.festaMode === 'negative_festa') {
+    const transfer = breakdown.nullTransfer;
+    const parts = nullFestaPlayerBreakdowns(
+      breakdown.tricksWon,
+      transfer?.amount ?? null,
+      transfer?.beneficiary ?? null,
+      transfer?.bidder ?? null
     );
+    parts.forEach((part) => {
+      lines.push(formatNullFestaBreakdownLine(part, locale));
+    });
   }
 
   return lines;

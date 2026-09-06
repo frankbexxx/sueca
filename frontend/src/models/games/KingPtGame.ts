@@ -24,6 +24,7 @@ import {
   initBreakdownForRound,
   nullAuctionStartNote
 } from './king/kingBreakdownHelpers';
+import { nullFestaStartScores } from './king/kingFestaScoreDisplay';
 import {
   KING_NEGATIVE_CONTRACTS,
   KING_NEGATIVE_GAMES,
@@ -700,8 +701,28 @@ export class KingPtGame extends BaseGameAdapter {
       const { beneficiaryIndex, bidderIndex, amount } = king.activeContract;
       king.roundBreakdown.nullTransfer = { beneficiary: beneficiaryIndex, bidder: bidderIndex, amount };
       king.nullAuctionStartNote = nullAuctionStartNote(beneficiaryIndex, bidderIndex, amount, 'pt');
+    } else if (king.activeContract?.bidType === 'positive') {
+      const { beneficiaryIndex, bidderIndex, amount } = king.activeContract;
+      king.roundBreakdown.positiveTransfer = {
+        beneficiary: beneficiaryIndex,
+        bidder: bidderIndex,
+        amount
+      };
+      king.nullAuctionStartNote = null;
     } else {
       king.nullAuctionStartNote = null;
+    }
+
+    if (king.festaMode === 'negative_festa') {
+      const start = nullFestaStartScores(
+        king.activeContract?.bidType === 'null' ? king.activeContract.beneficiaryIndex : null,
+        king.activeContract?.bidType === 'null' ? king.activeContract.bidderIndex : null,
+        king.activeContract?.bidType === 'null' ? king.activeContract.amount : null
+      );
+      for (let i = 0; i < 4; i++) {
+        king.lastRoundDeltas[i] = start[i];
+        king.playerScores[i] = king.roundStartScores[i] + start[i];
+      }
     }
 
     const leader =
@@ -806,7 +827,7 @@ export class KingPtGame extends BaseGameAdapter {
       !king.scoringFrozen &&
       (king.gameIndex < KING_NEGATIVE_GAMES ||
         (king.festaMode === 'positive' && !king.activeContract) ||
-        (king.festaMode === 'negative_festa' && !king.activeContract));
+        king.festaMode === 'negative_festa');
 
     if (scoreDuringPlay && king.festaMode === 'positive') {
       king.lastRoundDeltas[winner] += FESTA_POSITIVE_TRICK;
