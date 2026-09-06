@@ -10,6 +10,7 @@ import { resolvePresetId } from '../constants/rulesPresets';
 import { getKingRulesHint } from './KingRulesHelper';
 import { getSpadesState } from '../models/games/SpadesGame';
 import { partialTeamBids } from '../models/games/spades/spadesRules';
+import { resolveSpadesBrokenVisual } from '../utils/spadesStatusDisplay';
 import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 import { getCardImagePath } from '../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../utils/cardMappings';
@@ -18,6 +19,21 @@ interface GameInfoProps {
   gameState: GameState;
   variant: GameVariant;
   rulesPresetId?: string;
+}
+
+function SpadesBrokenBadge({ broken }: { broken: boolean }) {
+  const { t } = useLanguage();
+  const visual = resolveSpadesBrokenVisual(broken);
+  const label =
+    visual === 'broken' ? t.spadesStatus.spadesBroken : t.spadesStatus.spadesClosed;
+  return (
+    <span
+      className={`spades-broken-badge spades-broken-badge--${visual}`}
+      aria-label={label}
+    >
+      {label}
+    </span>
+  );
 }
 
 export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPresetId }) => {
@@ -73,6 +89,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
           <span className="spades-info__partial">
             ♠ {partial.team1} vs {partial.team2}
           </span>
+          <SpadesBrokenBadge broken={Boolean(spades.spadesBroken)} />
         </div>
       );
     }
@@ -81,6 +98,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
         <span>
           ♠ Bids: {spades?.team1Bid ?? '—'} vs {spades?.team2Bid ?? '—'}
         </span>
+        <SpadesBrokenBadge broken={Boolean(spades?.spadesBroken)} />
       </div>
     );
   }

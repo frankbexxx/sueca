@@ -116,6 +116,13 @@ export interface Translations {
     badgeBlind: string;
   };
 
+  spadesStatus: {
+    bagsWord: string;
+    bagsLine: (bags: number) => string;
+    spadesClosed: string;
+    spadesBroken: string;
+  };
+
   menu: {
     selectGame: string;
   };
@@ -626,6 +633,12 @@ export const translations: Record<Language, Translations> = {
       badgeNil: 'Nil',
       badgeBlind: 'Blind'
     },
+    spadesStatus: {
+      bagsWord: 'bags',
+      bagsLine: (bags) => `${bags} bags`,
+      spadesClosed: '♠ Fechadas',
+      spadesBroken: '♠ Quebradas'
+    },
     modals: {
       roundComplete: 'Jogo {round} Completo!',
       gamePoints: 'Pontos do Jogo:',
@@ -957,6 +970,12 @@ export const translations: Record<Language, Translations> = {
       pending: '…',
       badgeNil: 'Nil',
       badgeBlind: 'Blind'
+    },
+    spadesStatus: {
+      bagsWord: 'bags',
+      bagsLine: (bags) => `${bags} bags`,
+      spadesClosed: '♠ Closed',
+      spadesBroken: '♠ Broken'
     },
     modals: {
       roundComplete: 'Game {round} Complete!',

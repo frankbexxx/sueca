@@ -198,6 +198,52 @@
   margin-top: 2px;
 }
 
+.spades-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.spades-broken-badge {
+  display: inline-block;
+  min-width: 6.5em;
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.spades-broken-badge--closed {
+  opacity: 0.88;
+  border-style: dashed;
+}
+
+.spades-broken-badge--broken {
+  opacity: 1;
+  border-style: solid;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.score-block .line.spades-bags {
+  font-size: 0.72em;
+  opacity: 0.95;
+}
+
+.score-block .line.spades-bags--warn {
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  opacity: 1;
+}
+
 .top-strip {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
