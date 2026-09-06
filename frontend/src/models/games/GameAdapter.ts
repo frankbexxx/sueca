@@ -1,4 +1,23 @@
+/**
+ * Adapter state contract (C1)
+ * ---------------------------
+ * Engine/adapter private state is the only mutable source of truth.
+ * getCurrentState() always returns a deep snapshot for UI / callers.
+ * Mutators (playCard, pauseGame, finishTrick, …) operate on engine state;
+ * the GameState argument on legacy signatures is ignored when SoT exists.
+ *
+ * Per variant SoT:
+ * - Sueca: Game.private state (via SuecaGame)
+ * - Spades / Hearts / King simplified / King PT: adapter.private state
+ * - KingGame facade: delegates to KingPtGame | KingSimplifiedGame
+ *
+ * Divergence risks (mitigated):
+ * - Mutating a getCurrentState() snapshot must not affect the engine
+ * - pause/resume/quit/updatePlayerNames must not write only to a discarded clone
+ */
+
 import { Card, GameState, GameVariant, Player, AIDifficulty, DealingMethod } from '../../types/game';
+import { cloneGameState } from './cloneGameState';
 
 export interface GameInitOptions {
   dealingMethod?: DealingMethod;
@@ -14,6 +33,7 @@ export interface RestoreStateOptions {
 export interface GameAdapter {
   variant: GameVariant;
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState;
+  /** Deep snapshot — safe for UI; do not mutate expecting engine updates. */
   getCurrentState(): GameState;
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean;
   playCard(state: GameState, playerIndex: number, cardIndex: number): boolean;
@@ -29,10 +49,6 @@ export interface GameAdapter {
   getPlayers(state: GameState): Player[];
   getState(state: GameState): GameState;
   restoreState(state: GameState, options?: RestoreStateOptions): GameState;
-}
-
-function cloneState(state: GameState): GameState {
-  return JSON.parse(JSON.stringify(state)) as GameState;
 }
 
 export abstract class BaseGameAdapter implements GameAdapter {
@@ -69,12 +85,21 @@ export abstract class BaseGameAdapter implements GameAdapter {
 
   /**
    * Adapters that clone in getCurrentState() must return their mutable engine state.
-   * Sueca overrides pause/resume directly and does not need this.
+   * Sueca overrides pause/resume/quit/updatePlayerNames on the Game engine instead.
    */
   protected getMutableEngineState(): GameState | undefined {
     return undefined;
   }
 
+  /**
+   * Public facade hook (e.g. KingGame → impl) without exposing mutators.
+   * @internal
+   */
+  resolveMutableEngineState(): GameState | undefined {
+    return this.getMutableEngineState();
+  }
+
+  /** Prefer engine SoT; ignore snapshot argument when SoT is available. */
   pauseGame(state: GameState): void {
     const target = this.getMutableEngineState() ?? state;
     target.isPaused = true;
@@ -92,7 +117,8 @@ export abstract class BaseGameAdapter implements GameAdapter {
   }
 
   updatePlayerNames(state: GameState, names: string[]): void {
-    state.players = state.players.map((player, index) => ({
+    const target = this.getMutableEngineState() ?? state;
+    target.players = target.players.map((player, index) => ({
       ...player,
       name: names[index] || `Player ${index + 1}`
     }));
@@ -107,12 +133,12 @@ export abstract class BaseGameAdapter implements GameAdapter {
   }
 
   getState(state: GameState): GameState {
-    return cloneState(state);
+    return cloneGameState(state);
   }
 
   restoreState(state: GameState, _options?: RestoreStateOptions): GameState {
-    return cloneState(state);
+    return cloneGameState(state);
   }
 
-  protected cloneState = cloneState;
+  protected cloneState = cloneGameState;
 }

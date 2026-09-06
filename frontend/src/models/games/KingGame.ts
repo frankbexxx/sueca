@@ -34,6 +34,10 @@ export class KingGame extends BaseGameAdapter {
     return this.impl.getCurrentState();
   }
 
+  protected getMutableEngineState(): GameState | undefined {
+    return this.impl?.resolveMutableEngineState();
+  }
+
   pauseGame(state: GameState): void {
     this.impl?.pauseGame(state);
   }

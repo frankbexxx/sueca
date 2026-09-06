@@ -29,6 +29,11 @@ export class SuecaGame extends BaseGameAdapter {
     return state;
   }
 
+  /** Sueca SoT lives in Game; mutators call Game APIs (not snapshot args). */
+  protected getMutableEngineState(): GameState | undefined {
+    return undefined;
+  }
+
   canPlayCard(_state: GameState, playerIndex: number, cardIndex: number): boolean {
     return this.game?.canPlayCard(playerIndex, cardIndex) ?? false;
   }

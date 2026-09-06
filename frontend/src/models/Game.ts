@@ -2,6 +2,7 @@ import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMeth
 import { Deck } from './Deck';
 import { applyHandSortToState } from '../utils/handSort';
 import { dealSuecaFromCardOrder } from './games/suecaDeal';
+import { cloneGameState } from './games/cloneGameState';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
 
 export class Game {
@@ -195,11 +196,12 @@ export class Game {
   }
 
   getState(): GameState {
-    return { ...this.state };
+    // Deep snapshot — UI must not share nested refs (hands/tricks) with engine SoT.
+    return cloneGameState(this.state);
   }
 
   loadState(state: GameState): void {
-    this.state = JSON.parse(JSON.stringify(state));
+    this.state = cloneGameState(state);
   }
 
   setLocalPlayerIndex(

@@ -84,6 +84,7 @@ describe('Adapter pause/resume (A2)', () => {
     adapter.startRound(adapter.getCurrentState());
     const snapshot = adapter.getCurrentState();
     adapter.pauseGame(snapshot);
+    expect(snapshot.isPaused).toBe(false);
     expect(adapter.getCurrentState().isPaused).toBe(true);
     adapter.resumeGame(adapter.getCurrentState());
     expect(adapter.getCurrentState().isPaused).toBe(false);
