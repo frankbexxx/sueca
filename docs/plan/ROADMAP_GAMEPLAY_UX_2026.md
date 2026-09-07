@@ -294,12 +294,12 @@ Game Engine TS → State / Orchestration → Renderer → React Shell
 
 ### FASE F — Testes web + Android real
 
-| ID | Pri | Scope |
-|----|-----|-------|
-| F1 | MUST | Desktop + browser mobile |
-| F2 | MUST | Capacitor Android mid-range; portrait/landscape; touch; resize; lifecycle; pause; FPS animação |
+| ID | Pri | Scope | Estado |
+|----|-----|-------|--------|
+| F1 | MUST | Desktop + browser mobile | E2 web — feito |
+| F2 | MUST | Capacitor Android mid-range; portrait/landscape; touch; resize; lifecycle; pause; FPS animação | **Emulator VALIDADO** (`docs/plan/PHASER_ANDROID_VALIDATION_2026.md`); **device real pendente** |
 
-**CHECKPOINT 7:** relatório F com métricas.
+**CHECKPOINT 7:** relatório F — **parcial** (emulator); falta device real.
 
 ---
 
