@@ -7,8 +7,8 @@
  * 3. variant default
  *
  * Defaults:
- * - Sueca → Phaser
- * - Spades / Hearts / King → DOM (Phaser only with explicit override)
+ * - Sueca / Spades → Phaser
+ * - Hearts / King → DOM (Phaser only with explicit override)
  */
 
 export type TableRendererId = 'phaser' | 'dom';
@@ -82,12 +82,12 @@ export function resolveTableRenderer(
     return 'dom';
   }
 
-  if (variant === 'spades' || variant === 'hearts' || variant === 'king') {
+  if (variant === 'hearts' || variant === 'king') {
     if (override === 'phaser') return 'phaser';
     return 'dom';
   }
 
-  // Sueca
+  // Sueca / Spades — Phaser default
   if (override === 'dom') return 'dom';
   if (override === 'phaser') return 'phaser';
   return 'phaser';
