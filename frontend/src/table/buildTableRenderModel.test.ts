@@ -164,6 +164,9 @@ describe('buildTableRenderModel', () => {
     });
     expect(model.chrome.showAuctionBadges).toBe(true);
     expect(model.variantUi.auctionActions).toEqual({ 1: 'pass' });
+    expect(model.variantUi.king?.festaPhase).toBe('auction');
+    expect(model.variantUi.king?.waitingForChoice).toBe(true);
+    expect(model.activeSeat).toBeNull();
   });
 });
 

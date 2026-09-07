@@ -36,15 +36,15 @@ describe('resolveTableRenderer', () => {
     });
   });
 
-  describe('Spades / Hearts flag-only Phaser', () => {
-    it.each(['spades', 'hearts'] as const)('%s defaults to DOM', (variant) => {
+  describe('Spades / Hearts / King flag-only Phaser', () => {
+    it.each(['spades', 'hearts', 'king'] as const)('%s defaults to DOM', (variant) => {
       expect(resolveTableRenderer(variant, { override: null })).toBe('dom');
       expect(resolveTableRenderer(variant, { search: '', envOverride: null })).toBe(
         'dom'
       );
     });
 
-    it.each(['spades', 'hearts'] as const)(
+    it.each(['spades', 'hearts', 'king'] as const)(
       '%s enables Phaser only with explicit override',
       (variant) => {
         expect(
@@ -56,7 +56,7 @@ describe('resolveTableRenderer', () => {
       }
     );
 
-    it.each(['spades', 'hearts'] as const)(
+    it.each(['spades', 'hearts', 'king'] as const)(
       '%s forces DOM with ?renderer=dom',
       (variant) => {
         expect(
@@ -67,15 +67,6 @@ describe('resolveTableRenderer', () => {
         ).toBe('dom');
       }
     );
-  });
-
-  describe('King stays DOM', () => {
-    it('defaults to dom and ignores ?renderer=phaser', () => {
-      expect(resolveTableRenderer('king', { override: null })).toBe('dom');
-      expect(
-        resolveTableRenderer('king', { search: '?renderer=phaser' })
-      ).toBe('dom');
-    });
   });
 
   describe('precedence', () => {
