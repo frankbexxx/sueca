@@ -36,28 +36,40 @@ describe('resolveTableRenderer', () => {
     });
   });
 
-  describe('other variants stay DOM', () => {
-    it.each(['spades', 'hearts', 'king'] as const)(
-      '%s defaults to dom',
-      (variant) => {
-        expect(resolveTableRenderer(variant, { override: null })).toBe('dom');
-      }
-    );
+  describe('Spades', () => {
+    it('defaults to DOM', () => {
+      expect(resolveTableRenderer('spades', { override: null })).toBe('dom');
+      expect(resolveTableRenderer('spades', { search: '', envOverride: null })).toBe(
+        'dom'
+      );
+    });
 
-    it.each(['spades', 'hearts', 'king'] as const)(
+    it('enables Phaser only with explicit override', () => {
+      expect(
+        resolveTableRenderer('spades', { search: '?renderer=phaser' })
+      ).toBe('phaser');
+      expect(
+        resolveTableRenderer('spades', { envOverride: 'phaser' })
+      ).toBe('phaser');
+    });
+
+    it('forces DOM with ?renderer=dom', () => {
+      expect(
+        resolveTableRenderer('spades', { search: '?renderer=dom', envOverride: 'phaser' })
+      ).toBe('dom');
+    });
+  });
+
+  describe('Hearts / King stay DOM', () => {
+    it.each(['hearts', 'king'] as const)('%s defaults to dom', (variant) => {
+      expect(resolveTableRenderer(variant, { override: null })).toBe('dom');
+    });
+
+    it.each(['hearts', 'king'] as const)(
       '%s ignores ?renderer=phaser',
       (variant) => {
         expect(
           resolveTableRenderer(variant, { search: '?renderer=phaser' })
-        ).toBe('dom');
-      }
-    );
-
-    it.each(['spades', 'hearts', 'king'] as const)(
-      '%s ignores env phaser',
-      (variant) => {
-        expect(
-          resolveTableRenderer(variant, { envOverride: 'phaser' })
         ).toBe('dom');
       }
     );

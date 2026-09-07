@@ -98,6 +98,25 @@ describe('playerSeatHelpers', () => {
       ).toBe(false);
     });
 
+    it('highlights bidder even while waitingForRoundStart (Spades auction)', () => {
+      const state = baseState({
+        currentPlayerIndex: 0,
+        waitingForRoundStart: true
+      });
+      expect(
+        isActiveTurnSeat(state, 1, {
+          spadesBidPhase: true,
+          currentBidderIndex: 1
+        })
+      ).toBe(true);
+      expect(
+        isActiveTurnSeat(state, 0, {
+          spadesBidPhase: true,
+          currentBidderIndex: 1
+        })
+      ).toBe(false);
+    });
+
     it('honours suppress for Hearts pass and similar overlays', () => {
       expect(isActiveTurnSeat(baseState(), 1, { suppress: true })).toBe(false);
     });
