@@ -129,12 +129,16 @@ describe('buildTableRenderModel', () => {
       usTeam: 1,
       themTeam: 2,
       boardFlow,
+      heartsState: gameState.variantState?.hearts as never,
       heartsPassIndices: [0, 2]
     });
     expect(model.status.heartsPassActive).toBe(true);
     expect(model.chrome.compactSeats).toBe(true);
     expect(model.activeSeat).toBeNull();
     expect(model.variantUi.heartsPassIndices).toEqual([0, 2]);
+    expect(model.variantUi.hearts?.heartsBroken).toBe(false);
+    expect(model.variantUi.hearts?.waitingForPass).toBe(true);
+    expect(model.status.waitingForEarlyEnd).toBe(false);
     expect(model.chrome.boardModifiers).toContain('game-board--hearts-pass');
   });
 

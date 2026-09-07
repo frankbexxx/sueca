@@ -91,6 +91,7 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
       waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
+      waitingForEarlyEnd: false,
       heartsPassActive: false,
       spadesBidActive: false,
       festaSheetActive: false,

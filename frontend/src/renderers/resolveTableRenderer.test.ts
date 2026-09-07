@@ -36,43 +36,46 @@ describe('resolveTableRenderer', () => {
     });
   });
 
-  describe('Spades', () => {
-    it('defaults to DOM', () => {
-      expect(resolveTableRenderer('spades', { override: null })).toBe('dom');
-      expect(resolveTableRenderer('spades', { search: '', envOverride: null })).toBe(
+  describe('Spades / Hearts flag-only Phaser', () => {
+    it.each(['spades', 'hearts'] as const)('%s defaults to DOM', (variant) => {
+      expect(resolveTableRenderer(variant, { override: null })).toBe('dom');
+      expect(resolveTableRenderer(variant, { search: '', envOverride: null })).toBe(
         'dom'
       );
     });
 
-    it('enables Phaser only with explicit override', () => {
-      expect(
-        resolveTableRenderer('spades', { search: '?renderer=phaser' })
-      ).toBe('phaser');
-      expect(
-        resolveTableRenderer('spades', { envOverride: 'phaser' })
-      ).toBe('phaser');
-    });
-
-    it('forces DOM with ?renderer=dom', () => {
-      expect(
-        resolveTableRenderer('spades', { search: '?renderer=dom', envOverride: 'phaser' })
-      ).toBe('dom');
-    });
-  });
-
-  describe('Hearts / King stay DOM', () => {
-    it.each(['hearts', 'king'] as const)('%s defaults to dom', (variant) => {
-      expect(resolveTableRenderer(variant, { override: null })).toBe('dom');
-    });
-
-    it.each(['hearts', 'king'] as const)(
-      '%s ignores ?renderer=phaser',
+    it.each(['spades', 'hearts'] as const)(
+      '%s enables Phaser only with explicit override',
       (variant) => {
         expect(
           resolveTableRenderer(variant, { search: '?renderer=phaser' })
+        ).toBe('phaser');
+        expect(
+          resolveTableRenderer(variant, { envOverride: 'phaser' })
+        ).toBe('phaser');
+      }
+    );
+
+    it.each(['spades', 'hearts'] as const)(
+      '%s forces DOM with ?renderer=dom',
+      (variant) => {
+        expect(
+          resolveTableRenderer(variant, {
+            search: '?renderer=dom',
+            envOverride: 'phaser'
+          })
         ).toBe('dom');
       }
     );
+  });
+
+  describe('King stays DOM', () => {
+    it('defaults to dom and ignores ?renderer=phaser', () => {
+      expect(resolveTableRenderer('king', { override: null })).toBe('dom');
+      expect(
+        resolveTableRenderer('king', { search: '?renderer=phaser' })
+      ).toBe('dom');
+    });
   });
 
   describe('precedence', () => {
