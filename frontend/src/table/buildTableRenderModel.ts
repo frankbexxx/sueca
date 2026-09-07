@@ -67,7 +67,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const activeOpts = {
     spadesBidPhase: spadesBidActive,
     currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-    suppress: heartsPassActive
+    suppress: heartsPassActive || festaSheetActive
   };
 
   const seats: TableSeatRenderModel[] = gameState.players.map((player, index) => ({
@@ -168,7 +168,36 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
             queenSpadesTaken: heartsState.queenSpadesTaken
           }
         : null,
-      heartsPassIndices: heartsPassActive ? heartsPassIndices : undefined
+      heartsPassIndices: heartsPassActive ? heartsPassIndices : undefined,
+      king: kingPt
+        ? {
+            phase: kingPt.phase,
+            gameIndex: kingPt.gameIndex,
+            contract: kingPt.contract,
+            festaMode: kingPt.festaMode,
+            festaPhase: kingPt.festaPhase,
+            festaOwnerIndex: kingPt.festaOwnerIndex,
+            benefitOwnerIndex: kingPt.benefitOwnerIndex,
+            bidderIndex:
+              kingPt.activeContract?.bidderIndex ??
+              kingPt.bestBid?.bidderIndex ??
+              null,
+            beneficiaryIndex: kingPt.activeContract
+              ? kingPt.activeContract.beneficiaryIndex
+              : kingPt.festaMode
+                ? kingPt.benefitOwnerIndex ?? kingPt.festaOwnerIndex
+                : null,
+            noTrump:
+              kingPt.noTrumpChosen || kingPt.festaMode === 'negative_festa',
+            eightOrNullsPending: kingPt.eightOrNullsPending,
+            waitingForChoice:
+              kingPt.phase === 'koh_reveal' ||
+              kingPt.festaPhase != null ||
+              kingPt.eightOrNullsPending ||
+              kingPt.waitingForFallback ||
+              kingPt.waitingForFestaSetup
+          }
+        : null
     }
   };
 }

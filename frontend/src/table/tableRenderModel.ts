@@ -99,6 +99,25 @@ export interface TableVariantUiRenderModel {
     queenSpadesTaken: boolean;
   } | null;
   heartsPassIndices?: number[];
+  /**
+   * King presentation slice for table renderers.
+   * Festa sheets / KOH reveal / score popup / Round End stay on React.
+   * Auction seat badges still use auctionActions when showAuctionBadges.
+   */
+  king?: {
+    phase: string;
+    gameIndex: number;
+    contract: string | null;
+    festaMode: string | null;
+    festaPhase: string | null;
+    festaOwnerIndex: number;
+    benefitOwnerIndex: number | null;
+    bidderIndex: number | null;
+    beneficiaryIndex: number | null;
+    noTrump: boolean;
+    eightOrNullsPending: boolean;
+    waitingForChoice: boolean;
+  } | null;
 }
 
 /**

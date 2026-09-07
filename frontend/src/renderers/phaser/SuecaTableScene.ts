@@ -624,6 +624,8 @@ export class SuecaTableScene extends Phaser.Scene {
     heartsPassPhase?: boolean;
     heartsBroken?: boolean;
     passSelectionEnabled?: boolean;
+    kingFestaPhase?: boolean;
+    kingWaitingForChoice?: boolean;
   } | null {
     if (!this.view) return null;
     return {
@@ -637,7 +639,9 @@ export class SuecaTableScene extends Phaser.Scene {
       spadesBroken: this.view.spadesBroken,
       heartsPassPhase: this.view.heartsPassPhase,
       heartsBroken: this.view.heartsBroken,
-      passSelectionEnabled: this.view.passSelectionEnabled
+      passSelectionEnabled: this.view.passSelectionEnabled,
+      kingFestaPhase: this.view.kingFestaPhase,
+      kingWaitingForChoice: this.view.kingWaitingForChoice
     };
   }
 }

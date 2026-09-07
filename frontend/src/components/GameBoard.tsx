@@ -337,7 +337,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     heartsPassActive,
     spadesBidActive,
     waitingForEarlyEnd,
-    flowOverlayActive
+    flowOverlayActive,
+    festaSheetActive
   } = boardFlow;
 
   const gameLabel =
@@ -741,7 +742,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       gameState.waitingForRoundStart ||
       gameState.waitingForRoundEnd ||
       gameState.waitingForGameStart ||
-      waitingForEarlyEnd
+      waitingForEarlyEnd ||
+      festaSheetActive
     ) {
       return;
     }
@@ -1067,6 +1069,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const isLocalCardPlayable = (cardIndex: number) => {
     if (!gameAdapter) return false;
     if (heartsPassActive) return true;
+    if (festaSheetActive) return false;
     if (!isHandPlayActionAllowed(gameState)) return false;
     return gameAdapter.canPlayCard(
       gameAdapter.getCurrentState(),
