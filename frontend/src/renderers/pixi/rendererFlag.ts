@@ -1,22 +1,33 @@
 /**
- * POC activation: Sueca Pixi table only when explicitly requested.
- * Default: DOM. Phaser remains on ?renderer=phaser.
+ * ARCHIVED Pixi Sueca POC — not a supported product renderer.
  *
- * Activate: `?renderer=pixi` (Sueca solo). Also accepts REACT_APP_TABLE_RENDERER=pixi.
+ * Kept in-repo for technical comparison only. Do not treat as active option.
+ *
+ * Activate (dev/archive only):
+ *   `?renderer=pixi-archive` (Sueca solo)
+ *   or `REACT_APP_TABLE_RENDERER=pixi-archive`
+ *
+ * Plain `?renderer=pixi` is intentionally ignored.
+ * See `docs/plan/RENDERER_DECISION_2026.md`.
  */
-export function isPixiTableRendererRequested(): boolean {
+export function isPixiArchiveRendererRequested(): boolean {
   if (typeof window !== 'undefined') {
     try {
       const param = new URLSearchParams(window.location.search).get('renderer');
-      if (param && param.toLowerCase() === 'pixi') return true;
+      if (param && param.toLowerCase() === 'pixi-archive') return true;
     } catch {
       /* ignore */
     }
   }
-  return process.env.REACT_APP_TABLE_RENDERER === 'pixi';
+  return process.env.REACT_APP_TABLE_RENDERER === 'pixi-archive';
 }
 
-/** POC is Sueca-only; never enable for other variants even with the flag. */
+/** @deprecated Use isPixiArchiveRendererRequested — plain pixi flag is retired. */
+export function isPixiTableRendererRequested(): boolean {
+  return isPixiArchiveRendererRequested();
+}
+
+/** Archived POC is Sueca-only; never enable for other variants. */
 export function shouldUseSuecaPixiTable(variant: string): boolean {
-  return variant === 'sueca' && isPixiTableRendererRequested();
+  return variant === 'sueca' && isPixiArchiveRendererRequested();
 }

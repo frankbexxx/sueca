@@ -6,7 +6,7 @@ import {
   playerIndexToCompass
 } from './pixiTableLayout';
 import { cardTextureKey, mapTableModelToPixiView } from './mapTableModelToPixiView';
-import { shouldUseSuecaPixiTable } from './rendererFlag';
+import { shouldUseSuecaPixiTable, isPixiArchiveRendererRequested } from './rendererFlag';
 import type { TableRenderModel } from '../../table/tableRenderModel';
 import type { Card } from '../../types/game';
 import { resolveGameBoardFlow } from '../../utils/gameFlowOrchestrator';
@@ -149,10 +149,12 @@ describe('mapTableModelToPixiView', () => {
 });
 
 describe('rendererFlag', () => {
-  it('only enables for Sueca when flag is requested', () => {
+  it('only enables for Sueca when archive flag is requested', () => {
     expect(shouldUseSuecaPixiTable('spades')).toBe(false);
     expect(shouldUseSuecaPixiTable('hearts')).toBe(false);
     expect(shouldUseSuecaPixiTable('king')).toBe(false);
+    expect(shouldUseSuecaPixiTable('sueca')).toBe(false);
+    expect(isPixiArchiveRendererRequested()).toBe(false);
   });
 });
 

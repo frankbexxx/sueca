@@ -16,13 +16,13 @@ Ordem principal:
 | **A** | Estabilização funcional + C-lite (adapters / fonte de verdade, só o necessário) |
 | **B** | UX funcional baseline |
 | **C** | Separação engine / orchestration / React |
-| **E** | POC Phaser Sueca (hipótese, não decisão fechada) |
+| **E** | POC Phaser Sueca — **E1 VALIDADO**; Pixi comparison **CONCLUÍDA**; renderer escolhido: **PHASER**; próximo: **E2 Phaser** |
 | **F** | Testes web + Android real |
-| **G** | Decisão de renderer (Phaser / Pixi / DOM / híbrido) |
+| **G** | Decisão de renderer — **antecipada** (ver `RENDERER_DECISION_2026.md`); Phaser seleccionado |
 
 **Fase D** (isolamento multiplayer / storage / session): **pós-POC por defeito**. Só sobe de prioridade se o POC exigir, houver bug concreto, ou multiplayer voltar a ser prioridade. **Não bloqueia E1.**
 
-Phaser é **POC futuro / hipótese medida**. PixiJS, DOM melhorado ou híbrido permanecem opções até ao Checkpoint 8. Godot só com evidência de insuficiência em Android real.
+Phaser E1 está **validado** e foi **escolhido** para evolução (comparação Pixi concluída — POC Pixi arquivado). Detalhe: `docs/plan/RENDERER_DECISION_2026.md`. Godot só com evidência de insuficiência em Android real.
 
 **Primeira etapa funcional:** **A1** (capote Sueca).  
 A alteração `.gitignore` (`desktop.ini`, `folderico*.ico`) entra no commit deste roadmap — **não** existe etapa A0.
@@ -269,17 +269,19 @@ Game Engine TS → State / Orchestration → Renderer → React Shell
 
 ### FASE E — POC Phaser (Sueca)
 
-#### E1 — MUST
+#### E1 — MUST — **VALIDADO**
 - **Objectivo:** POC isolado Sueca (flag/rota/pasta dedicada).  
 - **Incluir:** 4 jogadores, mãos, deal, highlight legal, play, animação carta→mesa, win/recolha vaza, turno, trunfo, pause, round-end → React.  
 - **Excluir:** AI, MP, King/Hearts/Spades, themes, ads, efeitos complexos.  
 - **Deps:** Checkpoint 5 (+ A1, A2; A13 se dealing no POC).  
 - **Risco:** alto  
-- **Commit:** `feat(poc): add Phaser Sueca table prototype`
+- **Commits:** `58c4594` `poc(renderer): add phaser sueca table`; `86405e6` `test(renderer): cover phaser model transitions`
 
-Phaser = **hipótese**. Se o POC falhar critérios, G pode escolher Pixi/DOM/híbrido.
+**Comparação Pixi:** concluída (`28e75cd`); Pixi arquivado — ver `RENDERER_DECISION_2026.md`.  
+**Renderer escolhido:** **PHASER**.  
+**Próximo passo:** **E2 Phaser** (aprofundar Sueca; não expandir ainda a outras variantes).
 
-**CHECKPOINT 6:** E1 E2E solo.
+**CHECKPOINT 6:** E1 E2E solo — **atingido**.
 
 ---
 
@@ -296,10 +298,12 @@ Phaser = **hipótese**. Se o POC falhar critérios, G pode escolher Pixi/DOM/hí
 
 ### FASE G — Decisão de renderer
 
-Decidir: Phaser | PixiJS | DOM melhorado | híbrido.  
+**Estado:** decisão escrita antecipada em `docs/plan/RENDERER_DECISION_2026.md` após POC Phaser + POC Pixi equivalentes.  
+**Escolha:** Phaser. Pixi arquivado como referência. DOM permanece default até E2+ promover canvas.
+
 Godot só com falha documentada em F.
 
-**CHECKPOINT 8:** decisão escrita.
+**CHECKPOINT 8:** decisão escrita — **atingido** (documento acima).
 
 ---
 

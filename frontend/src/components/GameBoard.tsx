@@ -1038,6 +1038,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const usePhaserTable =
     shouldUseSuecaPhaserTable(gameVariant) && !isMultiplayerActive;
+  // Pixi Sueca POC is archived — only ?renderer=pixi-archive (see RENDERER_DECISION_2026.md).
   const usePixiTable =
     !usePhaserTable &&
     shouldUseSuecaPixiTable(gameVariant) &&
