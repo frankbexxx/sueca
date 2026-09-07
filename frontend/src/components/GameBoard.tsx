@@ -334,7 +334,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const {
     heartsPassActive,
     spadesBidActive,
-    festaSheetActive,
     waitingForEarlyEnd,
     flowOverlayActive
   } = boardFlow;
@@ -1021,7 +1020,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     ]
   );
 
-  const showTeamLabels = tableModel.chrome.showTeamLabels;
   const isTeamTableLayout = tableModel.chrome.isTeamTableLayout;
 
   const boardClassName = ['game-board', ...tableModel.chrome.boardModifiers]
