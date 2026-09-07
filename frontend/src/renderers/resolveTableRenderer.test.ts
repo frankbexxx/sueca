@@ -84,15 +84,18 @@ describe('resolveTableRenderer', () => {
     });
   });
 
-  describe('King flag-only Phaser', () => {
-    it('defaults to DOM', () => {
-      expect(resolveTableRenderer('king', { override: null })).toBe('dom');
-      expect(resolveTableRenderer('king', { search: '', envOverride: null })).toBe('dom');
+  describe('King', () => {
+    it('defaults to phaser with no override', () => {
+      expect(resolveTableRenderer('king', { override: null })).toBe('phaser');
+      expect(resolveTableRenderer('king', { search: '', envOverride: null })).toBe(
+        'phaser'
+      );
     });
 
-    it('enables Phaser only with explicit override', () => {
-      expect(resolveTableRenderer('king', { search: '?renderer=phaser' })).toBe('phaser');
-      expect(resolveTableRenderer('king', { envOverride: 'phaser' })).toBe('phaser');
+    it('forces phaser with ?renderer=phaser', () => {
+      expect(
+        resolveTableRenderer('king', { search: '?renderer=phaser', envOverride: 'dom' })
+      ).toBe('phaser');
     });
 
     it('forces DOM with ?renderer=dom', () => {

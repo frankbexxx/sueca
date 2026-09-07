@@ -159,8 +159,9 @@ function mapKing(
 }
 
 describe('King Phaser selector', () => {
-  it('defaults DOM; enables Phaser with ?renderer=phaser', () => {
-    expect(resolveTableRenderer('king', { override: null })).toBe('dom');
+  it('defaults Phaser; forces DOM with ?renderer=dom', () => {
+    expect(resolveTableRenderer('king', { override: null })).toBe('phaser');
+    expect(resolveTableRenderer('king', { search: '?renderer=dom' })).toBe('dom');
     expect(resolveTableRenderer('king', { search: '?renderer=phaser' })).toBe(
       'phaser'
     );

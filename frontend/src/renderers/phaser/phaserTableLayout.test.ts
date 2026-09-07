@@ -233,9 +233,12 @@ describe('phaserTheme', () => {
 });
 
 describe('rendererFlag', () => {
-  it('never enables Phaser for non-Sueca variants', () => {
-    expect(shouldUseSuecaPhaserTable('spades')).toBe(false);
-    expect(shouldUseSuecaPhaserTable('hearts')).toBe(false);
+  it('enables Phaser by default for capable variants; DOM for unknown', () => {
+    expect(shouldUseSuecaPhaserTable('sueca')).toBe(true);
+    expect(shouldUseSuecaPhaserTable('spades')).toBe(true);
+    expect(shouldUseSuecaPhaserTable('hearts')).toBe(true);
+    expect(shouldUseSuecaPhaserTable('king')).toBe(true);
+    expect(shouldUseSuecaPhaserTable('bridge')).toBe(false);
   });
 });
 
