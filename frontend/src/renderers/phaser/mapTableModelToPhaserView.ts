@@ -1,6 +1,6 @@
 /**
  * Pure mapping: TableRenderModel → Phaser view entities (no Phaser runtime).
- * Shared by Sueca + Spades Phaser tables.
+ * Shared by Sueca / Spades / Hearts Phaser tables.
  */
 
 import type { Card } from '../../types/game';
@@ -68,13 +68,17 @@ export interface PhaserTableViewModel {
   trumpSuit: string | null;
   trumpLabel: string;
   trumpSymbol: string;
-  /** When true, trump badge uses accent (e.g. Spades broken). */
+  /** When true, trump badge uses accent (e.g. Spades/Hearts broken). */
   bannerAccent: boolean;
   waitingForTrickEnd: boolean;
   interactionEnabled: boolean;
+  /** Hearts pass: tap toggles selection; no trick drag/play. */
+  passSelectionEnabled: boolean;
   localIsActive: boolean;
   spadesBidPhase: boolean;
   spadesBroken: boolean;
+  heartsPassPhase: boolean;
+  heartsBroken: boolean;
 }
 
 export function cardTextureKey(card: Card): string {
@@ -139,8 +143,17 @@ export function mapTableModelToPhaserView(options: {
   const layout = buildPhaserTableLayout(width, height);
   const local = model.localPlayerIndex;
   const spadesUi = model.variantUi.spades;
+  const heartsUi = model.variantUi.hearts;
   const spadesBidPhase = model.status.spadesBidActive || model.chrome.spadesBidPhase;
+  const heartsPassPhase = model.status.heartsPassActive;
   const spadesBroken = Boolean(spadesUi?.spadesBroken);
+  const heartsBroken = Boolean(heartsUi?.heartsBroken);
+  const passIndices = model.variantUi.heartsPassIndices ?? [];
+
+  const passSelectionEnabled =
+    heartsPassPhase &&
+    !model.status.isPaused &&
+    !model.status.isGameOver;
 
   const interactionEnabled =
     !model.status.isPaused &&
@@ -149,8 +162,10 @@ export function mapTableModelToPhaserView(options: {
     !model.status.waitingForRoundStart &&
     !model.status.waitingForRoundEnd &&
     !model.status.waitingForGameStart &&
+    !model.status.waitingForEarlyEnd &&
     !model.chrome.handReadOnly &&
-    !spadesBidPhase;
+    !spadesBidPhase &&
+    !heartsPassPhase;
 
   const localIsActive =
     interactionEnabled && model.activeSeat === model.localPlayerIndex;
@@ -161,8 +176,13 @@ export function mapTableModelToPhaserView(options: {
       ? Boolean(isLocalCardPlayable(cardIndex))
       : true;
     let visualState: PhaserCardVisualState = 'inactive';
-    if (localIsActive) {
+    let selected = false;
+    if (passSelectionEnabled) {
+      visualState = 'legal';
+      selected = passIndices.includes(cardIndex);
+    } else if (localIsActive) {
       visualState = playableHint ? 'legal' : 'illegal';
+      selected = selectedCardIndex === cardIndex;
     } else {
       visualState = 'inactive';
     }
@@ -176,8 +196,8 @@ export function mapTableModelToPhaserView(options: {
         rotationDeg: 0,
         depth: 20
       },
-      selected: selectedCardIndex === cardIndex && localIsActive,
-      playableHint,
+      selected,
+      playableHint: passSelectionEnabled ? true : playableHint,
       visualState,
       canDrag: localIsActive && playableHint
     };
@@ -191,6 +211,7 @@ export function mapTableModelToPhaserView(options: {
       !model.status.isPaused &&
       !model.status.isGameOver &&
       !model.status.waitingForTrickEnd &&
+      !heartsPassPhase &&
       (interactionEnabled || spadesBidPhase);
 
     let bidLabel: string | null = null;
@@ -246,6 +267,9 @@ export function mapTableModelToPhaserView(options: {
   if (model.variant === 'spades') {
     trumpLabel = spadesBroken ? '♠ Quebradas' : '♠ Fechadas';
     bannerAccent = spadesBroken;
+  } else if (model.variant === 'hearts') {
+    trumpLabel = heartsBroken ? '♥ Quebradas' : '♥ Fechadas';
+    bannerAccent = heartsBroken;
   } else {
     trumpLabel = trumpSuit ? `Trunfo ${trumpSymbol}` : 'Trunfo —';
   }
@@ -264,8 +288,11 @@ export function mapTableModelToPhaserView(options: {
     bannerAccent,
     waitingForTrickEnd: model.status.waitingForTrickEnd,
     interactionEnabled,
+    passSelectionEnabled,
     localIsActive,
     spadesBidPhase,
-    spadesBroken
+    spadesBroken,
+    heartsPassPhase,
+    heartsBroken
   };
 }

@@ -7,6 +7,7 @@ import type { GameBoardFlowView } from '../utils/gameFlowOrchestrator';
 import { isActiveTurnSeat } from '../utils/playerSeatHelpers';
 import type { KingPtVariantState } from '../models/games/KingPtGame';
 import type { SpadesVariantState } from '../models/games/SpadesGame';
+import type { HeartsVariantState } from '../models/games/HeartsGame';
 import type {
   TableRenderModel,
   TableSeatRenderModel,
@@ -25,6 +26,7 @@ export interface BuildTableRenderModelInput {
   /** King PT snapshot when applicable; otherwise null/undefined. */
   kingPt?: KingPtVariantState | null;
   spadesState?: SpadesVariantState | null;
+  heartsState?: HeartsVariantState | null;
   heartsPassIndices?: number[];
 }
 
@@ -40,6 +42,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     auctionLocale = 'pt',
     kingPt = null,
     spadesState = null,
+    heartsState = null,
     heartsPassIndices
   } = input;
 
@@ -50,6 +53,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     flowOverlayActive,
     showTrickContinueCta,
     showTrickContinueChrome,
+    waitingForEarlyEnd,
     kind: flowKind
   } = boardFlow;
 
@@ -123,6 +127,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
       waitingForRoundStart: gameState.waitingForRoundStart,
       waitingForRoundEnd: gameState.waitingForRoundEnd,
       waitingForGameStart: gameState.waitingForGameStart,
+      waitingForEarlyEnd,
       heartsPassActive,
       spadesBidActive,
       festaSheetActive,
@@ -153,6 +158,14 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
             playerBidTypes: [...spadesState.playerBidTypes],
             team1Bid: spadesState.team1Bid,
             team2Bid: spadesState.team2Bid
+          }
+        : null,
+      hearts: heartsState
+        ? {
+            heartsBroken: heartsState.heartsBroken,
+            waitingForPass: heartsState.waitingForPass,
+            passDirection: heartsState.passDirection,
+            queenSpadesTaken: heartsState.queenSpadesTaken
           }
         : null,
       heartsPassIndices: heartsPassActive ? heartsPassIndices : undefined

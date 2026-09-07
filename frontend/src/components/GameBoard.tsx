@@ -719,11 +719,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   /**
-   * Phaser POC: single tap plays a legal card (engine still validates).
-   * Keeps double-tap confirm on the DOM hand.
+   * Phaser: single tap plays a legal card (engine still validates).
+   * During Hearts pass, tap toggles pass selection (same as DOM hand).
    */
   const handlePhaserCardClick = (cardIndex: number) => {
     if (!gameAdapter) return;
+
+    if (heartsCtrl?.togglePassCardIfPassing(gameState, cardIndex, localPlayerIndex)) {
+      setGameState(gameAdapter.getCurrentState());
+      return;
+    }
+
     const isLocalTurn = isMultiplayer
       ? gameState.currentPlayerIndex === multiplayerPlayerIndex
       : gameState.currentPlayerIndex === 0;
@@ -734,7 +740,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       gameState.waitingForTrickEnd ||
       gameState.waitingForRoundStart ||
       gameState.waitingForRoundEnd ||
-      gameState.waitingForGameStart
+      gameState.waitingForGameStart ||
+      waitingForEarlyEnd
     ) {
       return;
     }
@@ -1005,6 +1012,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         auctionLocale: language === 'pt' ? 'pt' : 'en',
         kingPt: kingPtState,
         spadesState,
+        heartsState,
         heartsPassIndices: heartsState?.humanPassIndices
       }),
     [
@@ -1018,7 +1026,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       language,
       kingPtState,
       spadesState,
-      heartsState?.humanPassIndices
+      heartsState
     ]
   );
 

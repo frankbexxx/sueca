@@ -8,8 +8,8 @@
  *
  * Defaults:
  * - Sueca → Phaser
- * - Spades → DOM (Phaser only with explicit override)
- * - Hearts / King → DOM (Phaser ignored)
+ * - Spades / Hearts → DOM (Phaser only with explicit override)
+ * - King → DOM (Phaser ignored)
  */
 
 export type TableRendererId = 'phaser' | 'dom';
@@ -17,7 +17,7 @@ export type TableRendererId = 'phaser' | 'dom';
 /** Explicit override from query or env; null = use variant default. */
 export type RendererOverride = 'phaser' | 'dom' | null;
 
-const PHASER_CAPABLE_VARIANTS = new Set(['sueca', 'spades']);
+const PHASER_CAPABLE_VARIANTS = new Set(['sueca', 'spades', 'hearts']);
 
 export function parseRendererOverrideFromQuery(
   search?: string | null
@@ -83,7 +83,7 @@ export function resolveTableRenderer(
     return 'dom';
   }
 
-  if (variant === 'spades') {
+  if (variant === 'spades' || variant === 'hearts') {
     if (override === 'phaser') return 'phaser';
     return 'dom';
   }

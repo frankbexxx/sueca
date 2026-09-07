@@ -19,7 +19,7 @@ Ordem principal:
 | **E** | POC Phaser Sueca — **E1/E2 VALIDADO**; Pixi arquivado; **PHASER** escolhido |
 | **F** | Android — emulator + real device **VALIDADO** |
 | **G** | **Phaser default Sueca** + DOM fallback (`docs/plan/PHASER_DEFAULT_ROLLOUT_2026.md`) |
-| **H** | Expansão Phaser — **H1 Spades** (flag only; DOM default) |
+| **H** | Expansão Phaser — **H1 Spades** (fechado) · **H2 Hearts** (flag only; DOM default) |
 
 **Fase D** (isolamento multiplayer / storage / session): **pós-POC por defeito**. Só sobe de prioridade se o POC exigir, houver bug concreto, ou multiplayer voltar a ser prioridade. **Não bloqueia E1.**
 

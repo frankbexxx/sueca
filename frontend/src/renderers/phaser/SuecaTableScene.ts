@@ -328,10 +328,18 @@ export class SuecaTableScene extends Phaser.Scene {
   }
 
   private onHandPointerDown(cardId: string, pointer: Phaser.Input.Pointer): void {
-    if (!this.view?.interactionEnabled) return;
+    if (!this.view) return;
     if (Date.now() < this.clickLockUntil) return;
     const entity = this.view.localHand.find((h) => h.card.id === cardId);
     if (!entity) return;
+
+    // Hearts pass: tap toggles selection via shell — no trick drag.
+    if (this.view.passSelectionEnabled) {
+      this.emitPlay(entity.cardIndex);
+      return;
+    }
+
+    if (!this.view.interactionEnabled) return;
 
     if (!entity.canDrag) {
       if (entity.visualState === 'illegal') return;
@@ -590,9 +598,14 @@ export class SuecaTableScene extends Phaser.Scene {
       });
     });
   }
-  /** Dev helper: play local hand card by index. */
+  /** Dev helper: play local hand card by index (or toggle pass selection). */
   debugTapCardIndex(cardIndex: number): boolean {
-    if (!this.view?.localIsActive) return false;
+    if (!this.view) return false;
+    if (this.view.passSelectionEnabled) {
+      this.emitPlay(cardIndex);
+      return true;
+    }
+    if (!this.view.localIsActive) return false;
     const entity = this.view.localHand.find((h) => h.cardIndex === cardIndex);
     if (!entity?.canDrag) return false;
     this.emitPlay(cardIndex);
@@ -608,6 +621,9 @@ export class SuecaTableScene extends Phaser.Scene {
     aspect: string;
     spadesBidPhase?: boolean;
     spadesBroken?: boolean;
+    heartsPassPhase?: boolean;
+    heartsBroken?: boolean;
+    passSelectionEnabled?: boolean;
   } | null {
     if (!this.view) return null;
     return {
@@ -618,7 +634,10 @@ export class SuecaTableScene extends Phaser.Scene {
       trumpLabel: this.view.trumpLabel,
       aspect: this.view.layout.aspect,
       spadesBidPhase: this.view.spadesBidPhase,
-      spadesBroken: this.view.spadesBroken
+      spadesBroken: this.view.spadesBroken,
+      heartsPassPhase: this.view.heartsPassPhase,
+      heartsBroken: this.view.heartsBroken,
+      passSelectionEnabled: this.view.passSelectionEnabled
     };
   }
 }

@@ -56,6 +56,8 @@ export interface TableStatusRenderModel {
   waitingForRoundStart: boolean;
   waitingForRoundEnd: boolean;
   waitingForGameStart: boolean;
+  /** Hearts / King early-end offer — React owns the modal. */
+  waitingForEarlyEnd: boolean;
   heartsPassActive: boolean;
   spadesBidActive: boolean;
   festaSheetActive: boolean;
@@ -84,6 +86,17 @@ export interface TableVariantUiRenderModel {
     playerBidTypes: string[];
     team1Bid: number;
     team2Bid: number;
+  } | null;
+  /**
+   * Hearts presentation slice for table renderers.
+   * Pass confirm / early-end / moon / Round End stay on React modals.
+   * Pass card indices use heartsPassIndices (selection chrome only).
+   */
+  hearts?: {
+    heartsBroken: boolean;
+    waitingForPass: boolean;
+    passDirection: string;
+    queenSpadesTaken: boolean;
   } | null;
   heartsPassIndices?: number[];
 }
