@@ -16,9 +16,9 @@ Ordem principal:
 | **A** | Estabilização funcional + C-lite (adapters / fonte de verdade, só o necessário) |
 | **B** | UX funcional baseline |
 | **C** | Separação engine / orchestration / React |
-| **E** | POC Phaser Sueca — **E1 VALIDADO**; Pixi comparison **CONCLUÍDA**; renderer escolhido: **PHASER**; **E2** mesa production-candidate (**`?renderer=phaser`**; DOM default) |
-| **F** | Testes web + Android real |
-| **G** | Decisão de renderer — **antecipada** (ver `RENDERER_DECISION_2026.md`); Phaser seleccionado |
+| **E** | POC Phaser Sueca — **E1/E2 VALIDADO**; Pixi arquivado; **PHASER** escolhido |
+| **F** | Android — emulator + real device **VALIDADO** |
+| **G** | **Phaser default Sueca** + DOM fallback (`docs/plan/PHASER_DEFAULT_ROLLOUT_2026.md`) |
 
 **Fase D** (isolamento multiplayer / storage / session): **pós-POC por defeito**. Só sobe de prioridade se o POC exigir, houver bug concreto, ou multiplayer voltar a ser prioridade. **Não bloqueia E1.**
 
@@ -297,21 +297,19 @@ Game Engine TS → State / Orchestration → Renderer → React Shell
 | ID | Pri | Scope | Estado |
 |----|-----|-------|--------|
 | F1 | MUST | Desktop + browser mobile | E2 web — feito |
-| F2 | MUST | Capacitor Android mid-range; portrait/landscape; touch; resize; lifecycle; pause; FPS animação | **Emulator VALIDADO** (`docs/plan/PHASER_ANDROID_VALIDATION_2026.md`); **device real pendente** |
+| F2 | MUST | Capacitor Android mid-range; portrait/landscape; touch; resize; lifecycle; pause; FPS animação | **Emulator + real device VALIDADO** (`docs/plan/PHASER_ANDROID_VALIDATION_2026.md`) |
 
-**CHECKPOINT 7:** relatório F — **parcial** (emulator); falta device real.
+**CHECKPOINT 7:** relatório F — **atingido**.
 
 ---
 
-### FASE G — Decisão de renderer
+### FASE G — Phaser default Sueca
 
-**Estado:** decisão escrita antecipada em `docs/plan/RENDERER_DECISION_2026.md` após POC Phaser + POC Pixi equivalentes.  
-**Escolha:** Phaser. Pixi arquivado como referência. DOM permanece default até E2+ promover canvas.
+**Estado:** Phaser é **default** para Sueca solo; DOM é fallback e `?renderer=dom`.  
+**Doc:** `docs/plan/PHASER_DEFAULT_ROLLOUT_2026.md` (+ decisão `RENDERER_DECISION_2026.md`).  
+Spades / Hearts / King permanecem DOM.
 
-Godot só com falha documentada em F.
-
-**CHECKPOINT 8:** decisão escrita — **atingido** (documento acima).
-
+**CHECKPOINT 8:** decisão escrita — **atingido**; rollout default Sueca — **em curso / validação G**.
 ---
 
 ## 4. Tabela master
