@@ -16,7 +16,7 @@ Ordem principal:
 | **A** | Estabilização funcional + C-lite (adapters / fonte de verdade, só o necessário) |
 | **B** | UX funcional baseline |
 | **C** | Separação engine / orchestration / React |
-| **E** | POC Phaser Sueca — **E1 VALIDADO**; Pixi comparison **CONCLUÍDA**; renderer escolhido: **PHASER**; próximo: **E2 Phaser** |
+| **E** | POC Phaser Sueca — **E1 VALIDADO**; Pixi comparison **CONCLUÍDA**; renderer escolhido: **PHASER**; **E2** mesa production-candidate (**`?renderer=phaser`**; DOM default) |
 | **F** | Testes web + Android real |
 | **G** | Decisão de renderer — **antecipada** (ver `RENDERER_DECISION_2026.md`); Phaser seleccionado |
 
@@ -279,7 +279,14 @@ Game Engine TS → State / Orchestration → Renderer → React Shell
 
 **Comparação Pixi:** concluída (`28e75cd`); Pixi arquivado — ver `RENDERER_DECISION_2026.md`.  
 **Renderer escolhido:** **PHASER**.  
-**Próximo passo:** **E2 Phaser** (aprofundar Sueca; não expandir ainda a outras variantes).
+
+#### E2 — MUST — **VALIDADO (flag only)**
+- **Objectivo:** evoluir Phaser Sueca de POC para candidato de mesa (UX, sync, mobile, theme tokens básicos).  
+- **Incluir:** seats/hand fan/trick/active/trump, legal/illegal/inactive, drag simples, generation guards, resize portrait/landscape, testes layout.  
+- **Excluir:** default Phaser, outras variantes, temas completos, AI/MP, sons, partículas.  
+- **Estado:** DOM permanece default; Phaser só com `?renderer=phaser`.  
+
+**Próximo passo:** F (web + Android) / endurecer default-readiness; **não** promover Phaser a default ainda.
 
 **CHECKPOINT 6:** E1 E2E solo — **atingido**.
 

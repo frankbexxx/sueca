@@ -11,26 +11,36 @@ import {
   layoutTrickSlot,
   playerIndexToCompass,
   PhaserCompass,
+  PhaserHandSlot,
   PhaserPoint,
   PhaserTableLayout
 } from './phaserTableLayout';
+
+export type PhaserCardVisualState = 'legal' | 'illegal' | 'inactive';
 
 export interface PhaserHandCardEntity {
   cardIndex: number;
   card: Card;
   textureKey: string;
-  position: PhaserPoint;
+  position: PhaserHandSlot;
   selected: boolean;
   playableHint: boolean;
+  visualState: PhaserCardVisualState;
+  canDrag: boolean;
 }
 
-export interface PhaserOpponentEntity {
+export interface PhaserSeatEntity {
   seatIndex: number;
   compass: PhaserCompass;
   name: string;
+  teamLabel: string | null;
+  handCount: number;
+  isLocal: boolean;
   isActive: boolean;
   isDealer: boolean;
+  showActiveHighlight: boolean;
   backPositions: PhaserPoint[];
+  labelPosition: PhaserPoint;
 }
 
 export interface PhaserTrickCardEntity {
@@ -39,24 +49,54 @@ export interface PhaserTrickCardEntity {
   playerIndex: number;
   compass: PhaserCompass;
   position: PhaserPoint;
+  /** Where the card should appear to fly from (seat or hand). */
+  origin: PhaserPoint;
   orderIndex: number;
 }
 
 export interface PhaserTableViewModel {
   layout: PhaserTableLayout;
   localHand: PhaserHandCardEntity[];
-  opponents: PhaserOpponentEntity[];
+  seats: PhaserSeatEntity[];
+  opponents: PhaserSeatEntity[];
   trick: PhaserTrickCardEntity[];
   activeSeat: number | null;
   dealerSeat: number;
   trumpSuit: string | null;
   trumpLabel: string;
+  trumpSymbol: string;
   waitingForTrickEnd: boolean;
   interactionEnabled: boolean;
+  localIsActive: boolean;
 }
 
 export function cardTextureKey(card: Card): string {
   return `face:${card.rank}_${card.suit}`;
+}
+
+export function trumpSymbolForSuit(suit: string | null): string {
+  if (suit === 'clubs') return '♣';
+  if (suit === 'diamonds') return '♦';
+  if (suit === 'hearts') return '♥';
+  if (suit === 'spades') return '♠';
+  return '—';
+}
+
+function seatLabelPosition(
+  compass: PhaserCompass,
+  layout: PhaserTableLayout
+): PhaserPoint {
+  const anchor = layout.seatAnchor[compass];
+  if (compass === 'south') {
+    return { x: anchor.x, y: anchor.y - layout.cardHeight * 0.55 };
+  }
+  if (compass === 'north') {
+    return { x: anchor.x, y: Math.max(14, anchor.y - 22) };
+  }
+  return {
+    x: anchor.x,
+    y: anchor.y - layout.opponentCardHeight * 0.85
+  };
 }
 
 export function mapTableModelToPhaserView(options: {
@@ -65,52 +105,18 @@ export function mapTableModelToPhaserView(options: {
   height: number;
   selectedCardIndex?: number | null;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
+  getTeamName?: (team: 1 | 2) => string;
 }): PhaserTableViewModel {
-  const { model, width, height, selectedCardIndex = null, isLocalCardPlayable } =
-    options;
+  const {
+    model,
+    width,
+    height,
+    selectedCardIndex = null,
+    isLocalCardPlayable,
+    getTeamName
+  } = options;
   const layout = buildPhaserTableLayout(width, height);
   const local = model.localPlayerIndex;
-
-  const handPositions = layoutLocalHandPositions(model.localHand.length, layout);
-  const localHand: PhaserHandCardEntity[] = model.localHand.map((card, cardIndex) => ({
-    cardIndex,
-    card,
-    textureKey: cardTextureKey(card),
-    position: handPositions[cardIndex] ?? { x: layout.width / 2, y: layout.handY },
-    selected: selectedCardIndex === cardIndex,
-    playableHint: isLocalCardPlayable ? Boolean(isLocalCardPlayable(cardIndex)) : true
-  }));
-
-  const opponents: PhaserOpponentEntity[] = model.seats
-    .filter((seat) => !seat.isLocal)
-    .map((seat) => {
-      const compass = playerIndexToCompass(seat.index, local);
-      return {
-        seatIndex: seat.index,
-        compass,
-        name: seat.name,
-        isActive: seat.isActive,
-        isDealer: seat.isDealer,
-        backPositions: layoutOpponentBackPositions(seat.handCount, compass, layout)
-      };
-    });
-
-  const trick: PhaserTrickCardEntity[] = model.currentTrick.map((entry) => {
-    const compass = playerIndexToCompass(entry.playerIndex, local);
-    return {
-      card: entry.card,
-      textureKey: cardTextureKey(entry.card),
-      playerIndex: entry.playerIndex,
-      compass,
-      position: layoutTrickSlot(compass, layout),
-      orderIndex: entry.orderIndex
-    };
-  });
-
-  const trumpSuit = model.trumpSuit;
-  const trumpLabel = trumpSuit
-    ? `Trunfo: ${trumpSuit === 'clubs' ? '♣' : trumpSuit === 'diamonds' ? '♦' : trumpSuit === 'hearts' ? '♥' : '♠'}`
-    : 'Trunfo: —';
 
   const interactionEnabled =
     !model.status.isPaused &&
@@ -121,16 +127,99 @@ export function mapTableModelToPhaserView(options: {
     !model.status.waitingForGameStart &&
     !model.chrome.handReadOnly;
 
+  const localIsActive =
+    interactionEnabled && model.activeSeat === model.localPlayerIndex;
+
+  const handSlots = layoutLocalHandPositions(model.localHand.length, layout);
+  const localHand: PhaserHandCardEntity[] = model.localHand.map((card, cardIndex) => {
+    const playableHint = isLocalCardPlayable
+      ? Boolean(isLocalCardPlayable(cardIndex))
+      : true;
+    let visualState: PhaserCardVisualState = 'inactive';
+    if (localIsActive) {
+      visualState = playableHint ? 'legal' : 'illegal';
+    } else if (!interactionEnabled) {
+      visualState = 'inactive';
+    } else {
+      visualState = 'inactive';
+    }
+    return {
+      cardIndex,
+      card,
+      textureKey: cardTextureKey(card),
+      position: handSlots[cardIndex] ?? {
+        x: layout.width / 2,
+        y: layout.handY,
+        rotationDeg: 0,
+        depth: 20
+      },
+      selected: selectedCardIndex === cardIndex && localIsActive,
+      playableHint,
+      visualState,
+      canDrag: localIsActive && playableHint
+    };
+  });
+
+  const showTeam = model.chrome.showTeamLabels;
+  const seats: PhaserSeatEntity[] = model.seats.map((seat) => {
+    const compass = playerIndexToCompass(seat.index, local);
+    const showActiveHighlight =
+      seat.isActive &&
+      interactionEnabled &&
+      !model.status.waitingForTrickEnd;
+    return {
+      seatIndex: seat.index,
+      compass,
+      name: seat.name,
+      teamLabel: showTeam && getTeamName ? getTeamName(seat.team) : null,
+      handCount: seat.handCount,
+      isLocal: seat.isLocal,
+      isActive: seat.isActive,
+      isDealer: seat.isDealer,
+      showActiveHighlight,
+      backPositions: seat.isLocal
+        ? []
+        : layoutOpponentBackPositions(seat.handCount, compass, layout),
+      labelPosition: seatLabelPosition(compass, layout)
+    };
+  });
+
+  const opponents = seats.filter((s) => !s.isLocal);
+
+  const trick: PhaserTrickCardEntity[] = model.currentTrick.map((entry) => {
+    const compass = playerIndexToCompass(entry.playerIndex, local);
+    const origin =
+      entry.playerIndex === local
+        ? { x: layout.width / 2, y: layout.handY }
+        : { ...layout.seatAnchor[compass] };
+    return {
+      card: entry.card,
+      textureKey: cardTextureKey(entry.card),
+      playerIndex: entry.playerIndex,
+      compass,
+      position: layoutTrickSlot(compass, layout),
+      origin,
+      orderIndex: entry.orderIndex
+    };
+  });
+
+  const trumpSuit = model.trumpSuit;
+  const trumpSymbol = trumpSymbolForSuit(trumpSuit);
+  const trumpLabel = trumpSuit ? `Trunfo ${trumpSymbol}` : 'Trunfo —';
+
   return {
     layout,
     localHand,
+    seats,
     opponents,
     trick,
     activeSeat: model.activeSeat,
     dealerSeat: model.dealerSeat,
     trumpSuit,
     trumpLabel,
+    trumpSymbol,
     waitingForTrickEnd: model.status.waitingForTrickEnd,
-    interactionEnabled
+    interactionEnabled,
+    localIsActive
   };
 }

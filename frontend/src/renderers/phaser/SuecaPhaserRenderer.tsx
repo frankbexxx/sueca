@@ -1,5 +1,5 @@
 /**
- * React host for the Sueca Phaser table POC.
+ * React host for the Sueca Phaser table (E2 production candidate).
  * Consumes TableRenderModel + TableRendererEvents (C5 boundary).
  */
 
@@ -11,6 +11,7 @@ import type {
   TableRendererEvents
 } from '../../table/tableRenderModel';
 import { SuecaTableScene, SUECA_TABLE_SCENE_KEY } from './SuecaTableScene';
+import { resolvePhaserThemeFromDom } from './phaserTheme';
 import './SuecaPhaserRenderer.css';
 
 export interface SuecaPhaserRendererProps {
@@ -26,6 +27,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   model,
   events,
   getCardImage,
+  getTeamName,
   isLocalCardPlayable,
   selectedCardIndex = null
 }) => {
@@ -36,33 +38,37 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   const playableRef = useRef(isLocalCardPlayable);
   const selectedRef = useRef(selectedCardIndex);
   const getCardImageRef = useRef(getCardImage);
+  const getTeamNameRef = useRef(getTeamName);
 
   eventsRef.current = events;
   playableRef.current = isLocalCardPlayable;
   selectedRef.current = selectedCardIndex;
   getCardImageRef.current = getCardImage;
+  getTeamNameRef.current = getTeamName;
+
+  const buildHost = () => ({
+    onLocalCardClick: (cardIndex: number) => {
+      eventsRef.current?.onLocalCardClick?.(cardIndex);
+    },
+    getCardImage: (card: Card) => getCardImageRef.current(card),
+    getTeamName: (team: 1 | 2) => getTeamNameRef.current(team),
+    isLocalCardPlayable: (cardIndex: number) =>
+      playableRef.current ? playableRef.current(cardIndex) : true,
+    getSelectedCardIndex: () => selectedRef.current ?? null
+  });
 
   useEffect(() => {
     const parent = containerRef.current;
     if (!parent || gameRef.current) return;
 
-    const host = {
-      onLocalCardClick: (cardIndex: number) => {
-        eventsRef.current?.onLocalCardClick?.(cardIndex);
-      },
-      getCardImage: (card: Card) => getCardImageRef.current(card),
-      isLocalCardPlayable: (cardIndex: number) =>
-        playableRef.current ? playableRef.current(cardIndex) : true,
-      getSelectedCardIndex: () => selectedRef.current ?? null
-    };
-
-    const scene = new SuecaTableScene(host);
+    const theme = resolvePhaserThemeFromDom();
+    const scene = new SuecaTableScene(buildHost());
     sceneRef.current = scene;
 
     const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent,
-      backgroundColor: '#1b5e3b',
+      backgroundColor: theme.feltDark,
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -74,33 +80,42 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
       audio: { noAudio: true }
     });
     gameRef.current = game;
+    scene.setTheme(theme);
+    if (process.env.NODE_ENV === 'development') {
+      (window as unknown as { __suecaPhaserScene?: SuecaTableScene }).__suecaPhaserScene =
+        scene;
+    }
+
+    const themeTimer = window.setInterval(() => {
+      const next = resolvePhaserThemeFromDom();
+      sceneRef.current?.setTheme(next);
+    }, 800);
 
     return () => {
+      window.clearInterval(themeTimer);
+      if (process.env.NODE_ENV === 'development') {
+        const w = window as unknown as { __suecaPhaserScene?: SuecaTableScene };
+        if (w.__suecaPhaserScene === scene) delete w.__suecaPhaserScene;
+      }
       game.destroy(true);
       gameRef.current = null;
       sceneRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    scene.setHost({
-      onLocalCardClick: (cardIndex: number) => {
-        eventsRef.current?.onLocalCardClick?.(cardIndex);
-      },
-      getCardImage: (card: Card) => getCardImageRef.current(card),
-      isLocalCardPlayable: (cardIndex: number) =>
-        playableRef.current ? playableRef.current(cardIndex) : true,
-      getSelectedCardIndex: () => selectedRef.current ?? null
-    });
+    scene.setHost(buildHost());
     scene.applyModel(model);
-  }, [model, selectedCardIndex, isLocalCardPlayable]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, selectedCardIndex, isLocalCardPlayable, getTeamName]);
 
   return (
     <div className="sueca-phaser-root" data-testid="sueca-phaser-table">
       <div className="sueca-phaser-badge" aria-hidden>
-        POC Phaser
+        Phaser
       </div>
       <div ref={containerRef} className="sueca-phaser-canvas-host" />
     </div>
