@@ -12,7 +12,9 @@ import {
   PhaserHandCardEntity,
   PhaserTableViewModel
 } from './mapTableModelToPhaserView';
-import { pointInDropZone } from './phaserTableLayout';
+import {
+  getHandCardVisualPresentation
+} from './phaserHandVisual';
 import {
   DEFAULT_THEME,
   PhaserThemeView,
@@ -24,6 +26,7 @@ import {
   nextSyncGeneration,
   PLAY_CLICK_LOCK_MS
 } from './phaserSyncGuards';
+import { pointInDropZone } from './phaserTableLayout';
 
 function colorIntFromCss(raw: string, fallback = 0xffd700): number {
   const s = (raw || '').trim();
@@ -302,10 +305,20 @@ export class SuecaTableScene extends Phaser.Scene {
     sprite.on('pointerover', () => {
       if (this.dragCardId) return;
       const entity = this.view?.localHand.find((h) => h.card.id === cardId);
-      if (!entity || entity.visualState !== 'legal') return;
+      if (!entity || !this.view || entity.visualState !== 'legal') return;
+      const visual = getHandCardVisualPresentation({
+        visualState: entity.visualState,
+        selected: entity.selected,
+        canDrag: entity.canDrag,
+        passSelectionEnabled: this.view.passSelectionEnabled,
+        interactionEnabled: this.view.interactionEnabled,
+        hovered: true
+      });
       this.tweens.add({
         targets: sprite,
-        y: entity.position.y + (entity.selected ? -18 : -10),
+        y: entity.position.y + visual.yOffset,
+        displayWidth: (this.view?.layout.cardWidth ?? sprite.displayWidth) * visual.scale,
+        displayHeight: (this.view?.layout.cardHeight ?? sprite.displayHeight) * visual.scale,
         duration: 90,
         ease: 'Sine.easeOut'
       });
@@ -313,11 +326,20 @@ export class SuecaTableScene extends Phaser.Scene {
     sprite.on('pointerout', () => {
       if (this.dragCardId === cardId) return;
       const entity = this.view?.localHand.find((h) => h.card.id === cardId);
-      if (!entity) return;
-      const yLift = entity.selected ? -16 : 0;
+      if (!entity || !this.view) return;
+      const visual = getHandCardVisualPresentation({
+        visualState: entity.visualState,
+        selected: entity.selected,
+        canDrag: entity.canDrag,
+        passSelectionEnabled: this.view.passSelectionEnabled,
+        interactionEnabled: this.view.interactionEnabled,
+        hovered: false
+      });
       this.tweens.add({
         targets: sprite,
-        y: entity.position.y + yLift,
+        y: entity.position.y + visual.yOffset,
+        displayWidth: this.view.layout.cardWidth * visual.scale,
+        displayHeight: this.view.layout.cardHeight * visual.scale,
         duration: 90,
         ease: 'Sine.easeOut'
       });
@@ -393,11 +415,20 @@ export class SuecaTableScene extends Phaser.Scene {
       return;
     }
 
-    const yLift = entity.selected ? -16 : 0;
+    const visual = getHandCardVisualPresentation({
+      visualState: entity.visualState,
+      selected: entity.selected,
+      canDrag: entity.canDrag,
+      passSelectionEnabled: this.view.passSelectionEnabled,
+      interactionEnabled: this.view.interactionEnabled,
+      hovered: false
+    });
     this.tweens.add({
       targets: sprite,
       x: entity.position.x,
-      y: entity.position.y + yLift,
+      y: entity.position.y + visual.yOffset,
+      displayWidth: this.view.layout.cardWidth * visual.scale,
+      displayHeight: this.view.layout.cardHeight * visual.scale,
       duration: 140,
       ease: 'Cubic.easeOut',
       onComplete: () => {
@@ -434,9 +465,16 @@ export class SuecaTableScene extends Phaser.Scene {
       const id = entity.card.id;
       keep.add(id);
       let sprite = this.handSprites.get(id);
-      const yLift = entity.selected ? -16 : 0;
+      const visual = getHandCardVisualPresentation({
+        visualState: entity.visualState,
+        selected: entity.selected,
+        canDrag: entity.canDrag,
+        passSelectionEnabled: view.passSelectionEnabled,
+        interactionEnabled: view.interactionEnabled,
+        hovered: false
+      });
       const targetX = entity.position.x;
-      const targetY = entity.position.y + yLift;
+      const targetY = entity.position.y + visual.yOffset;
 
       if (!sprite) {
         sprite = this.add
@@ -450,8 +488,8 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setTexture(entity.textureKey);
       }
 
-      this.applyHandVisual(sprite, entity, view);
-      sprite.setDisplaySize(cardWidth, cardHeight);
+      this.applyHandVisual(sprite, entity, view, visual);
+      sprite.setDisplaySize(cardWidth * visual.scale, cardHeight * visual.scale);
 
       if (this.dragCardId === id) return;
 
@@ -460,12 +498,15 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setPosition(targetX, targetY);
         sprite.setAngle(entity.position.rotationDeg);
         sprite.setDepth(entity.position.depth);
+        sprite.setDisplaySize(cardWidth * visual.scale, cardHeight * visual.scale);
       } else {
         this.tweens.add({
           targets: sprite,
           x: targetX,
           y: targetY,
           angle: entity.position.rotationDeg,
+          displayWidth: cardWidth * visual.scale,
+          displayHeight: cardHeight * visual.scale,
           duration: 130,
           ease: 'Sine.easeOut'
         });
@@ -485,21 +526,34 @@ export class SuecaTableScene extends Phaser.Scene {
   private applyHandVisual(
     sprite: Phaser.GameObjects.Image,
     entity: PhaserHandCardEntity,
-    view: PhaserTableViewModel
+    view: PhaserTableViewModel,
+    visual = getHandCardVisualPresentation({
+      visualState: entity.visualState,
+      selected: entity.selected,
+      canDrag: entity.canDrag,
+      passSelectionEnabled: view.passSelectionEnabled,
+      interactionEnabled: view.interactionEnabled
+    })
   ): void {
-    if (entity.visualState === 'illegal') {
-      sprite.setAlpha(this.theme.illegalAlpha);
-      sprite.disableInteractive();
-    } else if (entity.visualState === 'inactive') {
-      sprite.setAlpha(this.theme.inactiveAlpha);
-      sprite.disableInteractive();
+    sprite.setAlpha(visual.alpha);
+    sprite.setTint(visual.tint);
+    if (visual.interactive) {
+      // Slightly taller hit box so overlapping fan cards stay easy to tap.
+      const { cardWidth, cardHeight } = view.layout;
+      const padX = Math.max(4, cardWidth * 0.08);
+      const padY = Math.max(8, cardHeight * 0.12);
+      sprite.setInteractive(
+        new Phaser.Geom.Rectangle(
+          -cardWidth / 2 - padX,
+          -cardHeight / 2 - padY,
+          cardWidth + padX * 2,
+          cardHeight + padY * 2
+        ),
+        Phaser.Geom.Rectangle.Contains
+      );
+      sprite.input!.cursor = 'pointer';
     } else {
-      sprite.setAlpha(1);
-      if (view.interactionEnabled && entity.canDrag) {
-        sprite.setInteractive({ useHandCursor: true, draggable: false });
-      } else {
-        sprite.disableInteractive();
-      }
+      sprite.disableInteractive();
     }
   }
 

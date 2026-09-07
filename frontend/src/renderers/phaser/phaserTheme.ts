@@ -23,8 +23,9 @@ const DEFAULT_THEME: PhaserThemeView = {
   active: '#ffd700',
   accent: '#6c5ce7',
   seatBg: '#00000099',
-  illegalAlpha: 0.42,
-  inactiveAlpha: 0.62
+  /** Kept for theme parity; scene uses `phaserHandVisual` as source of truth. */
+  illegalAlpha: 0.9,
+  inactiveAlpha: 0.94
 };
 
 function parseCssColorToInt(raw: string, fallback: number): number {

@@ -13,6 +13,8 @@ import {
   layoutOpponentBackPositions,
   layoutTrickSlot,
   playerIndexToCompass,
+  resolveAspectMode,
+  resolveBottomChromePx,
   PhaserCompass,
   PhaserHandSlot,
   PhaserPoint,
@@ -198,7 +200,6 @@ export function mapTableModelToPhaserView(options: {
     isLocalCardPlayable,
     getTeamName
   } = options;
-  const layout = buildPhaserTableLayout(width, height);
   const local = model.localPlayerIndex;
   const spadesUi = model.variantUi.spades;
   const heartsUi = model.variantUi.hearts;
@@ -206,6 +207,11 @@ export function mapTableModelToPhaserView(options: {
   const spadesBidPhase = model.status.spadesBidActive || model.chrome.spadesBidPhase;
   const heartsPassPhase = model.status.heartsPassActive;
   const kingFestaPhase = model.status.festaSheetActive;
+  const aspect = resolveAspectMode(width, height);
+  const bottomChromePx = resolveBottomChromePx(height, aspect, {
+    sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase
+  });
+  const layout = buildPhaserTableLayout(width, height, { bottomChromePx });
   const kingWaitingForChoice = Boolean(kingUi?.waitingForChoice);
   const spadesBroken = Boolean(spadesUi?.spadesBroken);
   const heartsBroken = Boolean(heartsUi?.heartsBroken);

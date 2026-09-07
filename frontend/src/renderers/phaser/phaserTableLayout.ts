@@ -1,6 +1,10 @@
 /**
  * Pure layout math for the Sueca Phaser table (no Phaser imports).
  * Aspect-aware: portrait / landscape / desktop.
+ *
+ * Local hand geometry is variant-agnostic: same viewport + card count +
+ * card size ⇒ same fan/overlap/baseline (Sueca 10 vs Spades/Hearts/King 13
+ * only differ by count-driven spacing).
  */
 
 export type PhaserCompass = 'south' | 'west' | 'north' | 'east';
@@ -31,6 +35,26 @@ export interface PhaserTableLayout {
   /** Drop zone radius for optional drag-to-play. */
   dropRadius: number;
   handSpreadMax: number;
+  /** Reserved px above canvas bottom for React bottom sheets (pass/bid/festa). */
+  bottomChromePx: number;
+}
+
+/** Shared hand fan knobs — not variant-specific. */
+export const HAND_LAYOUT = {
+  overlapDense: 0.52,
+  overlapMid: 0.62,
+  overlapLoose: 0.7,
+  denseFromCount: 8,
+  midFromCount: 5,
+  portraitArc: 1.2,
+  landscapeArc: 1.6,
+  portraitFanDeg: 2.2,
+  landscapeFanDeg: 1.4
+} as const;
+
+export interface PhaserLayoutOptions {
+  /** Lift hand / south seat above React bottom-sheet chrome. */
+  bottomChromePx?: number;
 }
 
 const COMPASS_FROM_OFFSET: PhaserCompass[] = ['south', 'west', 'north', 'east'];
@@ -50,13 +74,28 @@ export function resolveAspectMode(width: number, height: number): PhaserAspectMo
   return 'desktop';
 }
 
+/** Bottom-sheet reserve for pass / bid / festa — geometry only, not variant styling. */
+export function resolveBottomChromePx(
+  height: number,
+  aspect: PhaserAspectMode,
+  flags: { sheetActive?: boolean }
+): number {
+  if (!flags.sheetActive) return 0;
+  if (aspect === 'portrait') return Math.round(Math.min(height * 0.2, 148));
+  // Short landscape phone: keep hand above compact bottom sheets.
+  if (aspect === 'landscape') return Math.round(Math.min(height * 0.34, 120));
+  return Math.round(Math.min(height * 0.14, 100));
+}
+
 export function buildPhaserTableLayout(
   width: number,
-  height: number
+  height: number,
+  options?: PhaserLayoutOptions
 ): PhaserTableLayout {
   const w = Math.max(280, width);
   const h = Math.max(300, height);
   const aspect = resolveAspectMode(w, h);
+  const bottomChromePx = Math.max(0, Math.round(options?.bottomChromePx ?? 0));
 
   let cardWidth: number;
   if (aspect === 'portrait') {
@@ -85,14 +124,15 @@ export function buildPhaserTableLayout(
       : aspect === 'landscape'
         ? Math.max(cardHeight * 0.55, 52)
         : Math.max(cardHeight * 0.6, 60);
-  const handY = h - handReserve;
+  const handY = h - handReserve - bottomChromePx;
 
+  const chromeNudge = bottomChromePx > 0 ? bottomChromePx * 0.35 : 0;
   const centerY =
-    aspect === 'portrait'
+    (aspect === 'portrait'
       ? h * 0.38
       : aspect === 'landscape'
         ? h * 0.4
-        : h * 0.42;
+        : h * 0.42) - chromeNudge;
 
   const handSpreadMax =
     aspect === 'portrait' ? w * 0.92 : aspect === 'landscape' ? w * 0.7 : w * 0.78;
@@ -114,32 +154,60 @@ export function buildPhaserTableLayout(
     opponentCardWidth,
     opponentCardHeight,
     dropRadius: Math.max(cardWidth * 1.6, 72),
-    handSpreadMax
+    handSpreadMax,
+    bottomChromePx
   };
 }
 
-/** Fan positions with slight arc + rotation for local hand. */
+/**
+ * Fan positions for the local hand.
+ * Depends only on card count + layout metrics (viewport-derived), not variant.
+ */
 export function layoutLocalHandPositions(
   count: number,
   layout: PhaserTableLayout
 ): PhaserHandSlot[] {
   if (count <= 0) return [];
   const { handY, cardWidth, handSpreadMax } = layout;
-  const overlap = count > 7 ? 0.52 : count > 4 ? 0.62 : 0.7;
+  const overlap =
+    count >= HAND_LAYOUT.denseFromCount
+      ? HAND_LAYOUT.overlapDense
+      : count >= HAND_LAYOUT.midFromCount
+        ? HAND_LAYOUT.overlapMid
+        : HAND_LAYOUT.overlapLoose;
   const spacing = Math.min(cardWidth * overlap, handSpreadMax / Math.max(count, 1));
   const total = spacing * (count - 1);
   const startX = layout.width / 2 - total / 2;
   const mid = (count - 1) / 2;
+  const isLandscape = layout.aspect === 'landscape';
+  const arcK = isLandscape ? HAND_LAYOUT.landscapeArc : HAND_LAYOUT.portraitArc;
+  const fanDeg = isLandscape ? HAND_LAYOUT.landscapeFanDeg : HAND_LAYOUT.portraitFanDeg;
   return Array.from({ length: count }, (_, i) => {
     const t = i - mid;
-    const arc = Math.abs(t) * (layout.aspect === 'portrait' ? 1.2 : 1.6);
+    const arc = Math.abs(t) * arcK;
     return {
       x: startX + i * spacing,
       y: handY + arc,
-      rotationDeg: t * (layout.aspect === 'landscape' ? 1.4 : 2.2),
+      rotationDeg: t * fanDeg,
       depth: 20 + i
     };
   });
+}
+
+/**
+ * Single entry for local-hand geometry used by all variants.
+ * Same card count + viewport (+ optional bottom chrome) ⇒ same slots.
+ */
+export function computeLocalHandLayout(input: {
+  width: number;
+  height: number;
+  cardCount: number;
+  bottomChromePx?: number;
+}): { layout: PhaserTableLayout; slots: PhaserHandSlot[] } {
+  const layout = buildPhaserTableLayout(input.width, input.height, {
+    bottomChromePx: input.bottomChromePx
+  });
+  return { layout, slots: layoutLocalHandPositions(input.cardCount, layout) };
 }
 
 export function layoutOpponentBackPositions(

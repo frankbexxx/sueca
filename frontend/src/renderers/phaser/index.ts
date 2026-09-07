@@ -10,10 +10,16 @@ export type { SuecaPhaserRendererProps } from './SuecaPhaserRenderer';
 export { PhaserTableErrorBoundary } from './PhaserTableErrorBoundary';
 export {
   buildPhaserTableLayout,
+  computeLocalHandLayout,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
   layoutTrickSlot,
-  playerIndexToCompass
+  playerIndexToCompass,
+  resolveBottomChromePx
 } from './phaserTableLayout';
 export { mapTableModelToPhaserView, cardTextureKey } from './mapTableModelToPhaserView';
+export {
+  getHandCardVisualPresentation,
+  HAND_VISUAL
+} from './phaserHandVisual';
 

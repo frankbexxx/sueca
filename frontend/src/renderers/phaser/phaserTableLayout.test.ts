@@ -1,11 +1,13 @@
 import {
   buildPhaserTableLayout,
+  computeLocalHandLayout,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
   layoutTrickSlot,
   playerIndexToCompass,
   pointInDropZone,
-  resolveAspectMode
+  resolveAspectMode,
+  resolveBottomChromePx
 } from './phaserTableLayout';
 import {
   cardTextureKey,
@@ -19,6 +21,10 @@ import {
   PLAY_CLICK_LOCK_MS
 } from './phaserSyncGuards';
 import { DEFAULT_THEME, themesEqual } from './phaserTheme';
+import {
+  getHandCardVisualPresentation,
+  HAND_VISUAL
+} from './phaserHandVisual';
 import type { TableRenderModel } from '../../table/tableRenderModel';
 import type { Card } from '../../types/game';
 import { resolveGameBoardFlow } from '../../utils/gameFlowOrchestrator';
@@ -156,6 +162,156 @@ describe('phaserTableLayout E2', () => {
     const layout = buildPhaserTableLayout(640, 480);
     expect(layoutOpponentBackPositions(5, 'north', layout)).toHaveLength(5);
   });
+
+  it('uses the same hand layout rules for 10 and 13 cards across variants', () => {
+    const phone = { width: 390, height: 720 };
+    const sueca = computeLocalHandLayout({ ...phone, cardCount: 10 });
+    const spades = computeLocalHandLayout({ ...phone, cardCount: 13 });
+    const hearts = computeLocalHandLayout({ ...phone, cardCount: 13 });
+    const king = computeLocalHandLayout({ ...phone, cardCount: 13 });
+
+    expect(sueca.layout.cardWidth).toBe(spades.layout.cardWidth);
+    expect(sueca.layout.handY).toBe(spades.layout.handY);
+    expect(sueca.layout.bottomChromePx).toBe(0);
+    expect(sueca.slots).toHaveLength(10);
+    expect(spades.slots).toHaveLength(13);
+    expect(hearts.slots.map((s) => [s.x, s.y, s.rotationDeg])).toEqual(
+      king.slots.map((s) => [s.x, s.y, s.rotationDeg])
+    );
+    expect(spades.slots[0].x).toBeLessThan(spades.slots[12].x);
+    // denser count ⇒ tighter spacing, same baseline system
+    const spacing10 = sueca.slots[1].x - sueca.slots[0].x;
+    const spacing13 = spades.slots[1].x - spades.slots[0].x;
+    expect(spacing13).toBeLessThanOrEqual(spacing10);
+  });
+
+  it('keeps portrait and landscape on the same visual system', () => {
+    const portrait = computeLocalHandLayout({ width: 390, height: 720, cardCount: 13 });
+    const landscape = computeLocalHandLayout({ width: 740, height: 360, cardCount: 13 });
+    expect(portrait.layout.aspect).toBe('portrait');
+    expect(landscape.layout.aspect).toBe('landscape');
+    expect(portrait.slots).toHaveLength(13);
+    expect(landscape.slots).toHaveLength(13);
+    expect(portrait.layout.cardWidth).toBeGreaterThanOrEqual(44);
+    expect(landscape.layout.cardWidth).toBeLessThanOrEqual(58);
+    expect(landscape.layout.handY).toBeLessThan(landscape.layout.height);
+  });
+
+  it('lifts hand when bottom chrome (pass/bid/festa) is active', () => {
+    const aspect = resolveAspectMode(390, 720);
+    const chrome = resolveBottomChromePx(720, aspect, { sheetActive: true });
+    expect(chrome).toBeGreaterThan(80);
+    const plain = computeLocalHandLayout({ width: 390, height: 720, cardCount: 13 });
+    const withSheet = computeLocalHandLayout({
+      width: 390,
+      height: 720,
+      cardCount: 13,
+      bottomChromePx: chrome
+    });
+    expect(withSheet.layout.handY).toBeLessThan(plain.layout.handY);
+    expect(withSheet.layout.bottomChromePx).toBe(chrome);
+    // fan shape preserved (relative spacing)
+    const plainSpan = plain.slots[12].x - plain.slots[0].x;
+    const sheetSpan = withSheet.slots[12].x - withSheet.slots[0].x;
+    expect(sheetSpan).toBeCloseTo(plainSpan, 5);
+  });
+});
+
+describe('phaserHandVisual UX-P1', () => {
+  it('keeps legal cards fully readable and interactive when playable', () => {
+    const v = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: false,
+      canDrag: true,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    expect(v.alpha).toBe(1);
+    expect(v.tint).toBe(HAND_VISUAL.legalTint);
+    expect(v.interactive).toBe(true);
+    expect(v.yOffset).toBe(0);
+  });
+
+  it('dims illegal cards moderately without a heavy veil', () => {
+    const v = getHandCardVisualPresentation({
+      visualState: 'illegal',
+      selected: false,
+      canDrag: false,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    expect(v.alpha).toBeGreaterThanOrEqual(0.85);
+    expect(v.alpha).toBeLessThan(1);
+    expect(v.tint).not.toBe(HAND_VISUAL.legalTint);
+    expect(v.interactive).toBe(false);
+  });
+
+  it('applies subtle inactive attenuation', () => {
+    const v = getHandCardVisualPresentation({
+      visualState: 'inactive',
+      selected: false,
+      canDrag: false,
+      passSelectionEnabled: false,
+      interactionEnabled: false
+    });
+    expect(v.alpha).toBeGreaterThanOrEqual(0.9);
+    expect(v.alpha).toBeLessThan(1);
+    expect(v.interactive).toBe(false);
+  });
+
+  it('lifts selected cards without darkening others', () => {
+    const selected = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: true,
+      canDrag: true,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    const other = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: false,
+      canDrag: true,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    expect(selected.yOffset).toBeLessThan(0);
+    expect(selected.scale).toBeGreaterThan(other.scale);
+    expect(other.alpha).toBe(1);
+  });
+
+  it('enables Hearts pass selection taps with the same legal chrome', () => {
+    const v = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: true,
+      canDrag: false,
+      passSelectionEnabled: true,
+      interactionEnabled: false
+    });
+    expect(v.interactive).toBe(true);
+    expect(v.yOffset).toBe(-HAND_VISUAL.selectedLift);
+    expect(v.alpha).toBe(1);
+  });
+
+  it('expands touch-friendly hit intent: illegal/inactive stay non-interactive', () => {
+    expect(
+      getHandCardVisualPresentation({
+        visualState: 'illegal',
+        selected: false,
+        canDrag: false,
+        passSelectionEnabled: false,
+        interactionEnabled: true
+      }).interactive
+    ).toBe(false);
+    expect(
+      getHandCardVisualPresentation({
+        visualState: 'inactive',
+        selected: false,
+        canDrag: false,
+        passSelectionEnabled: false,
+        interactionEnabled: false
+      }).interactive
+    ).toBe(false);
+  });
 });
 
 describe('mapTableModelToPhaserView E2', () => {
@@ -212,6 +368,45 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(waiting.interactionEnabled).toBe(false);
     expect(waiting.localHand.every((c) => c.visualState === 'inactive')).toBe(true);
     expect(waiting.seats.every((s) => !s.showActiveHighlight)).toBe(true);
+  });
+
+  it('keeps pass-phase hand geometry stable and enables pass selection', () => {
+    const cards = Array.from({ length: 13 }, (_, i) => ({
+      suit: 'hearts' as const,
+      rank: '2' as const,
+      id: `h${i}`
+    }));
+    const play = mapTableModelToPhaserView({
+      model: minimalModel({
+        variant: 'hearts',
+        localHand: cards,
+        status: { ...minimalModel().status, heartsPassActive: false }
+      }),
+      width: 390,
+      height: 720,
+      isLocalCardPlayable: () => true
+    });
+    const pass = mapTableModelToPhaserView({
+      model: minimalModel({
+        variant: 'hearts',
+        localHand: cards,
+        status: { ...minimalModel().status, heartsPassActive: true },
+        variantUi: { heartsPassIndices: [0, 2, 4] }
+      }),
+      width: 390,
+      height: 720,
+      isLocalCardPlayable: () => false
+    });
+    expect(pass.passSelectionEnabled).toBe(true);
+    expect(pass.layout.bottomChromePx).toBeGreaterThan(0);
+    expect(pass.layout.handY).toBeLessThan(play.layout.handY);
+    expect(pass.localHand.filter((c) => c.selected)).toHaveLength(3);
+    expect(pass.localHand.every((c) => c.visualState === 'legal')).toBe(true);
+    expect(pass.localHand.every((c) => !c.canDrag)).toBe(true);
+    // same fan spacing as play-phase 13-card hand would have without chrome (relative)
+    const passSpan = pass.localHand[12].position.x - pass.localHand[0].position.x;
+    const play13 = computeLocalHandLayout({ width: 390, height: 720, cardCount: 13 });
+    expect(passSpan).toBeCloseTo(play13.slots[12].x - play13.slots[0].x, 5);
   });
 });
 
