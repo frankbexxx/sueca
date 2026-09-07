@@ -164,12 +164,19 @@ export class SuecaTableScene extends Phaser.Scene {
     }
 
     this.view = nextView;
-    if (this.trumpText) this.trumpText.setText(nextView.trumpLabel);
+    if (this.trumpText) {
+      this.trumpText.setText(nextView.trumpLabel);
+      this.trumpText.setVisible(Boolean(nextView.trumpLabel));
+    }
     if (this.trumpBadge) {
-      this.trumpBadge.setText(nextView.trumpSuit ? nextView.trumpSymbol : '');
+      const showGlyph = nextView.showTrumpSymbol && Boolean(nextView.trumpSuit);
+      this.trumpBadge.setText(showGlyph ? nextView.trumpSymbol : '');
+      this.trumpBadge.setVisible(showGlyph);
       this.trumpBadge.setColor(
         nextView.bannerAccent ? this.theme.accent : this.theme.active
       );
+      // When label is hidden, pin glyph to the corner without stacking height.
+      this.trumpBadge.setPosition(12, nextView.trumpLabel ? 30 : 10);
     }
 
     this.ensureTextures(nextView, () => {
@@ -245,21 +252,16 @@ export class SuecaTableScene extends Phaser.Scene {
     const keep = new Set<number>();
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
-      const parts = [seat.name];
-      if (seat.teamLabel) parts.push(seat.teamLabel);
-      if (seat.bidLabel) parts.push(seat.bidLabel);
-      if (!seat.isLocal) parts.push(String(seat.handCount));
-      if (seat.isDealer) parts.push('D');
-      const text = parts.join(' · ');
+      const text = seat.labelText;
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
         label = this.add
           .text(seat.labelPosition.x, seat.labelPosition.y, text, {
             fontFamily: 'Segoe UI, system-ui, sans-serif',
-            fontSize: view.layout.aspect === 'landscape' ? '12px' : '13px',
+            fontSize: view.layout.aspect === 'landscape' ? '11px' : '12px',
             color: this.theme.text,
             backgroundColor: this.theme.seatBg,
-            padding: { x: 7, y: 4 }
+            padding: { x: 6, y: 3 }
           })
           .setOrigin(0.5)
           .setDepth(40);
@@ -268,24 +270,26 @@ export class SuecaTableScene extends Phaser.Scene {
         label.setText(text);
         label.setPosition(seat.labelPosition.x, seat.labelPosition.y);
         label.setBackgroundColor(this.theme.seatBg);
+        label.setFontSize(view.layout.aspect === 'landscape' ? '11px' : '12px');
       }
-      label.setColor(seat.showActiveHighlight ? this.theme.active : this.theme.text);
+      // Active cue = ring only (text stays readable, not neon).
+      label.setColor(this.theme.text);
 
       let ring = this.seatRings.get(seat.seatIndex);
-      const ringW = Math.max(56, (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) * 1.8);
-      const ringH = Math.max(28, ringW * 0.35);
+      const ringW = Math.max(52, (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) * 1.7);
+      const ringH = Math.max(26, ringW * 0.32);
       if (!ring) {
         ring = this.add
-          .ellipse(seat.labelPosition.x, seat.labelPosition.y + 18, ringW, ringH)
-          .setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.9)
+          .ellipse(seat.labelPosition.x, seat.labelPosition.y + 16, ringW, ringH)
+          .setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.75)
           .setFillStyle(0x000000, 0)
           .setDepth(39);
         this.seatRings.set(seat.seatIndex, ring);
       }
-      ring.setPosition(seat.labelPosition.x, seat.labelPosition.y + 16);
+      ring.setPosition(seat.labelPosition.x, seat.labelPosition.y + 14);
       ring.setSize(ringW, ringH);
       ring.setVisible(seat.showActiveHighlight);
-      ring.setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.85);
+      ring.setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.72);
     });
 
     Array.from(this.seatLabels.keys()).forEach((idx) => {

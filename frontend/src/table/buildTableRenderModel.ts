@@ -97,7 +97,8 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const boardModifiers = [
     festaSheetActive ? 'game-board--festa-sheet' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
-    heartsPassActive ? 'game-board--hearts-pass' : ''
+    heartsPassActive ? 'game-board--hearts-pass' : '',
+    spadesBidActive ? 'game-board--spades-bid' : ''
   ].filter(Boolean);
 
   return {

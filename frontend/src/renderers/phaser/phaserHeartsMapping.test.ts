@@ -154,7 +154,9 @@ describe('mapTableModelToPhaserView — Hearts', () => {
     expect(view.localHand[1].selected).toBe(true);
     expect(view.localHand[4].selected).toBe(true);
     expect(view.localHand[0].selected).toBe(false);
-    expect(view.trumpLabel).toBe('♥ Fechadas');
+    // Pass sheet owns status; Phaser banner cleared to avoid overlap.
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.heartsBroken).toBe(false);
     expect(view.layout.aspect).toBe('portrait');
   });
@@ -194,8 +196,9 @@ describe('mapTableModelToPhaserView — Hearts', () => {
     const { model, view } = mapHearts(gameState, { width: 800, height: 400 });
     expect(model.variantUi.hearts?.heartsBroken).toBe(true);
     expect(view.heartsBroken).toBe(true);
-    expect(view.trumpLabel).toBe('♥ Quebradas');
-    expect(view.bannerAccent).toBe(true);
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
+    expect(view.bannerAccent).toBe(false);
     expect(view.layout.aspect).toBe('landscape');
   });
 

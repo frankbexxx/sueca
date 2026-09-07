@@ -142,6 +142,43 @@ describe('buildTableRenderModel', () => {
     expect(model.chrome.boardModifiers).toContain('game-board--hearts-pass');
   });
 
+  it('adds spades-bid board modifier during bidding', () => {
+    const gameState = baseState({
+      waitingForRoundStart: true,
+      variantState: {
+        spades: {
+          playerBids: [null, null, null, null],
+          playerBidTypes: ['normal', 'normal', 'normal', 'normal'],
+          bidLeaderIndex: 0,
+          currentBidderIndex: 0,
+          team1Bid: 0,
+          team2Bid: 0,
+          team1Tricks: 0,
+          team2Tricks: 0,
+          playerTricks: [0, 0, 0, 0],
+          team1Bags: 0,
+          team2Bags: 0,
+          waitingForBids: true,
+          spadesBroken: false,
+          nilEnabled: true,
+          blindNilEnabled: false
+        }
+      }
+    });
+    const boardFlow = resolveGameBoardFlow({ variant: 'spades', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'spades',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      spadesState: gameState.variantState?.spades as never
+    });
+    expect(model.status.spadesBidActive).toBe(true);
+    expect(model.chrome.boardModifiers).toContain('game-board--spades-bid');
+  });
+
   it('enables king auction badges only during auction festa phase', () => {
     const gameState = baseState({ waitingForRoundStart: true });
     const boardFlow = resolveGameBoardFlow({

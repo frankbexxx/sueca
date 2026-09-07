@@ -25,6 +25,8 @@ import {
   getHandCardVisualPresentation,
   HAND_VISUAL
 } from './phaserHandVisual';
+import { computeSeatPresentation } from './phaserSeatPresentation';
+import { computeTableBannerPresentation } from './phaserTableBanner';
 import type { TableRenderModel } from '../../table/tableRenderModel';
 import type { Card } from '../../types/game';
 import { resolveGameBoardFlow } from '../../utils/gameFlowOrchestrator';
@@ -217,6 +219,97 @@ describe('phaserTableLayout E2', () => {
   });
 });
 
+describe('phaserSeatPresentation UX-P2', () => {
+  it('formats a common seat line with optional badge, count and dealer', () => {
+    const seat = computeSeatPresentation({
+      name: 'Player One Long',
+      handCount: 13,
+      isLocal: false,
+      isDealer: true,
+      teamLabel: 'NÓS',
+      secondaryBadge: 'Nil',
+      showActiveHighlight: true,
+      aspect: 'portrait'
+    });
+    expect(seat.shortName).toBe('Playe...');
+    expect(seat.labelText).toBe('Playe... · Nil · 13 · D');
+    expect(seat.showActiveRing).toBe(true);
+    // Badge wins over team — never stack both.
+    expect(seat.labelText).not.toContain('Nós');
+  });
+
+  it('keeps local seats without hand count and supports landscape truncation', () => {
+    const local = computeSeatPresentation({
+      name: 'Alex',
+      handCount: 10,
+      isLocal: true,
+      isDealer: false,
+      teamLabel: 'ELES',
+      secondaryBadge: null,
+      showActiveHighlight: false,
+      aspect: 'landscape'
+    });
+    expect(local.labelText).toBe('Alex · Eles');
+    expect(local.labelText).not.toMatch(/\s10\b/);
+  });
+});
+
+describe('phaserTableBanner UX-P2', () => {
+  it('clears Spades/Hearts banners (React strip owns broken state)', () => {
+    expect(
+      computeTableBannerPresentation({
+        variant: 'spades',
+        trumpSuit: 'spades',
+        heartsPassPhase: false,
+        kingFestaPhase: false,
+        kingUi: undefined,
+        auctionLocale: 'pt'
+      }).label
+    ).toBe('');
+    expect(
+      computeTableBannerPresentation({
+        variant: 'hearts',
+        trumpSuit: null,
+        heartsPassPhase: true,
+        kingFestaPhase: false,
+        kingUi: undefined,
+        auctionLocale: 'pt'
+      })
+    ).toEqual({ label: '', showSymbol: false, accent: false });
+  });
+
+  it('keeps Sueca glyph-only and King short contract during play', () => {
+    const sueca = computeTableBannerPresentation({
+      variant: 'sueca',
+      trumpSuit: 'hearts',
+      heartsPassPhase: false,
+      kingFestaPhase: false,
+      kingUi: undefined,
+      auctionLocale: 'pt'
+    });
+    expect(sueca.label).toBe('');
+    expect(sueca.showSymbol).toBe(true);
+
+    const king = computeTableBannerPresentation({
+      variant: 'king',
+      trumpSuit: null,
+      heartsPassPhase: false,
+      kingFestaPhase: false,
+      kingUi: {
+        gameIndex: 0,
+        contract: 'no_queens',
+        festaMode: null,
+        festaPhase: null,
+        phase: 'negatives',
+        noTrump: false,
+        waitingForChoice: false
+      } as never,
+      auctionLocale: 'pt'
+    });
+    expect(king.label).toBe('Damas');
+  });
+});
+
 describe('phaserHandVisual UX-P1', () => {
   it('keeps legal cards fully readable and interactive when playable', () => {
     const v = getHandCardVisualPresentation({
@@ -329,9 +422,14 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(view.localHand[0].visualState).toBe('legal');
     expect(view.localHand[0].canDrag).toBe(true);
     expect(view.trumpSymbol).toBe(trumpSymbolForSuit('spades'));
+    // Sueca: React strip owns trump text; Phaser keeps glyph only.
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(true);
     expect(view.seats.find((s) => s.isDealer)?.seatIndex).toBe(1);
     expect(view.seats[0].showActiveHighlight).toBe(true);
     expect(view.opponents[0].teamLabel).toBeTruthy();
+    expect(view.opponents[0].labelText).toMatch(/Nós|Eles/);
+    expect(view.opponents[0].labelText).toContain('D');
     expect(view.opponents[0].handCount).toBeGreaterThan(0);
   });
 

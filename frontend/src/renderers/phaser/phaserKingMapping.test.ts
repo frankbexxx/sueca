@@ -312,7 +312,9 @@ describe('mapTableModelToPhaserView — King', () => {
     expect(view.kingWaitingForChoice).toBe(true);
     expect(view.interactionEnabled).toBe(false);
     expect(view.localIsActive).toBe(false);
-    expect(view.trumpLabel).toBe('Festa · leilão');
+    // Festa sheet owns narrative; Phaser banner cleared.
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.seats[2].bidLabel).toBe('Passou');
     expect(view.seats[3].bidLabel).toBe('4 pos.');
   });
@@ -381,7 +383,8 @@ describe('mapTableModelToPhaserView — King', () => {
         { waitingForRoundStart: true }
       )
     );
-    expect(eight.view.trumpLabel).toBe('8 ou nulos');
+    expect(eight.view.kingFestaPhase).toBe(true);
+    expect(eight.view.trumpLabel).toBe('');
     expect(eight.view.interactionEnabled).toBe(false);
   });
 
@@ -402,7 +405,7 @@ describe('mapTableModelToPhaserView — King', () => {
     );
     expect(view.kingWaitingForChoice).toBe(true);
     expect(view.interactionEnabled).toBe(false);
-    expect(view.trumpLabel).toBe('Festa · escolha');
+    expect(view.trumpLabel).toBe('');
   });
 
   it('maps legal/illegal and inactive hand', () => {

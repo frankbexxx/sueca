@@ -83,7 +83,7 @@ export function resolveBottomChromePx(
   if (!flags.sheetActive) return 0;
   if (aspect === 'portrait') return Math.round(Math.min(height * 0.2, 148));
   // Short landscape phone: keep hand above compact bottom sheets.
-  if (aspect === 'landscape') return Math.round(Math.min(height * 0.34, 120));
+  if (aspect === 'landscape') return Math.round(Math.min(height * 0.42, 140));
   return Math.round(Math.min(height * 0.14, 100));
 }
 

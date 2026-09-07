@@ -7,6 +7,7 @@ import type { Card } from '../../types/game';
 import type { KingBid } from '../../models/games/king/kingContracts';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import type { TableRenderModel } from '../../table/tableRenderModel';
+import { shouldShowTeamLabel } from '../../utils/playerSeatHelpers';
 import {
   buildPhaserTableLayout,
   layoutLocalHandPositions,
@@ -20,6 +21,15 @@ import {
   PhaserPoint,
   PhaserTableLayout
 } from './phaserTableLayout';
+import { computeSeatPresentation } from './phaserSeatPresentation';
+import {
+  computeTableBannerPresentation,
+  trumpSymbolForSuit
+} from './phaserTableBanner';
+
+export { formatKingTableBanner, trumpSymbolForSuit } from './phaserTableBanner';
+export { computeSeatPresentation } from './phaserSeatPresentation';
+export { computeTableBannerPresentation } from './phaserTableBanner';
 
 export type PhaserCardVisualState = 'legal' | 'illegal' | 'inactive';
 
@@ -41,6 +51,8 @@ export interface PhaserSeatEntity {
   teamLabel: string | null;
   /** Spades bid / King auction or role badge. */
   bidLabel: string | null;
+  /** Preformatted single-line chrome (shared across variants). */
+  labelText: string;
   handCount: number;
   isLocal: boolean;
   isActive: boolean;
@@ -72,6 +84,8 @@ export interface PhaserTableViewModel {
   trumpSuit: string | null;
   trumpLabel: string;
   trumpSymbol: string;
+  /** When false, hide the large suit glyph (React strip owns status). */
+  showTrumpSymbol: boolean;
   /** When true, trump badge uses accent (e.g. Spades/Hearts broken). */
   bannerAccent: boolean;
   waitingForTrickEnd: boolean;
@@ -91,14 +105,6 @@ export function cardTextureKey(card: Card): string {
   return `face:${card.rank}_${card.suit}`;
 }
 
-export function trumpSymbolForSuit(suit: string | null): string {
-  if (suit === 'clubs') return '♣';
-  if (suit === 'diamonds') return '♦';
-  if (suit === 'hearts') return '♥';
-  if (suit === 'spades') return '♠';
-  return '—';
-}
-
 /** Pure Spades bid badge text for seat chrome. */
 export function formatSpadesBidBadge(
   bid: number | null | undefined,
@@ -111,60 +117,6 @@ export function formatSpadesBidBadge(
     return waitingForBids ? '…' : null;
   }
   return String(bid);
-}
-
-/** Short King negative / festa banner for the Phaser table chrome. */
-export function formatKingTableBanner(
-  king: NonNullable<TableRenderModel['variantUi']['king']>,
-  trumpSuit: string | null,
-  locale: 'pt' | 'en' = 'pt'
-): { label: string; accent: boolean } {
-  const pt = locale === 'pt';
-  if (king.waitingForChoice || king.festaPhase) {
-    if (king.eightOrNullsPending) {
-      return { label: pt ? '8 ou nulos' : '8 or nulls', accent: true };
-    }
-    if (king.festaPhase === 'auction') {
-      return { label: pt ? 'Festa · leilão' : 'Festa · auction', accent: true };
-    }
-    if (king.festaPhase === 'negotiation' || king.festaPhase === 'negotiation_counter') {
-      return { label: pt ? 'Festa · negociação' : 'Festa · negotiation', accent: true };
-    }
-    if (king.festaPhase === 'fallback' || king.festaPhase === 'setup') {
-      return { label: pt ? 'Festa · escolha' : 'Festa · choice', accent: true };
-    }
-    if (king.phase === 'koh_reveal') {
-      return { label: 'KOH', accent: true };
-    }
-  }
-
-  if (king.contract) {
-    const short: Record<string, { pt: string; en: string }> = {
-      no_tricks: { pt: 'Vazas', en: 'Tricks' },
-      no_hearts: { pt: 'Copas', en: 'Hearts' },
-      no_queens: { pt: 'Damas', en: 'Queens' },
-      no_men: { pt: 'Homens', en: 'Men' },
-      no_king_hearts: { pt: 'King ♥', en: 'K♥' },
-      no_last_two: { pt: 'Últimas', en: 'Last 2' }
-    };
-    const entry = short[king.contract];
-    if (entry) {
-      return { label: pt ? entry.pt : entry.en, accent: false };
-    }
-  }
-
-  if (king.noTrump || (!trumpSuit && king.festaMode)) {
-    return { label: pt ? 'Sem trunfo' : 'No trump', accent: false };
-  }
-  if (trumpSuit) {
-    return {
-      label: pt
-        ? `Trunfo ${trumpSymbolForSuit(trumpSuit)}`
-        : `Trump ${trumpSymbolForSuit(trumpSuit)}`,
-      accent: true
-    };
-  }
-  return { label: pt ? `Jogo ${king.gameIndex + 1}` : `Game ${king.gameIndex + 1}`, accent: false };
 }
 
 function seatLabelPosition(
@@ -273,7 +225,7 @@ export function mapTableModelToPhaserView(options: {
     };
   });
 
-  const showTeam = model.chrome.showTeamLabels;
+  const showTeam = shouldShowTeamLabel(model.variant, model.chrome.showTeamLabels);
   const seats: PhaserSeatEntity[] = model.seats.map((seat) => {
     const compass = playerIndexToCompass(seat.index, local);
     const showActiveHighlight =
@@ -287,11 +239,15 @@ export function mapTableModelToPhaserView(options: {
 
     let bidLabel: string | null = null;
     if (spadesUi && (spadesBidPhase || !spadesUi.waitingForBids)) {
-      bidLabel = formatSpadesBidBadge(
-        spadesUi.playerBids[seat.index],
-        spadesUi.playerBidTypes[seat.index],
-        spadesUi.waitingForBids
-      );
+      // During play, React score strip already shows team bids — keep seat bids
+      // only while the auction is live to reduce duplicate chrome.
+      if (spadesBidPhase) {
+        bidLabel = formatSpadesBidBadge(
+          spadesUi.playerBids[seat.index],
+          spadesUi.playerBidTypes[seat.index],
+          spadesUi.waitingForBids
+        );
+      }
     } else if (model.chrome.showAuctionBadges && auctionActions) {
       const action = auctionActions[seat.index] as KingBid | 'pass' | undefined;
       if (action) {
@@ -302,23 +258,35 @@ export function mapTableModelToPhaserView(options: {
       !kingWaitingForChoice &&
       (kingUi.festaMode || kingUi.phase === 'festa_play')
     ) {
-      const marks: string[] = [];
-      if (kingUi.bidderIndex === seat.index) marks.push('Lic');
-      if (kingUi.beneficiaryIndex === seat.index) marks.push('Ben');
-      if (marks.length) bidLabel = marks.join('/');
+      // One role token max — prefer bidder over beneficiary if same seat.
+      if (kingUi.bidderIndex === seat.index) bidLabel = 'Lic';
+      else if (kingUi.beneficiaryIndex === seat.index) bidLabel = 'Ben';
     }
+
+    const teamLabel = showTeam && getTeamName ? getTeamName(seat.team) : null;
+    const presentation = computeSeatPresentation({
+      name: seat.name,
+      handCount: seat.handCount,
+      isLocal: seat.isLocal,
+      isDealer: seat.isDealer,
+      teamLabel,
+      secondaryBadge: bidLabel,
+      showActiveHighlight,
+      aspect: layout.aspect
+    });
 
     return {
       seatIndex: seat.index,
       compass,
       name: seat.name,
-      teamLabel: showTeam && getTeamName ? getTeamName(seat.team) : null,
+      teamLabel,
       bidLabel,
+      labelText: presentation.labelText,
       handCount: seat.handCount,
       isLocal: seat.isLocal,
       isActive: seat.isActive,
       isDealer: seat.isDealer,
-      showActiveHighlight,
+      showActiveHighlight: presentation.showActiveRing,
       backPositions: seat.isLocal
         ? []
         : layoutOpponentBackPositions(seat.handCount, compass, layout),
@@ -347,21 +315,16 @@ export function mapTableModelToPhaserView(options: {
 
   const trumpSuit = model.trumpSuit;
   const trumpSymbol = trumpSymbolForSuit(trumpSuit);
-  let trumpLabel: string;
-  let bannerAccent = false;
-  if (model.variant === 'spades') {
-    trumpLabel = spadesBroken ? '♠ Quebradas' : '♠ Fechadas';
-    bannerAccent = spadesBroken;
-  } else if (model.variant === 'hearts') {
-    trumpLabel = heartsBroken ? '♥ Quebradas' : '♥ Fechadas';
-    bannerAccent = heartsBroken;
-  } else if (model.variant === 'king' && kingUi) {
-    const banner = formatKingTableBanner(kingUi, trumpSuit, auctionLocale);
-    trumpLabel = banner.label;
-    bannerAccent = banner.accent;
-  } else {
-    trumpLabel = trumpSuit ? `Trunfo ${trumpSymbol}` : 'Trunfo —';
-  }
+  const banner = computeTableBannerPresentation({
+    variant: model.variant,
+    trumpSuit,
+    heartsPassPhase,
+    kingFestaPhase,
+    kingUi,
+    auctionLocale
+  });
+  const trumpLabel = banner.label;
+  const bannerAccent = banner.accent;
 
   return {
     layout,
@@ -374,6 +337,7 @@ export function mapTableModelToPhaserView(options: {
     trumpSuit,
     trumpLabel,
     trumpSymbol,
+    showTrumpSymbol: banner.showSymbol,
     bannerAccent,
     waitingForTrickEnd: model.status.waitingForTrickEnd,
     interactionEnabled,

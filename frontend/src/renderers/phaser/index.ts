@@ -17,7 +17,13 @@ export {
   playerIndexToCompass,
   resolveBottomChromePx
 } from './phaserTableLayout';
-export { mapTableModelToPhaserView, cardTextureKey } from './mapTableModelToPhaserView';
+export {
+  mapTableModelToPhaserView,
+  cardTextureKey,
+  computeSeatPresentation,
+  computeTableBannerPresentation,
+  trumpSymbolForSuit
+} from './mapTableModelToPhaserView';
 export {
   getHandCardVisualPresentation,
   HAND_VISUAL

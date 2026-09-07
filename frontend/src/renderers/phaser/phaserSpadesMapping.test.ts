@@ -127,13 +127,17 @@ describe('mapTableModelToPhaserView — Spades', () => {
     });
     expect(view.spadesBidPhase).toBe(false);
     expect(view.spadesBroken).toBe(false);
-    expect(view.trumpLabel).toBe('♠ Fechadas');
+    // React SuitBrokenBadge owns broken/closed status — Phaser banner stays clear.
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.bannerAccent).toBe(false);
     expect(view.localIsActive).toBe(false);
     expect(view.localHand.every((c) => c.visualState === 'inactive')).toBe(true);
     expect(view.localHand.every((c) => c.canDrag === false)).toBe(true);
-    expect(view.seats[2].bidLabel).toBe('Nil');
-    expect(view.seats[0].bidLabel).toBe('3');
+    // Seat bids only during auction (strip shows team bids in play).
+    expect(view.seats[2].bidLabel).toBeNull();
+    expect(view.seats[0].bidLabel).toBeNull();
+    expect(view.seats.find((s) => s.isDealer)?.labelText).toContain('D');
     expect(view.layout.aspect).toBe('portrait');
   });
 
@@ -190,6 +194,8 @@ describe('mapTableModelToPhaserView — Spades', () => {
     expect(view.seats[1].showActiveHighlight).toBe(true);
     expect(view.seats[0].bidLabel).toBe('3');
     expect(view.seats[1].bidLabel).toBe('…');
+    expect(view.seats[0].labelText).toContain('3');
+    expect(view.seats[1].labelText).toContain('…');
   });
 
   it('maps broken spades banner accent', () => {
@@ -214,8 +220,9 @@ describe('mapTableModelToPhaserView — Spades', () => {
     expect(model.variantUi.spades?.spadesBroken).toBe(true);
     const view = mapTableModelToPhaserView({ model, width: 800, height: 400 });
     expect(view.spadesBroken).toBe(true);
-    expect(view.trumpLabel).toBe('♠ Quebradas');
-    expect(view.bannerAccent).toBe(true);
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
+    expect(view.bannerAccent).toBe(false);
     expect(view.layout.aspect).toBe('landscape');
   });
 
