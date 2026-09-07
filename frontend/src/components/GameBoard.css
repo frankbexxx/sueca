@@ -53,9 +53,10 @@
   margin-bottom: calc(22vh + 6px);
 }
 
-/* Phaser: leave a clear band for the React pass / festa bottom sheet. */
+/* Phaser: leave a clear band for the React pass / festa / bid chrome. */
 .game-board--hearts-pass .sueca-phaser-root,
-.game-board--festa-sheet .sueca-phaser-root {
+.game-board--festa-sheet .sueca-phaser-root,
+.game-board--spades-bid .sueca-phaser-root {
   position: relative;
   z-index: 1;
   margin-bottom: calc(20vh + 8px);
@@ -63,21 +64,38 @@
 
 @media (max-width: 768px) {
   .game-board--hearts-pass .sueca-phaser-root,
-  .game-board--festa-sheet .sueca-phaser-root {
+  .game-board--festa-sheet .sueca-phaser-root,
+  .game-board--spades-bid .sueca-phaser-root {
     height: min(52vh, 520px);
   }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
   .game-board--hearts-pass .sueca-phaser-root,
-  .game-board--festa-sheet .sueca-phaser-root {
+  .game-board--festa-sheet .sueca-phaser-root,
+  .game-board--spades-bid .sueca-phaser-root {
     /* Short viewport: prefer in-canvas chrome over large CSS margin. */
     margin-bottom: 4px;
-    height: min(58vh, 300px);
+    height: min(52vh, 260px);
   }
 
   .variant-modal--hearts-pass {
-    max-height: 26vh;
+    max-height: 22vh;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .variant-modal-overlay--hearts-pass {
+    /* Keep sheet docked; do not dim the felt/hand band. */
+    background: transparent;
+    align-items: flex-end;
+  }
+
+  .hearts-pass-title {
+    font-size: 0.55rem;
+  }
+
+  .hearts-pass-hint {
+    font-size: 0.5rem;
   }
 }
 
@@ -1404,14 +1422,55 @@
   }
   .top-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 6px 8px;
+    padding: 4px 6px;
+    gap: 3px;
+  }
+  .score-block { padding: 2px 4px; }
+  .score-block .label { font-size: 0.62em; }
+  .score-block .line { font-size: 0.6em; line-height: 1.15; }
+  .round-block { font-size: 0.7em; min-width: 0; padding: 2px 3px; }
+  .round-block__game { font-size: 0.85em; }
+  .trump-minimal { font-size: 0.85em; }
+  .suit-broken-badge { font-size: 0.62em; padding: 1px 5px; }
+
+  /* Hearts / King: scores + short contract; hide secondary density. */
+  .top-strip--unified {
+    padding: 3px 5px;
+  }
+  .game-status-panel {
+    padding: 4px 6px;
     gap: 4px;
   }
-  .score-block { padding: 3px 4px; }
-  .score-block .label { font-size: 0.68em; }
-  .score-block .line { font-size: 0.65em; }
-  .round-block { font-size: 0.75em; min-width: 0; padding: 3px 4px; }
-  .trump-minimal { font-size: 0.9em; }
+  .game-status-panel__label {
+    font-size: 0.55rem;
+    margin-bottom: 1px;
+  }
+  .game-status-panel__scores {
+    gap: 1px;
+  }
+  .game-status-panel__score-item {
+    font-size: 0.62rem;
+    line-height: 1.15;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .game-status-panel__contract-title {
+    font-size: 0.68rem;
+  }
+  .game-status-panel__contract-rules,
+  .game-status-panel__contract-hint,
+  .game-status-panel__contract-sep,
+  .game-status-panel__penalty-cards,
+  .king-history-panel,
+  .king-null-start-note {
+    display: none;
+  }
+  .game-status-panel__suit-status {
+    margin-top: 2px;
+  }
+
   .player-seat.player-east { right: -4px !important; }
   .player-seat.player-west { left: -4px !important; }
   .player-seat.player-north { top: -6px; }
