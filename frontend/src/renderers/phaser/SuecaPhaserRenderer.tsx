@@ -81,7 +81,13 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     });
     gameRef.current = game;
     scene.setTheme(theme);
-    if (process.env.NODE_ENV === 'development') {
+    // Expose scene when Phaser table is explicitly requested (dev + Capacitor/?renderer=phaser QA).
+    const exposeScene =
+      process.env.NODE_ENV === 'development' ||
+      (typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('renderer')?.toLowerCase() ===
+          'phaser');
+    if (exposeScene) {
       (window as unknown as { __suecaPhaserScene?: SuecaTableScene }).__suecaPhaserScene =
         scene;
     }
@@ -93,7 +99,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
 
     return () => {
       window.clearInterval(themeTimer);
-      if (process.env.NODE_ENV === 'development') {
+      if (exposeScene) {
         const w = window as unknown as { __suecaPhaserScene?: SuecaTableScene };
         if (w.__suecaPhaserScene === scene) delete w.__suecaPhaserScene;
       }
