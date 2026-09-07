@@ -27,7 +27,8 @@ import {
   mapTableModelToDomHandProps,
   mapTableModelToDomSurfaceProps
 } from '../table/mapTableModelToDomProps';
-import { shouldUseSuecaPhaserTable } from '../renderers/phaser/rendererFlag';
+import { resolveTableRendererForBrowser } from '../renderers/phaser/rendererFlag';
+import { PhaserTableErrorBoundary } from '../renderers/phaser/PhaserTableErrorBoundary';
 import { shouldUseSuecaPixiTable } from '../renderers/pixi/rendererFlag';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
@@ -160,6 +161,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   });
   // UI state
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
+  const [phaserInitFailed, setPhaserInitFailed] = useState(false);
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const layoutSnapshot = useLayoutSnapshot();
 
@@ -1035,12 +1037,24 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const handProps = mapTableModelToDomHandProps(tableModel);
 
   const usePhaserTable =
-    shouldUseSuecaPhaserTable(gameVariant) && !isMultiplayerActive;
+    resolveTableRendererForBrowser(gameVariant) === 'phaser' &&
+    !isMultiplayerActive &&
+    !phaserInitFailed;
   // Pixi Sueca POC is archived — only ?renderer=pixi-archive (see RENDERER_DECISION_2026.md).
   const usePixiTable =
     !usePhaserTable &&
     shouldUseSuecaPixiTable(gameVariant) &&
     !isMultiplayerActive;
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return;
+    const id = usePhaserTable ? 'phaser' : 'dom';
+    const w = window as unknown as { __suecaRenderer?: 'phaser' | 'dom' };
+    w.__suecaRenderer = id;
+    return () => {
+      if (w.__suecaRenderer === id) delete w.__suecaRenderer;
+    };
+  }, [usePhaserTable]);
 
   const isLocalCardPlayable = (cardIndex: number) => {
     if (!gameAdapter) return false;
@@ -1061,6 +1075,41 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       layoutSnapshot={layoutSnapshot}
     />
   );
+
+  const domTableContent = (
+    <>
+      {isTeamTableLayout ? (
+        <div className="game-table-zone">{tableSurface}</div>
+      ) : (
+        tableSurface
+      )}
+
+      {gameAdapter && gameState.players[localPlayerIndex] && (
+        <>
+          <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
+          <PlayerHand
+            gameState={gameState}
+            localPlayerIndex={localPlayerIndex}
+            selectedCard={selectedCard}
+            readOnly={handProps.readOnly}
+            selectedPassIndices={handProps.selectedPassIndices}
+            canPlayCard={isLocalCardPlayable}
+            onCardClick={handleCardClick}
+            getCardImage={getCardImage}
+            layoutSnapshot={layoutSnapshot}
+          />
+        </>
+      )}
+    </>
+  );
+
+  const handlePhaserFallback = useCallback((error: Error) => {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.warn('Phaser renderer failed, falling back to DOM', error);
+    }
+    setPhaserInitFailed(true);
+  }, []);
 
   return (
     <div className={boardClassName}>
@@ -1114,49 +1163,32 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 }}
               />
             ) : (
-              <SuecaPhaserRenderer
-                model={tableModel}
-                getCardImage={getCardImage}
-                getTeamName={getTeamName}
-                selectedCardIndex={selectedCard}
-                isLocalCardPlayable={isLocalCardPlayable}
-                events={{
-                  onLocalCardClick: handlePhaserCardClick,
-                  onContinueTrick: () => {
-                    if (!gameAdapter || !gameState.waitingForTrickEnd) return;
-                    gameAdapter.finishTrick(gameAdapter.getCurrentState());
-                    afterHostMutation();
-                  }
-                }}
-              />
+              <PhaserTableErrorBoundary
+                fallback={domTableContent}
+                onFallback={handlePhaserFallback}
+              >
+                <SuecaPhaserRenderer
+                  model={tableModel}
+                  getCardImage={getCardImage}
+                  getTeamName={getTeamName}
+                  selectedCardIndex={selectedCard}
+                  isLocalCardPlayable={isLocalCardPlayable}
+                  onInitError={handlePhaserFallback}
+                  events={{
+                    onLocalCardClick: handlePhaserCardClick,
+                    onContinueTrick: () => {
+                      if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                      gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                      afterHostMutation();
+                    }
+                  }}
+                />
+              </PhaserTableErrorBoundary>
             )}
           </div>
         </React.Suspense>
       ) : (
-        <>
-          {isTeamTableLayout ? (
-            <div className="game-table-zone">{tableSurface}</div>
-          ) : (
-            tableSurface
-          )}
-
-          {gameAdapter && gameState.players[localPlayerIndex] && (
-            <>
-              <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
-              <PlayerHand
-                gameState={gameState}
-                localPlayerIndex={localPlayerIndex}
-                selectedCard={selectedCard}
-                readOnly={handProps.readOnly}
-                selectedPassIndices={handProps.selectedPassIndices}
-                canPlayCard={isLocalCardPlayable}
-                onCardClick={handleCardClick}
-                getCardImage={getCardImage}
-                layoutSnapshot={layoutSnapshot}
-              />
-            </>
-          )}
-        </>
+        domTableContent
       )}
 
       {spadesLocalBidTurn && spadesState && (

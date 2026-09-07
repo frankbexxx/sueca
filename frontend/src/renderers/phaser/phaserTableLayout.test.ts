@@ -232,7 +232,7 @@ describe('phaserTheme', () => {
 });
 
 describe('rendererFlag', () => {
-  it('only enables for Sueca when flag is requested', () => {
+  it('never enables Phaser for non-Sueca variants', () => {
     expect(shouldUseSuecaPhaserTable('spades')).toBe(false);
     expect(shouldUseSuecaPhaserTable('hearts')).toBe(false);
   });

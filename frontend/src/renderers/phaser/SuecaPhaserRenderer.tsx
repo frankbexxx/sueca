@@ -1,5 +1,5 @@
 /**
- * React host for the Sueca Phaser table (E2 production candidate).
+ * React host for the Sueca Phaser table.
  * Consumes TableRenderModel + TableRendererEvents (C5 boundary).
  */
 
@@ -21,6 +21,8 @@ export interface SuecaPhaserRendererProps {
   getTeamName: (team: 1 | 2) => string;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   selectedCardIndex?: number | null;
+  /** Called once if Phaser.Game construction fails (useEffect — not caught by error boundaries). */
+  onInitError?: (error: Error) => void;
 }
 
 export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
@@ -29,7 +31,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   getCardImage,
   getTeamName,
   isLocalCardPlayable,
-  selectedCardIndex = null
+  selectedCardIndex = null,
+  onInitError
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -39,12 +42,14 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   const selectedRef = useRef(selectedCardIndex);
   const getCardImageRef = useRef(getCardImage);
   const getTeamNameRef = useRef(getTeamName);
+  const onInitErrorRef = useRef(onInitError);
 
   eventsRef.current = events;
   playableRef.current = isLocalCardPlayable;
   selectedRef.current = selectedCardIndex;
   getCardImageRef.current = getCardImage;
   getTeamNameRef.current = getTeamName;
+  onInitErrorRef.current = onInitError;
 
   const buildHost = () => ({
     onLocalCardClick: (cardIndex: number) => {
@@ -61,49 +66,58 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     const parent = containerRef.current;
     if (!parent || gameRef.current) return;
 
-    const theme = resolvePhaserThemeFromDom();
-    const scene = new SuecaTableScene(buildHost());
-    sceneRef.current = scene;
+    let themeTimer: number | undefined;
+    let exposeScene = false;
+    let scene: SuecaTableScene | null = null;
 
-    const game = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent,
-      backgroundColor: theme.feltDark,
-      scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: parent.clientWidth || 640,
-        height: parent.clientHeight || 480
-      },
-      scene: [scene],
-      banner: false,
-      audio: { noAudio: true }
-    });
-    gameRef.current = game;
-    scene.setTheme(theme);
-    // Expose scene when Phaser table is explicitly requested (dev + Capacitor/?renderer=phaser QA).
-    const exposeScene =
-      process.env.NODE_ENV === 'development' ||
-      (typeof window !== 'undefined' &&
-        new URLSearchParams(window.location.search).get('renderer')?.toLowerCase() ===
-          'phaser');
-    if (exposeScene) {
+    try {
+      const theme = resolvePhaserThemeFromDom();
+      scene = new SuecaTableScene(buildHost());
+      sceneRef.current = scene;
+
+      const game = new Phaser.Game({
+        type: Phaser.AUTO,
+        parent,
+        backgroundColor: theme.feltDark,
+        scale: {
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          width: parent.clientWidth || 640,
+          height: parent.clientHeight || 480
+        },
+        scene: [scene],
+        banner: false,
+        audio: { noAudio: true }
+      });
+      gameRef.current = game;
+      scene.setTheme(theme);
+
+      // QA helper for Capacitor / CDP (Sueca Phaser mount only).
+      exposeScene = true;
       (window as unknown as { __suecaPhaserScene?: SuecaTableScene }).__suecaPhaserScene =
         scene;
+
+      themeTimer = window.setInterval(() => {
+        const next = resolvePhaserThemeFromDom();
+        sceneRef.current?.setTheme(next);
+      }, 800);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.warn('Phaser renderer failed, falling back to DOM', error);
+      }
+      onInitErrorRef.current?.(error);
+      return;
     }
 
-    const themeTimer = window.setInterval(() => {
-      const next = resolvePhaserThemeFromDom();
-      sceneRef.current?.setTheme(next);
-    }, 800);
-
     return () => {
-      window.clearInterval(themeTimer);
-      if (exposeScene) {
+      if (themeTimer != null) window.clearInterval(themeTimer);
+      if (exposeScene && scene) {
         const w = window as unknown as { __suecaPhaserScene?: SuecaTableScene };
         if (w.__suecaPhaserScene === scene) delete w.__suecaPhaserScene;
       }
-      game.destroy(true);
+      gameRef.current?.destroy(true);
       gameRef.current = null;
       sceneRef.current = null;
     };
