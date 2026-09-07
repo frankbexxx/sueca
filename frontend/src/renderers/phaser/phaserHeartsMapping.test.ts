@@ -121,8 +121,11 @@ function mapHearts(
 }
 
 describe('Hearts Phaser selector', () => {
-  it('defaults DOM; enables Phaser with ?renderer=phaser', () => {
-    expect(resolveTableRenderer('hearts', { override: null })).toBe('dom');
+  it('defaults Phaser; forces DOM with ?renderer=dom', () => {
+    expect(resolveTableRenderer('hearts', { override: null })).toBe('phaser');
+    expect(
+      resolveTableRenderer('hearts', { search: '?renderer=dom' })
+    ).toBe('dom');
     expect(
       resolveTableRenderer('hearts', { search: '?renderer=phaser' })
     ).toBe('phaser');
