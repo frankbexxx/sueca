@@ -1,6 +1,6 @@
 /**
- * Sueca Phaser table scene — visual consumer of TableRenderModel only.
- * E2: usable table UX + sync guards. No engine imports.
+ * Sueca / Spades Phaser table scene — visual consumer of TableRenderModel only.
+ * No engine imports.
  */
 
 import Phaser from 'phaser';
@@ -164,6 +164,9 @@ export class SuecaTableScene extends Phaser.Scene {
     if (this.trumpText) this.trumpText.setText(nextView.trumpLabel);
     if (this.trumpBadge) {
       this.trumpBadge.setText(nextView.trumpSuit ? nextView.trumpSymbol : '');
+      this.trumpBadge.setColor(
+        nextView.bannerAccent ? this.theme.accent : this.theme.active
+      );
     }
 
     this.ensureTextures(nextView, () => {
@@ -241,6 +244,7 @@ export class SuecaTableScene extends Phaser.Scene {
       keep.add(seat.seatIndex);
       const parts = [seat.name];
       if (seat.teamLabel) parts.push(seat.teamLabel);
+      if (seat.bidLabel) parts.push(seat.bidLabel);
       if (!seat.isLocal) parts.push(String(seat.handCount));
       if (seat.isDealer) parts.push('D');
       const text = parts.join(' · ');
@@ -602,6 +606,8 @@ export class SuecaTableScene extends Phaser.Scene {
     localIsActive: boolean;
     trumpLabel: string;
     aspect: string;
+    spadesBidPhase?: boolean;
+    spadesBroken?: boolean;
   } | null {
     if (!this.view) return null;
     return {
@@ -610,7 +616,9 @@ export class SuecaTableScene extends Phaser.Scene {
       interactionEnabled: this.view.interactionEnabled,
       localIsActive: this.view.localIsActive,
       trumpLabel: this.view.trumpLabel,
-      aspect: this.view.layout.aspect
+      aspect: this.view.layout.aspect,
+      spadesBidPhase: this.view.spadesBidPhase,
+      spadesBroken: this.view.spadesBroken
     };
   }
 }

@@ -9,7 +9,8 @@ export {
   resolveTableRendererForBrowser,
   resolveRendererOverride,
   parseRendererOverrideFromQuery,
-  parseRendererOverrideFromEnv
+  parseRendererOverrideFromEnv,
+  isPhaserCapableVariant
 } from '../resolveTableRenderer';
 export type {
   TableRendererId,

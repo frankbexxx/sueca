@@ -8,7 +8,6 @@
 import type { Card, GameVariant, Suit } from '../types/game';
 import type { GameBoardFlowKind } from '../utils/gameFlowOrchestrator';
 import type { KingBid } from '../models/games/king/kingContracts';
-import type { SpadesVariantState } from '../models/games/SpadesGame';
 
 /** One seat around the table, relative to engine player indices. */
 export interface TableSeatRenderModel {
@@ -71,10 +70,21 @@ export interface TableStatusRenderModel {
  */
 export interface TableVariantUiRenderModel {
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
-  spades?: Pick<
-    SpadesVariantState,
-    'currentBidderIndex' | 'nilEnabled' | 'blindNilEnabled' | 'waitingForBids'
-  > | null;
+  /**
+   * Spades presentation slice for table renderers.
+   * Bags / race-to-500 stay on React HUD/modals — not duplicated here.
+   */
+  spades?: {
+    currentBidderIndex: number;
+    nilEnabled: boolean;
+    blindNilEnabled: boolean;
+    waitingForBids: boolean;
+    spadesBroken: boolean;
+    playerBids: (number | null)[];
+    playerBidTypes: string[];
+    team1Bid: number;
+    team2Bid: number;
+  } | null;
   heartsPassIndices?: number[];
 }
 

@@ -1,5 +1,6 @@
 /**
  * Pure mapping: TableRenderModel → Phaser view entities (no Phaser runtime).
+ * Shared by Sueca + Spades Phaser tables.
  */
 
 import type { Card } from '../../types/game';
@@ -34,6 +35,8 @@ export interface PhaserSeatEntity {
   compass: PhaserCompass;
   name: string;
   teamLabel: string | null;
+  /** Spades bid badge (Nil / Blind / N) or null. */
+  bidLabel: string | null;
   handCount: number;
   isLocal: boolean;
   isActive: boolean;
@@ -65,9 +68,13 @@ export interface PhaserTableViewModel {
   trumpSuit: string | null;
   trumpLabel: string;
   trumpSymbol: string;
+  /** When true, trump badge uses accent (e.g. Spades broken). */
+  bannerAccent: boolean;
   waitingForTrickEnd: boolean;
   interactionEnabled: boolean;
   localIsActive: boolean;
+  spadesBidPhase: boolean;
+  spadesBroken: boolean;
 }
 
 export function cardTextureKey(card: Card): string {
@@ -80,6 +87,20 @@ export function trumpSymbolForSuit(suit: string | null): string {
   if (suit === 'hearts') return '♥';
   if (suit === 'spades') return '♠';
   return '—';
+}
+
+/** Pure Spades bid badge text for seat chrome. */
+export function formatSpadesBidBadge(
+  bid: number | null | undefined,
+  bidType: string | undefined,
+  waitingForBids: boolean
+): string | null {
+  if (bidType === 'nil') return 'Nil';
+  if (bidType === 'blindNil') return 'Blind';
+  if (bid == null || bid === undefined) {
+    return waitingForBids ? '…' : null;
+  }
+  return String(bid);
 }
 
 function seatLabelPosition(
@@ -117,6 +138,9 @@ export function mapTableModelToPhaserView(options: {
   } = options;
   const layout = buildPhaserTableLayout(width, height);
   const local = model.localPlayerIndex;
+  const spadesUi = model.variantUi.spades;
+  const spadesBidPhase = model.status.spadesBidActive || model.chrome.spadesBidPhase;
+  const spadesBroken = Boolean(spadesUi?.spadesBroken);
 
   const interactionEnabled =
     !model.status.isPaused &&
@@ -125,7 +149,8 @@ export function mapTableModelToPhaserView(options: {
     !model.status.waitingForRoundStart &&
     !model.status.waitingForRoundEnd &&
     !model.status.waitingForGameStart &&
-    !model.chrome.handReadOnly;
+    !model.chrome.handReadOnly &&
+    !spadesBidPhase;
 
   const localIsActive =
     interactionEnabled && model.activeSeat === model.localPlayerIndex;
@@ -138,8 +163,6 @@ export function mapTableModelToPhaserView(options: {
     let visualState: PhaserCardVisualState = 'inactive';
     if (localIsActive) {
       visualState = playableHint ? 'legal' : 'illegal';
-    } else if (!interactionEnabled) {
-      visualState = 'inactive';
     } else {
       visualState = 'inactive';
     }
@@ -165,13 +188,26 @@ export function mapTableModelToPhaserView(options: {
     const compass = playerIndexToCompass(seat.index, local);
     const showActiveHighlight =
       seat.isActive &&
-      interactionEnabled &&
-      !model.status.waitingForTrickEnd;
+      !model.status.isPaused &&
+      !model.status.isGameOver &&
+      !model.status.waitingForTrickEnd &&
+      (interactionEnabled || spadesBidPhase);
+
+    let bidLabel: string | null = null;
+    if (spadesUi && (spadesBidPhase || !spadesUi.waitingForBids)) {
+      bidLabel = formatSpadesBidBadge(
+        spadesUi.playerBids[seat.index],
+        spadesUi.playerBidTypes[seat.index],
+        spadesUi.waitingForBids
+      );
+    }
+
     return {
       seatIndex: seat.index,
       compass,
       name: seat.name,
       teamLabel: showTeam && getTeamName ? getTeamName(seat.team) : null,
+      bidLabel,
       handCount: seat.handCount,
       isLocal: seat.isLocal,
       isActive: seat.isActive,
@@ -205,7 +241,14 @@ export function mapTableModelToPhaserView(options: {
 
   const trumpSuit = model.trumpSuit;
   const trumpSymbol = trumpSymbolForSuit(trumpSuit);
-  const trumpLabel = trumpSuit ? `Trunfo ${trumpSymbol}` : 'Trunfo —';
+  let trumpLabel: string;
+  let bannerAccent = false;
+  if (model.variant === 'spades') {
+    trumpLabel = spadesBroken ? '♠ Quebradas' : '♠ Fechadas';
+    bannerAccent = spadesBroken;
+  } else {
+    trumpLabel = trumpSuit ? `Trunfo ${trumpSymbol}` : 'Trunfo —';
+  }
 
   return {
     layout,
@@ -218,8 +261,11 @@ export function mapTableModelToPhaserView(options: {
     trumpSuit,
     trumpLabel,
     trumpSymbol,
+    bannerAccent,
     waitingForTrickEnd: model.status.waitingForTrickEnd,
     interactionEnabled,
-    localIsActive
+    localIsActive,
+    spadesBidPhase,
+    spadesBroken
   };
 }

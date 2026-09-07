@@ -41,14 +41,19 @@ export function isActiveTurnSeat(
 ): boolean {
   if (options.suppress) return false;
   if (gameState.isGameOver) return false;
+
+  // Spades bidding uses waitingForRoundStart while the auction runs — still highlight the bidder.
+  if (options.spadesBidPhase) {
+    if (gameState.waitingForRoundEnd) return false;
+    if (gameState.waitingForGameStart) return false;
+    if (gameState.waitingForTrickEnd) return false;
+    return options.currentBidderIndex === playerIndex;
+  }
+
   if (gameState.waitingForRoundStart) return false;
   if (gameState.waitingForRoundEnd) return false;
   if (gameState.waitingForGameStart) return false;
   if (gameState.waitingForTrickEnd) return false;
-
-  if (options.spadesBidPhase) {
-    return options.currentBidderIndex === playerIndex;
-  }
 
   return gameState.currentPlayerIndex === playerIndex;
 }

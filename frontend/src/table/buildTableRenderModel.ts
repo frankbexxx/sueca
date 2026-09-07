@@ -147,7 +147,12 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
             currentBidderIndex: spadesState.currentBidderIndex,
             nilEnabled: spadesState.nilEnabled,
             blindNilEnabled: spadesState.blindNilEnabled,
-            waitingForBids: spadesState.waitingForBids
+            waitingForBids: spadesState.waitingForBids,
+            spadesBroken: spadesState.spadesBroken,
+            playerBids: [...spadesState.playerBids],
+            playerBidTypes: [...spadesState.playerBidTypes],
+            team1Bid: spadesState.team1Bid,
+            team2Bid: spadesState.team2Bid
           }
         : null,
       heartsPassIndices: heartsPassActive ? heartsPassIndices : undefined

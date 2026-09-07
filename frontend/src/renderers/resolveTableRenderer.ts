@@ -1,19 +1,23 @@
 /**
- * Central table-renderer selection (Sueca Phaser default + DOM fallback).
+ * Central table-renderer selection.
  *
  * Precedence:
  * 1. URL query `?renderer=`
  * 2. `REACT_APP_TABLE_RENDERER` env
- * 3. variant default (Sueca → phaser; others → dom)
+ * 3. variant default
  *
- * Phaser is only available for Sueca solo. Other variants always resolve to DOM
- * even if `?renderer=phaser` is present.
+ * Defaults:
+ * - Sueca → Phaser
+ * - Spades → DOM (Phaser only with explicit override)
+ * - Hearts / King → DOM (Phaser ignored)
  */
 
 export type TableRendererId = 'phaser' | 'dom';
 
 /** Explicit override from query or env; null = use variant default. */
 export type RendererOverride = 'phaser' | 'dom' | null;
+
+const PHASER_CAPABLE_VARIANTS = new Set(['sueca', 'spades']);
 
 export function parseRendererOverrideFromQuery(
   search?: string | null
@@ -75,10 +79,16 @@ export function resolveTableRenderer(
       ? options.override
       : resolveRendererOverride(options.search, options.envOverride);
 
-  if (variant !== 'sueca') {
+  if (!PHASER_CAPABLE_VARIANTS.has(variant)) {
     return 'dom';
   }
 
+  if (variant === 'spades') {
+    if (override === 'phaser') return 'phaser';
+    return 'dom';
+  }
+
+  // Sueca
   if (override === 'dom') return 'dom';
   if (override === 'phaser') return 'phaser';
   return 'phaser';
@@ -107,4 +117,8 @@ export function isPhaserTableRendererRequested(): boolean {
       process.env.REACT_APP_TABLE_RENDERER
     ) === 'phaser'
   );
+}
+
+export function isPhaserCapableVariant(variant: string): boolean {
+  return PHASER_CAPABLE_VARIANTS.has(variant);
 }
