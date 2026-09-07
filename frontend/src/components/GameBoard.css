@@ -53,6 +53,34 @@
   margin-bottom: calc(22vh + 6px);
 }
 
+/* Phaser: leave a clear band for the React pass / festa bottom sheet. */
+.game-board--hearts-pass .sueca-phaser-root,
+.game-board--festa-sheet .sueca-phaser-root {
+  position: relative;
+  z-index: 1;
+  margin-bottom: calc(20vh + 8px);
+}
+
+@media (max-width: 768px) {
+  .game-board--hearts-pass .sueca-phaser-root,
+  .game-board--festa-sheet .sueca-phaser-root {
+    height: min(52vh, 520px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-board--hearts-pass .sueca-phaser-root,
+  .game-board--festa-sheet .sueca-phaser-root {
+    /* Short viewport: prefer in-canvas chrome over large CSS margin. */
+    margin-bottom: 4px;
+    height: min(58vh, 300px);
+  }
+
+  .variant-modal--hearts-pass {
+    max-height: 26vh;
+  }
+}
+
 .game-board--hearts-pass .game-table-zone,
 .game-board--hearts-pass .table-layout {
   pointer-events: none;
