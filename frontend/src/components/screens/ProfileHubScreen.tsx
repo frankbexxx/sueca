@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../i18n/useLanguage';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
 import { exitAppToLanding } from '../../services/appLifecycle';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import '../../styles/shell-screens.css';
 import './MoreScreen.css';
 
@@ -19,11 +20,15 @@ export const ProfileHubScreen: React.FC<ProfileHubScreenProps> = ({
   onOpenSection
 }) => {
   const { t } = useLanguage();
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   const handleExitApp = () => {
-    if (window.confirm(t.profileScreen.exitConfirm)) {
-      exitAppToLanding();
-    }
+    setExitConfirmOpen(true);
+  };
+
+  const confirmExitApp = () => {
+    setExitConfirmOpen(false);
+    exitAppToLanding();
   };
 
   return (
@@ -65,10 +70,21 @@ export const ProfileHubScreen: React.FC<ProfileHubScreenProps> = ({
           type="button"
           className="sueca-btn sueca-btn--danger sueca-btn--block"
           onClick={handleExitApp}
+          data-testid="profile-exit-app"
         >
           {t.profileScreen.exitApp}
         </button>
       </section>
+      <ConfirmDialog
+        open={exitConfirmOpen}
+        title={t.profileScreen.exitApp}
+        message={t.profileScreen.exitConfirm}
+        confirmLabel={t.profileScreen.exitApp}
+        cancelLabel={t.gameMenu.cancel}
+        destructive
+        onConfirm={confirmExitApp}
+        onCancel={() => setExitConfirmOpen(false)}
+      />
     </div>
   );
 };

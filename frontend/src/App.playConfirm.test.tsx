@@ -1,0 +1,185 @@
+/**
+ * Home play/continue confirm gates — App-level React dialog (not window.confirm).
+ */
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { act } from 'react-dom/test-utils';
+import { GameVariant } from './types/game';
+import { GameState } from './types/game';
+
+jest.mock('./components/GameBoard', () => ({
+  GameBoard: ({ config }: { config: { gameVariant: string } }) => (
+    <div data-testid="game-board" data-variant={config.gameVariant} />
+  )
+}));
+
+jest.mock('./components/LandingPage', () => ({
+  LandingPage: ({ onStart }: { onStart: () => void }) => (
+    <button type="button" data-testid="enter-shell" onClick={onStart}>
+      Entrar
+    </button>
+  )
+}));
+
+jest.mock('./navigation/ShellRouter', () => ({
+  ShellRouter: ({
+    onContinue,
+    onPlayVariant
+  }: {
+    onContinue: (variant: GameVariant) => void;
+    onPlayVariant: (variant: GameVariant) => void;
+  }) => (
+    <div data-testid="shell-home">
+      <button type="button" data-testid="home-continue" onClick={() => onContinue('sueca')}>
+        Continuar
+      </button>
+      <button type="button" data-testid="home-play" onClick={() => onPlayVariant('sueca')}>
+        Jogar
+      </button>
+    </div>
+  )
+}));
+
+jest.mock('./components/navigation/BottomNav', () => ({
+  BottomNav: () => <nav data-testid="bottom-nav" />
+}));
+
+jest.mock('./services/audioService', () => ({
+  playUiClick: jest.fn(),
+  preloadAmbiance: jest.fn(),
+  preloadSfx: jest.fn(),
+  startAmbiance: jest.fn()
+}));
+
+jest.mock('./navigation/useShellBrowserBack', () => ({
+  bindCapacitorBackButton: () => Promise.resolve(() => undefined),
+  useShellBrowserBack: () => ({ goBack: jest.fn() })
+}));
+
+jest.mock('./hooks/useCustomThemeCSS', () => ({
+  useCustomThemeCSS: jest.fn()
+}));
+
+jest.mock('./services/multiplayerClient', () => ({
+  endSession: jest.fn(async () => undefined)
+}));
+
+import App from './App';
+import {
+  buildSoloConfigForVariant,
+  clearGameSession,
+  loadGameSession,
+  saveGameSession
+} from './services/gameSessionStorage';
+
+function minimalState(): GameState {
+  return {
+    players: [],
+    currentPlayerIndex: 0,
+    dealerIndex: 0,
+    trumpSuit: null,
+    trumpCard: null,
+    currentTrick: [],
+    trickLeader: 0,
+    scores: { team1: 0, team2: 0 },
+    gameScore: { team1: 0, team2: 0 },
+    completedPentes: [],
+    round: 1,
+    isGameOver: false,
+    winner: null,
+    lastTrickWinner: null,
+    waitingForTrickEnd: false,
+    nextTrickLeader: null,
+    isFirstTrick: true,
+    dealingMethod: 'A',
+    dealingDirection: 'left',
+    waitingForRoundStart: false,
+    waitingForRoundEnd: false,
+    waitingForGameStart: false,
+    playedCards: [],
+    isPaused: false,
+    playerName: 'P1',
+    aiDifficulty: 'medium',
+    partnerSignals: []
+  };
+}
+
+describe('App home play confirm gates', () => {
+  let container: HTMLDivElement;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    localStorage.clear();
+    localStorage.setItem('sueca-language', 'pt');
+    clearGameSession();
+  });
+
+  afterEach(() => {
+    ReactDOM.unmountComponentAtNode(container);
+    container.remove();
+  });
+
+  function enterShell() {
+    act(() => {
+      ReactDOM.render(<App />, container);
+    });
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="enter-shell"]')?.click();
+    });
+  }
+
+  it('starts directly when no session exists', () => {
+    enterShell();
+    expect(loadGameSession('sueca')).toBeNull();
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
+    });
+    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
+    expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
+  });
+
+  it('opens dialog when session exists; cancel keeps session', () => {
+    const config = buildSoloConfigForVariant('sueca');
+    saveGameSession(config, minimalState());
+    enterShell();
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
+    });
+    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="game-board"]')).toBeNull();
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="confirm-dialog-cancel"]')?.click();
+    });
+    expect(loadGameSession('sueca')).toBeTruthy();
+    expect(container.querySelector('[data-testid="game-board"]')).toBeNull();
+    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
+  });
+
+  it('confirm clears session and starts new game once', () => {
+    const config = buildSoloConfigForVariant('sueca');
+    saveGameSession(config, minimalState());
+    enterShell();
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
+    });
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="confirm-dialog-confirm"]')?.click();
+    });
+    expect(loadGameSession('sueca')).toBeNull();
+    expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
+  });
+
+  it('Continuar resumes without dialog', () => {
+    const config = buildSoloConfigForVariant('sueca');
+    saveGameSession(config, minimalState());
+    enterShell();
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-testid="home-continue"]')?.click();
+    });
+    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
+    expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
+    expect(loadGameSession('sueca')).toBeTruthy();
+  });
+});

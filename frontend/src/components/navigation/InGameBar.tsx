@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../i18n/useLanguage';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import './InGameBar.css';
+
+type PendingConfirm = 'newGame' | 'exit' | null;
 
 interface InGameBarProps {
   playerName: string;
@@ -26,17 +29,15 @@ export const InGameBar: React.FC<InGameBarProps> = ({
   onExit
 }) => {
   const { t } = useLanguage();
+  const [pending, setPending] = useState<PendingConfirm>(null);
 
-  const handleNewGame = () => {
-    if (window.confirm(t.inGame.newGameConfirm)) {
-      onNewGame();
-    }
-  };
+  const closeDialog = () => setPending(null);
 
-  const handleExit = () => {
-    if (window.confirm(t.inGame.leaveConfirm)) {
-      onExit();
-    }
+  const handleConfirm = () => {
+    const kind = pending;
+    setPending(null);
+    if (kind === 'newGame') onNewGame();
+    if (kind === 'exit') onExit();
   };
 
   return (
@@ -53,6 +54,7 @@ export const InGameBar: React.FC<InGameBarProps> = ({
           type="button"
           className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"
           onClick={isPaused ? onResume : onPause}
+          data-testid="in-game-pause"
         >
           {isPaused ? `▶ ${t.gameMenu.resume}` : `⏸ ${t.gameMenu.pause}`}
         </button>
@@ -70,18 +72,41 @@ export const InGameBar: React.FC<InGameBarProps> = ({
         <button
           type="button"
           className="sueca-btn sueca-btn--secondary sueca-btn--compact in-game-bar-btn"
-          onClick={handleNewGame}
+          onClick={() => setPending('newGame')}
+          data-testid="in-game-new-game"
         >
           {t.inGame.newGame}
         </button>
         <button
           type="button"
           className="sueca-btn sueca-btn--danger sueca-btn--compact in-game-bar-btn"
-          onClick={handleExit}
+          onClick={() => setPending('exit')}
+          data-testid="in-game-exit"
         >
           {t.inGame.exit}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={pending === 'newGame'}
+        title={t.inGame.newGame}
+        message={t.inGame.newGameConfirm}
+        confirmLabel={t.inGame.newGame}
+        cancelLabel={t.gameMenu.cancel}
+        destructive
+        onConfirm={handleConfirm}
+        onCancel={closeDialog}
+      />
+      <ConfirmDialog
+        open={pending === 'exit'}
+        title={t.inGame.exit}
+        message={t.inGame.leaveConfirm}
+        confirmLabel={t.inGame.exit}
+        cancelLabel={t.gameMenu.cancel}
+        destructive
+        onConfirm={handleConfirm}
+        onCancel={closeDialog}
+      />
     </div>
   );
 };

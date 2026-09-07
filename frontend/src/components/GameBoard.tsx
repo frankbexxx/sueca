@@ -4,6 +4,7 @@ import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
 import { RoundEndModal } from './RoundEndModal';
 import { GameOverModal } from './GameOverModal';
+import { ConfirmDialog } from './common/ConfirmDialog';
 import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
@@ -162,6 +163,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // UI state
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const [phaserInitFailed, setPhaserInitFailed] = useState(false);
+  const [pinConfirmOpen, setPinConfirmOpen] = useState(false);
   const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
   const layoutSnapshot = useLayoutSnapshot();
 
@@ -993,12 +995,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const handlePinGame = () => {
     if (gameState.isGameOver) return;
-    if (window.confirm(t.inGame.pinConfirm)) {
-      pinGameSession(
-        { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
-        gameState
-      );
-    }
+    setPinConfirmOpen(true);
+  };
+
+  const confirmPinGame = () => {
+    setPinConfirmOpen(false);
+    if (gameState.isGameOver) return;
+    pinGameSession(
+      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
+      gameState
+    );
   };
 
   const tableModel = useMemo(
@@ -1487,6 +1493,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={pinConfirmOpen}
+        title={t.inGame.pinGame}
+        message={t.inGame.pinConfirm}
+        confirmLabel={t.inGame.pinGame}
+        cancelLabel={t.gameMenu.cancel}
+        onConfirm={confirmPinGame}
+        onCancel={() => setPinConfirmOpen(false)}
+      />
     </div>
   );
 };
