@@ -17,6 +17,8 @@ export interface SeatPresentationInput {
   secondaryBadge: string | null;
   showActiveHighlight: boolean;
   aspect: PhaserAspectMode;
+  /** Narrow portrait west/east — shorter labels, skip team when possible. */
+  compactSide?: boolean;
 }
 
 export interface SeatPresentation {
@@ -39,15 +41,17 @@ export function shortTeamLabel(raw: string | null | undefined): string | null {
 
 /**
  * Canonical seat line: Name · [badge|team] · [count] · [D]
- * Same structure for Sueca / Spades / Hearts / King.
+ * Compact side (360 phone): Name · [badge] · count · [D] — drop team to save width.
  */
 export function computeSeatPresentation(input: SeatPresentationInput): SeatPresentation {
-  const maxName = input.aspect === 'landscape' ? 6 : 8;
+  const compact = Boolean(input.compactSide);
+  const maxName =
+    input.aspect === 'landscape' ? 6 : compact ? 4 : 8;
   const shortName = truncatePlayerName(input.name, maxName);
   const parts: string[] = [shortName];
 
   const badge = input.secondaryBadge?.trim() || null;
-  const team = badge ? null : shortTeamLabel(input.teamLabel);
+  const team = badge || compact ? null : shortTeamLabel(input.teamLabel);
   if (badge) parts.push(badge);
   else if (team) parts.push(team);
 
@@ -55,7 +59,7 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
   if (input.isDealer) parts.push('D');
 
   return {
-    labelText: parts.join(' · '),
+    labelText: parts.join(compact ? ' ' : ' · '),
     shortName,
     showActiveRing: input.showActiveHighlight,
     showDealerMark: input.isDealer

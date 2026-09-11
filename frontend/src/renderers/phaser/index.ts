@@ -22,6 +22,7 @@ export {
   computeTableZones,
   PREMIUM_TABLE,
   premiumTrickOffset,
+  resolveOrientationReference,
   zonesOverlap
 } from './phaserPremiumLayout';
 export {

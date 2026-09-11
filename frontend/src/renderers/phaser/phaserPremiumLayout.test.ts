@@ -3,20 +3,23 @@ import {
   computePremiumTableLayout,
   PREMIUM_TABLE,
   premiumTrickOffset,
+  resolvePremiumAspectMode,
   zonesOverlap
 } from './phaserPremiumLayout';
 import {
   buildPhaserTableLayout,
   computeLocalHandLayout,
-  layoutTrickSlot
+  layoutTrickSlot,
+  resolveAspectMode
 } from './phaserTableLayout';
+import { computeSeatPresentation } from './phaserSeatPresentation';
 
 describe('UX-P3.1 premium table layout', () => {
   const phones = [
     { w: 360, h: 800 },
     { w: 390, h: 844 },
     { w: 414, h: 896 }
-  ] as const;
+  ];
 
   it.each(phones)('zones fit $w×$h without hand/trick critical overlap', ({ w, h }) => {
     const premium = computePremiumTableLayout({ width: w, height: h });
@@ -24,16 +27,59 @@ describe('UX-P3.1 premium table layout', () => {
     expect(zones.felt.width).toBeGreaterThan(200);
     expect(zones.trick.height).toBeGreaterThan(premium.cardHeight);
     expect(zones.hand.y).toBeGreaterThan(zones.trick.y);
-    // Trick must sit above local seat / hand band.
     expect(zones.trick.y + zones.trick.height).toBeLessThanOrEqual(zones.localSeat.y + 8);
     expect(zones.topSeat.y).toBeLessThan(zones.trick.y);
     expect(premium.handY).toBeGreaterThan(premium.center.y);
-    // No critical overlap: trick vs hand with small slack.
     expect(zonesOverlap(zones.trick, zones.hand, 4)).toBe(false);
+  });
+
+  it('compacts side seats on 360×800 without invading trick', () => {
+    const layout = buildPhaserTableLayout(360, 800);
+    expect(layout.compactSideSeats).toBe(true);
+    expect(layout.zones.leftSeat.width).toBeLessThanOrEqual(44);
+    expect(layout.zones.rightSeat.width).toBeLessThanOrEqual(44);
+    expect(layout.zones.leftSeat.x + layout.zones.leftSeat.width).toBeLessThan(
+      layout.zones.trick.x + 8
+    );
+    expect(layout.zones.trick.x + layout.zones.trick.width).toBeLessThan(
+      layout.zones.rightSeat.x + 8
+    );
+    const side = computeSeatPresentation({
+      name: 'Player 2',
+      handCount: 10,
+      isLocal: false,
+      isDealer: false,
+      teamLabel: 'Eles',
+      secondaryBadge: null,
+      showActiveHighlight: false,
+      aspect: 'portrait',
+      compactSide: true
+    });
+    expect(side.labelText).not.toMatch(/Eles/i);
+    expect(side.labelText.length).toBeLessThan(14);
+  });
+
+  it('keeps portrait aspect when canvas is short but window is tall (sheets)', () => {
+    const canvasW = 390;
+    const canvasH = 420;
+    const windowRef = { width: 390, height: 844 };
+    expect(resolveAspectMode(canvasW, canvasH)).toBe('desktop');
+    expect(resolveAspectMode(canvasW, canvasH, windowRef)).toBe('portrait');
+    expect(
+      buildPhaserTableLayout(canvasW, canvasH, { orientationReference: windowRef }).aspect
+    ).toBe('portrait');
+    expect(resolvePremiumAspectMode(360, 380, { width: 360, height: 800 })).toBe(
+      'portrait'
+    );
+  });
+
+  it('still resolves real landscape from reference', () => {
+    expect(resolveAspectMode(740, 320, { width: 844, height: 390 })).toBe('landscape');
   });
 
   it('seat anchors derive from zones on 390×844', () => {
     const layout = buildPhaserTableLayout(390, 844);
+    expect(layout.compactSideSeats).toBe(false);
     expect(layout.seatAnchor.north.y).toBeLessThan(layout.center.y);
     expect(layout.seatAnchor.south.y).toBeGreaterThan(layout.center.y);
     expect(layout.seatAnchor.west.x).toBeLessThan(layout.center.x);

@@ -15,12 +15,46 @@ export interface PhaserPoint {
 
 export function resolvePremiumAspectMode(
   width: number,
-  height: number
+  height: number,
+  /**
+   * Prefer window / host orientation size when the Phaser canvas height is
+   * temporarily reduced by React bottom sheets (pass / bid / festa).
+   */
+  reference?: { width?: number; height?: number } | null
 ): PremiumAspectMode {
-  const ratio = height / Math.max(1, width);
+  const rw = Math.max(1, reference?.width ?? width);
+  const rh = Math.max(1, reference?.height ?? height);
+  const ratio = rh / rw;
   if (ratio >= 1.15) return 'portrait';
-  if (width / Math.max(1, height) >= 1.45 && height < 520) return 'landscape';
+  if (rw / rh >= 1.45 && rh < 520) return 'landscape';
   return 'desktop';
+}
+
+/** Browser helper: classify using the device/viewport, not a shrunk canvas. */
+export function resolveOrientationReference(
+  canvasWidth: number,
+  canvasHeight: number
+): { width: number; height: number } {
+  if (typeof window === 'undefined') {
+    return { width: canvasWidth, height: canvasHeight };
+  }
+  const vv = window.visualViewport;
+  const vw = Math.round(vv?.width || window.innerWidth || canvasWidth);
+  const vh = Math.round(vv?.height || window.innerHeight || canvasHeight);
+
+  const windowPortrait = vh / Math.max(1, vw) >= 1.15;
+  const canvasPortrait = canvasHeight / Math.max(1, canvasWidth) >= 1.15;
+  const windowLandscape = vw / Math.max(1, vh) >= 1.45 && vh < 520;
+
+  // Phone portrait with React bottom sheet: canvas becomes short/square → keep window.
+  if (windowPortrait && !canvasPortrait && vw <= 520) {
+    return { width: vw, height: vh };
+  }
+  // Real landscape phone: prefer window orientation.
+  if (windowLandscape) {
+    return { width: vw, height: vh };
+  }
+  return { width: canvasWidth, height: canvasHeight };
 }
 
 /** Premium Classic Table surface tokens (UX-P3.1). */
@@ -89,6 +123,11 @@ export interface PremiumTableLayoutInput {
   /** Optional safe-area insets ( Cap / notch ); defaults 0. */
   safeArea?: { top?: number; right?: number; bottom?: number; left?: number };
   handCount?: number;
+  /**
+   * Orientation reference (window/host). When omitted, canvas size is used.
+   * Pass window size so React bottom sheets cannot flip portrait → desktop.
+   */
+  orientationReference?: { width?: number; height?: number } | null;
 }
 
 export interface PremiumTableLayout {
@@ -110,6 +149,8 @@ export interface PremiumTableLayout {
   bottomChromePx: number;
   tableMargin: number;
   tableRadius: number;
+  /** Portrait phone ≤380px: side seat chrome should use compact labels. */
+  compactSideSeats: boolean;
 }
 
 function zone(x: number, y: number, width: number, height: number): TableZoneRect {
@@ -185,16 +226,28 @@ export function computeTableZones(input: {
   const topSeatH = Math.max(36, Math.min(56, h * 0.07));
   const topSeat = zone(felt.cx - feltW * 0.22, topHud.y + topHudH + 2, feltW * 0.44, topSeatH);
 
-  const sideW = Math.max(40, Math.min(72, w * 0.14));
+  // Narrow portrait phones: keep side seats slim so labels don't eat the trick.
+  const narrowPortrait = aspect === 'portrait' && w <= 380;
+  const sideW = narrowPortrait
+    ? Math.max(28, Math.min(44, Math.floor(w * 0.1)))
+    : Math.max(40, Math.min(72, w * 0.14));
   const sideY = feltY + topHudH + topSeatH + 8;
   const sideH = Math.max(80, localSeat.y - sideY - 12);
-  const leftSeat = zone(feltX + 2, sideY, sideW, sideH);
-  const rightSeat = zone(feltX + feltW - sideW - 2, sideY, sideW, sideH);
+  const leftSeat = zone(feltX + (narrowPortrait ? 0 : 2), sideY, sideW, sideH);
+  const rightSeat = zone(
+    feltX + feltW - sideW - (narrowPortrait ? 0 : 2),
+    sideY,
+    sideW,
+    sideH
+  );
 
   const trickTop = topSeat.y + topSeatH + (aspect === 'landscape' ? 4 : 10);
   const trickBottom = localSeat.y - 8;
   const trickH = Math.max(cardHeight * 1.6, trickBottom - trickTop);
-  const trickW = Math.min(feltW * 0.72, Math.max(160, w * 0.55));
+  const trickW = Math.min(
+    feltW * (narrowPortrait ? 0.62 : 0.72),
+    Math.max(narrowPortrait ? 140 : 160, w * (narrowPortrait ? 0.48 : 0.55))
+  );
   const trick = zone(felt.cx - trickW / 2, trickTop, trickW, trickH);
 
   return {
@@ -219,12 +272,13 @@ export function computePremiumTableLayout(
 ): PremiumTableLayout {
   const w = Math.max(280, input.width);
   const h = Math.max(300, input.height);
-  const aspect = resolvePremiumAspectMode(w, h);
+  const aspect = resolvePremiumAspectMode(w, h, input.orientationReference);
   const bottomChromePx = Math.max(0, Math.round(input.bottomChromePx ?? 0));
   const safeTop = Math.max(0, input.safeArea?.top ?? 0);
   const safeBottom = Math.max(0, input.safeArea?.bottom ?? 0);
   const safeLeft = Math.max(0, input.safeArea?.left ?? 0);
   const safeRight = Math.max(0, input.safeArea?.right ?? 0);
+  const compactSideSeats = aspect === 'portrait' && w <= 380;
 
   let cardWidth: number;
   if (aspect === 'portrait') {
@@ -305,7 +359,8 @@ export function computePremiumTableLayout(
     handSpreadMax,
     bottomChromePx,
     tableMargin,
-    tableRadius
+    tableRadius,
+    compactSideSeats
   };
 }
 
@@ -329,7 +384,8 @@ export function premiumToPhaserTableLayout(premium: PremiumTableLayout) {
     trickCardHeight: premium.trickCardHeight,
     tableMargin: premium.tableMargin,
     tableRadius: premium.tableRadius,
-    zones: premium.zones
+    zones: premium.zones,
+    compactSideSeats: premium.compactSideSeats
   };
 }
 

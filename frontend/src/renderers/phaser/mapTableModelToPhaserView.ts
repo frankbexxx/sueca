@@ -134,6 +134,14 @@ function seatLabelPosition(
   if (compass === 'north') {
     return { x: anchor.x, y: Math.max(14, anchor.y - 22) };
   }
+  // Narrow portrait: keep side labels inside the slim side band.
+  if (layout.compactSideSeats) {
+    const inward = compass === 'west' ? 6 : -6;
+    return {
+      x: anchor.x + inward,
+      y: anchor.y - layout.opponentCardHeight * 0.55
+    };
+  }
   return {
     x: anchor.x,
     y: anchor.y - layout.opponentCardHeight * 0.85
@@ -147,6 +155,8 @@ export function mapTableModelToPhaserView(options: {
   selectedCardIndex?: number | null;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   getTeamName?: (team: 1 | 2) => string;
+  /** Window/host size for aspect classification (sheet-safe). */
+  orientationReference?: { width?: number; height?: number } | null;
 }): PhaserTableViewModel {
   const {
     model,
@@ -154,7 +164,8 @@ export function mapTableModelToPhaserView(options: {
     height,
     selectedCardIndex = null,
     isLocalCardPlayable,
-    getTeamName
+    getTeamName,
+    orientationReference = null
   } = options;
   const local = model.localPlayerIndex;
   const spadesUi = model.variantUi.spades;
@@ -163,11 +174,14 @@ export function mapTableModelToPhaserView(options: {
   const spadesBidPhase = model.status.spadesBidActive || model.chrome.spadesBidPhase;
   const heartsPassPhase = model.status.heartsPassActive;
   const kingFestaPhase = model.status.festaSheetActive;
-  const aspect = resolveAspectMode(width, height);
+  const aspect = resolveAspectMode(width, height, orientationReference);
   const bottomChromePx = resolveBottomChromePx(height, aspect, {
     sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase
   });
-  const layout = buildPhaserTableLayout(width, height, { bottomChromePx });
+  const layout = buildPhaserTableLayout(width, height, {
+    bottomChromePx,
+    orientationReference
+  });
   const kingWaitingForChoice = Boolean(kingUi?.waitingForChoice);
   const spadesBroken = Boolean(spadesUi?.spadesBroken);
   const heartsBroken = Boolean(heartsUi?.heartsBroken);
@@ -276,7 +290,8 @@ export function mapTableModelToPhaserView(options: {
       teamLabel,
       secondaryBadge: bidLabel,
       showActiveHighlight,
-      aspect: layout.aspect
+      aspect: layout.aspect,
+      compactSide: layout.compactSideSeats && (compass === 'west' || compass === 'east')
     });
 
     return {

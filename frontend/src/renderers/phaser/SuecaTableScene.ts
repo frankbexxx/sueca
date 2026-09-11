@@ -27,6 +27,7 @@ import {
   nextSyncGeneration,
   PLAY_CLICK_LOCK_MS
 } from './phaserSyncGuards';
+import { resolveOrientationReference } from './phaserPremiumLayout';
 import { pointInDropZone } from './phaserTableLayout';
 import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
@@ -221,7 +222,11 @@ export class SuecaTableScene extends Phaser.Scene {
       height: this.scale.height,
       selectedCardIndex: selected,
       isLocalCardPlayable: this.host.isLocalCardPlayable,
-      getTeamName: this.host.getTeamName
+      getTeamName: this.host.getTeamName,
+      orientationReference: resolveOrientationReference(
+        this.scale.width,
+        this.scale.height
+      )
     });
 
     const prevTrickIds = new Set((this.view?.trick ?? []).map((t) => t.card.id));
@@ -347,7 +352,11 @@ export class SuecaTableScene extends Phaser.Scene {
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
       const text = seat.labelText;
-      const fontSize = view.layout.aspect === 'landscape' ? '11px' : '12px';
+      const compactSide =
+        view.layout.compactSideSeats &&
+        (seat.compass === 'west' || seat.compass === 'east');
+      const fontSize =
+        view.layout.aspect === 'landscape' ? '11px' : compactSide ? '10px' : '12px';
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
         label = this.add
@@ -355,7 +364,7 @@ export class SuecaTableScene extends Phaser.Scene {
             fontFamily: 'Segoe UI, system-ui, sans-serif',
             fontSize,
             color: this.theme.text,
-            padding: { x: 8, y: 4 }
+            padding: { x: compactSide ? 4 : 8, y: compactSide ? 2 : 4 }
           })
           .setOrigin(0.5)
           .setDepth(PREMIUM_TABLE.depthSeats + 2);
@@ -369,8 +378,8 @@ export class SuecaTableScene extends Phaser.Scene {
       label.setBackgroundColor('rgba(0,0,0,0)');
 
       const bounds = label.getBounds();
-      const padX = 10;
-      const padY = 5;
+      const padX = compactSide ? 5 : 10;
+      const padY = compactSide ? 3 : 5;
       let panel = this.seatPanels.get(seat.seatIndex);
       if (!panel) {
         panel = this.add.graphics().setDepth(PREMIUM_TABLE.depthSeats);
@@ -381,16 +390,21 @@ export class SuecaTableScene extends Phaser.Scene {
       const ph = bounds.height + padY * 2;
       const px = seat.labelPosition.x - pw / 2;
       const py = seat.labelPosition.y - ph / 2;
+      const radius = compactSide ? 6 : 8;
       panel.fillStyle(PREMIUM_TABLE.shadow, 0.35);
-      panel.fillRoundedRect(px + 1, py + 2, pw, ph, 8);
+      panel.fillRoundedRect(px + 1, py + 2, pw, ph, radius);
       panel.fillStyle(this.theme.seatPanel, 0.94);
-      panel.fillRoundedRect(px, py, pw, ph, 8);
+      panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(1, this.theme.brass, seat.isDealer ? 0.55 : 0.28);
-      panel.strokeRoundedRect(px, py, pw, ph, 8);
+      panel.strokeRoundedRect(px, py, pw, ph, radius);
 
       let ring = this.seatRings.get(seat.seatIndex);
-      const ringW = Math.max(52, (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) * 1.7);
-      const ringH = Math.max(26, ringW * 0.32);
+      const ringW = Math.max(
+        compactSide ? 36 : 52,
+        (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) *
+          (compactSide ? 1.35 : 1.7)
+      );
+      const ringH = Math.max(compactSide ? 18 : 26, ringW * 0.32);
       if (!ring) {
         ring = this.add
           .ellipse(seat.labelPosition.x, seat.labelPosition.y + 16, ringW, ringH)

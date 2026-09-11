@@ -54,6 +54,8 @@ export interface PhaserTableLayout {
   tableMargin: number;
   tableRadius: number;
   zones: TableZones;
+  /** Narrow portrait: compact west/east seat chrome. */
+  compactSideSeats: boolean;
 }
 
 /** Shared hand fan knobs — not variant-specific. */
@@ -73,6 +75,8 @@ export interface PhaserLayoutOptions {
   /** Lift hand / south seat above React bottom-sheet chrome. */
   bottomChromePx?: number;
   safeArea?: { top?: number; right?: number; bottom?: number; left?: number };
+  /** Window/host size for aspect — ignores temporary canvas shrink from sheets. */
+  orientationReference?: { width?: number; height?: number } | null;
 }
 
 const COMPASS_FROM_OFFSET: PhaserCompass[] = ['south', 'west', 'north', 'east'];
@@ -85,8 +89,12 @@ export function playerIndexToCompass(
   return COMPASS_FROM_OFFSET[offset] ?? 'south';
 }
 
-export function resolveAspectMode(width: number, height: number): PhaserAspectMode {
-  return resolvePremiumAspectMode(width, height);
+export function resolveAspectMode(
+  width: number,
+  height: number,
+  reference?: { width?: number; height?: number } | null
+): PhaserAspectMode {
+  return resolvePremiumAspectMode(width, height, reference);
 }
 
 /** Bottom-sheet reserve for pass / bid / festa — geometry only, not variant styling. */
@@ -111,7 +119,8 @@ export function buildPhaserTableLayout(
     width,
     height,
     bottomChromePx: options?.bottomChromePx,
-    safeArea: options?.safeArea
+    safeArea: options?.safeArea,
+    orientationReference: options?.orientationReference
   });
   return premiumToPhaserTableLayout(premium);
 }
