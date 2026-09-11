@@ -37,6 +37,13 @@
   --theme-player-box: rgba(0, 0, 0, 0.25);
   --theme-turn-indicator: #ffd700;
 
+  /* UX-P3.3 Premium HUD (game board only) */
+  --premium-hud-panel: rgba(16, 25, 27, 0.72);
+  --premium-hud-panel-strong: rgba(16, 25, 27, 0.82);
+  --premium-hud-border: rgba(197, 164, 91, 0.22);
+  --premium-hud-text: #e8e0d0;
+  --premium-font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+
   /* Spacing & shape */
   --sueca-radius-md: 10px;
   --sueca-radius-lg: 12px;
