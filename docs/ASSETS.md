@@ -8,7 +8,7 @@
 | Pack | Path | Estado |
 |------|------|--------|
 | Cartas (activo) | `frontend/public/assets/cards2/*.png` | **Hazmat Hand Drawn** faces (trial) |
-| Costa (UX-P3.1) | `frontend/public/assets/cards2/card_back.png` | **Suecão card back v1** (Premium Classic) |
+| Costa (UX-P3.2) | `frontend/public/assets/cards2/card_back.png` | **Suecão card back v1** — cool navy contrast vs teal felt |
 | Import Hazmat | `frontend/public/assets/cards-pack-import/hazmat/` | Flat staging; `node tools/stage-hazmat.mjs` |
 | UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
 | UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
