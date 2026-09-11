@@ -28,4 +28,8 @@ export {
   getHandCardVisualPresentation,
   HAND_VISUAL
 } from './phaserHandVisual';
+export {
+  resolveHandHitAreaMode,
+  isDisplayPixelHitAreaMistake
+} from './phaserHandInput';
 

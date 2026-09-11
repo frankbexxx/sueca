@@ -104,6 +104,13 @@
   pointer-events: none;
 }
 
+/* Phaser hand lives inside the canvas (not .player-hand-bar) — keep pass taps alive. */
+.game-board--hearts-pass .sueca-phaser-root,
+.game-board--hearts-pass .sueca-phaser-canvas-host,
+.game-board--hearts-pass .sueca-phaser-canvas-host canvas {
+  pointer-events: auto;
+}
+
 .game-board--hearts-pass .player-info,
 .game-board--hearts-pass .player-info.mobile-layout {
   min-width: 56px;

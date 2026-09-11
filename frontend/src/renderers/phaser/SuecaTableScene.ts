@@ -15,6 +15,7 @@ import {
 import {
   getHandCardVisualPresentation
 } from './phaserHandVisual';
+import { resolveHandHitAreaMode } from './phaserHandInput';
 import {
   DEFAULT_THEME,
   PhaserThemeView,
@@ -541,21 +542,11 @@ export class SuecaTableScene extends Phaser.Scene {
   ): void {
     sprite.setAlpha(visual.alpha);
     sprite.setTint(visual.tint);
-    if (visual.interactive) {
-      // Slightly taller hit box so overlapping fan cards stay easy to tap.
-      const { cardWidth, cardHeight } = view.layout;
-      const padX = Math.max(4, cardWidth * 0.08);
-      const padY = Math.max(8, cardHeight * 0.12);
-      sprite.setInteractive(
-        new Phaser.Geom.Rectangle(
-          -cardWidth / 2 - padX,
-          -cardHeight / 2 - padY,
-          cardWidth + padX * 2,
-          cardHeight + padY * 2
-        ),
-        Phaser.Geom.Rectangle.Contains
-      );
-      sprite.input!.cursor = 'pointer';
+    const hitMode = resolveHandHitAreaMode(visual.interactive);
+    if (hitMode === 'default-frame') {
+      // Default frame hit area — scales with displaySize. Never use layout.cardWidth
+      // as a Geom.Rectangle (that is display-space; textures are ~533x764 → tiny world hit).
+      sprite.setInteractive({ useHandCursor: true });
     } else {
       sprite.disableInteractive();
     }

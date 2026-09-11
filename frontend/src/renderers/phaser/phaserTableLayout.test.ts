@@ -25,6 +25,10 @@ import {
   getHandCardVisualPresentation,
   HAND_VISUAL
 } from './phaserHandVisual';
+import {
+  isDisplayPixelHitAreaMistake,
+  resolveHandHitAreaMode
+} from './phaserHandInput';
 import { computeSeatPresentation } from './phaserSeatPresentation';
 import { computeTableBannerPresentation } from './phaserTableBanner';
 import type { TableRenderModel } from '../../table/tableRenderModel';
@@ -307,6 +311,58 @@ describe('phaserTableBanner UX-P2', () => {
       auctionLocale: 'pt'
     });
     expect(king.label).toBe('Damas');
+  });
+});
+
+describe('phaserHandInput P0 hit area', () => {
+  it('uses default frame hit area for interactive cards (not display-pixel rects)', () => {
+    expect(resolveHandHitAreaMode(true)).toBe('default-frame');
+    expect(resolveHandHitAreaMode(false)).toBe('disabled');
+  });
+
+  it('flags the UX-P1 display-vs-frame hit-area mistake', () => {
+    const frame = { width: 533, height: 764 };
+    // layout.cardWidth-sized rect — the broken path
+    expect(isDisplayPixelHitAreaMistake(60.32, 90.52, frame.width, frame.height)).toBe(
+      true
+    );
+    // frame-local rect is OK if a custom area is ever required
+    expect(isDisplayPixelHitAreaMistake(533, 764, frame.width, frame.height)).toBe(false);
+  });
+
+  it('keeps legal play and Hearts pass interactive while illegal/inactive are not', () => {
+    const legal = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: false,
+      canDrag: true,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    const pass = getHandCardVisualPresentation({
+      visualState: 'legal',
+      selected: false,
+      canDrag: false,
+      passSelectionEnabled: true,
+      interactionEnabled: false
+    });
+    const illegal = getHandCardVisualPresentation({
+      visualState: 'illegal',
+      selected: false,
+      canDrag: false,
+      passSelectionEnabled: false,
+      interactionEnabled: true
+    });
+    const inactive = getHandCardVisualPresentation({
+      visualState: 'inactive',
+      selected: false,
+      canDrag: false,
+      passSelectionEnabled: false,
+      interactionEnabled: false
+    });
+    expect(resolveHandHitAreaMode(legal.interactive)).toBe('default-frame');
+    expect(resolveHandHitAreaMode(pass.interactive)).toBe('default-frame');
+    expect(resolveHandHitAreaMode(illegal.interactive)).toBe('disabled');
+    expect(resolveHandHitAreaMode(inactive.interactive)).toBe('disabled');
   });
 });
 
