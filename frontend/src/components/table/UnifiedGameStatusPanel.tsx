@@ -3,9 +3,9 @@ import { Card, GameState, GameVariant } from '../../types/game';
 import { useLanguage } from '../../i18n/useLanguage';
 import { getKingPtState } from '../../models/games/KingPtGame';
 import {
-  kingGameTitle,
+  kingHudContractTitle,
   KING_NEGATIVE_GAMES,
-  KingNegativeContract
+  type KingNegativeContract
 } from '../../models/games/king/kingContracts';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { getKingRulesHint } from '../KingRulesHelper';
@@ -84,7 +84,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
           ? isPt
             ? 'Viragem do Rei de Copas'
             : 'King of Hearts draw'
-          : kingGameTitle(
+          : kingHudContractTitle(
               kingPtState.gameIndex,
               kingPtState.contract,
               kingPtState.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
@@ -96,7 +96,9 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
     } else {
       const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
       contractLine = isPt ? 'King simplificado' : 'King simplified';
-      ruleLine = `${gameState.round}/10 · ${simplified?.handType ?? '…'}`;
+      ruleLine = isPt
+        ? `Jogo ${gameState.round}/10 · ${simplified?.handType ?? '…'}`
+        : `Game ${gameState.round}/10 · ${simplified?.handType ?? '…'}`;
     }
   } else if (variant === 'hearts') {
     const heartsState = getHeartsState(gameState);

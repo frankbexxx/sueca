@@ -3,7 +3,7 @@ import { GameState, GameVariant, Suit } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import { getKingPtState } from '../models/games/KingPtGame';
 import {
-  kingGameTitle,
+  kingHudContractTitle,
   KING_NEGATIVE_GAMES
 } from '../models/games/king/kingContracts';
 import { resolvePresetId } from '../constants/rulesPresets';
@@ -51,7 +51,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
           ? locale === 'pt'
             ? 'Viragem do Rei de Copas'
             : 'King of Hearts draw'
-          : kingGameTitle(
+          : kingHudContractTitle(
               king.gameIndex,
               king.contract,
               king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
@@ -73,7 +73,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
     return (
       <div className="game-info king-info">
         <span>
-          King simplificado · {gameState.round}/10 ({simplified?.handType ?? '…'})
+          King simplificado · Jogo {gameState.round}/10 ({simplified?.handType ?? '…'})
         </span>
       </div>
     );

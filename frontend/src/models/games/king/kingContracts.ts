@@ -96,3 +96,28 @@ export function kingGameTitle(
   }
   return locale === 'pt' ? `Jogo ${n}/${KING_TOTAL_GAMES}` : `Game ${n}/${KING_TOTAL_GAMES}`;
 }
+
+/**
+ * HUD contract line for the live table (UX-P3.4a).
+ * Match progress is labeled `Jogo N/10` so it cannot be read as trick progress
+ * next to the canonical `Vaza N/13` indicator.
+ */
+export function kingHudContractTitle(
+  gameIndex: number,
+  contract: KingNegativeContract | null,
+  festaOwnerName: string | null,
+  locale: 'pt' | 'en'
+): string {
+  const n = gameIndex + 1;
+  const match =
+    locale === 'pt' ? `Jogo ${n}/${KING_TOTAL_GAMES}` : `Game ${n}/${KING_TOTAL_GAMES}`;
+  if (gameIndex < KING_NEGATIVE_GAMES && contract) {
+    return `${kingContractLabel(contract, locale)} · ${match}`;
+  }
+  if (festaOwnerName) {
+    return locale === 'pt'
+      ? `Festa de ${festaOwnerName} · ${match}`
+      : `${festaOwnerName}'s festa · ${match}`;
+  }
+  return match;
+}

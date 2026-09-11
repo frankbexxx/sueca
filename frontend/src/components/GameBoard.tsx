@@ -1424,7 +1424,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           <div className="variant-modal-overlay">
             <div className="variant-modal dobo-panel">
               <h2>
-                King simplificado — mão {gameState.round}/10 (
+                King simplificado — Jogo {gameState.round}/10 (
                 {kingCtrl?.readSimplifiedHandType(gameState) || '…'}
                 )
               </h2>
