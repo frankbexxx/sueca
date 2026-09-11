@@ -3,9 +3,14 @@
   width: 100%;
   min-height: 420px;
   height: min(62vh, 680px);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--theme-table-felt-dark, #1f4f1f);
+  /* UX-P3.1 exterior — React HUD sits above; canvas paints felt */
+  background: linear-gradient(
+    180deg,
+    var(--theme-table-felt-dark, #141f22) 0%,
+    var(--theme-table-felt-dark, #10191b) 100%
+  );
 }
 
 .sueca-phaser-canvas-host {

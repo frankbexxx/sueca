@@ -5,7 +5,18 @@
  * Local hand geometry is variant-agnostic: same viewport + card count +
  * card size ⇒ same fan/overlap/baseline (Sueca 10 vs Spades/Hearts/King 13
  * only differ by count-driven spacing).
+ *
+ * UX-P3.1: seats / trick / felt zones come from `computePremiumTableLayout`;
+ * hand fan knobs (`HAND_LAYOUT`) stay UX-P1.
  */
+
+import {
+  computePremiumTableLayout,
+  premiumToPhaserTableLayout,
+  premiumTrickOffset,
+  resolvePremiumAspectMode,
+  type TableZones
+} from './phaserPremiumLayout';
 
 export type PhaserCompass = 'south' | 'west' | 'north' | 'east';
 
@@ -32,11 +43,17 @@ export interface PhaserTableLayout {
   cardHeight: number;
   opponentCardWidth: number;
   opponentCardHeight: number;
+  /** Trick cards may be slightly larger than hand (UX-P3.1). */
+  trickCardWidth: number;
+  trickCardHeight: number;
   /** Drop zone radius for optional drag-to-play. */
   dropRadius: number;
   handSpreadMax: number;
   /** Reserved px above canvas bottom for React bottom sheets (pass/bid/festa). */
   bottomChromePx: number;
+  tableMargin: number;
+  tableRadius: number;
+  zones: TableZones;
 }
 
 /** Shared hand fan knobs — not variant-specific. */
@@ -55,6 +72,7 @@ export const HAND_LAYOUT = {
 export interface PhaserLayoutOptions {
   /** Lift hand / south seat above React bottom-sheet chrome. */
   bottomChromePx?: number;
+  safeArea?: { top?: number; right?: number; bottom?: number; left?: number };
 }
 
 const COMPASS_FROM_OFFSET: PhaserCompass[] = ['south', 'west', 'north', 'east'];
@@ -68,10 +86,7 @@ export function playerIndexToCompass(
 }
 
 export function resolveAspectMode(width: number, height: number): PhaserAspectMode {
-  const ratio = height / Math.max(1, width);
-  if (ratio >= 1.15) return 'portrait';
-  if (width / Math.max(1, height) >= 1.45 && height < 520) return 'landscape';
-  return 'desktop';
+  return resolvePremiumAspectMode(width, height);
 }
 
 /** Bottom-sheet reserve for pass / bid / festa — geometry only, not variant styling. */
@@ -92,71 +107,13 @@ export function buildPhaserTableLayout(
   height: number,
   options?: PhaserLayoutOptions
 ): PhaserTableLayout {
-  const w = Math.max(280, width);
-  const h = Math.max(300, height);
-  const aspect = resolveAspectMode(w, h);
-  const bottomChromePx = Math.max(0, Math.round(options?.bottomChromePx ?? 0));
-
-  let cardWidth: number;
-  if (aspect === 'portrait') {
-    cardWidth = Math.min(64, Math.max(44, Math.floor(w * 0.12)));
-  } else if (aspect === 'landscape') {
-    cardWidth = Math.min(58, Math.max(40, Math.floor(h * 0.14)));
-  } else {
-    cardWidth = Math.min(76, Math.max(50, Math.floor(w * 0.085)));
-  }
-  const cardHeight = Math.round(cardWidth * 1.4);
-  const opponentCardWidth = Math.round(cardWidth * (aspect === 'landscape' ? 0.48 : 0.55));
-  const opponentCardHeight = Math.round(cardHeight * (aspect === 'landscape' ? 0.48 : 0.55));
-
-  const marginX =
-    aspect === 'landscape'
-      ? Math.max(36, Math.floor(w * 0.05))
-      : Math.max(44, Math.floor(w * 0.07));
-  const marginY =
-    aspect === 'portrait'
-      ? Math.max(28, Math.floor(h * 0.05))
-      : Math.max(32, Math.floor(h * 0.06));
-
-  const handReserve =
-    aspect === 'portrait'
-      ? Math.max(cardHeight * 0.72, 70)
-      : aspect === 'landscape'
-        ? Math.max(cardHeight * 0.55, 52)
-        : Math.max(cardHeight * 0.6, 60);
-  const handY = h - handReserve - bottomChromePx;
-
-  const chromeNudge = bottomChromePx > 0 ? bottomChromePx * 0.35 : 0;
-  const centerY =
-    (aspect === 'portrait'
-      ? h * 0.38
-      : aspect === 'landscape'
-        ? h * 0.4
-        : h * 0.42) - chromeNudge;
-
-  const handSpreadMax =
-    aspect === 'portrait' ? w * 0.92 : aspect === 'landscape' ? w * 0.7 : w * 0.78;
-
-  return {
-    width: w,
-    height: h,
-    aspect,
-    center: { x: w / 2, y: centerY },
-    seatAnchor: {
-      south: { x: w / 2, y: handY - cardHeight * 0.42 },
-      west: { x: marginX, y: centerY },
-      north: { x: w / 2, y: marginY + (aspect === 'landscape' ? 12 : 20) },
-      east: { x: w - marginX, y: centerY }
-    },
-    handY,
-    cardWidth,
-    cardHeight,
-    opponentCardWidth,
-    opponentCardHeight,
-    dropRadius: Math.max(cardWidth * 1.6, 72),
-    handSpreadMax,
-    bottomChromePx
-  };
+  const premium = computePremiumTableLayout({
+    width,
+    height,
+    bottomChromePx: options?.bottomChromePx,
+    safeArea: options?.safeArea
+  });
+  return premiumToPhaserTableLayout(premium);
 }
 
 /**
@@ -231,21 +188,11 @@ export function layoutTrickSlot(
   compass: PhaserCompass,
   layout: PhaserTableLayout
 ): PhaserPoint {
-  const { center, cardWidth, cardHeight } = layout;
-  const dx = cardWidth * 0.58;
-  const dy = cardHeight * 0.42;
-  switch (compass) {
-    case 'south':
-      return { x: center.x, y: center.y + dy };
-    case 'north':
-      return { x: center.x, y: center.y - dy };
-    case 'west':
-      return { x: center.x - dx, y: center.y };
-    case 'east':
-      return { x: center.x + dx, y: center.y };
-    default:
-      return center;
-  }
+  const offset = premiumTrickOffset(compass, layout);
+  return {
+    x: layout.center.x + offset.x,
+    y: layout.center.y + offset.y
+  };
 }
 
 export function pointInDropZone(

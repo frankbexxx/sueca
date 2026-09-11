@@ -18,6 +18,13 @@ export {
   resolveBottomChromePx
 } from './phaserTableLayout';
 export {
+  computePremiumTableLayout,
+  computeTableZones,
+  PREMIUM_TABLE,
+  premiumTrickOffset,
+  zonesOverlap
+} from './phaserPremiumLayout';
+export {
   mapTableModelToPhaserView,
   cardTextureKey,
   computeSeatPresentation,

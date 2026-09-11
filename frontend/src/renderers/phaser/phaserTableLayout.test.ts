@@ -92,6 +92,7 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
     activeSeat: 0,
     dealerSeat: 1,
     leaderSeat: 0,
+    lastTrickWinner: null,
     trumpSuit: 'spades',
     trumpCard: null,
     scores: { roundPoints: { team1: 0, team2: 0 }, gamePoints: { team1: 0, team2: 0 }, round: 1 },

@@ -28,6 +28,7 @@ import {
   PLAY_CLICK_LOCK_MS
 } from './phaserSyncGuards';
 import { pointInDropZone } from './phaserTableLayout';
+import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
 function colorIntFromCss(raw: string, fallback = 0xffd700): number {
   const s = (raw || '').trim();
@@ -58,12 +59,21 @@ export class SuecaTableScene extends Phaser.Scene {
   private trickSprites = new Map<string, Phaser.GameObjects.Image>();
   private opponentBacks: Phaser.GameObjects.GameObject[] = [];
   private seatLabels = new Map<number, Phaser.GameObjects.Text>();
+  private seatPanels = new Map<number, Phaser.GameObjects.Graphics>();
   private seatRings = new Map<number, Phaser.GameObjects.Ellipse>();
   private trumpText: Phaser.GameObjects.Text | null = null;
   private trumpBadge: Phaser.GameObjects.Text | null = null;
-  private felt: Phaser.GameObjects.Rectangle | null = null;
+  /** True after premium surface graphics exist (replaces flat felt rect). */
+  private tableReady = false;
+  private exteriorGfx: Phaser.GameObjects.Graphics | null = null;
+  private feltGfx: Phaser.GameObjects.Graphics | null = null;
+  private vignetteGfx: Phaser.GameObjects.Graphics | null = null;
+  private winnerRings = new Map<string, Phaser.GameObjects.Ellipse>();
+  private cardShadows: Phaser.GameObjects.Ellipse[] = [];
   private animatingClear = false;
   private backKey = 'card-back';
+  /** Public texture key for QA — must stay `card-back` (CARD_BACK_PATH). */
+  static readonly CARD_BACK_TEXTURE_KEY = 'card-back';
   private syncGeneration = 0;
   private clickLockUntil = 0;
   private dragCardId: string | null = null;
@@ -82,18 +92,21 @@ export class SuecaTableScene extends Phaser.Scene {
   setTheme(theme: PhaserThemeView): void {
     if (themesEqual(this.theme, theme)) return;
     this.theme = theme;
-    if (this.felt) {
-      this.felt.setFillStyle(theme.felt);
-      this.cameras.main.setBackgroundColor(theme.feltDark);
+    // SuecaPhaserRenderer may call setTheme before Scene.create() boots cameras.
+    if (this.cameras?.main) {
+      this.cameras.main.setBackgroundColor(theme.exterior);
     }
-    if (this.trumpText) this.trumpText.setColor(theme.text);
-    if (this.trumpBadge) this.trumpBadge.setColor(theme.active);
-    if (this.latestModel) this.syncFromModel(true);
+    if (this.tableReady) {
+      this.drawTableSurface(true);
+      if (this.trumpText) this.trumpText.setColor(theme.text);
+      if (this.trumpBadge) this.trumpBadge.setColor(theme.active);
+      if (this.latestModel) this.syncFromModel(true);
+    }
   }
 
   applyModel(model: TableRenderModel): void {
     this.latestModel = model;
-    if (!this.felt) return;
+    if (!this.tableReady) return;
     this.syncFromModel(false);
   }
 
@@ -106,11 +119,13 @@ export class SuecaTableScene extends Phaser.Scene {
 
   create(): void {
     this.theme = resolvePhaserThemeFromDom();
-    const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor(this.theme.feltDark);
-    this.felt = this.add
-      .rectangle(width / 2, height / 2, width, height, this.theme.felt)
-      .setDepth(0);
+    this.cameras.main.setBackgroundColor(this.theme.exterior);
+    this.exteriorGfx = this.add.graphics().setDepth(PREMIUM_TABLE.depthTable);
+    this.feltGfx = this.add.graphics().setDepth(PREMIUM_TABLE.depthTable + 1);
+    this.vignetteGfx = this.add.graphics().setDepth(PREMIUM_TABLE.depthTable + 2);
+    this.drawTableSurface(false);
+    this.tableReady = true;
+
     this.trumpText = this.add
       .text(12, 10, '', {
         fontFamily: 'Segoe UI, system-ui, sans-serif',
@@ -118,24 +133,82 @@ export class SuecaTableScene extends Phaser.Scene {
         fontStyle: 'bold',
         color: this.theme.text
       })
-      .setDepth(50);
+      .setDepth(PREMIUM_TABLE.depthHud);
     this.trumpBadge = this.add
       .text(12, 30, '', {
         fontFamily: 'Segoe UI, system-ui, sans-serif',
         fontSize: '22px',
         color: this.theme.active
       })
-      .setDepth(50);
+      .setDepth(PREMIUM_TABLE.depthHud);
 
     this.scale.on('resize', this.handleResize, this);
     if (this.latestModel) this.syncFromModel(true);
   }
 
-  private handleResize = (gameSize: Phaser.Structs.Size): void => {
-    if (this.felt) {
-      this.felt.setPosition(gameSize.width / 2, gameSize.height / 2);
-      this.felt.setSize(gameSize.width, gameSize.height);
-    }
+  private drawTableSurface(_force: boolean): void {
+    if (!this.exteriorGfx || !this.feltGfx || !this.vignetteGfx) return;
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const layout = this.view?.layout;
+    const margin = layout?.tableMargin ?? PREMIUM_TABLE.tableMarginPortrait;
+    const radius = layout?.tableRadius ?? PREMIUM_TABLE.tableRadiusPortrait;
+    const feltX = layout?.zones.felt.x ?? margin;
+    const feltY = layout?.zones.felt.y ?? margin;
+    const feltW = layout?.zones.felt.width ?? Math.max(120, width - margin * 2);
+    const feltH = layout?.zones.felt.height ?? Math.max(160, height - margin * 2);
+
+    this.exteriorGfx.clear();
+    this.feltGfx.clear();
+    this.vignetteGfx.clear();
+
+    // Exterior mate gradient (two stacked fills).
+    this.exteriorGfx.fillStyle(this.theme.exterior, 1);
+    this.exteriorGfx.fillRect(0, 0, width, height);
+    this.exteriorGfx.fillStyle(PREMIUM_TABLE.exteriorTop, 0.35);
+    this.exteriorGfx.fillRect(0, 0, width, height * 0.45);
+
+    // Rounded felt with edge + soft center wash.
+    const r = Math.min(radius, Math.floor(Math.min(feltW, feltH) / 4));
+    this.feltGfx.fillStyle(this.theme.feltEdge, 1);
+    this.feltGfx.fillRoundedRect(feltX, feltY, feltW, feltH, r);
+    const inset = 3;
+    this.feltGfx.fillStyle(this.theme.felt, 1);
+    this.feltGfx.fillRoundedRect(
+      feltX + inset,
+      feltY + inset,
+      feltW - inset * 2,
+      feltH - inset * 2,
+      Math.max(8, r - 4)
+    );
+    this.feltGfx.fillStyle(this.theme.feltCenter, 0.28);
+    this.feltGfx.fillEllipse(
+      feltX + feltW / 2,
+      feltY + feltH * 0.42,
+      feltW * 0.72,
+      feltH * 0.55
+    );
+
+    // Inner highlight (top edge) — brass under 5% visual weight.
+    this.feltGfx.lineStyle(1.25, this.theme.brass, 0.22);
+    this.feltGfx.strokeRoundedRect(
+      feltX + 5,
+      feltY + 5,
+      feltW - 10,
+      feltH - 10,
+      Math.max(6, r - 6)
+    );
+
+    // Soft vignette (edges only).
+    this.vignetteGfx.fillStyle(PREMIUM_TABLE.shadow, 0.22);
+    this.vignetteGfx.fillRect(feltX, feltY, feltW, 10);
+    this.vignetteGfx.fillRect(feltX, feltY + feltH - 14, feltW, 14);
+    this.vignetteGfx.fillRect(feltX, feltY, 10, feltH);
+    this.vignetteGfx.fillRect(feltX + feltW - 10, feltY, 10, feltH);
+  }
+
+  private handleResize = (_gameSize: Phaser.Structs.Size): void => {
+    this.drawTableSurface(true);
     if (this.latestModel) this.syncFromModel(true);
   };
 
@@ -165,6 +238,7 @@ export class SuecaTableScene extends Phaser.Scene {
     }
 
     this.view = nextView;
+    this.drawTableSurface(true);
     if (this.trumpText) {
       this.trumpText.setText(nextView.trumpLabel);
       this.trumpText.setVisible(Boolean(nextView.trumpLabel));
@@ -227,22 +301,41 @@ export class SuecaTableScene extends Phaser.Scene {
   private redrawOpponents(view: PhaserTableViewModel): void {
     this.opponentBacks.forEach((s) => s.destroy());
     this.opponentBacks = [];
+    this.cardShadows.forEach((s) => s.destroy());
+    this.cardShadows = [];
     const { opponentCardWidth, opponentCardHeight } = view.layout;
     const hasBack = this.textures.exists(this.backKey);
     view.opponents.forEach((opp) => {
       opp.backPositions.forEach((pos) => {
+        const shadow = this.add
+          .ellipse(
+            pos.x + 1,
+            pos.y + Math.max(3, opponentCardHeight * 0.08),
+            opponentCardWidth * 0.9,
+            opponentCardHeight * 0.22,
+            PREMIUM_TABLE.shadow,
+            0.28
+          )
+          .setDepth(PREMIUM_TABLE.depthOpponentCards - 1);
+        this.cardShadows.push(shadow);
         if (hasBack) {
           const img = this.add
             .image(pos.x, pos.y, this.backKey)
             .setDisplaySize(opponentCardWidth, opponentCardHeight)
-            .setDepth(5);
+            .setDepth(PREMIUM_TABLE.depthOpponentCards);
           if (opp.compass === 'west' || opp.compass === 'east') img.setAngle(90);
           this.opponentBacks.push(img);
         } else {
           const rect = this.add
-            .rectangle(pos.x, pos.y, opponentCardWidth, opponentCardHeight, 0x1e3a8a)
-            .setStrokeStyle(1, 0xffffff)
-            .setDepth(5);
+            .rectangle(
+              pos.x,
+              pos.y,
+              opponentCardWidth,
+              opponentCardHeight,
+              PREMIUM_TABLE.feltEdge
+            )
+            .setStrokeStyle(1, this.theme.brass, 0.35)
+            .setDepth(PREMIUM_TABLE.depthOpponentCards);
           this.opponentBacks.push(rect);
         }
       });
@@ -254,27 +347,46 @@ export class SuecaTableScene extends Phaser.Scene {
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
       const text = seat.labelText;
+      const fontSize = view.layout.aspect === 'landscape' ? '11px' : '12px';
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
         label = this.add
           .text(seat.labelPosition.x, seat.labelPosition.y, text, {
             fontFamily: 'Segoe UI, system-ui, sans-serif',
-            fontSize: view.layout.aspect === 'landscape' ? '11px' : '12px',
+            fontSize,
             color: this.theme.text,
-            backgroundColor: this.theme.seatBg,
-            padding: { x: 6, y: 3 }
+            padding: { x: 8, y: 4 }
           })
           .setOrigin(0.5)
-          .setDepth(40);
+          .setDepth(PREMIUM_TABLE.depthSeats + 2);
         this.seatLabels.set(seat.seatIndex, label);
       } else {
         label.setText(text);
         label.setPosition(seat.labelPosition.x, seat.labelPosition.y);
-        label.setBackgroundColor(this.theme.seatBg);
-        label.setFontSize(view.layout.aspect === 'landscape' ? '11px' : '12px');
+        label.setFontSize(fontSize);
       }
-      // Active cue = ring only (text stays readable, not neon).
       label.setColor(this.theme.text);
+      label.setBackgroundColor('rgba(0,0,0,0)');
+
+      const bounds = label.getBounds();
+      const padX = 10;
+      const padY = 5;
+      let panel = this.seatPanels.get(seat.seatIndex);
+      if (!panel) {
+        panel = this.add.graphics().setDepth(PREMIUM_TABLE.depthSeats);
+        this.seatPanels.set(seat.seatIndex, panel);
+      }
+      panel.clear();
+      const pw = bounds.width + padX * 2;
+      const ph = bounds.height + padY * 2;
+      const px = seat.labelPosition.x - pw / 2;
+      const py = seat.labelPosition.y - ph / 2;
+      panel.fillStyle(PREMIUM_TABLE.shadow, 0.35);
+      panel.fillRoundedRect(px + 1, py + 2, pw, ph, 8);
+      panel.fillStyle(this.theme.seatPanel, 0.94);
+      panel.fillRoundedRect(px, py, pw, ph, 8);
+      panel.lineStyle(1, this.theme.brass, seat.isDealer ? 0.55 : 0.28);
+      panel.strokeRoundedRect(px, py, pw, ph, 8);
 
       let ring = this.seatRings.get(seat.seatIndex);
       const ringW = Math.max(52, (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) * 1.7);
@@ -282,21 +394,23 @@ export class SuecaTableScene extends Phaser.Scene {
       if (!ring) {
         ring = this.add
           .ellipse(seat.labelPosition.x, seat.labelPosition.y + 16, ringW, ringH)
-          .setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.75)
+          .setStrokeStyle(2, this.theme.brass, 0.55)
           .setFillStyle(0x000000, 0)
-          .setDepth(39);
+          .setDepth(PREMIUM_TABLE.depthSeats + 1);
         this.seatRings.set(seat.seatIndex, ring);
       }
       ring.setPosition(seat.labelPosition.x, seat.labelPosition.y + 14);
       ring.setSize(ringW, ringH);
       ring.setVisible(seat.showActiveHighlight);
-      ring.setStrokeStyle(2, colorIntFromCss(this.theme.active), 0.72);
+      ring.setStrokeStyle(2, colorIntFromCss(this.theme.active, this.theme.brass), 0.7);
     });
 
     Array.from(this.seatLabels.keys()).forEach((idx) => {
       if (!keep.has(idx)) {
         this.seatLabels.get(idx)?.destroy();
         this.seatLabels.delete(idx);
+        this.seatPanels.get(idx)?.destroy();
+        this.seatPanels.delete(idx);
         this.seatRings.get(idx)?.destroy();
         this.seatRings.delete(idx);
       }
@@ -324,7 +438,7 @@ export class SuecaTableScene extends Phaser.Scene {
         y: entity.position.y + visual.yOffset,
         displayWidth: (this.view?.layout.cardWidth ?? sprite.displayWidth) * visual.scale,
         displayHeight: (this.view?.layout.cardHeight ?? sprite.displayHeight) * visual.scale,
-        duration: 90,
+        duration: 140,
         ease: 'Sine.easeOut'
       });
     });
@@ -345,7 +459,7 @@ export class SuecaTableScene extends Phaser.Scene {
         y: entity.position.y + visual.yOffset,
         displayWidth: this.view.layout.cardWidth * visual.scale,
         displayHeight: this.view.layout.cardHeight * visual.scale,
-        duration: 90,
+        duration: 140,
         ease: 'Sine.easeOut'
       });
     });
@@ -558,7 +672,8 @@ export class SuecaTableScene extends Phaser.Scene {
     animateIds: string[]
   ): void {
     const keep = new Set<string>();
-    const { cardWidth, cardHeight } = view.layout;
+    const cardWidth = view.layout.trickCardWidth ?? view.layout.cardWidth;
+    const cardHeight = view.layout.trickCardHeight ?? view.layout.cardHeight;
     const animate = new Set(animateIds);
 
     view.trick.forEach((entity) => {
@@ -577,7 +692,7 @@ export class SuecaTableScene extends Phaser.Scene {
             entity.textureKey
           )
           .setDisplaySize(cardWidth, cardHeight)
-          .setDepth(30)
+          .setDepth(PREMIUM_TABLE.depthTrick)
           .setAngle(0);
         this.trickSprites.set(id, sprite);
         if (handSprite) {
@@ -590,7 +705,7 @@ export class SuecaTableScene extends Phaser.Scene {
             targets: sprite,
             x: entity.position.x,
             y: entity.position.y,
-            duration: 240,
+            duration: entity.playerIndex === this.latestModel?.localPlayerIndex ? 300 : 340,
             ease: 'Cubic.easeOut'
           });
         }
@@ -601,6 +716,38 @@ export class SuecaTableScene extends Phaser.Scene {
           sprite.setPosition(entity.position.x, entity.position.y);
         }
         sprite.setDisplaySize(cardWidth, cardHeight);
+        sprite.setDepth(PREMIUM_TABLE.depthTrick);
+      }
+
+      let ring = this.winnerRings.get(id);
+      if (entity.isWinner) {
+        if (!ring) {
+          ring = this.add
+            .ellipse(
+              entity.position.x,
+              entity.position.y,
+              cardWidth * 1.15,
+              cardHeight * 1.12
+            )
+            .setStrokeStyle(2, this.theme.brass, 0.75)
+            .setFillStyle(this.theme.brass, 0.06)
+            .setDepth(PREMIUM_TABLE.depthTrick - 1);
+          this.winnerRings.set(id, ring);
+          this.tweens.add({
+            targets: ring,
+            alpha: { from: 0.35, to: 1 },
+            duration: 180,
+            yoyo: true,
+            repeat: 1,
+            ease: 'Sine.easeInOut'
+          });
+        } else {
+          ring.setPosition(entity.position.x, entity.position.y);
+          ring.setVisible(true);
+        }
+      } else if (ring) {
+        ring.destroy();
+        this.winnerRings.delete(id);
       }
     });
 
@@ -609,6 +756,8 @@ export class SuecaTableScene extends Phaser.Scene {
         this.tweens.killTweensOf(this.trickSprites.get(id)!);
         this.trickSprites.get(id)?.destroy();
         this.trickSprites.delete(id);
+        this.winnerRings.get(id)?.destroy();
+        this.winnerRings.delete(id);
       }
     });
   }
@@ -624,6 +773,8 @@ export class SuecaTableScene extends Phaser.Scene {
       return;
     }
     this.animatingClear = true;
+    this.winnerRings.forEach((r) => r.destroy());
+    this.winnerRings.clear();
     const toward = this.view?.layout.center ?? { x: this.scale.width / 2, y: this.scale.height / 2 };
     let remaining = sprites.length;
     sprites.forEach((sprite) => {
@@ -633,7 +784,7 @@ export class SuecaTableScene extends Phaser.Scene {
         x: toward.x,
         y: toward.y - 20,
         scale: 0.85,
-        duration: 220,
+        duration: 420,
         ease: 'Quad.easeIn',
         onComplete: () => {
           sprite.destroy();

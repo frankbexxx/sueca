@@ -7,7 +7,9 @@ export const CARD_ASSETS_DIR = '/assets/cards2';
 /** PNG pack in public/assets/cards2; override via REACT_APP_CARD_EXT if needed */
 const CARD_EXT = process.env.REACT_APP_CARD_EXT === 'svg' ? 'svg' : 'png';
 
+/** Documented path for Suecão card back (UX-P3.1 prototype pending visual approval). */
 export const CARD_BACK_PATH = `${CARD_ASSETS_DIR}/card_back.${CARD_EXT}`;
+export const CARD_BACK_TEXTURE_KEY = 'card-back';
 
 /** Alternate back (Hazmat red) — future theme / IAP */
 export const CARD_BACK_RED_PATH = `${CARD_ASSETS_DIR}/card_back_red.${CARD_EXT}`;

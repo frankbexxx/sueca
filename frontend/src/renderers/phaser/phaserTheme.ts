@@ -1,11 +1,18 @@
 /**
  * Minimal Phaser table theme tokens from the active CSS theme (or defaults).
- * No full theme port — felt / text / accent / active only.
+ * UX-P3.1 Premium Classic Table defaults; CSS theme can still tint accents.
  */
+
+import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
 export interface PhaserThemeView {
   felt: number;
   feltDark: number;
+  feltCenter: number;
+  feltEdge: number;
+  exterior: number;
+  seatPanel: number;
+  brass: number;
   text: string;
   textMuted: string;
   active: string;
@@ -16,34 +23,22 @@ export interface PhaserThemeView {
 }
 
 const DEFAULT_THEME: PhaserThemeView = {
-  felt: 0x2f6d2f,
-  feltDark: 0x1f4f1f,
+  felt: PREMIUM_TABLE.felt,
+  feltDark: PREMIUM_TABLE.exterior,
+  feltCenter: PREMIUM_TABLE.feltCenter,
+  feltEdge: PREMIUM_TABLE.feltEdge,
+  exterior: PREMIUM_TABLE.exterior,
+  seatPanel: PREMIUM_TABLE.seatPanel,
+  brass: PREMIUM_TABLE.brass,
   text: '#f5f5f0',
   textMuted: '#c8c8c0',
-  active: '#ffd700',
-  accent: '#6c5ce7',
-  seatBg: '#00000099',
+  active: '#C5A45B',
+  accent: '#C5A45B',
+  seatBg: '#182426ee',
   /** Kept for theme parity; scene uses `phaserHandVisual` as source of truth. */
   illegalAlpha: 0.9,
   inactiveAlpha: 0.94
 };
-
-function parseCssColorToInt(raw: string, fallback: number): number {
-  const s = (raw || '').trim();
-  if (!s) return fallback;
-  if (s.startsWith('#')) {
-    const hex = s.slice(1);
-    if (hex.length === 3) {
-      return parseInt(hex.split('').map((c) => c + c).join(''), 16);
-    }
-    if (hex.length >= 6) return parseInt(hex.slice(0, 6), 16);
-  }
-  const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
-  if (m) {
-    return (Number(m[1]) << 16) + (Number(m[2]) << 8) + Number(m[3]);
-  }
-  return fallback;
-}
 
 /** Read tokens from `.app-shell` / `:root` when available. */
 export function resolvePhaserThemeFromDom(
@@ -55,14 +50,6 @@ export function resolvePhaserThemeFromDom(
     return { ...DEFAULT_THEME };
   }
   const cs = window.getComputedStyle(root as Element);
-  const felt = parseCssColorToInt(
-    cs.getPropertyValue('--theme-table-felt'),
-    DEFAULT_THEME.felt
-  );
-  const feltDark = parseCssColorToInt(
-    cs.getPropertyValue('--theme-table-felt-dark'),
-    DEFAULT_THEME.feltDark
-  );
   const text =
     cs.getPropertyValue('--sueca-color-text').trim() ||
     cs.getPropertyValue('--color-text').trim() ||
@@ -74,16 +61,13 @@ export function resolvePhaserThemeFromDom(
     cs.getPropertyValue('--color-primary').trim() ||
     DEFAULT_THEME.accent;
 
+  // UX-P3.1: keep Premium Classic felt/exterior as the table identity.
+  // Accents/text may still follow the active app theme.
   return {
-    felt,
-    feltDark,
+    ...DEFAULT_THEME,
     text,
-    textMuted: DEFAULT_THEME.textMuted,
     active,
-    accent,
-    seatBg: DEFAULT_THEME.seatBg,
-    illegalAlpha: DEFAULT_THEME.illegalAlpha,
-    inactiveAlpha: DEFAULT_THEME.inactiveAlpha
+    accent
   };
 }
 
@@ -91,6 +75,8 @@ export function themesEqual(a: PhaserThemeView, b: PhaserThemeView): boolean {
   return (
     a.felt === b.felt &&
     a.feltDark === b.feltDark &&
+    a.feltCenter === b.feltCenter &&
+    a.exterior === b.exterior &&
     a.text === b.text &&
     a.active === b.active &&
     a.accent === b.accent

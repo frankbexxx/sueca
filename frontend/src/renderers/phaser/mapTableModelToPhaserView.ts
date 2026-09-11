@@ -71,6 +71,8 @@ export interface PhaserTrickCardEntity {
   /** Where the card should appear to fly from (seat or hand). */
   origin: PhaserPoint;
   orderIndex: number;
+  /** Short winner pulse while waiting for continue. */
+  isWinner: boolean;
 }
 
 export interface PhaserTableViewModel {
@@ -89,6 +91,8 @@ export interface PhaserTableViewModel {
   /** When true, trump badge uses accent (e.g. Spades/Hearts broken). */
   bannerAccent: boolean;
   waitingForTrickEnd: boolean;
+  /** Seat index that won the last completed trick (presentation). */
+  lastTrickWinner: number | null;
   interactionEnabled: boolean;
   /** Hearts pass: tap toggles selection; no trick drag/play. */
   passSelectionEnabled: boolean;
@@ -309,7 +313,11 @@ export function mapTableModelToPhaserView(options: {
       compass,
       position: layoutTrickSlot(compass, layout),
       origin,
-      orderIndex: entry.orderIndex
+      orderIndex: entry.orderIndex,
+      isWinner:
+        model.status.waitingForTrickEnd &&
+        model.lastTrickWinner != null &&
+        entry.playerIndex === model.lastTrickWinner
     };
   });
 
@@ -340,6 +348,7 @@ export function mapTableModelToPhaserView(options: {
     showTrumpSymbol: banner.showSymbol,
     bannerAccent,
     waitingForTrickEnd: model.status.waitingForTrickEnd,
+    lastTrickWinner: model.lastTrickWinner,
     interactionEnabled,
     passSelectionEnabled,
     localIsActive,

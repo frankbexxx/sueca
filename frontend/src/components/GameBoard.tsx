@@ -1124,12 +1124,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.warn('Phaser renderer failed, falling back to DOM', error);
+      try {
+        (window as unknown as { __suecaPhaserLastError?: string }).__suecaPhaserLastError =
+          `${error.message}\n${error.stack || ''}`;
+      } catch {
+        /* ignore */
+      }
     }
     setPhaserInitFailed(true);
   }, []);
 
   return (
-    <div className={boardClassName}>
+    <div
+      className={boardClassName}
+      data-table-renderer={usePhaserTable ? 'phaser' : usePixiTable ? 'pixi-archive' : 'dom'}
+      data-phaser-failed={phaserInitFailed ? '1' : '0'}
+    >
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}

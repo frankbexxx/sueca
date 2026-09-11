@@ -78,7 +78,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
       const game = new Phaser.Game({
         type: Phaser.AUTO,
         parent,
-        backgroundColor: theme.feltDark,
+        backgroundColor: theme.exterior ?? theme.feltDark,
         scale: {
           mode: Phaser.Scale.RESIZE,
           autoCenter: Phaser.Scale.CENTER_BOTH,

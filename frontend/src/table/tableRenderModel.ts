@@ -137,6 +137,8 @@ export interface TableRenderModel {
   activeSeat: number | null;
   dealerSeat: number;
   leaderSeat: number;
+  /** Winner of the completed trick while waiting for continue (presentation). */
+  lastTrickWinner: number | null;
   trumpSuit: Suit | null;
   trumpCard: Card | null;
   scores: TableScoreRenderModel;

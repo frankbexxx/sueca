@@ -25,9 +25,10 @@
   --theme-panel-shell: rgba(255, 255, 255, 0.06);
 
   /* Table (game board) defaults — overridden per theme */
-  --theme-table-felt: #2f6d2f;
-  --theme-table-felt-dark: #1f4f1f;
-  --theme-table-rail: #7a5736;
+  /* UX-P3.1 Premium Classic Table */
+  --theme-table-felt: #173C3B;
+  --theme-table-felt-dark: #10191B;
+  --theme-table-rail: #C5A45B;
   --theme-bg-game: #5a6ba8;
   --theme-bg-game-alt: #6f5f98;
   --theme-bg-game-mid: #58679d;

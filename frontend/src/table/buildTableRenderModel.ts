@@ -113,6 +113,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     activeSeat,
     dealerSeat: gameState.dealerIndex,
     leaderSeat: gameState.trickLeader,
+    lastTrickWinner: gameState.lastTrickWinner ?? null,
     trumpSuit: gameState.trumpSuit,
     trumpCard: gameState.trumpCard,
     scores: {
