@@ -57,6 +57,8 @@ describe('UX-P3.1 premium table layout', () => {
     });
     expect(side.labelText).not.toMatch(/Eles/i);
     expect(side.labelText).not.toMatch(/\b10\b/);
+    expect(side.labelText).toMatch(/^P2\b/);
+    expect(side.monogram).toBe('2');
     expect(side.labelText.length).toBeLessThan(14);
   });
 
@@ -130,9 +132,17 @@ describe('UX-P3.1 premium table layout', () => {
     const layout = buildPhaserTableLayout(390, 844);
     expect(layout.trickCardWidth).toBeGreaterThan(layout.cardWidth);
     expect(layout.trickCardHeight).toBeGreaterThan(layout.cardHeight);
-    expect(layout.trickCardWidth / layout.cardWidth).toBeGreaterThan(1.05);
-    expect(layout.trickCardWidth / layout.cardWidth).toBeLessThan(1.12);
-    expect(PREMIUM_TABLE.trickScale).toBe(1.08);
+    expect(layout.trickCardWidth / layout.cardWidth).toBeGreaterThan(1.08);
+    expect(layout.trickCardWidth / layout.cardWidth).toBeLessThan(1.15);
+    expect(PREMIUM_TABLE.trickScale).toBe(1.11);
+    expect(PREMIUM_TABLE.handPresenceScale).toBeGreaterThanOrEqual(1.04);
+    expect(PREMIUM_TABLE.handPresenceScale).toBeLessThanOrEqual(1.08);
+  });
+
+  it('separates north seat chrome above opponent backs', () => {
+    const layout = buildPhaserTableLayout(390, 844);
+    expect(layout.seatAnchor.north.y).toBeGreaterThan(layout.zones.topSeat.y + 8);
+    expect(layout.zones.topSeat.height).toBeGreaterThanOrEqual(44);
   });
 
   it('card back path + texture key stay stable for swap', () => {

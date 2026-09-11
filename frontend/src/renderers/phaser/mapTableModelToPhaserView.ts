@@ -53,6 +53,8 @@ export interface PhaserSeatEntity {
   bidLabel: string | null;
   /** Preformatted single-line chrome (shared across variants). */
   labelText: string;
+  /** Single-letter presence mark. */
+  monogram: string;
   handCount: number;
   isLocal: boolean;
   isActive: boolean;
@@ -132,10 +134,10 @@ function seatLabelPosition(
     return { x: anchor.x, y: anchor.y - layout.cardHeight * 0.55 };
   }
   if (compass === 'north') {
-    // Keep chrome above the top fan, not behind backs.
+    // Clear air between identity chrome and the opponent fan.
     return {
       x: anchor.x,
-      y: Math.max(12, anchor.y - layout.opponentCardHeight * 0.72)
+      y: Math.max(14, anchor.y - layout.opponentCardHeight * 0.95)
     };
   }
   // Side labels sit above the vertical stack so backs don't cover names.
@@ -305,6 +307,7 @@ export function mapTableModelToPhaserView(options: {
       teamLabel,
       bidLabel,
       labelText: presentation.labelText,
+      monogram: presentation.monogram,
       handCount: seat.handCount,
       isLocal: seat.isLocal,
       isActive: seat.isActive,

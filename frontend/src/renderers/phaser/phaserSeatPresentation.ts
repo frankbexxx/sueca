@@ -25,8 +25,18 @@ export interface SeatPresentation {
   /** Single-line seat chrome for the table. */
   labelText: string;
   shortName: string;
+  /** Single-letter presence mark (no portrait). */
+  monogram: string;
   showActiveRing: boolean;
   showDealerMark: boolean;
+}
+
+/** First letter / digit for seat presence marker. */
+export function seatMonogram(name: string): string {
+  const cleaned = (name || '').trim();
+  if (!cleaned) return '?';
+  const match = cleaned.match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9]/);
+  return (match?.[0] ?? cleaned[0] ?? '?').toUpperCase();
 }
 
 /** Shorten team tokens (NÓS / ELES / US / THEM). */
@@ -46,9 +56,13 @@ export function shortTeamLabel(raw: string | null | undefined): string | null {
  */
 export function computeSeatPresentation(input: SeatPresentationInput): SeatPresentation {
   const compact = Boolean(input.compactSide);
-  const maxName =
-    input.aspect === 'landscape' ? 6 : compact ? 5 : 9;
-  const shortName = truncatePlayerName(input.name, maxName);
+  const playerNum = input.name.match(/player\s*(\d+)/i);
+  const shortName = compact && playerNum
+    ? `P${playerNum[1]}`
+    : truncatePlayerName(
+        input.name,
+        input.aspect === 'landscape' ? 6 : compact ? 5 : 9
+      );
   const parts: string[] = [shortName];
 
   const badge = input.secondaryBadge?.trim() || null;
@@ -61,6 +75,7 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
   return {
     labelText: parts.join(compact ? ' ' : ' · '),
     shortName,
+    monogram: playerNum ? playerNum[1] : seatMonogram(input.name),
     showActiveRing: input.showActiveHighlight,
     showDealerMark: input.isDealer
   };

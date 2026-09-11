@@ -52,6 +52,7 @@ export class SuecaTableScene extends Phaser.Scene {
   private trickSprites = new Map<string, Phaser.GameObjects.Image>();
   private opponentBacks: Phaser.GameObjects.GameObject[] = [];
   private seatLabels = new Map<number, Phaser.GameObjects.Text>();
+  private seatMonograms = new Map<number, Phaser.GameObjects.Text>();
   private seatPanels = new Map<number, Phaser.GameObjects.Graphics>();
   private seatRings = new Map<number, Phaser.GameObjects.Ellipse>();
   private trumpText: Phaser.GameObjects.Text | null = null;
@@ -63,6 +64,8 @@ export class SuecaTableScene extends Phaser.Scene {
   private vignetteGfx: Phaser.GameObjects.Graphics | null = null;
   private winnerRings = new Map<string, Phaser.GameObjects.Ellipse>();
   private cardShadows: Phaser.GameObjects.Ellipse[] = [];
+  private handShadows: Phaser.GameObjects.Ellipse[] = [];
+  private trickExtras: Phaser.GameObjects.GameObject[] = [];
   private animatingClear = false;
   private backKey = 'card-back';
   /** Public texture key for QA — must stay `card-back` (CARD_BACK_PATH). */
@@ -120,7 +123,7 @@ export class SuecaTableScene extends Phaser.Scene {
 
     this.trumpText = this.add
       .text(12, 10, '', {
-        fontFamily: 'Segoe UI, system-ui, sans-serif',
+        fontFamily: PREMIUM_TABLE.fontFamily,
         fontSize: '13px',
         fontStyle: 'bold',
         color: this.theme.text
@@ -340,62 +343,103 @@ export class SuecaTableScene extends Phaser.Scene {
       const compactSide =
         view.layout.compactSideSeats &&
         (seat.compass === 'west' || seat.compass === 'east');
+      const showMono = seat.compass !== 'south' || !seat.isLocal;
       const fontSize =
-        view.layout.aspect === 'landscape' ? '11px' : compactSide ? '11px' : '12px';
+        view.layout.aspect === 'landscape' ? '12px' : compactSide ? '11px' : '13px';
+      const monoSize = compactSide ? 10 : 11;
+      const monoR = compactSide ? 9 : 11;
+      const monoGap = compactSide ? 5 : 7;
+
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
         label = this.add
-          .text(seat.labelPosition.x, seat.labelPosition.y, text, {
-            fontFamily: 'Segoe UI, system-ui, sans-serif',
+          .text(0, 0, text, {
+            fontFamily: PREMIUM_TABLE.fontFamily,
             fontSize,
             color: this.theme.text,
-            padding: { x: compactSide ? 5 : 8, y: compactSide ? 3 : 4 }
+            padding: { x: 0, y: 0 }
           })
-          .setOrigin(0.5)
+          .setOrigin(0, 0.5)
           .setDepth(PREMIUM_TABLE.depthSeats + 2);
         this.seatLabels.set(seat.seatIndex, label);
       } else {
         label.setText(text);
-        label.setPosition(seat.labelPosition.x, seat.labelPosition.y);
         label.setFontSize(fontSize);
+        label.setFontFamily(PREMIUM_TABLE.fontFamily);
       }
       label.setColor(this.theme.text);
       label.setBackgroundColor('rgba(0,0,0,0)');
 
-      const bounds = label.getBounds();
-      const padX = compactSide ? 6 : 10;
+      let mono = this.seatMonograms.get(seat.seatIndex);
+      if (showMono) {
+        if (!mono) {
+          mono = this.add
+            .text(0, 0, seat.monogram, {
+              fontFamily: PREMIUM_TABLE.fontFamily,
+              fontSize: `${monoSize}px`,
+              fontStyle: '700',
+              color: '#E8E0D0'
+            })
+            .setOrigin(0.5)
+            .setDepth(PREMIUM_TABLE.depthSeats + 3);
+          this.seatMonograms.set(seat.seatIndex, mono);
+        } else {
+          mono.setText(seat.monogram);
+          mono.setFontSize(monoSize);
+          mono.setVisible(true);
+        }
+      } else if (mono) {
+        mono.setVisible(false);
+      }
+
+      const textW = label.width;
+      const monoW = showMono ? monoR * 2 + monoGap : 0;
+      const padX = compactSide ? 6 : 9;
       const padY = compactSide ? 4 : 5;
+      const pw = monoW + textW + padX * 2;
+      const ph = Math.max(monoR * 2 + 4, label.height + padY * 2);
+      const px = seat.labelPosition.x - pw / 2;
+      const py = seat.labelPosition.y - ph / 2;
+      const radius = compactSide ? 8 : 10;
+      const active = seat.showActiveHighlight;
+      if (active) activeSeatIndex = seat.seatIndex;
+
+      const monoCx = px + padX + monoR;
+      const textX = showMono ? monoCx + monoR + monoGap : px + padX;
+      label.setPosition(textX, seat.labelPosition.y);
+      if (mono && showMono) {
+        mono.setPosition(monoCx, seat.labelPosition.y);
+        mono.setColor(active ? '#F5EBD4' : '#E8E0D0');
+      }
+
       let panel = this.seatPanels.get(seat.seatIndex);
       if (!panel) {
         panel = this.add.graphics().setDepth(PREMIUM_TABLE.depthSeats);
         this.seatPanels.set(seat.seatIndex, panel);
       }
       panel.clear();
-      const pw = bounds.width + padX * 2;
-      const ph = bounds.height + padY * 2;
-      const px = seat.labelPosition.x - pw / 2;
-      const py = seat.labelPosition.y - ph / 2;
-      const radius = compactSide ? 6 : 8;
-      const active = seat.showActiveHighlight;
-      if (active) activeSeatIndex = seat.seatIndex;
-
-      panel.fillStyle(PREMIUM_TABLE.shadow, 0.35);
+      panel.fillStyle(PREMIUM_TABLE.shadow, 0.38);
       panel.fillRoundedRect(px + 1, py + 2, pw, ph, radius);
-      // Integrated active: soft brass wash + stronger ring (no separate ellipse).
       if (active) {
-        panel.fillStyle(this.theme.brass, 0.16);
+        panel.fillStyle(this.theme.brass, 0.18);
         panel.fillRoundedRect(px, py, pw, ph, radius);
       }
-      panel.fillStyle(this.theme.seatPanel, active ? 0.88 : 0.94);
+      panel.fillStyle(this.theme.seatPanel, active ? 0.9 : 0.94);
       panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(
         active ? 2 : 1,
-        active ? this.theme.brass : this.theme.brass,
-        active ? 0.85 : seat.isDealer ? 0.55 : 0.28
+        this.theme.brass,
+        active ? 0.88 : seat.isDealer ? 0.55 : 0.3
       );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
 
-      // Destroy legacy ellipse rings if any remain.
+      if (showMono) {
+        panel.fillStyle(active ? this.theme.brass : 0x243338, active ? 0.35 : 0.92);
+        panel.fillCircle(monoCx, seat.labelPosition.y, monoR);
+        panel.lineStyle(1.25, this.theme.brass, active ? 0.9 : 0.45);
+        panel.strokeCircle(monoCx, seat.labelPosition.y, monoR);
+      }
+
       const legacy = this.seatRings.get(seat.seatIndex);
       if (legacy) {
         legacy.destroy();
@@ -423,6 +467,8 @@ export class SuecaTableScene extends Phaser.Scene {
       if (!keep.has(idx)) {
         this.seatLabels.get(idx)?.destroy();
         this.seatLabels.delete(idx);
+        this.seatMonograms.get(idx)?.destroy();
+        this.seatMonograms.delete(idx);
         this.seatPanels.get(idx)?.destroy();
         this.seatPanels.delete(idx);
         this.seatRings.get(idx)?.destroy();
@@ -592,7 +638,10 @@ export class SuecaTableScene extends Phaser.Scene {
 
   private redrawHand(view: PhaserTableViewModel, instant: boolean): void {
     const keep = new Set<string>();
+    const presence = PREMIUM_TABLE.handPresenceScale;
     const { cardWidth, cardHeight } = view.layout;
+    this.handShadows.forEach((s) => s.destroy());
+    this.handShadows = [];
 
     view.localHand.forEach((entity) => {
       const id = entity.card.id;
@@ -606,13 +655,28 @@ export class SuecaTableScene extends Phaser.Scene {
         interactionEnabled: view.interactionEnabled,
         hovered: false
       });
+      const displayScale = visual.scale * presence;
+      const dw = cardWidth * displayScale;
+      const dh = cardHeight * displayScale;
       const targetX = entity.position.x;
       const targetY = entity.position.y + visual.yOffset;
+
+      const shadow = this.add
+        .ellipse(
+          targetX + 1,
+          targetY + Math.max(4, dh * 0.12),
+          dw * 0.92,
+          dh * 0.24,
+          PREMIUM_TABLE.shadow,
+          entity.selected ? 0.42 : 0.32
+        )
+        .setDepth(Math.max(PREMIUM_TABLE.depthHand - 1, entity.position.depth - 1));
+      this.handShadows.push(shadow);
 
       if (!sprite) {
         sprite = this.add
           .image(targetX, targetY, entity.textureKey)
-          .setDisplaySize(cardWidth, cardHeight)
+          .setDisplaySize(dw, dh)
           .setDepth(entity.position.depth)
           .setAngle(entity.position.rotationDeg);
         this.bindHandInteraction(sprite, id);
@@ -622,7 +686,7 @@ export class SuecaTableScene extends Phaser.Scene {
       }
 
       this.applyHandVisual(sprite, entity, view, visual);
-      sprite.setDisplaySize(cardWidth * visual.scale, cardHeight * visual.scale);
+      sprite.setDisplaySize(dw, dh);
 
       if (this.dragCardId === id) return;
 
@@ -631,15 +695,15 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setPosition(targetX, targetY);
         sprite.setAngle(entity.position.rotationDeg);
         sprite.setDepth(entity.position.depth);
-        sprite.setDisplaySize(cardWidth * visual.scale, cardHeight * visual.scale);
+        sprite.setDisplaySize(dw, dh);
       } else {
         this.tweens.add({
           targets: sprite,
           x: targetX,
           y: targetY,
           angle: entity.position.rotationDeg,
-          displayWidth: cardWidth * visual.scale,
-          displayHeight: cardHeight * visual.scale,
+          displayWidth: dw,
+          displayHeight: dh,
           duration: 130,
           ease: 'Sine.easeOut'
         });
@@ -689,6 +753,8 @@ export class SuecaTableScene extends Phaser.Scene {
     const cardWidth = view.layout.trickCardWidth ?? view.layout.cardWidth;
     const cardHeight = view.layout.trickCardHeight ?? view.layout.cardHeight;
     const animate = new Set(animateIds);
+    this.trickExtras.forEach((s) => s.destroy());
+    this.trickExtras = [];
 
     view.trick.forEach((entity) => {
       const id = entity.card.id;
@@ -719,7 +785,7 @@ export class SuecaTableScene extends Phaser.Scene {
             targets: sprite,
             x: entity.position.x,
             y: entity.position.y,
-            duration: entity.playerIndex === this.latestModel?.localPlayerIndex ? 300 : 340,
+            duration: entity.playerIndex === this.latestModel?.localPlayerIndex ? 280 : 320,
             ease: 'Cubic.easeOut'
           });
         }
@@ -733,6 +799,26 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setDepth(PREMIUM_TABLE.depthTrick);
       }
 
+      const shadow = this.add
+        .ellipse(
+          entity.position.x + 1.5,
+          entity.position.y + Math.max(5, cardHeight * 0.14),
+          cardWidth * 0.94,
+          cardHeight * 0.28,
+          PREMIUM_TABLE.shadow,
+          0.4
+        )
+        .setDepth(PREMIUM_TABLE.depthTrick - 2);
+      this.trickExtras.push(shadow);
+
+      // Soft ivory edge for material separation on felt.
+      const edge = this.add
+        .rectangle(entity.position.x, entity.position.y, cardWidth + 2, cardHeight + 2)
+        .setStrokeStyle(1.1, PREMIUM_TABLE.ivory, 0.28)
+        .setFillStyle(0x000000, 0)
+        .setDepth(PREMIUM_TABLE.depthTrick + 0.5);
+      this.trickExtras.push(edge);
+
       let ring = this.winnerRings.get(id);
       if (entity.isWinner) {
         if (!ring) {
@@ -740,20 +826,20 @@ export class SuecaTableScene extends Phaser.Scene {
             .ellipse(
               entity.position.x,
               entity.position.y,
-              cardWidth * 1.15,
-              cardHeight * 1.12
+              cardWidth * 1.08,
+              cardHeight * 1.06
             )
-            .setStrokeStyle(2, this.theme.brass, 0.75)
-            .setFillStyle(this.theme.brass, 0.06)
+            .setStrokeStyle(1.75, this.theme.brass, 0.82)
+            .setFillStyle(this.theme.brass, 0.04)
             .setDepth(PREMIUM_TABLE.depthTrick - 1);
           this.winnerRings.set(id, ring);
           this.tweens.add({
             targets: ring,
-            alpha: { from: 0.35, to: 1 },
-            duration: 180,
+            alpha: { from: 0.4, to: 1 },
+            duration: 160,
             yoyo: true,
-            repeat: 1,
-            ease: 'Sine.easeInOut'
+            repeat: 0,
+            ease: 'Sine.easeOut'
           });
         } else {
           ring.setPosition(entity.position.x, entity.position.y);

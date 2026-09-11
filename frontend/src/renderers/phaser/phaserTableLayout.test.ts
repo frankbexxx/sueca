@@ -189,7 +189,7 @@ describe('phaserTableLayout E2', () => {
     // denser count ⇒ tighter spacing, same baseline system
     const spacing10 = sueca.slots[1].x - sueca.slots[0].x;
     const spacing13 = spades.slots[1].x - spades.slots[0].x;
-    expect(spacing13).toBeLessThanOrEqual(spacing10);
+    expect(spacing13).toBeLessThanOrEqual(spacing10 + 1e-9);
   });
 
   it('keeps portrait and landscape on the same visual system', () => {
@@ -238,6 +238,7 @@ describe('phaserSeatPresentation UX-P2', () => {
     });
     expect(seat.shortName).toBe('Player...');
     expect(seat.labelText).toBe('Player... · Nil · D');
+    expect(seat.monogram).toBe('P');
     expect(seat.labelText).not.toMatch(/\b13\b/);
     expect(seat.showActiveRing).toBe(true);
     // Badge wins over team — never stack both.

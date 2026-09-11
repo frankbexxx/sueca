@@ -67,14 +67,18 @@ export const PREMIUM_TABLE = {
   seatPanel: 0x182426,
   brass: 0xc5a45b,
   ivory: 0xe8e0d0,
+  /** Trick card display vs hand card size. */
+  trickScale: 1.11,
+  /** Local hand presence bump (UX-P3.3) — display only; hit area follows displaySize. */
+  handPresenceScale: 1.06,
   /** Soft contact shadow under cards / panels. */
   shadow: 0x050808,
+  /** Table chrome typeface (loaded for game board). */
+  fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif',
   tableMarginPortrait: 14,
   tableMarginLandscape: 12,
   tableRadiusPortrait: 32,
   tableRadiusLandscape: 28,
-  /** Trick card display vs hand card size. */
-  trickScale: 1.08,
   /** Depth bands (Phaser setDepth). */
   depthTable: 0,
   depthSeats: 22,
@@ -223,8 +227,9 @@ export function computeTableZones(input: {
     aspect === 'landscape' ? Math.max(22, h * 0.08) : Math.max(28, Math.min(44, h * 0.055));
   const topHud = zone(feltX, feltY, feltW, topHudH);
 
-  const topSeatH = Math.max(36, Math.min(56, h * 0.07));
-  const topSeat = zone(felt.cx - feltW * 0.22, topHud.y + topHudH + 2, feltW * 0.44, topSeatH);
+  const topSeatH = Math.max(44, Math.min(64, h * 0.085));
+  // Extra band so identity sits clearly above the opponent fan.
+  const topSeat = zone(felt.cx - feltW * 0.22, topHud.y + topHudH + 4, feltW * 0.44, topSeatH);
 
   // Narrow portrait phones: keep side seats slim so labels don't eat the trick.
   const narrowPortrait = aspect === 'portrait' && w <= 380;
@@ -241,7 +246,7 @@ export function computeTableZones(input: {
     sideH
   );
 
-  const trickTop = topSeat.y + topSeatH + (aspect === 'landscape' ? 4 : 10);
+  const trickTop = topSeat.y + topSeatH + (aspect === 'landscape' ? 6 : 14);
   const trickBottom = localSeat.y - 8;
   const trickH = Math.max(cardHeight * 1.6, trickBottom - trickTop);
   const trickW = Math.min(
@@ -282,11 +287,11 @@ export function computePremiumTableLayout(
 
   let cardWidth: number;
   if (aspect === 'portrait') {
-    cardWidth = Math.min(64, Math.max(44, Math.floor(w * 0.12)));
+    cardWidth = Math.min(68, Math.max(46, Math.floor(w * 0.125)));
   } else if (aspect === 'landscape') {
-    cardWidth = Math.min(58, Math.max(40, Math.floor(h * 0.14)));
+    cardWidth = Math.min(60, Math.max(42, Math.floor(h * 0.145)));
   } else {
-    cardWidth = Math.min(76, Math.max(50, Math.floor(w * 0.085)));
+    cardWidth = Math.min(78, Math.max(52, Math.floor(w * 0.088)));
   }
   const cardHeight = Math.round(cardWidth * 1.4);
   // UX-P3.2: opponent backs read as a reduced hand, not icon chips.
@@ -297,10 +302,10 @@ export function computePremiumTableLayout(
 
   const handReserve =
     aspect === 'portrait'
-      ? Math.max(cardHeight * 0.72, 70)
+      ? Math.max(cardHeight * 0.78, 76)
       : aspect === 'landscape'
-        ? Math.max(cardHeight * 0.55, 52)
-        : Math.max(cardHeight * 0.6, 60);
+        ? Math.max(cardHeight * 0.58, 54)
+        : Math.max(cardHeight * 0.64, 64);
   const handY = h - handReserve - bottomChromePx;
 
   const zones = computeTableZones({
@@ -326,7 +331,11 @@ export function computePremiumTableLayout(
   const seatAnchor = {
     south: { x: zones.localSeat.cx, y: handY - cardHeight * 0.42 },
     west: { x: zones.leftSeat.cx, y: zones.leftSeat.cy },
-    north: { x: zones.topSeat.cx, y: zones.topSeat.cy },
+    // Push north backs slightly down so seat chrome has clear air above.
+    north: {
+      x: zones.topSeat.cx,
+      y: zones.topSeat.cy + Math.round(opponentCardHeight * 0.22)
+    },
     east: { x: zones.rightSeat.cx, y: zones.rightSeat.cy }
   };
 
