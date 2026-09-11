@@ -143,21 +143,10 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
         ? t.gameBoard.trumpAria(suitLabelFor(t, trumpBadge.suit))
         : undefined;
 
+    // UX-P3.2: single trump representation — face card only (no TRUNFO / suit badge).
     return (
       <div className="game-info trump-info-in-team">
         {dealerName ? <span className="dealer-name">{dealerName}</span> : null}
-        {trumpBadge ? (
-          <span
-            className={`sueca-trump-badge sueca-trump-badge--${trumpBadge.tone}`}
-            aria-label={aria}
-            title={aria}
-          >
-            <span className="sueca-trump-badge__label">{t.gameBoard.trump}</span>
-            <span className="sueca-trump-badge__symbol" aria-hidden="true">
-              {trumpBadge.symbol}
-            </span>
-          </span>
-        ) : null}
         {trumpSrc ? (
           <img
             src={trumpSrc}

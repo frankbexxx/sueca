@@ -24,20 +24,6 @@
   height: 100% !important;
 }
 
-.sueca-phaser-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  padding: 2px 8px;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--sueca-color-text, #f5f5f0);
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 4px;
-  pointer-events: none;
-}
-
 @media (max-width: 768px) {
   .sueca-phaser-root {
     min-height: 360px;

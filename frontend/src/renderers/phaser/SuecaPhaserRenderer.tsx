@@ -134,9 +134,6 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
 
   return (
     <div className="sueca-phaser-root" data-testid="sueca-phaser-table">
-      <div className="sueca-phaser-badge" aria-hidden>
-        Phaser
-      </div>
       <div ref={containerRef} className="sueca-phaser-canvas-host" />
     </div>
   );

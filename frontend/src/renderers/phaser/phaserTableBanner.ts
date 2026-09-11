@@ -55,15 +55,8 @@ export function formatKingTableBanner(
   if (king.noTrump || (!trumpSuit && king.festaMode)) {
     return { label: pt ? 'Sem trunfo' : 'No trump', accent: false };
   }
-  if (trumpSuit) {
-    return {
-      label: pt
-        ? `Trunfo ${trumpSymbolForSuit(trumpSuit)}`
-        : `Trump ${trumpSymbolForSuit(trumpSuit)}`,
-      accent: true
-    };
-  }
-  return { label: pt ? `Jogo ${king.gameIndex + 1}` : `Game ${king.gameIndex + 1}`, accent: false };
+  // Normal play: React shows the trump face — no permanent "Trunfo" line here.
+  return { label: '', accent: false };
 }
 
 export interface TableBannerInput {
@@ -110,26 +103,33 @@ export function computeTableBannerPresentation(
   }
 
   if (variant === 'sueca') {
-    // React shows trump card + dealer; keep a small glyph on the felt only.
+    // React owns the trump face card — no felt glyph / TRUNFO chrome.
     return {
       label: '',
-      showSymbol: Boolean(trumpSuit),
+      showSymbol: false,
       accent: false
     };
   }
 
   if (variant === 'king' && kingUi) {
     const banner = formatKingTableBanner(kingUi, trumpSuit, auctionLocale);
+    // Special phases / no-trump cue only — React owns contract + trump card in play.
+    const special =
+      Boolean(kingUi.waitingForChoice) ||
+      Boolean(kingUi.festaPhase) ||
+      kingUi.phase === 'koh_reveal' ||
+      kingUi.eightOrNullsPending ||
+      Boolean(kingUi.noTrump);
     return {
-      label: banner.label,
-      showSymbol: Boolean(trumpSuit) && !kingUi.noTrump,
+      label: special ? banner.label : '',
+      showSymbol: false,
       accent: banner.accent
     };
   }
 
   return {
-    label: trumpSuit ? `Trunfo ${trumpSymbolForSuit(trumpSuit)}` : '',
-    showSymbol: Boolean(trumpSuit),
+    label: '',
+    showSymbol: false,
     accent: false
   };
 }

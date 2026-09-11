@@ -208,7 +208,7 @@ describe('formatKingTableBanner', () => {
         },
         'spades'
       )
-    ).toEqual({ label: 'Trunfo ♠', accent: true });
+    ).toEqual({ label: '', accent: false });
 
     expect(
       formatKingTableBanner(
@@ -280,11 +280,12 @@ describe('mapTableModelToPhaserView — King', () => {
     ['no_men', 'Homens'],
     ['no_king_hearts', 'King ♥'],
     ['no_last_two', 'Últimas']
-  ] as const)('maps negative %s banner', (contract, label) => {
+  ] as const)('maps negative %s without felt trump chrome (React owns contract)', (contract, _label) => {
     const { view } = mapKing(
       kingState({ contract, gameIndex: 0, phase: 'negative' })
     );
-    expect(view.trumpLabel).toBe(label);
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.kingFestaPhase).toBe(false);
     expect(view.interactionEnabled).toBe(true);
   });
@@ -344,8 +345,8 @@ describe('mapTableModelToPhaserView — King', () => {
     );
     expect(model.variantUi.king?.bidderIndex).toBe(2);
     expect(model.variantUi.king?.beneficiaryIndex).toBe(1);
-    expect(view.trumpLabel).toBe('Trunfo ♥');
-    expect(view.bannerAccent).toBe(true);
+    expect(view.trumpLabel).toBe('');
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.seats[2].bidLabel).toContain('Lic');
     expect(view.seats[1].bidLabel).toContain('Ben');
   });
