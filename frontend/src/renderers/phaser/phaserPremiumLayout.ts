@@ -77,7 +77,7 @@ export const PREMIUM_TABLE = {
   trickScale: 1.08,
   /** Depth bands (Phaser setDepth). */
   depthTable: 0,
-  depthSeats: 12,
+  depthSeats: 22,
   depthOpponentCards: 18,
   depthHand: 20,
   depthTrick: 32,
@@ -289,8 +289,9 @@ export function computePremiumTableLayout(
     cardWidth = Math.min(76, Math.max(50, Math.floor(w * 0.085)));
   }
   const cardHeight = Math.round(cardWidth * 1.4);
-  const opponentCardWidth = Math.round(cardWidth * (aspect === 'landscape' ? 0.48 : 0.55));
-  const opponentCardHeight = Math.round(cardHeight * (aspect === 'landscape' ? 0.48 : 0.55));
+  // UX-P3.2: opponent backs read as a reduced hand, not icon chips.
+  const opponentCardWidth = Math.round(cardWidth * (aspect === 'landscape' ? 0.68 : 0.78));
+  const opponentCardHeight = Math.round(cardHeight * (aspect === 'landscape' ? 0.68 : 0.78));
   const trickCardWidth = Math.round(cardWidth * PREMIUM_TABLE.trickScale);
   const trickCardHeight = Math.round(cardHeight * PREMIUM_TABLE.trickScale);
 

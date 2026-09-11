@@ -225,7 +225,7 @@ describe('phaserTableLayout E2', () => {
 });
 
 describe('phaserSeatPresentation UX-P2', () => {
-  it('formats a common seat line with optional badge, count and dealer', () => {
+  it('formats a common seat line with optional badge and dealer (no card count)', () => {
     const seat = computeSeatPresentation({
       name: 'Player One Long',
       handCount: 13,
@@ -236,8 +236,9 @@ describe('phaserSeatPresentation UX-P2', () => {
       showActiveHighlight: true,
       aspect: 'portrait'
     });
-    expect(seat.shortName).toBe('Playe...');
-    expect(seat.labelText).toBe('Playe... · Nil · 13 · D');
+    expect(seat.shortName).toBe('Player...');
+    expect(seat.labelText).toBe('Player... · Nil · D');
+    expect(seat.labelText).not.toMatch(/\b13\b/);
     expect(seat.showActiveRing).toBe(true);
     // Badge wins over team — never stack both.
     expect(seat.labelText).not.toContain('Nós');
@@ -283,7 +284,7 @@ describe('phaserTableBanner UX-P2', () => {
     ).toEqual({ label: '', showSymbol: false, accent: false });
   });
 
-  it('keeps Sueca glyph-only and King short contract during play', () => {
+  it('keeps Sueca without felt glyph; King clears trump chrome during play', () => {
     const sueca = computeTableBannerPresentation({
       variant: 'sueca',
       trumpSuit: 'hearts',
@@ -293,7 +294,7 @@ describe('phaserTableBanner UX-P2', () => {
       auctionLocale: 'pt'
     });
     expect(sueca.label).toBe('');
-    expect(sueca.showSymbol).toBe(true);
+    expect(sueca.showSymbol).toBe(false);
 
     const king = computeTableBannerPresentation({
       variant: 'king',
@@ -311,7 +312,8 @@ describe('phaserTableBanner UX-P2', () => {
       } as never,
       auctionLocale: 'pt'
     });
-    expect(king.label).toBe('Damas');
+    expect(king.label).toBe('');
+    expect(king.showSymbol).toBe(false);
   });
 });
 
@@ -479,15 +481,17 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(view.localHand[0].visualState).toBe('legal');
     expect(view.localHand[0].canDrag).toBe(true);
     expect(view.trumpSymbol).toBe(trumpSymbolForSuit('spades'));
-    // Sueca: React strip owns trump text; Phaser keeps glyph only.
+    // Sueca: React owns trump face; Phaser has no felt glyph / TRUNFO.
     expect(view.trumpLabel).toBe('');
-    expect(view.showTrumpSymbol).toBe(true);
+    expect(view.showTrumpSymbol).toBe(false);
     expect(view.seats.find((s) => s.isDealer)?.seatIndex).toBe(1);
     expect(view.seats[0].showActiveHighlight).toBe(true);
     expect(view.opponents[0].teamLabel).toBeTruthy();
     expect(view.opponents[0].labelText).toMatch(/Nós|Eles/);
     expect(view.opponents[0].labelText).toContain('D');
+    expect(view.opponents[0].labelText).not.toMatch(/\b\d+\b/);
     expect(view.opponents[0].handCount).toBeGreaterThan(0);
+    expect(view.layout.opponentCardWidth / view.layout.cardWidth).toBeGreaterThanOrEqual(0.7);
   });
 
   it('marks illegal vs inactive visual states', () => {

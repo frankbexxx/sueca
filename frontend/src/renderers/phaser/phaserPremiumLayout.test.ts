@@ -56,7 +56,14 @@ describe('UX-P3.1 premium table layout', () => {
       compactSide: true
     });
     expect(side.labelText).not.toMatch(/Eles/i);
+    expect(side.labelText).not.toMatch(/\b10\b/);
     expect(side.labelText.length).toBeLessThan(14);
+  });
+
+  it('grows opponent backs for readability without matching hand size', () => {
+    const layout = buildPhaserTableLayout(390, 844);
+    expect(layout.opponentCardWidth / layout.cardWidth).toBeGreaterThanOrEqual(0.75);
+    expect(layout.opponentCardWidth).toBeLessThan(layout.cardWidth);
   });
 
   it('keeps portrait aspect when canvas is short but window is tall (sheets)', () => {

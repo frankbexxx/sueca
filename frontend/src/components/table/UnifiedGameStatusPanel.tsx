@@ -20,6 +20,8 @@ export interface UnifiedGameStatusPanelProps {
   gameState: GameState;
   variant: GameVariant;
   rulesPresetId?: string;
+  /** Compact global trick progress (replaces seat card counts). */
+  trickLabel?: string;
 }
 
 const PENALTY_CARD_CONTRACTS: KingNegativeContract[] = [
@@ -44,7 +46,8 @@ function penaltyCardImage(card: { rank: string; suit: string }): string {
 export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   gameState,
   variant,
-  rulesPresetId
+  rulesPresetId,
+  trickLabel
 }) => {
   const { language, t } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
@@ -110,6 +113,16 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       PENALTY_CARD_CONTRACTS.includes(kingContract)) ||
     variant === 'hearts';
 
+  const trumpCard = gameState.trumpCard;
+  const trumpRank = trumpCard
+    ? RANK_TO_IMAGE_NAME[trumpCard.rank as keyof typeof RANK_TO_IMAGE_NAME]
+    : undefined;
+  const trumpSuitName = trumpCard
+    ? SUIT_TO_NAME[trumpCard.suit as keyof typeof SUIT_TO_NAME]
+    : undefined;
+  const trumpSrc =
+    trumpRank && trumpSuitName ? getCardImagePath(trumpRank, trumpSuitName) : '';
+
   return (
     <div className="top-strip top-strip--unified">
       <div className="game-status-panel">
@@ -164,6 +177,25 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                 )
               )}
             </div>
+            {(trickLabel || trumpSrc) && (
+              <div className="game-status-panel__meta">
+                {trickLabel ? (
+                  <span className="game-status-panel__trick">{trickLabel}</span>
+                ) : null}
+                {trumpSrc ? (
+                  <img
+                    src={trumpSrc}
+                    alt={
+                      trumpCard
+                        ? `Trump ${trumpCard.rank} ${trumpCard.suit}`
+                        : 'Trump'
+                    }
+                    className="trump-card-mini"
+                    draggable={false}
+                  />
+                ) : null}
+              </div>
+            )}
             {variant === 'hearts' && (
               <div className="game-status-panel__suit-status">
                 <SuitBrokenBadge

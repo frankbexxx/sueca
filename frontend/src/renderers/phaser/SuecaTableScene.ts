@@ -31,14 +31,6 @@ import { resolveOrientationReference } from './phaserPremiumLayout';
 import { pointInDropZone } from './phaserTableLayout';
 import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
-function colorIntFromCss(raw: string, fallback = 0xffd700): number {
-  const s = (raw || '').trim();
-  if (s.startsWith('#') && s.length >= 7) {
-    return parseInt(s.slice(1, 7), 16);
-  }
-  return fallback;
-}
-
 export const SUECA_TABLE_SCENE_KEY = 'SuecaTableScene';
 
 export type SuecaPhaserCardUrlResolver = (card: Card) => string;
@@ -63,7 +55,7 @@ export class SuecaTableScene extends Phaser.Scene {
   private seatPanels = new Map<number, Phaser.GameObjects.Graphics>();
   private seatRings = new Map<number, Phaser.GameObjects.Ellipse>();
   private trumpText: Phaser.GameObjects.Text | null = null;
-  private trumpBadge: Phaser.GameObjects.Text | null = null;
+  private lastActiveSeat: number | null = null;
   /** True after premium surface graphics exist (replaces flat felt rect). */
   private tableReady = false;
   private exteriorGfx: Phaser.GameObjects.Graphics | null = null;
@@ -100,7 +92,6 @@ export class SuecaTableScene extends Phaser.Scene {
     if (this.tableReady) {
       this.drawTableSurface(true);
       if (this.trumpText) this.trumpText.setColor(theme.text);
-      if (this.trumpBadge) this.trumpBadge.setColor(theme.active);
       if (this.latestModel) this.syncFromModel(true);
     }
   }
@@ -130,18 +121,12 @@ export class SuecaTableScene extends Phaser.Scene {
     this.trumpText = this.add
       .text(12, 10, '', {
         fontFamily: 'Segoe UI, system-ui, sans-serif',
-        fontSize: '15px',
+        fontSize: '13px',
         fontStyle: 'bold',
         color: this.theme.text
       })
-      .setDepth(PREMIUM_TABLE.depthHud);
-    this.trumpBadge = this.add
-      .text(12, 30, '', {
-        fontFamily: 'Segoe UI, system-ui, sans-serif',
-        fontSize: '22px',
-        color: this.theme.active
-      })
-      .setDepth(PREMIUM_TABLE.depthHud);
+      .setDepth(PREMIUM_TABLE.depthHud)
+      .setVisible(false);
 
     this.scale.on('resize', this.handleResize, this);
     if (this.latestModel) this.syncFromModel(true);
@@ -244,19 +229,10 @@ export class SuecaTableScene extends Phaser.Scene {
 
     this.view = nextView;
     this.drawTableSurface(true);
+    // Special-state banner only (festa / contract) — no trump glyph on felt.
     if (this.trumpText) {
       this.trumpText.setText(nextView.trumpLabel);
       this.trumpText.setVisible(Boolean(nextView.trumpLabel));
-    }
-    if (this.trumpBadge) {
-      const showGlyph = nextView.showTrumpSymbol && Boolean(nextView.trumpSuit);
-      this.trumpBadge.setText(showGlyph ? nextView.trumpSymbol : '');
-      this.trumpBadge.setVisible(showGlyph);
-      this.trumpBadge.setColor(
-        nextView.bannerAccent ? this.theme.accent : this.theme.active
-      );
-      // When label is hidden, pin glyph to the corner without stacking height.
-      this.trumpBadge.setPosition(12, nextView.trumpLabel ? 30 : 10);
     }
 
     this.ensureTextures(nextView, () => {
@@ -314,12 +290,12 @@ export class SuecaTableScene extends Phaser.Scene {
       opp.backPositions.forEach((pos) => {
         const shadow = this.add
           .ellipse(
-            pos.x + 1,
-            pos.y + Math.max(3, opponentCardHeight * 0.08),
-            opponentCardWidth * 0.9,
-            opponentCardHeight * 0.22,
+            pos.x + 1.5,
+            pos.y + Math.max(4, opponentCardHeight * 0.1),
+            opponentCardWidth * 0.92,
+            opponentCardHeight * 0.26,
             PREMIUM_TABLE.shadow,
-            0.28
+            0.38
           )
           .setDepth(PREMIUM_TABLE.depthOpponentCards - 1);
         this.cardShadows.push(shadow);
@@ -330,6 +306,14 @@ export class SuecaTableScene extends Phaser.Scene {
             .setDepth(PREMIUM_TABLE.depthOpponentCards);
           if (opp.compass === 'west' || opp.compass === 'east') img.setAngle(90);
           this.opponentBacks.push(img);
+          // Soft ivory edge so backs separate from teal felt without glow.
+          const edge = this.add
+            .rectangle(pos.x, pos.y, opponentCardWidth + 2, opponentCardHeight + 2)
+            .setStrokeStyle(1.25, PREMIUM_TABLE.ivory, 0.35)
+            .setFillStyle(0x000000, 0)
+            .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.5);
+          if (opp.compass === 'west' || opp.compass === 'east') edge.setAngle(90);
+          this.opponentBacks.push(edge);
         } else {
           const rect = this.add
             .rectangle(
@@ -337,9 +321,9 @@ export class SuecaTableScene extends Phaser.Scene {
               pos.y,
               opponentCardWidth,
               opponentCardHeight,
-              PREMIUM_TABLE.feltEdge
+              0x12203a
             )
-            .setStrokeStyle(1, this.theme.brass, 0.35)
+            .setStrokeStyle(1.25, this.theme.brass, 0.45)
             .setDepth(PREMIUM_TABLE.depthOpponentCards);
           this.opponentBacks.push(rect);
         }
@@ -349,6 +333,7 @@ export class SuecaTableScene extends Phaser.Scene {
 
   private redrawSeatChrome(view: PhaserTableViewModel): void {
     const keep = new Set<number>();
+    let activeSeatIndex: number | null = null;
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
       const text = seat.labelText;
@@ -356,7 +341,7 @@ export class SuecaTableScene extends Phaser.Scene {
         view.layout.compactSideSeats &&
         (seat.compass === 'west' || seat.compass === 'east');
       const fontSize =
-        view.layout.aspect === 'landscape' ? '11px' : compactSide ? '10px' : '12px';
+        view.layout.aspect === 'landscape' ? '11px' : compactSide ? '11px' : '12px';
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
         label = this.add
@@ -364,7 +349,7 @@ export class SuecaTableScene extends Phaser.Scene {
             fontFamily: 'Segoe UI, system-ui, sans-serif',
             fontSize,
             color: this.theme.text,
-            padding: { x: compactSide ? 4 : 8, y: compactSide ? 2 : 4 }
+            padding: { x: compactSide ? 5 : 8, y: compactSide ? 3 : 4 }
           })
           .setOrigin(0.5)
           .setDepth(PREMIUM_TABLE.depthSeats + 2);
@@ -378,8 +363,8 @@ export class SuecaTableScene extends Phaser.Scene {
       label.setBackgroundColor('rgba(0,0,0,0)');
 
       const bounds = label.getBounds();
-      const padX = compactSide ? 5 : 10;
-      const padY = compactSide ? 3 : 5;
+      const padX = compactSide ? 6 : 10;
+      const padY = compactSide ? 4 : 5;
       let panel = this.seatPanels.get(seat.seatIndex);
       if (!panel) {
         panel = this.add.graphics().setDepth(PREMIUM_TABLE.depthSeats);
@@ -391,33 +376,48 @@ export class SuecaTableScene extends Phaser.Scene {
       const px = seat.labelPosition.x - pw / 2;
       const py = seat.labelPosition.y - ph / 2;
       const radius = compactSide ? 6 : 8;
+      const active = seat.showActiveHighlight;
+      if (active) activeSeatIndex = seat.seatIndex;
+
       panel.fillStyle(PREMIUM_TABLE.shadow, 0.35);
       panel.fillRoundedRect(px + 1, py + 2, pw, ph, radius);
-      panel.fillStyle(this.theme.seatPanel, 0.94);
+      // Integrated active: soft brass wash + stronger ring (no separate ellipse).
+      if (active) {
+        panel.fillStyle(this.theme.brass, 0.16);
+        panel.fillRoundedRect(px, py, pw, ph, radius);
+      }
+      panel.fillStyle(this.theme.seatPanel, active ? 0.88 : 0.94);
       panel.fillRoundedRect(px, py, pw, ph, radius);
-      panel.lineStyle(1, this.theme.brass, seat.isDealer ? 0.55 : 0.28);
+      panel.lineStyle(
+        active ? 2 : 1,
+        active ? this.theme.brass : this.theme.brass,
+        active ? 0.85 : seat.isDealer ? 0.55 : 0.28
+      );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
 
-      let ring = this.seatRings.get(seat.seatIndex);
-      const ringW = Math.max(
-        compactSide ? 36 : 52,
-        (seat.isLocal ? view.layout.cardWidth : view.layout.opponentCardWidth) *
-          (compactSide ? 1.35 : 1.7)
-      );
-      const ringH = Math.max(compactSide ? 18 : 26, ringW * 0.32);
-      if (!ring) {
-        ring = this.add
-          .ellipse(seat.labelPosition.x, seat.labelPosition.y + 16, ringW, ringH)
-          .setStrokeStyle(2, this.theme.brass, 0.55)
-          .setFillStyle(0x000000, 0)
-          .setDepth(PREMIUM_TABLE.depthSeats + 1);
-        this.seatRings.set(seat.seatIndex, ring);
+      // Destroy legacy ellipse rings if any remain.
+      const legacy = this.seatRings.get(seat.seatIndex);
+      if (legacy) {
+        legacy.destroy();
+        this.seatRings.delete(seat.seatIndex);
       }
-      ring.setPosition(seat.labelPosition.x, seat.labelPosition.y + 14);
-      ring.setSize(ringW, ringH);
-      ring.setVisible(seat.showActiveHighlight);
-      ring.setStrokeStyle(2, colorIntFromCss(this.theme.active, this.theme.brass), 0.7);
     });
+
+    if (
+      activeSeatIndex != null &&
+      activeSeatIndex !== this.lastActiveSeat &&
+      this.seatPanels.has(activeSeatIndex)
+    ) {
+      const panel = this.seatPanels.get(activeSeatIndex)!;
+      panel.setAlpha(0.55);
+      this.tweens.add({
+        targets: panel,
+        alpha: 1,
+        duration: 220,
+        ease: 'Sine.easeOut'
+      });
+    }
+    this.lastActiveSeat = activeSeatIndex;
 
     Array.from(this.seatLabels.keys()).forEach((idx) => {
       if (!keep.has(idx)) {

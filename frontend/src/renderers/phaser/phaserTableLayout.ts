@@ -183,7 +183,11 @@ export function layoutOpponentBackPositions(
 ): PhaserPoint[] {
   const anchor = layout.seatAnchor[compass];
   const n = Math.min(count, 10);
-  const gap = compass === 'north' || compass === 'south' ? 9 : 7;
+  // Slightly wider gaps so larger backs still read as a fan/stack.
+  const gap =
+    compass === 'north' || compass === 'south'
+      ? Math.max(11, Math.round(layout.opponentCardWidth * 0.22))
+      : Math.max(9, Math.round(layout.opponentCardHeight * 0.18));
   return Array.from({ length: n }, (_, i) => {
     const mid = (n - 1) / 2;
     if (compass === 'west' || compass === 'east') {

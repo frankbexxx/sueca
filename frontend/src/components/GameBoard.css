@@ -290,6 +290,20 @@
   margin-top: 4px;
 }
 
+.game-status-panel__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.game-status-panel__trick {
+  font-size: 0.82em;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
 .score-block .line.spades-bags {
   font-size: 0.72em;
   opacity: 0.95;
@@ -601,6 +615,14 @@
   line-height: 1.2;
 }
 
+.round-block__trick {
+  font-size: 0.78em;
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 0.01em;
+  margin-top: 1px;
+}
+
 .trump-info-in-team {
   display: flex;
   flex-direction: row;
@@ -672,10 +694,10 @@
 }
 
 .trump-card-mini {
-  width: 30px;
+  width: 42px;
   height: auto;
   border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
 }
 
@@ -1339,7 +1361,7 @@
   .score-block { padding: 4px 6px; }
   .round-block { padding: 5px 7px; min-width: 105px; }
   .round-block--center { min-width: 0; padding: 4px 5px; }
-  .trump-card-mini { width: 34px; }
+  .trump-card-mini { width: 40px; }
   .player-seat.player-north { top: -12px; }
   .player-seat.player-south { bottom: -12px; }
   .player-info { min-width: 120px; }
@@ -1383,7 +1405,7 @@
   }
   .score-block { padding: 4px 6px; }
   .round-block { padding: 4px 6px; min-width: 0; font-size: 0.95em; }
-  .trump-card-mini { width: 32px; }
+  .trump-card-mini { width: 38px; }
   .action-buttons-group {
     align-items: center;
     flex-wrap: wrap;

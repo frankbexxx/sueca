@@ -4,6 +4,10 @@ import { GameInfo } from '../GameInfo';
 import { TeamScoreBlock } from '../GameScores';
 import { UnifiedGameStatusPanel } from './UnifiedGameStatusPanel';
 import { useLanguage } from '../../i18n/useLanguage';
+import {
+  formatTrickProgressLabel,
+  resolveTrickProgress
+} from '../../utils/trickProgress';
 
 export interface ScoreStripProps {
   gameState: GameState;
@@ -20,7 +24,10 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
   themTeam,
   rulesPresetId
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const locale = language === 'pt' ? 'pt' : 'en';
+  const trickProgress = resolveTrickProgress(gameState, variant);
+  const trickLabel = formatTrickProgressLabel(trickProgress, locale);
 
   if (variant === 'king' || variant === 'hearts') {
     return (
@@ -28,6 +35,7 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
         gameState={gameState}
         variant={variant}
         rulesPresetId={rulesPresetId}
+        trickLabel={trickLabel}
       />
     );
   }
@@ -46,6 +54,9 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
       <div className="round-block round-block--center">
         <div className="round-block__game">
           {t.gameBoard.game} {gameState.round}
+        </div>
+        <div className="round-block__trick" aria-label={trickLabel}>
+          {trickLabel}
         </div>
         <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>

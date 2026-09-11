@@ -40,13 +40,14 @@ export function shortTeamLabel(raw: string | null | undefined): string | null {
 }
 
 /**
- * Canonical seat line: Name · [badge|team] · [count] · [D]
- * Compact side (360 phone): Name · [badge] · count · [D] — drop team to save width.
+ * Canonical seat line (UX-P3.2): Name · [badge|team] · [D]
+ * Card counts live in the global Vaza indicator — never on seats.
+ * Compact side (360 phone): Name · [badge] · [D] — drop team to save width.
  */
 export function computeSeatPresentation(input: SeatPresentationInput): SeatPresentation {
   const compact = Boolean(input.compactSide);
   const maxName =
-    input.aspect === 'landscape' ? 6 : compact ? 4 : 8;
+    input.aspect === 'landscape' ? 6 : compact ? 5 : 9;
   const shortName = truncatePlayerName(input.name, maxName);
   const parts: string[] = [shortName];
 
@@ -55,7 +56,6 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
   if (badge) parts.push(badge);
   else if (team) parts.push(team);
 
-  if (!input.isLocal) parts.push(String(input.handCount));
   if (input.isDealer) parts.push('D');
 
   return {

@@ -132,19 +132,23 @@ function seatLabelPosition(
     return { x: anchor.x, y: anchor.y - layout.cardHeight * 0.55 };
   }
   if (compass === 'north') {
-    return { x: anchor.x, y: Math.max(14, anchor.y - 22) };
+    // Keep chrome above the top fan, not behind backs.
+    return {
+      x: anchor.x,
+      y: Math.max(12, anchor.y - layout.opponentCardHeight * 0.72)
+    };
   }
-  // Narrow portrait: keep side labels inside the slim side band.
+  // Side labels sit above the vertical stack so backs don't cover names.
   if (layout.compactSideSeats) {
-    const inward = compass === 'west' ? 6 : -6;
+    const inward = compass === 'west' ? 4 : -4;
     return {
       x: anchor.x + inward,
-      y: anchor.y - layout.opponentCardHeight * 0.55
+      y: anchor.y - layout.opponentCardHeight * 0.95
     };
   }
   return {
     x: anchor.x,
-    y: anchor.y - layout.opponentCardHeight * 0.85
+    y: anchor.y - layout.opponentCardHeight * 1.05
   };
 }
 
