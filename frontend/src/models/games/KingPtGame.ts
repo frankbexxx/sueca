@@ -906,7 +906,20 @@ export class KingPtGame extends BaseGameAdapter {
     }
 
     if (phase === 'setup') {
-      this.applyContractFromBid(king, bid);
+      // DEV: local seat (0) configures so jump is interactive for UX smoke.
+      const setupBid: KingBid = { bidderIndex: 0, bidType: 'positive', amount: 5 };
+      king.bestBid = setupBid;
+      king.auctionPlayerActions = {
+        0: setupBid,
+        1: 'pass',
+        2: 'pass',
+        3: 'pass'
+      };
+      king.auctionHistory = buildDevAuctionHistoryFromActions(
+        king.auctionOrder,
+        king.auctionPlayerActions
+      );
+      this.applyContractFromBid(king, setupBid);
     }
   }
 

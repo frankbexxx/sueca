@@ -58,7 +58,7 @@
 .game-board--festa-sheet .sueca-phaser-root {
   position: relative;
   z-index: 1;
-  margin-bottom: calc(10vh + 4px);
+  margin-bottom: calc(8vh + 4px);
 }
 
 /* Spades bidding: dock sits tight under the canvas — no large dead band. */
@@ -543,7 +543,7 @@
 .game-board--festa-sheet .player-hand-bar {
   position: relative;
   z-index: 2100;
-  margin-bottom: calc(45vh + 8px);
+  margin-bottom: calc(28vh + 8px);
   pointer-events: auto;
 }
 

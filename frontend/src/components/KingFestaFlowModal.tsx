@@ -9,27 +9,31 @@ import {
   resolveKingFestaUiView,
   resolveNegotiationOwnerActionsAvailability
 } from '../models/games/king/kingFestaActionAvailability';
+import { buildFestaSetupSummaryLines } from '../models/games/king/kingFestaSetupSummary';
 import { KingAuctionTimeline } from './KingAuctionTimeline';
 import './VariantModals.css';
 
-const FestaSheet: React.FC<{ children: React.ReactNode; compact?: boolean }> = ({
-  children,
-  compact = false
-}) => (
+const FestaSheet: React.FC<{
+  children: React.ReactNode;
+  compact?: boolean;
+  setup?: boolean;
+}> = ({ children, compact = false, setup = false }) => (
   <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet">
     <div
-      className={`variant-modal variant-modal--bottom-sheet dobo-panel${compact ? ' variant-modal--festa-compact' : ''}`}
+      className={`variant-modal variant-modal--bottom-sheet dobo-panel${
+        compact ? ' variant-modal--festa-compact' : ''
+      }${setup ? ' variant-modal--festa-setup' : ''}`}
     >
       {children}
     </div>
   </div>
 );
 
-const SUITS: { id: Suit; label: string }[] = [
-  { id: 'clubs', label: '♣ Paus' },
-  { id: 'diamonds', label: '♦ Ouros' },
-  { id: 'hearts', label: '♥ Copas' },
-  { id: 'spades', label: '♠ Espadas' }
+const SUITS: { id: Suit; label: string; short: string }[] = [
+  { id: 'clubs', label: '♣ Paus', short: '♣ Paus' },
+  { id: 'diamonds', label: '♦ Ouros', short: '♦ Ouros' },
+  { id: 'hearts', label: '♥ Copas', short: '♥ Copas' },
+  { id: 'spades', label: '♠ Espadas', short: '♠ Espadas' }
 ];
 
 interface FestaActionButtonProps {
@@ -97,16 +101,18 @@ const AuctionToolbar: React.FC<AuctionToolbarProps> = ({
       <option value="positive">Positivas</option>
       <option value="null">Nulos</option>
     </select>
-    <label className="king-auction-toolbar__amount">
-      <span className="king-auction-toolbar__amount-label">Vazas</span>
-      <input
-        type="number"
-        min={1}
-        max={bidType === 'positive' ? 8 : 4}
-        value={bidAmount}
-        onChange={(e) => onBidAmountChange(Number(e.target.value))}
-      />
-    </label>
+    <input
+      className="king-auction-toolbar__amount-input"
+      type="number"
+      min={1}
+      max={bidType === 'positive' ? 8 : 4}
+      value={bidAmount}
+      aria-label="Número de vazas"
+      onChange={(e) => onBidAmountChange(Number(e.target.value))}
+    />
+    <span className="king-auction-toolbar__vazas" aria-hidden="true">
+      Vazas
+    </span>
     <button type="button" className="sueca-btn sueca-btn--primary sueca-btn--compact" onClick={onOffer}>
       {offerLabel}
     </button>
@@ -159,6 +165,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   const [showRaiseForm, setShowRaiseForm] = useState(false);
   const [raiseType, setRaiseType] = useState<KingBidType>('positive');
   const [raiseAmount, setRaiseAmount] = useState(5);
+  const [setupConfirm, setSetupConfirm] = useState(false);
 
   const view = resolveKingFestaUiView(king, localPlayerIndex);
   const currentAuctionPlayer =
@@ -443,59 +450,112 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   }
 
   if (view === 'setup_owner') {
+    const forceNoTrump = king.festaMode === 'negative_festa';
+    const effectiveNoTrump = forceNoTrump || setupNoTrump;
+    const effectiveTrump = effectiveNoTrump ? null : setupTrump;
+    const winnerIdx = king.bestBid?.bidderIndex ?? king.benefitOwnerIndex;
+    const summary = buildFestaSetupSummaryLines({
+      winnerName:
+        winnerIdx != null
+          ? gameState.players[winnerIdx]?.name ?? `P${winnerIdx + 1}`
+          : '—',
+      winnerIndex: winnerIdx,
+      localPlayerIndex,
+      bid: king.bestBid,
+      festaMode: king.festaMode,
+      noTrump: effectiveNoTrump,
+      trump: effectiveTrump,
+      firstPlayerName: gameState.players[firstPlayer]?.name ?? `P${firstPlayer + 1}`,
+      firstPlayerIndex: firstPlayer
+    });
+
+    if (setupConfirm) {
+      return (
+        <FestaSheet compact setup>
+          <h2 className="king-festa-sheet-title">Contrato final</h2>
+          <div className="king-festa-winner-box king-festa-winner-box--setup">
+            <p className="king-festa-winner-box__line">{summary.winnerLine}</p>
+            <p className="king-festa-winner-box__line">
+              <strong>{summary.contractLine}</strong>
+            </p>
+            <p className="king-festa-winner-box__line">{summary.firstPlayerLine}</p>
+          </div>
+          <div className="king-festa-actions">
+            <FestaActionButton label="Voltar" onClick={() => setSetupConfirm(false)} />
+            <FestaActionButton
+              primary
+              label="Continuar"
+              onClick={() => {
+                onSetup(effectiveTrump, effectiveNoTrump, firstPlayer);
+                setSetupConfirm(false);
+              }}
+            />
+          </div>
+        </FestaSheet>
+      );
+    }
+
     return (
-      <FestaSheet>
-        <h2>Configurar festa</h2>
+      <FestaSheet compact setup>
+        <h2 className="king-festa-sheet-title">Configurar festa</h2>
         {king.festaMode === 'positive' && (
-          <>
-            <label>
-              <input
-                type="checkbox"
-                checked={setupNoTrump}
-                onChange={(e) => setSetupNoTrump(e.target.checked)}
-              />
+          <div className="king-festa-choice-grid" role="group" aria-label="Trunfo">
+            {SUITS.map((s) => {
+              const selected = !setupNoTrump && setupTrump === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`king-festa-choice-btn${
+                    selected ? ' king-festa-choice-btn--selected' : ''
+                  }`}
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setSetupNoTrump(false);
+                    setSetupTrump(s.id);
+                  }}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className={`king-festa-choice-btn${
+                setupNoTrump ? ' king-festa-choice-btn--selected' : ''
+              }`}
+              aria-pressed={setupNoTrump}
+              onClick={() => setSetupNoTrump(true)}
+            >
               Sem trunfo
-            </label>
-            {!setupNoTrump && (
-              <div className="king-festa-actions">
-                {SUITS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`dobo-btn${setupTrump === s.id ? ' variant-modal-primary' : ''}`}
-                    onClick={() => setSetupTrump(s.id)}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+            </button>
+          </div>
         )}
-        <label>
-          Primeiro jogador
-          <select value={firstPlayer} onChange={(e) => setFirstPlayer(Number(e.target.value))}>
+        {forceNoTrump ? (
+          <p className="variant-modal-hint king-festa-setup-hint">Nulos · sem trunfo</p>
+        ) : null}
+        <div className="king-festa-setup-row">
+          <span className="king-festa-setup-row__label">1.º jogador</span>
+          <select
+            className="king-festa-setup-select"
+            value={firstPlayer}
+            aria-label="Primeiro jogador"
+            onChange={(e) => setFirstPlayer(Number(e.target.value))}
+          >
             {gameState.players.map((p, i) => (
               <option key={p.id} value={i}>
-                {p.name}
+                {i === localPlayerIndex ? 'Tu' : p.name}
               </option>
             ))}
           </select>
-        </label>
-        <button
-          type="button"
-          className="variant-modal-primary dobo-btn"
-          onClick={() => {
-            const forceNoTrump = king.festaMode === 'negative_festa';
-            onSetup(
-              forceNoTrump || setupNoTrump ? null : setupTrump,
-              forceNoTrump || setupNoTrump,
-              firstPlayer
-            );
-          }}
-        >
-          Começar
-        </button>
+        </div>
+        <div className="king-festa-winner-box king-festa-winner-box--setup king-festa-winner-box--preview">
+          <p className="king-festa-winner-box__line">{summary.contractLine}</p>
+          <p className="king-festa-winner-box__line">{summary.firstPlayerLine}</p>
+        </div>
+        <div className="king-festa-actions">
+          <FestaActionButton primary label="Continuar" onClick={() => setSetupConfirm(true)} />
+        </div>
       </FestaSheet>
     );
   }
