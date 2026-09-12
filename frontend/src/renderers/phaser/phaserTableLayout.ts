@@ -101,13 +101,18 @@ export function resolveAspectMode(
 export function resolveBottomChromePx(
   height: number,
   aspect: PhaserAspectMode,
-  flags: { sheetActive?: boolean }
+  flags: { sheetActive?: boolean; compactSheet?: boolean }
 ): number {
   if (!flags.sheetActive) return 0;
-  if (aspect === 'portrait') return Math.round(Math.min(height * 0.2, 148));
-  // Short landscape phone: keep hand above compact bottom sheets.
-  if (aspect === 'landscape') return Math.round(Math.min(height * 0.42, 140));
-  return Math.round(Math.min(height * 0.14, 100));
+  // Spades bidding dock is short — reserve less so the hand sits closer to the dock.
+  if (flags.compactSheet) {
+    if (aspect === 'portrait') return Math.round(Math.min(height * 0.045, 40));
+    if (aspect === 'landscape') return Math.round(Math.min(height * 0.22, 72));
+    return Math.round(Math.min(height * 0.06, 48));
+  }
+  if (aspect === 'portrait') return Math.round(Math.min(height * 0.13, 108));
+  if (aspect === 'landscape') return Math.round(Math.min(height * 0.36, 120));
+  return Math.round(Math.min(height * 0.12, 88));
 }
 
 export function buildPhaserTableLayout(

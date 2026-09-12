@@ -63,6 +63,9 @@ export const GameActions: React.FC<GameActionsProps> = ({
   }, []);
 
   if (!showChrome) {
+    // Flow overlays (Spades bid / Hearts pass / festa) own the bottom band —
+    // do not reserve an empty action-slot that creates dead space under the dock.
+    if (flowOverlayActive) return null;
     return <div className="action-buttons-bar action-buttons-bar--slot" aria-hidden="true" />;
   }
 

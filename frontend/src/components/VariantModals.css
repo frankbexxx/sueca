@@ -75,9 +75,9 @@
 }
 
 .variant-modal--hearts-pass {
-  padding: 0.5rem 0.65rem;
-  gap: 0.35rem;
-  max-height: 20vh;
+  padding: 0.4rem 0.55rem;
+  gap: 0.28rem;
+  max-height: 16vh;
 }
 
 .variant-modal-overlay--hearts-pass {
@@ -87,14 +87,14 @@
 
 .hearts-pass-title {
   margin: 0;
-  font-size: 0.62rem;
-  line-height: 1.15;
+  font-size: 0.6rem;
+  line-height: 1.1;
   font-weight: 700;
 }
 
 .hearts-pass-hint {
   margin: 0;
-  font-size: 0.58rem;
+  font-size: 0.54rem;
   line-height: 1.15;
   color: rgba(233, 238, 247, 0.92);
 }
@@ -105,20 +105,20 @@
 }
 
 .variant-modal--spades-bid {
-  padding: 0.5rem 0.65rem;
-  gap: 0.35rem;
-  max-height: 20vh;
+  padding: 0.4rem 0.55rem;
+  gap: 0.28rem;
+  max-height: 16vh;
 }
 
 .spades-bid-dock {
-  margin: 4px auto 6px;
-  padding: 0.4rem 0.55rem;
+  margin: 0 auto 2px;
+  padding: 0.32rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.22rem;
   border-radius: 10px;
   width: min(100%, 360px);
-  max-width: calc(100% - 16px);
+  max-width: calc(100% - 12px);
 }
 
 .spades-bid-dock__header {
@@ -126,7 +126,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: center;
-  gap: 4px 10px;
+  gap: 2px 8px;
   text-align: center;
 }
 
@@ -135,7 +135,7 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .spades-bid-dock__confirm {
@@ -145,15 +145,16 @@
 
 .spades-bid-title {
   margin: 0;
-  font-size: 0.62rem;
-  line-height: 1.15;
+  font-size: 0.58rem;
+  line-height: 1.1;
   font-weight: 700;
+  opacity: 0.75;
 }
 
 .spades-bid-hint {
   margin: 0;
-  font-size: 0.58rem;
-  line-height: 1.15;
+  font-size: 0.56rem;
+  line-height: 1.1;
   color: rgba(233, 238, 247, 0.92);
 }
 
@@ -414,19 +415,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(8, 12, 24, 0.82);
+  gap: 0;
+  padding: 10px 12px max(8px, env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 12, 24, 0.78);
 }
 
 .king-koh-table {
   position: relative;
-  width: min(92vw, 360px);
-  height: min(92vw, 360px);
-  max-height: 42vh;
+  width: min(88vw, 300px);
+  /* ~20% taller than prior 176px / 48vw / 22vh — width unchanged */
+  height: min(58vw, 212px);
+  max-height: 26vh;
   background: radial-gradient(circle at 50% 40%, var(--theme-table-felt, #2f6d2f), var(--theme-table-felt-dark, #1f4f1f) 70%);
-  border: 8px solid var(--theme-table-rail, #7a5736);
-  border-radius: 10px;
+  border: 5px solid var(--theme-table-rail, #7a5736);
+  border-bottom-width: 3px;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
 }
 
 .king-koh-seat {
@@ -434,17 +438,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
-.king-koh-seat-north { top: 4%; left: 50%; transform: translateX(-50%); }
-.king-koh-seat-south { bottom: 4%; left: 50%; transform: translateX(-50%); }
-.king-koh-seat-east { right: 4%; top: 50%; transform: translateY(-50%); }
-.king-koh-seat-west { left: 4%; top: 50%; transform: translateY(-50%); }
+.king-koh-seat-north { top: 2%; left: 50%; transform: translateX(-50%); }
+.king-koh-seat-south { bottom: 2%; left: 50%; transform: translateX(-50%); }
+.king-koh-seat-east { right: 3%; top: 50%; transform: translateY(-50%); }
+.king-koh-seat-west { left: 3%; top: 50%; transform: translateY(-50%); }
 
 .king-koh-seat-name {
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.88);
   max-width: 72px;
   text-align: center;
   white-space: nowrap;
@@ -457,22 +461,22 @@
 }
 
 .king-koh-card-img {
-  width: 42px;
+  width: 36px;
   height: auto;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  border-radius: 3px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
   transition: transform 0.2s ease;
 }
 
 .king-koh-card-img--latest {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .king-koh-pile-count {
   position: absolute;
-  right: -6px;
-  bottom: -4px;
-  font-size: 0.6rem;
+  right: -5px;
+  bottom: -3px;
+  font-size: 0.55rem;
   background: rgba(0, 0, 0, 0.65);
   color: #fff;
   border-radius: 8px;
@@ -480,8 +484,32 @@
 }
 
 .king-koh-controls {
-  width: min(92vw, 420px);
+  width: min(88vw, 300px);
   text-align: center;
+  padding: 0.4rem 0.55rem 0.5rem;
+  border-radius: 0 0 12px 12px;
+  border-top: none;
+  box-sizing: border-box;
+}
+
+.king-koh-controls h2 {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.15;
+}
+
+.king-koh-controls .variant-modal-hint {
+  margin: 0 0 0.35rem;
+  font-size: 0.58rem;
+  line-height: 1.2;
+}
+
+.king-koh-controls .variant-modal-primary,
+.king-koh-controls .dobo-btn {
+  margin-top: 0.1rem;
+  min-height: 36px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
 }
 
 .king-koh-dealing {

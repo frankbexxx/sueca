@@ -208,6 +208,12 @@ describe('phaserTableLayout E2', () => {
     const aspect = resolveAspectMode(390, 720);
     const chrome = resolveBottomChromePx(720, aspect, { sheetActive: true });
     expect(chrome).toBeGreaterThan(80);
+    const bidChrome = resolveBottomChromePx(720, aspect, {
+      sheetActive: true,
+      compactSheet: true
+    });
+    expect(bidChrome).toBeGreaterThan(0);
+    expect(bidChrome).toBeLessThan(chrome);
     const plain = computeLocalHandLayout({ width: 390, height: 720, cardCount: 13 });
     const withSheet = computeLocalHandLayout({
       width: 390,
@@ -236,16 +242,17 @@ describe('phaserSeatPresentation UX-P2', () => {
       showActiveHighlight: true,
       aspect: 'portrait'
     });
-    expect(seat.shortName).toBe('Player...');
-    expect(seat.labelText).toBe('Player... · Nil · D');
-    expect(seat.monogram).toBe('P');
+    expect(seat.shortName).toBe('Player ...');
+    expect(seat.labelText).toBe('Player ... · Nil · D');
+    expect(seat.monogram).toBe('');
+    expect(seat.showMonogram).toBe(false);
     expect(seat.labelText).not.toMatch(/\b13\b/);
     expect(seat.showActiveRing).toBe(true);
-    // Badge wins over team — never stack both.
+    // Team never stacks on seats.
     expect(seat.labelText).not.toContain('Nós');
   });
 
-  it('keeps local seats without hand count and supports landscape truncation', () => {
+  it('keeps local seats without hand count or team tokens', () => {
     const local = computeSeatPresentation({
       name: 'Alex',
       handCount: 10,
@@ -256,7 +263,8 @@ describe('phaserSeatPresentation UX-P2', () => {
       showActiveHighlight: false,
       aspect: 'landscape'
     });
-    expect(local.labelText).toBe('Alex · Eles');
+    expect(local.labelText).toBe('Alex');
+    expect(local.labelText).not.toMatch(/Eles/i);
     expect(local.labelText).not.toMatch(/\s10\b/);
   });
 });
@@ -487,8 +495,9 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(view.showTrumpSymbol).toBe(false);
     expect(view.seats.find((s) => s.isDealer)?.seatIndex).toBe(1);
     expect(view.seats[0].showActiveHighlight).toBe(true);
+    // Team lives in HUD score strip — seat chrome keeps name + D only.
     expect(view.opponents[0].teamLabel).toBeTruthy();
-    expect(view.opponents[0].labelText).toMatch(/Nós|Eles/);
+    expect(view.opponents[0].labelText).not.toMatch(/Nós|Eles/i);
     expect(view.opponents[0].labelText).toContain('D');
     expect(view.opponents[0].labelText).not.toMatch(/\b\d+\b/);
     expect(view.opponents[0].handCount).toBeGreaterThan(0);

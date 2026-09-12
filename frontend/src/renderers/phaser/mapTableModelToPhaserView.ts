@@ -120,8 +120,10 @@ export function formatSpadesBidBadge(
   if (bidType === 'nil') return 'Nil';
   if (bidType === 'blindNil') return 'Blind';
   if (bid == null || bid === undefined) {
-    return waitingForBids ? '…' : null;
+    // Pending bids are shown via active seat + HUD — no “…” seat noise.
+    return null;
   }
+  void waitingForBids;
   return String(bid);
 }
 
@@ -182,7 +184,9 @@ export function mapTableModelToPhaserView(options: {
   const kingFestaPhase = model.status.festaSheetActive;
   const aspect = resolveAspectMode(width, height, orientationReference);
   const bottomChromePx = resolveBottomChromePx(height, aspect, {
-    sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase
+    sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase,
+    // Only Spades bid uses the short dock — keep Hearts/festa chrome unchanged.
+    compactSheet: spadesBidPhase
   });
   const layout = buildPhaserTableLayout(width, height, {
     bottomChromePx,
