@@ -44,7 +44,7 @@ describe('kingHudScoreDisplay', () => {
     expect(formatKingHudTotalLabel(-90, 'pt')).toBe('Total -90');
   });
 
-  it('does not use round-primary during festa', () => {
+  it('does not use round-primary during festa setup (pre-play)', () => {
     const line = resolveKingNegativeHudScore({
       gameIndex: 6,
       phase: 'festa_setup',
@@ -53,6 +53,21 @@ describe('kingHudScoreDisplay', () => {
       playerIndex: 1
     });
     expect(line.roundPrimary).toBe(false);
+  });
+
+  it('uses lastRoundDeltas as primary during festa_play', () => {
+    const line = resolveKingNegativeHudScore({
+      gameIndex: 6,
+      phase: 'festa_play',
+      lastRoundDeltas: [50, 0, 25, 0],
+      playerScores: [-50, 20, -10, 60],
+      playerIndex: 0
+    });
+    expect(line.roundPrimary).toBe(true);
+    expect(line.roundDelta).toBe(50);
+    expect(line.totalScore).toBe(-50);
+    expect(formatSignedScore(50)).toBe('+50');
+    expect(formatKingHudTotalLabel(-50, 'pt')).toBe('Total -50');
   });
 });
 

@@ -24,6 +24,8 @@ function enterAuction(
   king.auctionTurnIndex = 0;
   king.bestBid = null;
   king.auctionPlayerActions = {};
+  king.auctionHistory = [];
+  king.waitingForAuctionContinue = false;
   king.pauseFestaAiForDev = false;
   internal.state.waitingForRoundStart = true;
   if (opts?.allHumanBidders) {
@@ -35,13 +37,13 @@ function enterAuction(
   return king;
 }
 
-describe('King festa auction pacing', () => {
-  it('exposes ~1s auction and ~1.2s result delays for the host', () => {
+describe('King festa auction pacing (manual Continuar)', () => {
+  it('keeps delay constants documented (unused for auction auto-advance)', () => {
     expect(FESTA_AUCTION_AI_DELAY_MS).toBe(1000);
     expect(FESTA_AUCTION_RESULT_DELAY_MS).toBe(1200);
   });
 
-  it('runs only one AI auction action per tickFestaAi', () => {
+  it('runs only one AI auction action per tickFestaAi then waits', () => {
     const game = new KingPtGame();
     enterAuction(game);
 
@@ -50,16 +52,21 @@ describe('King festa auction pacing', () => {
     expect(after1.festaPhase).toBe('auction');
     expect(after1.auctionTurnIndex).toBe(1);
     expect(Object.keys(after1.auctionPlayerActions)).toHaveLength(1);
-    expect(after1.auctionPlayerActions[after1.auctionOrder[0]]).toBeDefined();
+    expect(after1.waitingForAuctionContinue).toBe(true);
+    expect(resolveKingFestaUiView(after1, 0)).toBe('auction_continue');
 
-    expect(game.tickFestaAi()).toBe(true);
-    const after2 = getKingPtState(game.getCurrentState());
-    expect(after2.festaPhase).toBe('auction');
-    expect(after2.auctionTurnIndex).toBe(2);
-    expect(Object.keys(after2.auctionPlayerActions)).toHaveLength(2);
+    // Blocked until Continuar
+    expect(game.tickFestaAi()).toBe(false);
+    expect(getKingPtState(game.getCurrentState()).auctionTurnIndex).toBe(1);
+
+    game.confirmAuctionContinue();
+    const afterContinue = getKingPtState(game.getCurrentState());
+    expect(afterContinue.auctionTurnIndex).toBe(2);
+    expect(Object.keys(afterContinue.auctionPlayerActions)).toHaveLength(2);
+    expect(afterContinue.waitingForAuctionContinue).toBe(true);
   });
 
-  it('follows auctionOrder seat sequence', () => {
+  it('follows auctionOrder seat sequence with Continuar between voices', () => {
     const game = new KingPtGame();
     enterAuction(game);
     const order = auctionBidderOrder(0);
@@ -69,26 +76,52 @@ describe('King festa auction pacing', () => {
       String(order[0])
     ]);
 
-    game.tickFestaAi();
+    game.confirmAuctionContinue();
     expect(
       Object.keys(getKingPtState(game.getCurrentState()).auctionPlayerActions).map(Number).sort()
     ).toEqual([order[0], order[1]].sort());
 
-    game.tickFestaAi();
+    game.confirmAuctionContinue();
     const done = getKingPtState(game.getCurrentState());
     expect(done.festaPhase).toBe('auction_result');
+    expect(done.waitingForAuctionContinue).toBe(true);
     expect(Object.keys(done.auctionPlayerActions).map(Number).sort()).toEqual(
       [...order].sort()
     );
   });
 
-  it('does not start negotiation until auction_result is resolved', () => {
+  it('PASS also waits for Continuar', () => {
+    const game = new KingPtGame();
+    enterAuction(game, { allHumanBidders: true });
+    const order = auctionBidderOrder(0);
+
+    game.submitAuctionPass(order[0]);
+    const afterPass = getKingPtState(game.getCurrentState());
+    expect(afterPass.auctionPlayerActions[order[0]]).toBe('pass');
+    expect(afterPass.waitingForAuctionContinue).toBe(true);
+    expect(afterPass.auctionHistory).toHaveLength(1);
+    expect(afterPass.auctionHistory[0].action).toBe('pass');
+    expect(resolveKingFestaUiView(afterPass, 0)).toBe('auction_continue');
+    expect(afterPass.auctionTurnIndex).toBe(1);
+
+    // Next human cannot act until Continuar
+    game.submitAuctionBid(order[1], 'positive', 3);
+    expect(getKingPtState(game.getCurrentState()).auctionTurnIndex).toBe(1);
+
+    game.confirmAuctionContinue();
+    expect(getKingPtState(game.getCurrentState()).waitingForAuctionContinue).toBe(false);
+    expect(getKingPtState(game.getCurrentState()).auctionTurnIndex).toBe(1);
+  });
+
+  it('does not start negotiation until auction_result Continuar', () => {
     const game = new KingPtGame();
     enterAuction(game, { allHumanBidders: true });
     const order = auctionBidderOrder(0);
 
     game.submitAuctionBid(order[0], 'positive', 5);
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[1]);
+    game.confirmAuctionContinue();
     game.submitAuctionBid(order[2], 'positive', 6);
 
     const result = getKingPtState(game.getCurrentState());
@@ -99,13 +132,17 @@ describe('King festa auction pacing', () => {
       amount: 6
     });
     expect(resolveKingFestaUiView(result, 0)).toBe('auction_result');
+    expect(result.waitingForAuctionContinue).toBe(true);
 
-    // Winner presentation must not change bestBid
+    expect(game.tickFestaAi()).toBe(false);
+    expect(getKingPtState(game.getCurrentState()).festaPhase).toBe('auction_result');
+
     const winnerBefore = result.bestBid;
-    expect(game.tickFestaAi()).toBe(true);
+    game.confirmAuctionContinue();
     const negotiated = getKingPtState(game.getCurrentState());
     expect(negotiated.festaPhase).toBe('negotiation');
     expect(negotiated.bestBid).toEqual(winnerBefore);
+    expect(negotiated.waitingForAuctionContinue).toBe(false);
     expect(resolveKingFestaUiView(negotiated, 0)).toBe('negotiation_owner');
   });
 
@@ -115,7 +152,9 @@ describe('King festa auction pacing', () => {
     const order = auctionBidderOrder(0);
 
     game.submitAuctionBid(order[0], 'positive', 4);
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[1]);
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[2]);
 
     const result = getKingPtState(game.getCurrentState());
@@ -124,31 +163,51 @@ describe('King festa auction pacing', () => {
     expect(result.bestBid?.bidderIndex).toBe(order[0]);
     expect(result.festaPhase).toBe('auction_result');
 
-    game.tickFestaAi();
+    game.confirmAuctionContinue();
     expect(getKingPtState(game.getCurrentState()).festaPhase).toBe('negotiation');
     expect(getKingPtState(game.getCurrentState()).bestBid?.amount).toBe(4);
   });
 
-  it('no-bids shows auction_result then fallback', () => {
+  it('no-bids shows auction_result then fallback after Continuar', () => {
     const game = new KingPtGame();
     enterAuction(game, { allHumanBidders: true });
     const order = auctionBidderOrder(0);
 
     game.submitAuctionPass(order[0]);
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[1]);
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[2]);
 
     const result = getKingPtState(game.getCurrentState());
     expect(result.festaPhase).toBe('auction_result');
     expect(result.bestBid).toBeNull();
     expect(result.waitingForFallback).toBe(false);
+    expect(result.waitingForAuctionContinue).toBe(true);
 
-    game.tickFestaAi();
+    expect(game.tickFestaAi()).toBe(false);
+
+    game.confirmAuctionContinue();
     const fallback = getKingPtState(game.getCurrentState());
     expect(fallback.festaPhase).toBe('fallback');
     expect(fallback.waitingForFallback).toBe(true);
     expect(fallback.fallbackReason).toBe('no_bids');
     expect(fallback.bestBid).toBeNull();
+  });
+
+  it('timeline keeps entries during waits', () => {
+    const game = new KingPtGame();
+    enterAuction(game, { allHumanBidders: true });
+    const order = auctionBidderOrder(0);
+
+    game.submitAuctionBid(order[0], 'positive', 2);
+    expect(getKingPtState(game.getCurrentState()).auctionHistory).toHaveLength(1);
+    game.confirmAuctionContinue();
+    game.submitAuctionPass(order[1]);
+    const mid = getKingPtState(game.getCurrentState());
+    expect(mid.auctionHistory).toHaveLength(2);
+    expect(mid.waitingForAuctionContinue).toBe(true);
+    expect(mid.auctionHistory.map((e) => e.action)).toEqual(['bid', 'pass']);
   });
 
   it('DEV pause blocks auction ticks', () => {

@@ -13,6 +13,7 @@ export type KingPtOverlay = 'koh_reveal' | 'festa' | 'score_popup';
 export type KingFestaUiAction =
   | { type: 'auction_pass'; playerIndex: number }
   | { type: 'auction_bid'; playerIndex: number; bidType: KingBidType; amount: number }
+  | { type: 'auction_continue' }
   | { type: 'accept_contract' }
   | { type: 'reject_contract' }
   | { type: 'request_higher'; bidType: KingBidType; amount: number }
@@ -67,7 +68,9 @@ export function buildKingFestaSyncKey(king: KingPtVariantState): string {
     king.waitingForFallback,
     king.waitingForFestaSetup,
     king.eightOrNullsPending,
-    king.eightOrNullsTarget
+    king.eightOrNullsTarget,
+    king.waitingForAuctionContinue,
+    king.auctionHistory?.length ?? 0
   ].join('|');
 }
 
@@ -98,6 +101,8 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
       if (!state.waitingForRoundStart) return false;
       const king = flow.readPtState(state);
       if (king.pauseFestaAiForDev) return false;
+      if (king.waitingForAuctionContinue) return false;
+      if (king.festaPhase === 'auction_result') return false;
       return isKingInFestaFlow(king);
     },
 
@@ -138,6 +143,9 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
           break;
         case 'auction_bid':
           flow.submitAuctionBid(action.playerIndex, action.bidType, action.amount);
+          break;
+        case 'auction_continue':
+          flow.confirmAuctionContinue();
           break;
         case 'accept_contract':
           flow.acceptContract();

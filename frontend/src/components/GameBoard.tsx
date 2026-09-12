@@ -15,8 +15,6 @@ import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
-  FESTA_AUCTION_AI_DELAY_MS,
-  FESTA_AUCTION_RESULT_DELAY_MS,
   GAME_OVER_DELAY_MS,
   SHUFFLE_DELAY_MS,
   TRICK_WIN_DELAY_MS
@@ -934,12 +932,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!kingCtrl.shouldTickFestaAi(gameState, rulesPresetId)) return;
 
     const festaPhase = kingCtrl.readPtState(gameState).festaPhase;
+    // Auction voices are manual (Continuar). Only non-auction festa AI keeps a short delay.
     const delayMs =
-      festaPhase === 'auction_result'
-        ? FESTA_AUCTION_RESULT_DELAY_MS
-        : festaPhase === 'auction'
-          ? FESTA_AUCTION_AI_DELAY_MS
-          : FESTA_AI_STEP_DELAY_MS;
+      festaPhase === 'auction' ? 0 : FESTA_AI_STEP_DELAY_MS;
 
     const timer = window.setTimeout(() => {
       const acted = kingCtrl.tickFestaAi();
@@ -1418,6 +1413,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     bidType,
                     amount
                   });
+                  setGameState(gameAdapter!.getCurrentState());
+                }}
+                onAuctionContinue={() => {
+                  kingCtrl.dispatchFestaAction({ type: 'auction_continue' });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAcceptContract={() => {

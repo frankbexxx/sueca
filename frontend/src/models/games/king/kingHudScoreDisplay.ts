@@ -9,8 +9,9 @@ export interface KingHudScoreLine {
 }
 
 /**
- * King negative HUD scores — reads engine fields only (no recalculation).
+ * King HUD scores — reads engine fields only (no recalculation).
  * Live round progress uses `lastRoundDeltas` (updated in finishTrick).
+ * Applies to negatives and festa_play.
  */
 export function resolveKingNegativeHudScore(input: {
   gameIndex: number;
@@ -22,10 +23,10 @@ export function resolveKingNegativeHudScore(input: {
   const { gameIndex, phase, lastRoundDeltas, playerScores, playerIndex } = input;
   const roundDelta = lastRoundDeltas[playerIndex] ?? 0;
   const totalScore = playerScores[playerIndex] ?? 0;
-  const roundPrimary =
-    gameIndex >= 0 &&
-    gameIndex < KING_NEGATIVE_GAMES &&
-    phase === 'negative';
+  const negativeLive =
+    gameIndex >= 0 && gameIndex < KING_NEGATIVE_GAMES && phase === 'negative';
+  const festaLive = gameIndex >= KING_NEGATIVE_GAMES && phase === 'festa_play';
+  const roundPrimary = negativeLive || festaLive;
 
   return { roundPrimary, roundDelta, totalScore };
 }

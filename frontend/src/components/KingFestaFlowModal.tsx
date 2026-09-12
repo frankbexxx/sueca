@@ -123,6 +123,7 @@ interface KingFestaFlowModalProps {
   localPlayerIndex: number;
   onAuctionPass: () => void;
   onAuctionBid: (bidType: KingBidType, amount: number) => void;
+  onAuctionContinue: () => void;
   onAcceptContract: () => void;
   onRejectContract: () => void;
   onRequestHigherBid: (bidType: KingBidType, amount: number) => void;
@@ -138,6 +139,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   localPlayerIndex,
   onAuctionPass,
   onAuctionBid,
+  onAuctionContinue,
   onAcceptContract,
   onRejectContract,
   onRequestHigherBid,
@@ -208,19 +210,68 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
+  if (view === 'auction_continue') {
+    const last = king.auctionHistory[king.auctionHistory.length - 1];
+    const lastName =
+      last != null ? gameState.players[last.seat]?.name ?? `P${last.seat + 1}` : '…';
+    const lastLabel =
+      last == null
+        ? ''
+        : last.action === 'pass'
+          ? 'PASS'
+          : formatBid({
+              bidderIndex: last.seat,
+              bidType: last.bidType ?? 'positive',
+              amount: last.amount ?? 0
+            });
+    return (
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+        {auctionTimeline}
+        <p className="variant-modal-hint king-auction-current-bid">
+          {last ? `${lastName} · ${lastLabel}` : 'Oferta registada.'}
+        </p>
+        <div className="king-festa-actions">
+          <FestaActionButton primary label="Continuar" onClick={onAuctionContinue} />
+        </div>
+      </FestaSheet>
+    );
+  }
+
   if (view === 'auction_result') {
     const winnerName = king.bestBid
       ? gameState.players[king.bestBid.bidderIndex]?.name ?? '…'
       : null;
     return (
       <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Resultado do leilão</h2>
+        <h2 className="king-festa-sheet-title">Leilão concluído</h2>
         {auctionTimeline}
-        <p className="variant-modal-hint king-auction-current-bid">
-          {king.bestBid && winnerName
-            ? `${winnerName} · ${formatBid(king.bestBid)}`
-            : 'Sem ofertas'}
-        </p>
+        <div className="king-festa-winner-box">
+          {king.bestBid && winnerName ? (
+            <>
+              <p className="king-festa-winner-box__line">
+                <strong>Vencedor:</strong> {winnerName}
+              </p>
+              <p className="king-festa-winner-box__line">
+                <strong>Oferta:</strong> {formatBid(king.bestBid)}
+              </p>
+              <p className="variant-modal-hint king-auction-current-bid">
+                {formatBid(king.bestBid)} — {winnerName}
+              </p>
+            </>
+          ) : (
+            <p className="king-festa-winner-box__line">
+              <strong>Sem ofertas</strong>
+            </p>
+          )}
+        </div>
+        <div className="king-festa-actions">
+          <FestaActionButton
+            primary
+            label={king.bestBid ? 'Continuar para negociação' : 'Continuar'}
+            onClick={onAuctionContinue}
+          />
+        </div>
       </FestaSheet>
     );
   }

@@ -14,11 +14,13 @@ export interface KingFestaUiState {
   eightOrNullsTarget: number | null;
   waitingForFallback: boolean;
   waitingForFestaSetup: boolean;
+  waitingForAuctionContinue?: boolean;
 }
 
 export type KingFestaUiViewKind =
   | 'auction_turn'
   | 'auction_waiting'
+  | 'auction_continue'
   | 'auction_result'
   | 'eight_respond'
   | 'eight_waiting'
@@ -61,6 +63,9 @@ export function resolveKingFestaUiView(
   const currentAuctionPlayer =
     king.festaPhase === 'auction' ? king.auctionOrder[king.auctionTurnIndex] : null;
 
+  if (king.festaPhase === 'auction' && king.waitingForAuctionContinue) {
+    return 'auction_continue';
+  }
   if (king.festaPhase === 'auction' && currentAuctionPlayer === localPlayerIndex) {
     return 'auction_turn';
   }

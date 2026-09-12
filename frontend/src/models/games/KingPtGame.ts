@@ -101,6 +101,11 @@ export interface KingPtVariantState {
    * entry stays observable. Never set in production paths.
    */
   pauseFestaAiForDev?: boolean;
+  /**
+   * After each auction voice (bid/pass) or on auction_result: block auto-advance
+   * until the human confirms via confirmAuctionContinue.
+   */
+  waitingForAuctionContinue: boolean;
 }
 
 function empty4(): number[] {
@@ -144,7 +149,8 @@ function defaultKingState(): KingPtVariantState {
     scoringFrozen: false,
     earlyEndOffered: false,
     auctionPlayerActions: {},
-    auctionHistory: []
+    auctionHistory: [],
+    waitingForAuctionContinue: false
   };
 }
 
@@ -168,6 +174,7 @@ export function getKingPtState(state: GameState): KingPtVariantState {
     },
     gameHistory: vs.gameHistory ?? [],
     auctionHistory: vs.auctionHistory ?? [],
+    waitingForAuctionContinue: Boolean(vs.waitingForAuctionContinue),
     showScorePopup
   };
 }
@@ -290,10 +297,12 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'auction') return;
+    if (king.waitingForAuctionContinue) return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
     king.auctionPlayerActions[playerIndex] = 'pass';
     king.auctionHistory = appendKingAuctionHistory(king.auctionHistory, playerIndex, 'pass');
     this.advanceAuctionTurn(king);
+    king.waitingForAuctionContinue = true;
     this.syncKing(king);
     this.runAiFestaSteps();
   }
@@ -302,6 +311,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     if (king.festaPhase !== 'auction') return;
+    if (king.waitingForAuctionContinue) return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
     const bid: KingBid = {
       bidderIndex: playerIndex,
@@ -314,8 +324,40 @@ export class KingPtGame extends BaseGameAdapter {
       king.bestBid = bid;
     }
     this.advanceAuctionTurn(king);
+    king.waitingForAuctionContinue = true;
     this.syncKing(king);
     this.runAiFestaSteps();
+  }
+
+  /**
+   * Manual auction step: after a voice is shown (or auction_result), advance
+   * exactly one step — next AI voice, or negotiation/fallback from result.
+   */
+  confirmAuctionContinue(): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (!king.waitingForAuctionContinue) return;
+
+    if (king.festaPhase === 'auction_result') {
+      king.waitingForAuctionContinue = false;
+      this.resolveAuctionResultPresentation(king);
+      this.syncKing(king);
+      this.runAiFestaSteps();
+      return;
+    }
+
+    if (king.festaPhase !== 'auction') {
+      king.waitingForAuctionContinue = false;
+      this.syncKing(king);
+      return;
+    }
+
+    king.waitingForAuctionContinue = false;
+    this.syncKing(king);
+    const current = this.getCurrentAuctionPlayer(king);
+    if (current !== null && this.state.players[current]?.type === 'ai') {
+      this.runOneAiFestaStep(getKingPtState(this.state));
+    }
   }
 
   acceptContract(): void {
@@ -520,8 +562,9 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private finishAuction(king: KingPtVariantState): void {
-    // Presentation pause — negotiation / fallback only after tick resolves this.
+    // Presentation pause — negotiation / fallback only after confirmAuctionContinue.
     king.festaPhase = 'auction_result';
+    king.waitingForAuctionContinue = true;
   }
 
   /** Advance from auction result presentation to negotiation or no-bids fallback. */
@@ -558,6 +601,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.nullAuctionStartNote = null;
     king.auctionPlayerActions = {};
     king.auctionHistory = [];
+    king.waitingForAuctionContinue = false;
   }
 
   /**
@@ -582,18 +626,16 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   /**
-   * Host scheduler entry: at most one auction AI action per call, or one
-   * auction_result → negotiation/fallback advance. Other phases may drain.
+   * Host scheduler entry: at most one auction AI action per call when not
+   * waiting for Continuar. auction_result never auto-advances (manual confirm).
+   * Other phases may drain.
    */
   tickFestaAi(): boolean {
     if (!this.state) return false;
     const king = getKingPtState(this.state);
     if (king.pauseFestaAiForDev) return false;
-    if (king.festaPhase === 'auction_result') {
-      this.resolveAuctionResultPresentation(king);
-      this.syncKing(king);
-      return true;
-    }
+    if (king.waitingForAuctionContinue) return false;
+    if (king.festaPhase === 'auction_result') return false;
     if (king.festaPhase === 'auction') {
       return this.runOneAiFestaStep(king);
     }

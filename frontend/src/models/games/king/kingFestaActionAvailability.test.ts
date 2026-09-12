@@ -77,10 +77,23 @@ describe('kingFestaActionAvailability', () => {
       expect(resolveKingFestaUiView(auction, 0)).toBe('auction_waiting');
     });
 
+    it('waitingForAuctionContinue shows Continuar sheet for all seats', () => {
+      const waiting = baseKing({
+        festaPhase: 'auction',
+        bestBid: { bidderIndex: 1, bidType: 'positive', amount: 2 },
+        waitingForAuctionContinue: true,
+        auctionTurnIndex: 1
+      });
+      expect(resolveKingFestaUiView(waiting, 0)).toBe('auction_continue');
+      expect(resolveKingFestaUiView(waiting, 1)).toBe('auction_continue');
+      expect(resolveKingFestaUiView(waiting, 2)).toBe('auction_continue');
+    });
+
     it('auction_result is distinct from negotiation', () => {
       const result = baseKing({
         festaPhase: 'auction_result',
-        bestBid: { bidderIndex: 1, bidType: 'positive', amount: 5 }
+        bestBid: { bidderIndex: 1, bidType: 'positive', amount: 5 },
+        waitingForAuctionContinue: true
       });
       expect(resolveKingFestaUiView(result, 0)).toBe('auction_result');
       expect(resolveKingFestaUiView(result, 1)).toBe('auction_result');

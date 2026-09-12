@@ -125,6 +125,10 @@ export class KingGame extends BaseGameAdapter {
     return false;
   }
 
+  confirmAuctionContinue(): void {
+    if (this.impl && isPtGame(this.impl)) this.impl.confirmAuctionContinue();
+  }
+
   /** DEV ONLY — jump into festa 7–10. See `dev/kingFestaJump.ts`. */
   applyDevFestaFixture(
     playerNames: string[],

@@ -65,6 +65,7 @@ export interface KingFlowHost {
   acceptEarlyEnd(): void;
   declineEarlyEnd(): void;
   tickFestaAi(): boolean;
+  confirmAuctionContinue(): void;
 }
 
 /** King PT festa / KOH / score-sheet / early-end flow. */
@@ -144,7 +145,8 @@ export function createKingVariantFlow(
     dismissScorePopup: () => host.dismissScorePopup(),
     acceptEarlyEnd: () => host.acceptEarlyEnd(),
     declineEarlyEnd: () => host.declineEarlyEnd(),
-    tickFestaAi: () => host.tickFestaAi()
+    tickFestaAi: () => host.tickFestaAi(),
+    confirmAuctionContinue: () => host.confirmAuctionContinue()
   };
 }
 
@@ -167,7 +169,8 @@ export function createNoopKingFlowHost(): KingFlowHost {
     dismissScorePopup: noop,
     acceptEarlyEnd: noop,
     declineEarlyEnd: noop,
-    tickFestaAi: () => false
+    tickFestaAi: () => false,
+    confirmAuctionContinue: noop
   };
 }
 

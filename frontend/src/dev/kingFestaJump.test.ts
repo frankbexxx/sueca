@@ -150,7 +150,10 @@ describe('kingFestaJump (DEV)', () => {
     );
     expect(getKingPtState(state).pauseFestaAiForDev).toBeFalsy();
     expect(game.tickFestaAi()).toBe(true);
-    expect(getKingPtState(game.getCurrentState()).auctionTurnIndex).toBe(1);
+    const after = getKingPtState(game.getCurrentState());
+    expect(after.auctionTurnIndex).toBe(1);
+    expect(after.waitingForAuctionContinue).toBe(true);
+    expect(game.tickFestaAi()).toBe(false);
   });
 
   it('formats DEV badge', () => {

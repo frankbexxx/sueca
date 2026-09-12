@@ -595,7 +595,8 @@ describe('KingPtGame', () => {
     expect(after.waitingForFallback).toBe(false);
     expect(after.bestBid).toBeNull();
 
-    expect(game.tickFestaAi()).toBe(true);
+    expect(game.tickFestaAi()).toBe(false);
+    game.confirmAuctionContinue();
     const fallback = getKingPtState(game.getCurrentState());
     expect(fallback.waitingForFallback).toBe(true);
     expect(fallback.fallbackReason).toBe('no_bids');
@@ -728,6 +729,7 @@ describe('KingPtGame', () => {
       amount: 2
     });
 
+    game.confirmAuctionContinue();
     game.submitAuctionPass(2);
     expect(getKingPtState(game.getCurrentState()).auctionPlayerActions[2]).toBe('pass');
   });
@@ -752,7 +754,8 @@ describe('KingPtGame', () => {
     expect(after.festaPhase).toBe('auction_result');
     expect(after.bestBid?.amount).toBe(1);
 
-    expect(game.tickFestaAi()).toBe(true);
+    expect(game.tickFestaAi()).toBe(false);
+    game.confirmAuctionContinue();
     const negotiated = getKingPtState(game.getCurrentState());
     expect(negotiated.festaPhase).toBe('negotiation');
     expect(negotiated.bestBid?.amount).toBe(1);
@@ -815,11 +818,13 @@ describe('KingPtGame', () => {
       after.bestBid !== null ||
       Object.keys(after.auctionPlayerActions).length > 0;
     expect(aiActed).toBe(true);
+    expect(after.waitingForAuctionContinue).toBe(true);
     // Still auction or result — not drained into negotiation in one tick.
     expect(['auction', 'auction_result']).toContain(after.festaPhase);
     if (after.festaPhase === 'auction') {
       expect(after.auctionTurnIndex).toBe(1);
     }
+    expect(game.tickFestaAi()).toBe(false);
   });
 
   it('aligns first festa owner with K♥ holder', () => {
