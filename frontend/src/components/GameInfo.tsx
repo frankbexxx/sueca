@@ -1,18 +1,8 @@
 import React from 'react';
 import { GameState, GameVariant, Suit } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
-import { getKingPtState } from '../models/games/KingPtGame';
-import {
-  kingHudContractTitle,
-  KING_NEGATIVE_GAMES
-} from '../models/games/king/kingContracts';
-import { resolvePresetId } from '../constants/rulesPresets';
-import { getKingRulesHint } from './KingRulesHelper';
 import { getSpadesState } from '../models/games/SpadesGame';
-import { getHeartsState } from '../models/games/HeartsGame';
-import { partialTeamBids } from '../models/games/spades/spadesRules';
 import { SuitBrokenBadge } from './table/SuitBrokenBadge';
-import { KingGameHistoryPanel } from './KingGameHistoryPanel';
 import { getCardImagePath } from '../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../utils/cardMappings';
 import { resolveTrumpSuitBadge } from '../utils/trumpSuitDisplay';
@@ -37,89 +27,32 @@ function suitLabelFor(t: Translations, suit: Suit): string {
   }
 }
 
-export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPresetId }) => {
-  const { language, t } = useLanguage();
-  const locale = language === 'pt' ? 'pt' : 'en';
-
-  if (variant === 'king') {
-    const preset = resolvePresetId('king', rulesPresetId);
-    if (preset === 'king-pt-normal') {
-      const king = getKingPtState(gameState);
-      const ownerName = gameState.players[king.festaOwnerIndex]?.name ?? '';
-      const title =
-        king.phase === 'koh_reveal'
-          ? locale === 'pt'
-            ? 'Viragem do Rei de Copas'
-            : 'King of Hearts draw'
-          : kingHudContractTitle(
-              king.gameIndex,
-              king.contract,
-              king.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
-              locale
-            );
-      const hint = king.phase === 'koh_reveal' ? null : getKingRulesHint(gameState, locale);
-      return (
-        <div className="game-info king-info">
-          <span className="king-game-title">{title}</span>
-          {hint && <span className="king-rules-hint">{hint.body}</span>}
-          {king.nullAuctionStartNote && (
-            <div className="king-null-start-note">{king.nullAuctionStartNote}</div>
-          )}
-          <KingGameHistoryPanel gameState={gameState} />
-        </div>
-      );
-    }
-    const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
-    return (
-      <div className="game-info king-info">
-        <span>
-          King simplificado · Jogo {gameState.round}/10 ({simplified?.handType ?? '…'})
-        </span>
-      </div>
-    );
-  }
+/**
+ * Center status for Sueca / Spades team strip (UX-P3.4b).
+ * King/Hearts use UnifiedGameStatusPanel — keep this branch lean.
+ */
+export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant }) => {
+  const { t } = useLanguage();
 
   if (variant === 'spades') {
     const spades = getSpadesState(gameState);
-    const brokenBadge = (
-      <SuitBrokenBadge
-        broken={Boolean(spades?.spadesBroken)}
-        closedLabel={t.spadesStatus.spadesClosed}
-        brokenLabel={t.spadesStatus.spadesBroken}
-      />
-    );
     if (spades?.waitingForBids) {
       const currentName = gameState.players[spades.currentBidderIndex]?.name ?? '…';
-      const partial = partialTeamBids(spades.playerBids, spades.playerBidTypes);
+      // Seats own per-player bid badges; strip only names whose turn it is.
       return (
-        <div className="game-info spades-info">
-          <span>{t.spadesBid.biddingNow(currentName)}</span>
-          <span className="spades-info__partial">
-            ♠ {partial.team1} vs {partial.team2}
-          </span>
-          {brokenBadge}
+        <div className="game-info spades-info spades-info--bidding">
+          <span className="spades-info__now">{t.spadesBid.biddingNow(currentName)}</span>
         </div>
       );
     }
+    // Team bids live in TeamScoreBlock — only surface broken when it matters.
+    if (!spades?.spadesBroken) return null;
     return (
       <div className="game-info spades-info">
-        <span>
-          ♠ Bids: {spades?.team1Bid ?? '—'} vs {spades?.team2Bid ?? '—'}
-        </span>
-        {brokenBadge}
-      </div>
-    );
-  }
-
-  if (variant === 'hearts') {
-    const hearts = getHeartsState(gameState);
-    return (
-      <div className="game-info hearts-info">
-        <span>♥ Hearts · individual</span>
         <SuitBrokenBadge
-          broken={Boolean(hearts.heartsBroken)}
-          closedLabel={t.heartsStatus.heartsClosed}
-          brokenLabel={t.heartsStatus.heartsBroken}
+          broken
+          closedLabel={t.spadesStatus.spadesClosed}
+          brokenLabel={t.spadesStatus.spadesBroken}
         />
       </div>
     );
@@ -137,16 +70,14 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, rulesPre
       ? SUIT_TO_NAME[trumpCard.suit as keyof typeof SUIT_TO_NAME]
       : undefined;
     const trumpSrc = rankName && suitName ? getCardImagePath(rankName, suitName) : '';
-    const dealerName = gameState.players[gameState.dealerIndex]?.name ?? '';
     const aria =
       trumpBadge != null
         ? t.gameBoard.trumpAria(suitLabelFor(t, trumpBadge.suit))
         : undefined;
 
-    // UX-P3.2: single trump representation — face card only (no TRUNFO / suit badge).
+    // Dealer is on seats (D). HUD keeps a single trump face.
     return (
       <div className="game-info trump-info-in-team">
-        {dealerName ? <span className="dealer-name">{dealerName}</span> : null}
         {trumpSrc ? (
           <img
             src={trumpSrc}

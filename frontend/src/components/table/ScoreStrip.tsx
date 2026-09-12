@@ -51,12 +51,12 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
         usTeam={usTeam}
         themTeam={themTeam}
       />
-      <div className="round-block round-block--center">
-        <div className="round-block__game">
-          {t.gameBoard.game} {gameState.round}
-        </div>
+      <div className="round-block round-block--center round-block--hierarchy">
         <div className="round-block__trick" aria-label={trickLabel}>
           {trickLabel}
+        </div>
+        <div className="round-block__game">
+          {t.gameBoard.game} {gameState.round}
         </div>
         <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
       </div>

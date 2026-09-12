@@ -3,14 +3,13 @@ import { Card, GameState, GameVariant } from '../../types/game';
 import { useLanguage } from '../../i18n/useLanguage';
 import { getKingPtState } from '../../models/games/KingPtGame';
 import {
-  kingHudContractTitle,
+  kingHudContractPrimary,
+  kingHudMatchProgress,
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
 import { resolvePresetId } from '../../constants/rulesPresets';
-import { getKingRulesHint } from '../KingRulesHelper';
 import { getHeartsRulesHint } from '../HeartsRulesHelper';
-import { KingGameHistoryPanel } from '../KingGameHistoryPanel';
 import { getHeartsState } from '../../models/games/HeartsGame';
 import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
@@ -30,11 +29,6 @@ const PENALTY_CARD_CONTRACTS: KingNegativeContract[] = [
   'no_men',
   'no_king_hearts'
 ];
-
-function truncateHint(text: string, maxLength = 36): string {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1).trim()}…`;
-}
 
 function penaltyCardImage(card: { rank: string; suit: string }): string {
   const rankName = RANK_TO_IMAGE_NAME[card.rank as keyof typeof RANK_TO_IMAGE_NAME];
@@ -62,14 +56,21 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       : kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
 
   const pointsLabel = isPt ? 'Pontos' : 'Points';
-  const contractHeader = isPt ? 'Contrato + regra curta' : 'Contract + short rule';
+  const statusHeader =
+    variant === 'king'
+      ? isPt
+        ? 'Contrato'
+        : 'Contract'
+      : isPt
+        ? 'Estado'
+        : 'Status';
 
   let contractLine = '';
-  let ruleLine = '';
-  let heartsRuleLines: string[] = [];
+  let matchLine: string | null = null;
   let kingContract: KingNegativeContract | null = null;
   let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
   let heartsBroken = false;
+  let showNullNote: string | null = null;
   const kingPreset = variant === 'king' ? resolvePresetId('king', rulesPresetId) : null;
   const showKingPtExtras = variant === 'king' && kingPreset === 'king-pt-normal';
   const kingPtState = showKingPtExtras ? getKingPtState(gameState) : null;
@@ -79,32 +80,36 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       kingContract = kingPtState.contract;
       penaltyCardsByPlayer = kingPtState.roundBreakdown.penaltyCardsTaken;
       const ownerName = gameState.players[kingPtState.festaOwnerIndex]?.name ?? '';
-      const title =
-        kingPtState.phase === 'koh_reveal'
-          ? isPt
-            ? 'Viragem do Rei de Copas'
-            : 'King of Hearts draw'
-          : kingHudContractTitle(
-              kingPtState.gameIndex,
-              kingPtState.contract,
-              kingPtState.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
-              locale
-            );
-      const hint = kingPtState.phase === 'koh_reveal' ? null : getKingRulesHint(gameState, locale);
-      contractLine = title;
-      ruleLine = hint ? truncateHint(hint.body) : '';
+      if (kingPtState.phase === 'koh_reveal') {
+        contractLine = isPt ? 'Viragem do Rei de Copas' : 'King of Hearts draw';
+        matchLine = null;
+      } else {
+        contractLine = kingHudContractPrimary(
+          kingPtState.gameIndex,
+          kingPtState.contract,
+          kingPtState.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
+          locale
+        );
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
+      }
+      // UX-P3.4b: null note only while it carries setup meaning.
+      if (kingPtState.nullAuctionStartNote && kingPtState.phase !== 'koh_reveal') {
+        showNullNote = kingPtState.nullAuctionStartNote;
+      }
     } else {
       const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
       contractLine = isPt ? 'King simplificado' : 'King simplified';
-      ruleLine = isPt
-        ? `Jogo ${gameState.round}/10 · ${simplified?.handType ?? '…'}`
-        : `Game ${gameState.round}/10 · ${simplified?.handType ?? '…'}`;
+      matchLine = isPt
+        ? `Jogo ${gameState.round}/10`
+        : `Game ${gameState.round}/10`;
+      if (simplified?.handType) {
+        contractLine = `${contractLine} · ${simplified.handType}`;
+      }
     }
   } else if (variant === 'hearts') {
     const heartsState = getHeartsState(gameState);
-    const heartsHint = getHeartsRulesHint(locale);
-    contractLine = heartsHint.title;
-    heartsRuleLines = heartsHint.lines;
+    // UX-P3.4b: title only — rule encyclopedia lines stay out of the live HUD.
+    contractLine = getHeartsRulesHint(locale).title;
     penaltyCardsByPlayer = heartsState.penaltyCardsTaken;
     heartsBroken = heartsState.heartsBroken;
   }
@@ -115,7 +120,12 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       PENALTY_CARD_CONTRACTS.includes(kingContract)) ||
     variant === 'hearts';
 
-  const trumpCard = gameState.trumpCard;
+  // King festa trump face only during positive festa play.
+  const showTrump =
+    variant === 'king' &&
+    Boolean(gameState.trumpCard) &&
+    kingPtState?.festaMode === 'positive';
+  const trumpCard = showTrump ? gameState.trumpCard : null;
   const trumpRank = trumpCard
     ? RANK_TO_IMAGE_NAME[trumpCard.rank as keyof typeof RANK_TO_IMAGE_NAME]
     : undefined;
@@ -125,9 +135,11 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   const trumpSrc =
     trumpRank && trumpSuitName ? getCardImagePath(trumpRank, trumpSuitName) : '';
 
+  const showMeta = Boolean(trickLabel || matchLine || trumpSrc);
+
   return (
     <div className="top-strip top-strip--unified">
-      <div className="game-status-panel">
+      <div className="game-status-panel game-status-panel--hierarchy">
         <div className="game-status-panel__grid">
           <div className="game-status-panel__col game-status-panel__col--scores">
             <div className="game-status-panel__label">{pointsLabel}</div>
@@ -159,30 +171,17 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
           </div>
           <div className="game-status-panel__divider" aria-hidden="true" />
           <div className="game-status-panel__col game-status-panel__col--contract">
-            <div className="game-status-panel__label">{contractHeader}</div>
+            <div className="game-status-panel__label">{statusHeader}</div>
             <div className="game-status-panel__contract">
               <span className="game-status-panel__contract-title">{contractLine}</span>
-              {variant === 'hearts' && heartsRuleLines.length > 0 ? (
-                <div className="game-status-panel__contract-rules">
-                  {heartsRuleLines.map((line) => (
-                    <div key={line} className="game-status-panel__contract-rule-line">
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                ruleLine && (
-                  <>
-                    <span className="game-status-panel__contract-sep"> · </span>
-                    <span className="game-status-panel__contract-hint">{ruleLine}</span>
-                  </>
-                )
-              )}
             </div>
-            {(trickLabel || trumpSrc) && (
+            {showMeta && (
               <div className="game-status-panel__meta">
                 {trickLabel ? (
                   <span className="game-status-panel__trick">{trickLabel}</span>
+                ) : null}
+                {matchLine ? (
+                  <span className="game-status-panel__match">{matchLine}</span>
                 ) : null}
                 {trumpSrc ? (
                   <img
@@ -198,19 +197,16 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                 ) : null}
               </div>
             )}
-            {variant === 'hearts' && (
+            {variant === 'hearts' && heartsBroken && (
               <div className="game-status-panel__suit-status">
                 <SuitBrokenBadge
-                  broken={heartsBroken}
+                  broken
                   closedLabel={t.heartsStatus.heartsClosed}
                   brokenLabel={t.heartsStatus.heartsBroken}
                 />
               </div>
             )}
-            {showKingPtExtras && kingPtState?.nullAuctionStartNote && (
-              <div className="king-null-start-note">{kingPtState.nullAuctionStartNote}</div>
-            )}
-            {showKingPtExtras && <KingGameHistoryPanel gameState={gameState} />}
+            {showNullNote && <div className="king-null-start-note">{showNullNote}</div>}
           </div>
         </div>
       </div>

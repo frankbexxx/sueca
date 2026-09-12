@@ -97,10 +97,41 @@ export function kingGameTitle(
   return locale === 'pt' ? `Jogo ${n}/${KING_TOTAL_GAMES}` : `Game ${n}/${KING_TOTAL_GAMES}`;
 }
 
+/** Match axis for King HUD — always labeled (never bare N/10). */
+export function kingHudMatchProgress(
+  gameIndex: number,
+  locale: 'pt' | 'en'
+): string {
+  const n = gameIndex + 1;
+  return locale === 'pt'
+    ? `Jogo ${n}/${KING_TOTAL_GAMES}`
+    : `Game ${n}/${KING_TOTAL_GAMES}`;
+}
+
 /**
- * HUD contract line for the live table (UX-P3.4a).
- * Match progress is labeled `Jogo N/10` so it cannot be read as trick progress
- * next to the canonical `Vaza N/13` indicator.
+ * Primary contract / festa line without match progress (UX-P3.4b).
+ * Match lives in a secondary HUD slot below `Vaza N/13`.
+ */
+export function kingHudContractPrimary(
+  gameIndex: number,
+  contract: KingNegativeContract | null,
+  festaOwnerName: string | null,
+  locale: 'pt' | 'en'
+): string {
+  if (gameIndex < KING_NEGATIVE_GAMES && contract) {
+    return kingContractLabel(contract, locale);
+  }
+  if (festaOwnerName) {
+    return locale === 'pt'
+      ? `Festa de ${festaOwnerName}`
+      : `${festaOwnerName}'s festa`;
+  }
+  return kingHudMatchProgress(gameIndex, locale);
+}
+
+/**
+ * Combined HUD title (compat / modals that still want one string).
+ * Prefer `kingHudContractPrimary` + `kingHudMatchProgress` in the live strip.
  */
 export function kingHudContractTitle(
   gameIndex: number,
@@ -108,16 +139,13 @@ export function kingHudContractTitle(
   festaOwnerName: string | null,
   locale: 'pt' | 'en'
 ): string {
-  const n = gameIndex + 1;
-  const match =
-    locale === 'pt' ? `Jogo ${n}/${KING_TOTAL_GAMES}` : `Game ${n}/${KING_TOTAL_GAMES}`;
-  if (gameIndex < KING_NEGATIVE_GAMES && contract) {
-    return `${kingContractLabel(contract, locale)} · ${match}`;
-  }
-  if (festaOwnerName) {
-    return locale === 'pt'
-      ? `Festa de ${festaOwnerName} · ${match}`
-      : `${festaOwnerName}'s festa · ${match}`;
-  }
-  return match;
+  const match = kingHudMatchProgress(gameIndex, locale);
+  const primary = kingHudContractPrimary(
+    gameIndex,
+    contract,
+    festaOwnerName,
+    locale
+  );
+  if (primary === match) return match;
+  return `${primary} · ${match}`;
 }

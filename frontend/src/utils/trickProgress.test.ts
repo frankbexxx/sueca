@@ -4,7 +4,7 @@ import {
   tricksPerHand
 } from './trickProgress';
 import type { Card, GameState } from '../types/game';
-import { kingHudContractTitle, kingGameTitle } from '../models/games/king/kingContracts';
+import { kingHudContractTitle, kingGameTitle, kingHudMatchProgress } from '../models/games/king/kingContracts';
 
 function cards(n: number, prefix: string): Card[] {
   return new Array(n).fill(null).map((_, i) => ({
@@ -169,6 +169,7 @@ describe('trickProgress UX-P3.4a — single source of truth', () => {
       expect(kingHudContractTitle(0, 'no_tricks', null, 'pt')).toBe(
         'Não fazer vazas · Jogo 1/10'
       );
+      expect(kingHudMatchProgress(0, 'pt')).toBe('Jogo 1/10');
       expect(kingHudContractTitle(0, 'no_tricks', null, 'pt')).not.toMatch(/· 1\/10$/);
       expect(kingHudContractTitle(6, null, 'Ana', 'pt')).toBe('Festa de Ana · Jogo 7/10');
       expect(kingHudContractTitle(9, null, null, 'pt')).toBe('Jogo 10/10');

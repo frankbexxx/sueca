@@ -261,17 +261,18 @@
 
 .suit-broken-badge {
   display: inline-block;
-  min-width: 6.5em;
-  font-size: 0.68em;
-  font-weight: 700;
+  min-width: 5.5em;
+  font-size: 0.62em;
+  font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  padding: 1px 6px;
-  border-radius: 999px;
+  padding: 1px 5px;
+  border-radius: 6px;
   border: 1px solid currentColor;
   box-sizing: border-box;
   text-align: center;
   white-space: nowrap;
+  opacity: 0.85;
 }
 
 .suit-broken-badge--closed {
@@ -290,24 +291,29 @@
   margin-top: 4px;
 }
 
+.game-status-panel__trick {
+  font-size: 0.82em;
+  font-weight: 700;
+  opacity: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--premium-hud-text, #e8e0d0);
+}
+
+.game-status-panel__match {
+  font-size: 0.68em;
+  font-weight: 500;
+  opacity: 0.62;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
 .game-status-panel__meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 5px;
   flex-wrap: wrap;
-}
-
-.game-status-panel__scores,
-.game-status-panel__score-item {
-  font-variant-numeric: tabular-nums;
-}
-
-.game-status-panel__trick {
-  font-size: 0.78em;
-  font-weight: 600;
-  opacity: 0.9;
-  font-variant-numeric: tabular-nums;
 }
 
 .score-block .line.spades-bags {
@@ -373,14 +379,14 @@
 }
 
 .game-status-panel {
-  --status-penalty-card-w: 15px;
-  --status-penalty-card-h: 21px;
+  --status-penalty-card-w: 14px;
+  --status-penalty-card-h: 20px;
   width: 100%;
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-radius: 10px;
-  background: var(--premium-hud-panel, rgba(16, 25, 27, 0.72));
-  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.22));
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+  background: var(--premium-hud-panel, rgba(16, 25, 27, 0.62));
+  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.16));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
   color: var(--premium-hud-text, #e8e0d0);
 }
@@ -408,12 +414,12 @@
 }
 
 .game-status-panel__label {
-  font-size: 0.6rem;
-  font-weight: 700;
+  font-size: 0.55rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  opacity: 0.72;
-  margin-bottom: 3px;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+  margin-bottom: 2px;
 }
 
 .game-status-panel__scores {
@@ -556,11 +562,11 @@
 }
 
 .score-block {
-  padding: 4px 7px;
+  padding: 4px 6px;
   border-radius: 9px;
-  background: var(--premium-hud-panel, rgba(16, 25, 27, 0.72));
-  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.22));
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  background: var(--premium-hud-panel, rgba(16, 25, 27, 0.58));
+  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.16));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.16);
   color: var(--premium-hud-text, #e8e0d0);
 }
 
@@ -603,9 +609,9 @@
 .round-block {
   padding: 4px 7px;
   border-radius: 9px;
-  background: var(--premium-hud-panel-strong, rgba(16, 25, 27, 0.82));
-  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.22));
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  background: var(--premium-hud-panel-strong, rgba(16, 25, 27, 0.7));
+  border: 1px solid var(--premium-hud-border, rgba(197, 164, 91, 0.16));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.16);
   text-align: center;
   min-width: 110px;
   color: var(--premium-hud-text, #e8e0d0);
@@ -621,20 +627,31 @@
   align-items: center;
 }
 
+.round-block--hierarchy {
+  gap: 3px;
+}
+
 .round-block__game {
-  font-weight: 700;
-  font-size: 0.8em;
-  line-height: 1.2;
+  font-weight: 500;
+  font-size: 0.68em;
+  line-height: 1.15;
   letter-spacing: 0.01em;
+  opacity: 0.58;
+  order: 2;
 }
 
 .round-block__trick {
-  font-size: 0.72em;
-  font-weight: 600;
-  opacity: 0.9;
+  font-size: 0.8em;
+  font-weight: 700;
+  opacity: 1;
   letter-spacing: 0.01em;
-  margin-top: 1px;
+  margin-top: 0;
   font-variant-numeric: tabular-nums;
+  order: 1;
+}
+
+.round-block--hierarchy .game-info {
+  order: 3;
 }
 
 .trump-info-in-team {
@@ -708,11 +725,12 @@
 }
 
 .trump-card-mini {
-  width: 42px;
+  width: 28px;
   height: auto;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
+  opacity: 0.95;
 }
 
 .trump-minimal {
