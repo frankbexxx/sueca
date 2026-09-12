@@ -500,11 +500,21 @@
   font-size: 0.62rem;
   line-height: 1.25;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .game-status-panel__contract-title {
   font-weight: 700;
   font-size: 0.62rem;
+}
+
+.game-status-panel__contract-detail,
+.game-status-panel__contract-first {
+  font-weight: 500;
+  font-size: 0.58rem;
+  opacity: 0.92;
 }
 
 .game-status-panel__contract-sep {

@@ -8,6 +8,7 @@ import {
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
+import { buildKingHudFestaPlayLines } from '../../models/games/king/kingFestaSetupSummary';
 import { shouldShowKingPenaltyCards } from '../../models/games/king/kingHudPenaltyDisplay';
 import {
   formatKingHudTotalLabel,
@@ -65,6 +66,8 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         : 'Status';
 
   let contractLine = '';
+  let contractDetail: string | null = null;
+  let contractFirstPlayer: string | null = null;
   let matchLine: string | null = null;
   let kingContract: KingNegativeContract | null = null;
   let penaltyCardsByPlayer: Card[][] = [[], [], [], []];
@@ -82,6 +85,30 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       if (kingPtState.phase === 'koh_reveal') {
         contractLine = isPt ? 'Viragem do Rei de Copas' : 'King of Hearts draw';
         matchLine = null;
+      } else if (
+        kingPtState.gameIndex >= KING_NEGATIVE_GAMES &&
+        kingPtState.phase === 'festa_play'
+      ) {
+        const firstIdx = kingPtState.firstPlayerIndex;
+        const lines = buildKingHudFestaPlayLines({
+          gameIndex: kingPtState.gameIndex,
+          phase: kingPtState.phase,
+          festaOwnerName: ownerName,
+          activeContract: kingPtState.activeContract,
+          bestBid: kingPtState.bestBid,
+          festaMode: kingPtState.festaMode,
+          noTrumpChosen: kingPtState.noTrumpChosen,
+          chosenTrump: kingPtState.chosenTrump,
+          trumpSuit: gameState.trumpSuit,
+          firstPlayerIndex: firstIdx,
+          firstPlayerName:
+            firstIdx != null ? gameState.players[firstIdx]?.name ?? '' : '',
+          locale
+        });
+        contractLine = lines.primary;
+        contractDetail = lines.detail;
+        contractFirstPlayer = lines.firstPlayer;
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
       } else {
         contractLine = kingHudContractPrimary(
           kingPtState.gameIndex,
@@ -195,6 +222,14 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
             <div className="game-status-panel__label">{statusHeader}</div>
             <div className="game-status-panel__contract">
               <span className="game-status-panel__contract-title">{contractLine}</span>
+              {contractDetail ? (
+                <span className="game-status-panel__contract-detail">{contractDetail}</span>
+              ) : null}
+              {contractFirstPlayer ? (
+                <span className="game-status-panel__contract-first">
+                  {contractFirstPlayer}
+                </span>
+              ) : null}
             </div>
             {showMeta && (
               <div className="game-status-panel__meta">

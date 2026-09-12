@@ -228,7 +228,7 @@ describe('formatKingTableBanner', () => {
         },
         null
       ).label
-    ).toBe('Sem trunfo');
+    ).toBe('');
 
     expect(
       formatKingTableBanner(
@@ -367,7 +367,7 @@ describe('mapTableModelToPhaserView — King', () => {
         }
       })
     );
-    expect(noTrump.view.trumpLabel).toBe('Sem trunfo');
+    expect(noTrump.view.trumpLabel).toBe('');
     expect(noTrump.model.variantUi.king?.noTrump).toBe(true);
 
     const eight = mapKing(

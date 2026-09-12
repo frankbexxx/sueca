@@ -61,6 +61,11 @@ export function formatKingTableBanner(
     }
   }
 
+  // festa_play: React CONTRATO HUD owns trump / Sem trunfo — no felt duplicate.
+  if (king.phase === 'festa_play') {
+    return { label: '', accent: false };
+  }
+
   if (king.noTrump || (!trumpSuit && king.festaMode)) {
     return { label: pt ? 'Sem trunfo' : 'No trump', accent: false };
   }
@@ -122,13 +127,13 @@ export function computeTableBannerPresentation(
 
   if (variant === 'king' && kingUi) {
     const banner = formatKingTableBanner(kingUi, trumpSuit, auctionLocale);
-    // Special phases / no-trump cue only — React owns contract + trump card in play.
+    // Special phases only — festa_play contract/trump live in React CONTRATO.
     const special =
       Boolean(kingUi.waitingForChoice) ||
       Boolean(kingUi.festaPhase) ||
       kingUi.phase === 'koh_reveal' ||
       kingUi.eightOrNullsPending ||
-      Boolean(kingUi.noTrump);
+      (Boolean(kingUi.noTrump) && kingUi.phase !== 'festa_play');
     return {
       label: special ? banner.label : '',
       showSymbol: false,

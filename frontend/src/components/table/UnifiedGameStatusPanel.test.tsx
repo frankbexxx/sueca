@@ -66,3 +66,111 @@ describe('UnifiedGameStatusPanel King negatives', () => {
     expect(container.textContent).toMatch(/P2:\s*-160/);
   });
 });
+
+describe('UnifiedGameStatusPanel King festa_play contract', () => {
+  const originalEnv = process.env.NODE_ENV;
+  let container: HTMLDivElement;
+
+  beforeEach(() => {
+    process.env.NODE_ENV = 'development';
+    localStorage.setItem('sueca-language', 'pt');
+    container = document.createElement('div');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    ReactDOM.unmountComponentAtNode(container);
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  function renderFestaPlay(opts: {
+    noTrump: boolean;
+    trump?: 'hearts' | 'clubs' | null;
+    festaMode: 'positive' | 'negative_festa';
+    amount?: number;
+    bidType?: 'positive' | 'null';
+    firstPlayerIndex: number;
+  }) {
+    const game = new KingPtGame();
+    const base = game.applyDevFestaFixture(
+      ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+      { festaGameNumber: 7, festaPhase: 'setup' },
+      { localPlayerIndex: 0 }
+    ) as GameState;
+    const king = { ...getKingPtState(base) };
+    king.phase = 'festa_play';
+    king.gameIndex = 6;
+    king.contract = null;
+    king.festaOwnerIndex = 0;
+    king.festaMode = opts.festaMode;
+    king.festaPhase = null;
+    king.waitingForFestaSetup = false;
+    king.noTrumpChosen = opts.noTrump;
+    king.chosenTrump = opts.noTrump ? null : opts.trump ?? 'hearts';
+    king.firstPlayerIndex = opts.firstPlayerIndex;
+    if (opts.festaMode === 'negative_festa') {
+      king.activeContract = null;
+      king.bestBid = null;
+    } else {
+      king.activeContract = {
+        bidType: opts.bidType ?? 'positive',
+        amount: opts.amount ?? 3,
+        bidderIndex: 0,
+        beneficiaryIndex: 0
+      };
+      king.bestBid = {
+        bidderIndex: 0,
+        bidType: opts.bidType ?? 'positive',
+        amount: opts.amount ?? 3
+      };
+    }
+    const state: GameState = {
+      ...base,
+      trumpSuit: opts.noTrump ? null : opts.trump ?? 'hearts',
+      variantState: { ...base.variantState, kingPt: king }
+    };
+    act(() => {
+      ReactDOM.render(
+        <UnifiedGameStatusPanel
+          gameState={state}
+          variant="king"
+          rulesPresetId="king-pt-normal"
+          trickLabel="Vaza 1/13"
+        />,
+        container
+      );
+    });
+  }
+
+  it('shows trump suit and first player during positive festa_play', () => {
+    renderFestaPlay({
+      noTrump: false,
+      trump: 'hearts',
+      festaMode: 'positive',
+      firstPlayerIndex: 3
+    });
+    expect(container.textContent).toContain('Festa de Player 1');
+    expect(container.textContent).toContain('3 positivas · ♥ Copas');
+    expect(container.textContent).toContain('1.º jogador: Player 4');
+  });
+
+  it('shows Sem trunfo and first player during no-trump festa_play', () => {
+    renderFestaPlay({
+      noTrump: true,
+      festaMode: 'positive',
+      firstPlayerIndex: 1
+    });
+    expect(container.textContent).toContain('3 positivas · Sem trunfo');
+    expect(container.textContent).toContain('1.º jogador: Player 2');
+  });
+
+  it('shows Nulos and first player during negative festa_play', () => {
+    renderFestaPlay({
+      noTrump: true,
+      festaMode: 'negative_festa',
+      firstPlayerIndex: 2
+    });
+    expect(container.textContent).toContain('Nulos');
+    expect(container.textContent).toContain('1.º jogador: Player 3');
+  });
+});
