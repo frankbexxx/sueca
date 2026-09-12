@@ -23,6 +23,11 @@ export interface DevKingFestaJump {
   /** Human-facing game number 7–10 (maps to gameIndex 6–9). */
   festaGameNumber: 7 | 8 | 9 | 10;
   festaPhase: DevKingFestaPhase;
+  /**
+   * When true (query `devKingFestaLive=1`), auction AI is paced live —
+   * does not set pauseFestaAiForDev. Default false preserves static observe.
+   */
+  liveAuction?: boolean;
 }
 
 /** Coherent dummy scores after six negatives — presentation only. */
@@ -77,12 +82,14 @@ export function parseDevKingFestaParams(search: string): DevKingFestaJump | null
 
   return {
     festaGameNumber: n as 7 | 8 | 9 | 10,
-    festaPhase
+    festaPhase,
+    liveAuction: params.get('devKingFestaLive') === '1'
   };
 }
 
 export function formatDevKingFestaBadge(jump: DevKingFestaJump): string {
-  return `DEV · King Festa ${jump.festaGameNumber} · ${jump.festaPhase}`;
+  const live = jump.liveAuction ? ' · live' : '';
+  return `DEV · King Festa ${jump.festaGameNumber} · ${jump.festaPhase}${live}`;
 }
 
 /**

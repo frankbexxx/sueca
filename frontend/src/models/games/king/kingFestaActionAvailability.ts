@@ -19,6 +19,7 @@ export interface KingFestaUiState {
 export type KingFestaUiViewKind =
   | 'auction_turn'
   | 'auction_waiting'
+  | 'auction_result'
   | 'eight_respond'
   | 'eight_waiting'
   | 'counter_owner_waiting'
@@ -65,6 +66,9 @@ export function resolveKingFestaUiView(
   }
   if (king.festaPhase === 'auction') {
     return 'auction_waiting';
+  }
+  if (king.festaPhase === 'auction_result') {
+    return 'auction_result';
   }
 
   if (king.eightOrNullsPending) {

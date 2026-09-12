@@ -62,7 +62,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const showAuctionBadges =
     variant === 'king' &&
     Boolean(kingPt) &&
-    kingPt?.festaPhase === 'auction';
+    (kingPt?.festaPhase === 'auction' || kingPt?.festaPhase === 'auction_result');
 
   const activeOpts = {
     spadesBidPhase: spadesBidActive,

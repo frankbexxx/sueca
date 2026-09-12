@@ -32,6 +32,7 @@ export interface KingBid {
 
 export type KingFestaPhase =
   | 'auction'
+  | 'auction_result'
   | 'negotiation'
   | 'negotiation_counter'
   | 'fallback'

@@ -76,6 +76,15 @@ describe('kingFestaActionAvailability', () => {
       expect(resolveKingFestaUiView(auction, 1)).toBe('auction_turn');
       expect(resolveKingFestaUiView(auction, 0)).toBe('auction_waiting');
     });
+
+    it('auction_result is distinct from negotiation', () => {
+      const result = baseKing({
+        festaPhase: 'auction_result',
+        bestBid: { bidderIndex: 1, bidType: 'positive', amount: 5 }
+      });
+      expect(resolveKingFestaUiView(result, 0)).toBe('auction_result');
+      expect(resolveKingFestaUiView(result, 1)).toBe('auction_result');
+    });
   });
 
   describe('fallback 4×3×3', () => {

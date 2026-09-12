@@ -196,6 +196,22 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     );
   }
 
+  if (view === 'auction_result') {
+    const winnerName = king.bestBid
+      ? gameState.players[king.bestBid.bidderIndex]?.name ?? '…'
+      : null;
+    return (
+      <FestaSheet compact>
+        <h2 className="king-festa-sheet-title">Resultado do leilão</h2>
+        <p className="variant-modal-hint king-auction-current-bid">
+          {king.bestBid && winnerName
+            ? `${winnerName} · ${formatBid(king.bestBid)}`
+            : 'Sem ofertas'}
+        </p>
+      </FestaSheet>
+    );
+  }
+
   if (view === 'eight_respond') {
     return (
       <FestaSheet>

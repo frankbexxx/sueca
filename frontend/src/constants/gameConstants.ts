@@ -4,6 +4,12 @@
 
 // AI and timing
 export const AI_PLAY_DELAY_MS = 1500; // Delay before AI plays a card (1.5s)
+/** Observable King festa auction — one AI bid/pass per tick. */
+export const FESTA_AUCTION_AI_DELAY_MS = 1000;
+/** Pause after last auction action before negotiation / fallback. */
+export const FESTA_AUCTION_RESULT_DELAY_MS = 1200;
+/** Non-auction festa AI steps (negotiation, fallback, setup). */
+export const FESTA_AI_STEP_DELAY_MS = 350;
 
 // Card layout
 export const CARD_SPACING = 18; // Spacing between cards in hand (70% of 26px)

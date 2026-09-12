@@ -214,6 +214,7 @@ function hasNonHeart(player: Player): boolean {
 function isFestaFlowBlocking(king: KingPtVariantState): boolean {
   return (
     king.festaPhase === 'auction' ||
+    king.festaPhase === 'auction_result' ||
     king.festaPhase === 'negotiation' ||
     king.festaPhase === 'negotiation_counter' ||
     king.waitingForFallback ||
@@ -508,6 +509,13 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private finishAuction(king: KingPtVariantState): void {
+    // Presentation pause — negotiation / fallback only after tick resolves this.
+    king.festaPhase = 'auction_result';
+  }
+
+  /** Advance from auction result presentation to negotiation or no-bids fallback. */
+  private resolveAuctionResultPresentation(king: KingPtVariantState): void {
+    if (king.festaPhase !== 'auction_result') return;
     if (!king.bestBid) {
       this.enterFallback(king, 'no_bids');
       return;
@@ -540,9 +548,17 @@ export class KingPtGame extends BaseGameAdapter {
     king.auctionPlayerActions = {};
   }
 
+  /**
+   * Drain AI festa steps for non-auction phases (negotiation / fallback / setup).
+   * Auction pacing is host-driven via tickFestaAi — never drain auction here.
+   */
   private runAiFestaSteps(): boolean {
     if (!this.state) return false;
-    if (getKingPtState(this.state).pauseFestaAiForDev) return false;
+    const king = getKingPtState(this.state);
+    if (king.pauseFestaAiForDev) return false;
+    if (king.festaPhase === 'auction' || king.festaPhase === 'auction_result') {
+      return false;
+    }
     let guard = 0;
     let any = false;
     while (guard++ < 24) {
@@ -553,8 +569,22 @@ export class KingPtGame extends BaseGameAdapter {
     return any;
   }
 
-  /** Runs AI festa steps until a human decision is required. */
+  /**
+   * Host scheduler entry: at most one auction AI action per call, or one
+   * auction_result → negotiation/fallback advance. Other phases may drain.
+   */
   tickFestaAi(): boolean {
+    if (!this.state) return false;
+    const king = getKingPtState(this.state);
+    if (king.pauseFestaAiForDev) return false;
+    if (king.festaPhase === 'auction_result') {
+      this.resolveAuctionResultPresentation(king);
+      this.syncKing(king);
+      return true;
+    }
+    if (king.festaPhase === 'auction') {
+      return this.runOneAiFestaStep(king);
+    }
     return this.runAiFestaSteps();
   }
 
@@ -663,7 +693,11 @@ export class KingPtGame extends BaseGameAdapter {
    */
   applyDevFestaFixture(
     playerNames: string[],
-    jump: { festaGameNumber: number; festaPhase?: KingFestaPhase | string | null },
+    jump: {
+      festaGameNumber: number;
+      festaPhase?: KingFestaPhase | string | null;
+      liveAuction?: boolean;
+    },
     options?: Record<string, unknown>
   ): GameState {
     if (process.env.NODE_ENV !== 'development') {
@@ -688,7 +722,8 @@ export class KingPtGame extends BaseGameAdapter {
       ? (phaseRaw as KingFestaPhase)
       : 'auction';
 
-    const pauseForAuction = festaPhase === 'auction';
+    // Default auction jump stays paused for static observe; liveAuction enables pacing smoke.
+    const pauseForAuction = festaPhase === 'auction' && !jump.liveAuction;
     const dummyScores = [-180, 60, -120, 240];
     this.state = this.buildState(
       playerNames,

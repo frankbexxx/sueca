@@ -59,6 +59,7 @@ export function isKingFestaSheetActive(
   if (king.phase === 'koh_reveal') return false;
   return (
     king.festaPhase === 'auction' ||
+    king.festaPhase === 'auction_result' ||
     king.festaPhase === 'negotiation' ||
     king.festaPhase === 'negotiation_counter' ||
     king.waitingForFallback ||

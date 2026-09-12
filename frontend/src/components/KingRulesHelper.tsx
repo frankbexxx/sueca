@@ -85,12 +85,16 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
     };
   }
 
-  if (king.festaPhase === 'auction') {
+  if (king.festaPhase === 'auction' || king.festaPhase === 'auction_result') {
     return {
       title: isPt ? 'Leilão' : 'Auction',
       body: isPt
-        ? 'Os 3 jogadores seguintes ao beneficiário oferecem em sequência. 3 positivas = 1 nulo.'
-        : 'The 3 players after the beneficiary bid in order. 3 positive = 1 null.'
+        ? king.festaPhase === 'auction_result'
+          ? 'Resultado do leilão. A seguir: negociação ou escolha do beneficiário.'
+          : 'Os 3 jogadores seguintes ao beneficiário oferecem em sequência. 3 positivas = 1 nulo.'
+        : king.festaPhase === 'auction_result'
+          ? 'Auction result. Next: negotiation or beneficiary choice.'
+          : 'The 3 players after the beneficiary bid in order. 3 positive = 1 null.'
     };
   }
 

@@ -25,11 +25,18 @@ describe('kingFestaJump (DEV)', () => {
       process.env.NODE_ENV = 'development';
       expect(parseDevKingFestaParams('?devKingFesta=7')).toEqual({
         festaGameNumber: 7,
-        festaPhase: 'auction'
+        festaPhase: 'auction',
+        liveAuction: false
       });
       expect(parseDevKingFestaParams('devKingFesta=10&festaPhase=setup')).toEqual({
         festaGameNumber: 10,
-        festaPhase: 'setup'
+        festaPhase: 'setup',
+        liveAuction: false
+      });
+      expect(parseDevKingFestaParams('?devKingFesta=7&devKingFestaLive=1')).toEqual({
+        festaGameNumber: 7,
+        festaPhase: 'auction',
+        liveAuction: true
       });
     });
 
@@ -133,10 +140,26 @@ describe('kingFestaJump (DEV)', () => {
     });
   });
 
+  it('live auction jump does not set DEV pause', () => {
+    process.env.NODE_ENV = 'development';
+    const game = new KingPtGame();
+    const state = game.applyDevFestaFixture(
+      NAMES,
+      { festaGameNumber: 7, festaPhase: 'auction', liveAuction: true },
+      { localPlayerIndex: 0 }
+    );
+    expect(getKingPtState(state).pauseFestaAiForDev).toBeFalsy();
+    expect(game.tickFestaAi()).toBe(true);
+    expect(getKingPtState(game.getCurrentState()).auctionTurnIndex).toBe(1);
+  });
+
   it('formats DEV badge', () => {
     expect(formatDevKingFestaBadge({ festaGameNumber: 7, festaPhase: 'auction' })).toBe(
       'DEV · King Festa 7 · auction'
     );
+    expect(
+      formatDevKingFestaBadge({ festaGameNumber: 7, festaPhase: 'auction', liveAuction: true })
+    ).toBe('DEV · King Festa 7 · auction · live');
   });
 
   it('production applyDevFestaFixture falls back to normal init', () => {

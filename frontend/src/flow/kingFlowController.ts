@@ -48,6 +48,7 @@ export interface KingFlowController {
 export function isKingInFestaFlow(king: KingPtVariantState): boolean {
   return (
     king.festaPhase === 'auction' ||
+    king.festaPhase === 'auction_result' ||
     king.festaPhase === 'negotiation' ||
     king.festaPhase === 'negotiation_counter' ||
     king.waitingForFallback ||

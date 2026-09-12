@@ -23,8 +23,17 @@ export function formatKingTableBanner(
     if (king.eightOrNullsPending) {
       return { label: pt ? '8 ou nulos' : '8 or nulls', accent: true };
     }
-    if (king.festaPhase === 'auction') {
-      return { label: pt ? 'Festa · leilão' : 'Festa · auction', accent: true };
+    if (king.festaPhase === 'auction' || king.festaPhase === 'auction_result') {
+      return {
+        label: pt
+          ? king.festaPhase === 'auction_result'
+            ? 'Festa · resultado'
+            : 'Festa · leilão'
+          : king.festaPhase === 'auction_result'
+            ? 'Festa · result'
+            : 'Festa · auction',
+        accent: true
+      };
     }
     if (king.festaPhase === 'negotiation' || king.festaPhase === 'negotiation_counter') {
       return { label: pt ? 'Festa · negociação' : 'Festa · negotiation', accent: true };

@@ -14,6 +14,9 @@ import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMap
 import { getCardImagePath } from '../constants/cardAssets';
 import {
   AI_PLAY_DELAY_MS,
+  FESTA_AI_STEP_DELAY_MS,
+  FESTA_AUCTION_AI_DELAY_MS,
+  FESTA_AUCTION_RESULT_DELAY_MS,
   GAME_OVER_DELAY_MS,
   SHUFFLE_DELAY_MS,
   TRICK_WIN_DELAY_MS
@@ -909,12 +912,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!gameAdapter || !kingCtrl) return;
     if (!kingCtrl.shouldTickFestaAi(gameState, rulesPresetId)) return;
 
+    const festaPhase = kingCtrl.readPtState(gameState).festaPhase;
+    const delayMs =
+      festaPhase === 'auction_result'
+        ? FESTA_AUCTION_RESULT_DELAY_MS
+        : festaPhase === 'auction'
+          ? FESTA_AUCTION_AI_DELAY_MS
+          : FESTA_AI_STEP_DELAY_MS;
+
     const timer = window.setTimeout(() => {
       const acted = kingCtrl.tickFestaAi();
       if (acted) {
         setGameState(gameAdapter.getCurrentState());
       }
-    }, 350);
+    }, delayMs);
     return () => window.clearTimeout(timer);
     // kingPtFestaKey tracks festa state; full gameState would retrigger on unrelated clones
     // eslint-disable-next-line react-hooks/exhaustive-deps

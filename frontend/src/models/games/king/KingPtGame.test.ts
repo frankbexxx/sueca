@@ -591,9 +591,15 @@ describe('KingPtGame', () => {
     });
     game.submitAuctionPass(3);
     const after = getKingPtState(game.getCurrentState());
-    expect(after.waitingForFallback).toBe(true);
-    expect(after.fallbackReason).toBe('no_bids');
+    expect(after.festaPhase).toBe('auction_result');
+    expect(after.waitingForFallback).toBe(false);
     expect(after.bestBid).toBeNull();
+
+    expect(game.tickFestaAi()).toBe(true);
+    const fallback = getKingPtState(game.getCurrentState());
+    expect(fallback.waitingForFallback).toBe(true);
+    expect(fallback.fallbackReason).toBe('no_bids');
+    expect(fallback.bestBid).toBeNull();
   });
 
   it('rejectContract sets fallbackReason negotiation_failed', () => {
@@ -743,11 +749,16 @@ describe('KingPtGame', () => {
 
     game.submitAuctionPass(3);
     const after = getKingPtState(game.getCurrentState());
-    expect(after.festaPhase).toBe('negotiation');
+    expect(after.festaPhase).toBe('auction_result');
     expect(after.bestBid?.amount).toBe(1);
+
+    expect(game.tickFestaAi()).toBe(true);
+    const negotiated = getKingPtState(game.getCurrentState());
+    expect(negotiated.festaPhase).toBe('negotiation');
+    expect(negotiated.bestBid?.amount).toBe(1);
   });
 
-  it('runs AI auction when entering first festa', () => {
+  it('runs at most one AI auction action per tick (no drain)', () => {
     const game = new KingPtGame();
     game.initialize(['P1', 'P2', 'P3', 'P4'], { localPlayerIndex: 0, kohPlayerIndex: 0 });
     game.confirmKohReveal();
@@ -764,11 +775,11 @@ describe('KingPtGame', () => {
 
     expect(after.gameIndex).toBe(6);
     expect(after.festaOwnerIndex).toBe(0);
-    const aiActed =
-      after.auctionTurnIndex > 0 ||
-      after.bestBid !== null ||
-      after.festaPhase !== 'auction';
-    expect(aiActed).toBe(true);
+    // Auction starts idle — host tick paces AI (no synchronous drain on enter).
+    expect(after.festaPhase).toBe('auction');
+    expect(after.auctionTurnIndex).toBe(0);
+    expect(after.bestBid).toBeNull();
+    expect(Object.keys(after.auctionPlayerActions)).toHaveLength(0);
   });
 
   it('tickFestaAi advances auction when restoring saved festa state', () => {
@@ -784,18 +795,31 @@ describe('KingPtGame', () => {
     king.festaPhase = 'auction';
     king.auctionOrder = [1, 2, 3];
     king.auctionTurnIndex = 0;
+    king.auctionPlayerActions = {};
+    king.bestBid = null;
     internal.state.waitingForRoundStart = true;
     internal.state.waitingForRoundEnd = false;
     internal.state.variantState = { kingPt: king, rulesPresetId: 'king-pt-normal' };
 
     const snapshot = JSON.parse(JSON.stringify(internal.state)) as typeof internal.state;
     const restored = game.restoreState(snapshot);
-    const after = getKingPtState(restored);
+    const mid = getKingPtState(restored);
+    // restore no longer drains auction; one host tick advances one seat.
+    expect(mid.festaPhase).toBe('auction');
+    expect(mid.auctionTurnIndex).toBe(0);
+
+    expect(game.tickFestaAi()).toBe(true);
+    const after = getKingPtState(game.getCurrentState());
     const aiActed =
       after.auctionTurnIndex > 0 ||
       after.bestBid !== null ||
-      after.festaPhase !== 'auction';
+      Object.keys(after.auctionPlayerActions).length > 0;
     expect(aiActed).toBe(true);
+    // Still auction or result — not drained into negotiation in one tick.
+    expect(['auction', 'auction_result']).toContain(after.festaPhase);
+    if (after.festaPhase === 'auction') {
+      expect(after.auctionTurnIndex).toBe(1);
+    }
   });
 
   it('aligns first festa owner with K♥ holder', () => {

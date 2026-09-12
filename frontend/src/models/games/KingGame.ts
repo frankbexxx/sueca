@@ -127,7 +127,7 @@ export class KingGame extends BaseGameAdapter {
   /** DEV ONLY — jump into festa 7–10. See `dev/kingFestaJump.ts`. */
   applyDevFestaFixture(
     playerNames: string[],
-    jump: { festaGameNumber: number; festaPhase?: string | null },
+    jump: { festaGameNumber: number; festaPhase?: string | null; liveAuction?: boolean },
     options?: Record<string, unknown>
   ): GameState {
     this.impl = undefined;
