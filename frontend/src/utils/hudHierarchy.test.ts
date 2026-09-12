@@ -6,7 +6,7 @@ import {
 import { computeSeatPresentation } from '../renderers/phaser/phaserSeatPresentation';
 import { formatTrickProgressLabel } from '../utils/trickProgress';
 
-describe('UX-P3.4b HUD information hierarchy', () => {
+describe('UX seat/HUD polish — annotated screenshot pass', () => {
   it('keeps King match secondary to Vaza and never bare N/10', () => {
     expect(kingHudContractPrimary(0, 'no_tricks', null, 'pt')).toBe('Não fazer vazas');
     expect(kingHudMatchProgress(0, 'pt')).toBe('Jogo 1/10');
@@ -22,7 +22,7 @@ describe('UX-P3.4b HUD information hierarchy', () => {
     expect(kingHudMatchProgress(6, 'pt')).toBe('Jogo 7/10');
   });
 
-  it('omits team on top seat while local Sueca may keep team', () => {
+  it('uses clean seat labels without monogram numbers or team tokens', () => {
     const north = computeSeatPresentation({
       name: 'Player 3',
       handCount: 10,
@@ -35,8 +35,9 @@ describe('UX-P3.4b HUD information hierarchy', () => {
       omitTeam: true
     });
     expect(north.labelText).toBe('Player 3 · D');
+    expect(north.showMonogram).toBe(false);
+    expect(north.monogram).toBe('');
     expect(north.labelText).not.toMatch(/Nós/i);
-    expect(north.labelText).not.toMatch(/\b10\b/);
 
     const local = computeSeatPresentation({
       name: 'Player 1',
@@ -48,11 +49,11 @@ describe('UX-P3.4b HUD information hierarchy', () => {
       showActiveHighlight: true,
       aspect: 'portrait'
     });
-    expect(local.labelText).toMatch(/Nós/);
+    expect(local.labelText).toBe('Player 1');
     expect(local.showActiveRing).toBe(true);
   });
 
-  it('keeps compact side seats free of team noise on 360', () => {
+  it('keeps compact side seats as Player N without P# / team / counts', () => {
     const side = computeSeatPresentation({
       name: 'Player 2',
       handCount: 13,
@@ -64,7 +65,22 @@ describe('UX-P3.4b HUD information hierarchy', () => {
       aspect: 'portrait',
       compactSide: true
     });
-    expect(side.labelText).toBe('P2');
-    expect(side.monogram).toBe('2');
+    expect(side.labelText).toBe('Player 2');
+    expect(side.monogram).toBe('');
+    expect(side.showMonogram).toBe(false);
+  });
+
+  it('ignores pending ellipsis bid badges on seats', () => {
+    const pending = computeSeatPresentation({
+      name: 'Player 1',
+      handCount: 13,
+      isLocal: true,
+      isDealer: true,
+      teamLabel: null,
+      secondaryBadge: '…',
+      showActiveHighlight: true,
+      aspect: 'portrait'
+    });
+    expect(pending.labelText).toBe('Player 1 · D');
   });
 });

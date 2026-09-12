@@ -94,11 +94,11 @@ function spadesState(overrides: Partial<GameState> = {}): GameState {
 }
 
 describe('formatSpadesBidBadge', () => {
-  it('formats nil / blind / number / pending', () => {
+  it('formats nil / blind / number; pending stays quiet', () => {
     expect(formatSpadesBidBadge(0, 'nil', false)).toBe('Nil');
     expect(formatSpadesBidBadge(0, 'blindNil', false)).toBe('Blind');
     expect(formatSpadesBidBadge(4, 'normal', false)).toBe('4');
-    expect(formatSpadesBidBadge(null, 'normal', true)).toBe('…');
+    expect(formatSpadesBidBadge(null, 'normal', true)).toBeNull();
     expect(formatSpadesBidBadge(null, 'normal', false)).toBeNull();
   });
 });
@@ -193,9 +193,11 @@ describe('mapTableModelToPhaserView — Spades', () => {
     expect(view.localHand.every((c) => c.canDrag === false)).toBe(true);
     expect(view.seats[1].showActiveHighlight).toBe(true);
     expect(view.seats[0].bidLabel).toBe('3');
-    expect(view.seats[1].bidLabel).toBe('…');
+    expect(view.seats[1].bidLabel).toBeNull();
     expect(view.seats[0].labelText).toContain('3');
-    expect(view.seats[1].labelText).toContain('…');
+    expect(view.seats[1].labelText).not.toContain('…');
+    expect(view.seats[1].labelText).toBe('P2');
+    expect(view.seats.every((s) => !s.monogram)).toBe(true);
   });
 
   it('maps broken spades banner accent', () => {

@@ -17,11 +17,11 @@ export interface SeatPresentationInput {
   secondaryBadge: string | null;
   showActiveHighlight: boolean;
   aspect: PhaserAspectMode;
-  /** Narrow portrait west/east — shorter labels, skip team when possible. */
+  /** Narrow portrait west/east — shorter name truncation. */
   compactSide?: boolean;
   /**
-   * UX-P3.4b — top seat: name + monogram + D only (team lives in HUD scores).
-   * Local seat may still carry team for Sueca.
+   * @deprecated UX polish: team never renders on seats (lives in HUD).
+   * Kept for call-site compatibility.
    */
   omitTeam?: boolean;
 }
@@ -30,13 +30,18 @@ export interface SeatPresentation {
   /** Single-line seat chrome for the table. */
   labelText: string;
   shortName: string;
-  /** Single-letter presence mark (no portrait). */
+  /**
+   * Legacy monogram field — seats no longer draw numbered bubbles.
+   * Kept empty so callers/tests can assert absence of seat numbering.
+   */
   monogram: string;
   showActiveRing: boolean;
   showDealerMark: boolean;
+  /** When true, Phaser must not draw a monogram circle. */
+  showMonogram: boolean;
 }
 
-/** First letter / digit for seat presence marker. */
+/** First letter / digit for seat presence marker (unused on felt; kept for helpers). */
 export function seatMonogram(name: string): string {
   const cleaned = (name || '').trim();
   if (!cleaned) return '?';
@@ -55,33 +60,32 @@ export function shortTeamLabel(raw: string | null | undefined): string | null {
 }
 
 /**
- * Canonical seat line (UX-P3.2 / P3.4b): Name · [badge|team] · [D]
- * Card counts live in the global Vaza indicator — never on seats.
- * Compact side / top seat: drop team; local Sueca may keep team.
+ * Canonical seat line: Name [· badge] [· D]
+ * - No seat-number bubbles
+ * - No team tokens on seats (HUD owns Nós/Eles)
+ * - No pending “…” bid noise
+ * - Card counts live in global Vaza indicator
  */
 export function computeSeatPresentation(input: SeatPresentationInput): SeatPresentation {
   const compact = Boolean(input.compactSide);
-  const playerNum = input.name.match(/player\s*(\d+)/i);
-  const shortName = compact && playerNum
-    ? `P${playerNum[1]}`
-    : truncatePlayerName(
-        input.name,
-        input.aspect === 'landscape' ? 6 : compact ? 5 : 9
-      );
+  const maxLen =
+    input.aspect === 'landscape' ? 8 : compact ? 9 : 10;
+  const shortName = truncatePlayerName(input.name, maxLen);
   const parts: string[] = [shortName];
 
   const badge = input.secondaryBadge?.trim() || null;
-  const allowTeam = !badge && !compact && !input.omitTeam;
-  const team = allowTeam ? shortTeamLabel(input.teamLabel) : null;
-  if (badge) parts.push(badge);
-  else if (team) parts.push(team);
+  // Ignore placeholder / ellipsis pending markers.
+  if (badge && badge !== '…' && badge !== '...') {
+    parts.push(badge);
+  }
 
   if (input.isDealer) parts.push('D');
 
   return {
-    labelText: parts.join(compact ? ' ' : ' · '),
+    labelText: parts.join(' · '),
     shortName,
-    monogram: playerNum ? playerNum[1] : seatMonogram(input.name),
+    monogram: '',
+    showMonogram: false,
     showActiveRing: input.showActiveHighlight,
     showDealerMark: input.isDealer
   };

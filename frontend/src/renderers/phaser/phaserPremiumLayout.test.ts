@@ -57,8 +57,9 @@ describe('UX-P3.1 premium table layout', () => {
     });
     expect(side.labelText).not.toMatch(/Eles/i);
     expect(side.labelText).not.toMatch(/\b10\b/);
-    expect(side.labelText).toMatch(/^P2\b/);
-    expect(side.monogram).toBe('2');
+    expect(side.labelText).toBe('Player 2');
+    expect(side.monogram).toBe('');
+    expect(side.showMonogram).toBe(false);
     expect(side.labelText.length).toBeLessThan(14);
   });
 
@@ -156,6 +157,7 @@ describe('UX-P3.1 premium table layout', () => {
     });
     expect(north.labelText).toBe('Player 3');
     expect(north.labelText).not.toMatch(/Nós/i);
+    expect(north.showMonogram).toBe(false);
   });
 
   it('card back path + texture key stay stable for swap', () => {

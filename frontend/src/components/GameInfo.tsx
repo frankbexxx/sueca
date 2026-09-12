@@ -37,13 +37,8 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant }) => {
   if (variant === 'spades') {
     const spades = getSpadesState(gameState);
     if (spades?.waitingForBids) {
-      const currentName = gameState.players[spades.currentBidderIndex]?.name ?? '…';
-      // Seats own per-player bid badges; strip only names whose turn it is.
-      return (
-        <div className="game-info spades-info spades-info--bidding">
-          <span className="spades-info__now">{t.spadesBid.biddingNow(currentName)}</span>
-        </div>
-      );
+      // Turn cue lives in the bid dock — keep the strip for Vaza / scores only.
+      return null;
     }
     // Team bids live in TeamScoreBlock — only surface broken when it matters.
     if (!spades?.spadesBroken) return null;

@@ -343,18 +343,12 @@ export class SuecaTableScene extends Phaser.Scene {
       const compactSide =
         view.layout.compactSideSeats &&
         (seat.compass === 'west' || seat.compass === 'east');
-      const showMono = seat.compass !== 'south' || !seat.isLocal;
       const fontSize =
         view.layout.aspect === 'landscape'
           ? '11px'
           : compactSide
-            ? '10px'
-            : seat.compass === 'south'
-              ? '12px'
-              : '12px';
-      const monoSize = compactSide ? 9 : 10;
-      const monoR = compactSide ? 8 : 10;
-      const monoGap = compactSide ? 4 : 6;
+            ? '11px'
+            : '12px';
 
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
@@ -365,58 +359,33 @@ export class SuecaTableScene extends Phaser.Scene {
             color: this.theme.text,
             padding: { x: 0, y: 0 }
           })
-          .setOrigin(0, 0.5)
+          .setOrigin(0.5, 0.5)
           .setDepth(PREMIUM_TABLE.depthSeats + 2);
         this.seatLabels.set(seat.seatIndex, label);
       } else {
         label.setText(text);
         label.setFontSize(fontSize);
         label.setFontFamily(PREMIUM_TABLE.fontFamily);
+        label.setOrigin(0.5, 0.5);
       }
       label.setColor(this.theme.text);
       label.setBackgroundColor('rgba(0,0,0,0)');
 
-      let mono = this.seatMonograms.get(seat.seatIndex);
-      if (showMono) {
-        if (!mono) {
-          mono = this.add
-            .text(0, 0, seat.monogram, {
-              fontFamily: PREMIUM_TABLE.fontFamily,
-              fontSize: `${monoSize}px`,
-              fontStyle: '700',
-              color: '#E8E0D0'
-            })
-            .setOrigin(0.5)
-            .setDepth(PREMIUM_TABLE.depthSeats + 3);
-          this.seatMonograms.set(seat.seatIndex, mono);
-        } else {
-          mono.setText(seat.monogram);
-          mono.setFontSize(monoSize);
-          mono.setVisible(true);
-        }
-      } else if (mono) {
-        mono.setVisible(false);
-      }
+      // Seat-number monograms removed (annotated screenshots) — hide any leftovers.
+      const mono = this.seatMonograms.get(seat.seatIndex);
+      if (mono) mono.setVisible(false);
 
-      const textW = label.width;
-      const monoW = showMono ? monoR * 2 + monoGap : 0;
-      const padX = compactSide ? 5 : seat.compass === 'south' ? 7 : 7;
-      const padY = compactSide ? 3 : 4;
-      const pw = monoW + textW + padX * 2;
-      const ph = Math.max(monoR * 2 + 2, label.height + padY * 2);
+      const padX = compactSide ? 7 : 9;
+      const padY = compactSide ? 4 : 5;
+      const pw = label.width + padX * 2;
+      const ph = Math.max(22, label.height + padY * 2);
       const px = seat.labelPosition.x - pw / 2;
       const py = seat.labelPosition.y - ph / 2;
-      const radius = compactSide ? 7 : 8;
+      const radius = 8;
       const active = seat.showActiveHighlight;
       if (active) activeSeatIndex = seat.seatIndex;
 
-      const monoCx = px + padX + monoR;
-      const textX = showMono ? monoCx + monoR + monoGap : px + padX;
-      label.setPosition(textX, seat.labelPosition.y);
-      if (mono && showMono) {
-        mono.setPosition(monoCx, seat.labelPosition.y);
-        mono.setColor(active ? '#F2E8D4' : '#D8D0C2');
-      }
+      label.setPosition(seat.labelPosition.x, seat.labelPosition.y);
 
       let panel = this.seatPanels.get(seat.seatIndex);
       if (!panel) {
@@ -424,28 +393,20 @@ export class SuecaTableScene extends Phaser.Scene {
         this.seatPanels.set(seat.seatIndex, panel);
       }
       panel.clear();
-      // Soft contact shadow — avoid heavy boxes competing with cards.
-      panel.fillStyle(PREMIUM_TABLE.shadow, 0.22);
+      panel.fillStyle(PREMIUM_TABLE.shadow, 0.18);
       panel.fillRoundedRect(px + 1, py + 1.5, pw, ph, radius);
       if (active) {
-        panel.fillStyle(this.theme.brass, 0.1);
+        panel.fillStyle(this.theme.brass, 0.08);
         panel.fillRoundedRect(px, py, pw, ph, radius);
       }
-      panel.fillStyle(this.theme.seatPanel, active ? 0.78 : 0.7);
+      panel.fillStyle(this.theme.seatPanel, active ? 0.82 : 0.68);
       panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(
-        active ? 1.5 : 1,
+        active ? 1.75 : 1,
         this.theme.brass,
-        active ? 0.72 : seat.isDealer ? 0.42 : 0.22
+        active ? 0.78 : seat.isDealer ? 0.38 : 0.2
       );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
-
-      if (showMono) {
-        panel.fillStyle(active ? this.theme.brass : 0x1e2a2e, active ? 0.28 : 0.78);
-        panel.fillCircle(monoCx, seat.labelPosition.y, monoR);
-        panel.lineStyle(1, this.theme.brass, active ? 0.75 : 0.32);
-        panel.strokeCircle(monoCx, seat.labelPosition.y, monoR);
-      }
 
       const legacy = this.seatRings.get(seat.seatIndex);
       if (legacy) {
@@ -460,11 +421,11 @@ export class SuecaTableScene extends Phaser.Scene {
       this.seatPanels.has(activeSeatIndex)
     ) {
       const panel = this.seatPanels.get(activeSeatIndex)!;
-      panel.setAlpha(0.65);
+      panel.setAlpha(0.7);
       this.tweens.add({
         targets: panel,
         alpha: 1,
-        duration: 160,
+        duration: 150,
         ease: 'Sine.easeOut'
       });
     }
