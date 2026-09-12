@@ -89,6 +89,11 @@ export interface KingPtVariantState {
   scoringFrozen: boolean;
   earlyEndOffered: boolean;
   auctionPlayerActions: Partial<Record<number, KingBid | 'pass'>>;
+  /**
+   * DEV ONLY — when true, runAiFestaSteps / tickFestaAi are no-ops so auction
+   * entry stays observable. Never set in production paths.
+   */
+  pauseFestaAiForDev?: boolean;
 }
 
 function empty4(): number[] {
@@ -537,6 +542,7 @@ export class KingPtGame extends BaseGameAdapter {
 
   private runAiFestaSteps(): boolean {
     if (!this.state) return false;
+    if (getKingPtState(this.state).pauseFestaAiForDev) return false;
     let guard = 0;
     let any = false;
     while (guard++ < 24) {
@@ -579,6 +585,8 @@ export class KingPtGame extends BaseGameAdapter {
     const kohReveal = withKohReveal ? simulateKohDraw() : null;
 
     const kohIndex = (options?.kohPlayerIndex as number | undefined) ?? kohReveal?.winnerIndex ?? 0;
+    const pauseFestaAiForDev =
+      process.env.NODE_ENV === 'development' && Boolean(options?.pauseFestaAiForDev);
 
     const king: KingPtVariantState = {
       ...defaultKingState(),
@@ -590,7 +598,8 @@ export class KingPtGame extends BaseGameAdapter {
       festaOwnerIndex: isFesta ? festaOwner(kohIndex, gameIndex) : kohIndex,
       roundStartScores: [...scores],
       kohReveal,
-      gameHistory: (options?.gameHistory as KingRoundSummary[]) ?? []
+      gameHistory: (options?.gameHistory as KingRoundSummary[]) ?? [],
+      ...(pauseFestaAiForDev ? { pauseFestaAiForDev: true } : {})
     };
 
     if (isFesta) this.startAuction(king);
@@ -646,6 +655,97 @@ export class KingPtGame extends BaseGameAdapter {
       this.runAiFestaSteps();
     }
     return state;
+  }
+
+  /**
+   * DEV ONLY — deterministic jump into festa games 7–10.
+   * Outside development, falls back to a normal initialize (KOH).
+   */
+  applyDevFestaFixture(
+    playerNames: string[],
+    jump: { festaGameNumber: number; festaPhase?: KingFestaPhase | string | null },
+    options?: Record<string, unknown>
+  ): GameState {
+    if (process.env.NODE_ENV !== 'development') {
+      return this.initialize(playerNames, options);
+    }
+
+    const n = jump.festaGameNumber;
+    if (!Number.isInteger(n) || n < 7 || n > 10) {
+      return this.initialize(playerNames, options);
+    }
+
+    const gameIndex = n - 1;
+    const phaseRaw = jump.festaPhase ?? 'auction';
+    const validPhases: KingFestaPhase[] = [
+      'auction',
+      'negotiation',
+      'negotiation_counter',
+      'fallback',
+      'setup'
+    ];
+    const festaPhase: KingFestaPhase = validPhases.includes(phaseRaw as KingFestaPhase)
+      ? (phaseRaw as KingFestaPhase)
+      : 'auction';
+
+    const pauseForAuction = festaPhase === 'auction';
+    const dummyScores = [-180, 60, -120, 240];
+    this.state = this.buildState(
+      playerNames,
+      {
+        ...options,
+        kohPlayerIndex: (options?.kohPlayerIndex as number | undefined) ?? 0,
+        pauseFestaAiForDev: pauseForAuction
+      },
+      [...dummyScores],
+      gameIndex,
+      false
+    );
+
+    const king = getKingPtState(this.state);
+    this.applyDevFestaPhaseFixture(king, festaPhase);
+    this.syncKing(king);
+    return this.getCurrentState();
+  }
+
+  /** Advance a post-auction festa fixture to a valid later phase (DEV). */
+  private applyDevFestaPhaseFixture(king: KingPtVariantState, phase: KingFestaPhase): void {
+    if (phase === 'auction' || phase == null) return;
+
+    const owner = king.festaOwnerIndex;
+    const bidder = (owner + 1) % 4;
+    const bid: KingBid = { bidderIndex: bidder, bidType: 'positive', amount: 5 };
+    king.auctionOrder = auctionBidderOrder(owner);
+    king.auctionTurnIndex = king.auctionOrder.length;
+    king.auctionPlayerActions = {
+      [bidder]: bid,
+      [(owner + 2) % 4]: 'pass',
+      [(owner + 3) % 4]: 'pass'
+    };
+    king.pauseFestaAiForDev = false;
+
+    if (phase === 'fallback') {
+      king.bestBid = null;
+      this.enterFallback(king, 'no_bids');
+      return;
+    }
+
+    king.bestBid = bid;
+
+    if (phase === 'negotiation') {
+      king.festaPhase = 'negotiation';
+      return;
+    }
+
+    if (phase === 'negotiation_counter') {
+      king.festaPhase = 'negotiation_counter';
+      king.requestedBid = { bidderIndex: bidder, bidType: 'positive', amount: 6 };
+      return;
+    }
+
+    if (phase === 'setup') {
+      this.applyContractFromBid(king, bid);
+    }
   }
 
   private buildPlayers(

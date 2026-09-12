@@ -82,6 +82,15 @@ describe('kingFlowController', () => {
     expect(
       createKingFlowController(
         mockFlow({
+          isPtNormal: () => true,
+          readPtState: () => kingStub({ festaPhase: 'auction', pauseFestaAiForDev: true })
+        })
+      ).shouldTickFestaAi(state, 'king-pt-normal')
+    ).toBe(false);
+
+    expect(
+      createKingFlowController(
+        mockFlow({
           isPtNormal: () => false,
           readPtState: () => kingStub({ festaPhase: 'auction' })
         })

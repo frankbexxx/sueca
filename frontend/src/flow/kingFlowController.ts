@@ -95,7 +95,9 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
     shouldTickFestaAi(state, rulesPresetId) {
       if (!flow.isPtNormal(rulesPresetId)) return false;
       if (!state.waitingForRoundStart) return false;
-      return isKingInFestaFlow(flow.readPtState(state));
+      const king = flow.readPtState(state);
+      if (king.pauseFestaAiForDev) return false;
+      return isKingInFestaFlow(king);
     },
 
     tickFestaAi() {

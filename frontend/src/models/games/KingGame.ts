@@ -124,6 +124,20 @@ export class KingGame extends BaseGameAdapter {
     return false;
   }
 
+  /** DEV ONLY — jump into festa 7–10. See `dev/kingFestaJump.ts`. */
+  applyDevFestaFixture(
+    playerNames: string[],
+    jump: { festaGameNumber: number; festaPhase?: string | null },
+    options?: Record<string, unknown>
+  ): GameState {
+    this.impl = undefined;
+    const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
+    if (isPtGame(game)) {
+      return game.applyDevFestaFixture(playerNames, jump, options);
+    }
+    return game.initialize(playerNames, options);
+  }
+
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {
     return this.impl?.canPlayCard(state, playerIndex, cardIndex) ?? false;
   }

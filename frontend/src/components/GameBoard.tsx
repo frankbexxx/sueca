@@ -33,6 +33,12 @@ import { PhaserTableErrorBoundary } from '../renderers/phaser/PhaserTableErrorBo
 import { shouldUseSuecaPixiTable } from '../renderers/pixi/rendererFlag';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
+import { KingGame } from '../models/games/KingGame';
+import {
+  formatDevKingFestaBadge,
+  parseDevKingFestaParams,
+  type DevKingFestaJump
+} from '../dev/kingFestaJump';
 import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
@@ -106,6 +112,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const isJoiner = isMultiplayerActive && multiplayerPlayerIndex !== 0;
   const isHostOrSolo = !isMultiplayer || multiplayerPlayerIndex === 0;
   const [waitingForHost, setWaitingForHost] = useState(isJoiner);
+  const [devKingFestaJump, setDevKingFestaJump] = useState<DevKingFestaJump | null>(null);
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
@@ -364,13 +371,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         if (shouldResume) {
           initialState = adapter.restoreState(normalizeGameState(resumeSession.state));
         } else {
-          initialState = adapter.initialize(config.playerNames, {
+          const initOptions = {
             dealingMethod: config.dealingMethod,
             aiDifficulty: config.aiDifficulty,
             localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
             multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
             rulesPresetId: config.rulesPresetId
-          });
+          };
+          const devJump =
+            process.env.NODE_ENV === 'development' &&
+            config.gameVariant === 'king' &&
+            config.rulesPresetId === 'king-pt-normal' &&
+            !config.multiplayerEnabled
+              ? parseDevKingFestaParams(
+                  typeof window !== 'undefined' ? window.location.search : ''
+                )
+              : null;
+          if (devJump && adapter instanceof KingGame) {
+            initialState = adapter.applyDevFestaFixture(
+              config.playerNames,
+              devJump,
+              initOptions
+            );
+            setDevKingFestaJump(devJump);
+          } else {
+            initialState = adapter.initialize(config.playerNames, initOptions);
+            setDevKingFestaJump(null);
+          }
         }
         freshStartRef.current = false;
         if (cancelled) return;
@@ -1140,6 +1167,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       data-table-renderer={usePhaserTable ? 'phaser' : usePixiTable ? 'pixi-archive' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
     >
+      {devKingFestaJump && process.env.NODE_ENV === 'development' ? (
+        <div
+          className="dev-king-festa-badge"
+          style={{
+            position: 'fixed',
+            top: 8,
+            right: 8,
+            zIndex: 9999,
+            padding: '4px 8px',
+            fontSize: 11,
+            fontFamily: 'ui-monospace, Menlo, Consolas, monospace',
+            letterSpacing: '0.02em',
+            color: '#1a1a1a',
+            background: 'rgba(255, 214, 102, 0.92)',
+            border: '1px solid rgba(0,0,0,0.2)',
+            borderRadius: 4,
+            pointerEvents: 'none'
+          }}
+        >
+          {formatDevKingFestaBadge(devKingFestaJump)}
+        </div>
+      ) : null}
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}

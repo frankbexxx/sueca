@@ -25,6 +25,7 @@ import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
 import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
 import { ConfirmDialog } from './components/common/ConfirmDialog';
+import { parseDevKingFestaParams } from './dev/kingFestaJump';
 import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
@@ -102,6 +103,20 @@ function App() {
     setResumeSession(session ?? null);
     setScreen('game');
   }, []);
+
+  useEffect(() => {
+    const jump = parseDevKingFestaParams(
+      typeof window !== 'undefined' ? window.location.search : ''
+    );
+    if (!jump) return;
+    clearGameSession('king');
+    clearMultiplayerLocalStorage();
+    startGame({
+      ...buildSoloConfigForVariant('king'),
+      rulesPresetId: 'king-pt-normal',
+      multiplayerEnabled: false
+    });
+  }, [startGame]);
 
   const exitGame = useCallback(() => {
     setGameConfig((current) => {
