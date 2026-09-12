@@ -1,0 +1,13 @@
+{
+  "game": "Hearts",
+  "board": {
+    "scrollH": 707,
+    "clientH": 707,
+    "scrollTop": 0,
+    "overflows": false
+  },
+  "sheet": {},
+  "sheetClass": "variant-modal variant-modal--bottom-sheet variant-modal--hearts-pass shell-panel",
+  "actions": null,
+  "scrollY": 0
+}

@@ -1,0 +1,131 @@
+{
+  "title": "Spades",
+  "screen": {
+    "w": 360,
+    "h": 791
+  },
+  "inner": {
+    "w": 360,
+    "h": 707
+  },
+  "visualViewport": {
+    "w": 360,
+    "h": 707,
+    "offsetTop": 0,
+    "scale": 1
+  },
+  "documentElement": {
+    "clientH": 707,
+    "scrollH": 707
+  },
+  "body": {
+    "clientH": 707,
+    "scrollH": 707
+  },
+  "scrollY": 0,
+  "dpr": 3,
+  "safeProbe": {
+    "top": "0px",
+    "right": "0px",
+    "bottom": "0px",
+    "left": "0px"
+  },
+  "boardScroll": {
+    "clientH": 707,
+    "scrollH": 707,
+    "scrollTop": 0,
+    "overflows": false
+  },
+  "rects": {
+    "App": {
+      "sel": ".App",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "shellGame": {
+      "sel": ".app-shell--game",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "gameBoard": {
+      "sel": ".game-board",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden auto",
+      "overflowY": "auto"
+    },
+    "inGameBar": {
+      "sel": ".in-game-bar",
+      "top": 0,
+      "bottom": 79.33,
+      "width": 360,
+      "height": 79.33,
+      "overflow": "visible",
+      "overflowY": "visible"
+    },
+    "topStrip": {
+      "sel": ".top-strip",
+      "top": 79.33,
+      "bottom": 153.63,
+      "width": 360,
+      "height": 74.3,
+      "overflow": "visible",
+      "overflowY": "visible"
+    },
+    "phaserRoot": {
+      "sel": ".sueca-phaser-root",
+      "top": 138.24,
+      "bottom": 633.14,
+      "width": 360,
+      "height": 494.9,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "canvas": {
+      "top": 138.24,
+      "bottom": 633.14,
+      "width": 360,
+      "height": 494.9
+    },
+    "actions": null,
+    "playerHand": null,
+    "sheet": null
+  },
+  "phaser": {
+    "parent": {
+      "w": 360,
+      "h": 494.9
+    },
+    "scaleW": 360,
+    "scaleH": 494.9,
+    "aspect": "portrait",
+    "handY": 396.9,
+    "cardHeight": 64,
+    "handBottomApprox": 428.9,
+    "bottomChromePx": 22,
+    "canvasToHandBottomGap": 66,
+    "handFitsInCanvas": true,
+    "handClipped": false
+  },
+  "sumChrome": {
+    "inGameBar": 79.33333587646484,
+    "hud": 74.296875,
+    "phaser": 494.8958435058594,
+    "actions": 0,
+    "sum": 648.5260543823242,
+    "boardH": 707,
+    "excess": -58.47
+  },
+  "docScrolls": false,
+  "bodyScrolls": false
+}

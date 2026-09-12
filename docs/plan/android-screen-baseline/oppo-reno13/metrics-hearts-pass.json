@@ -1,0 +1,136 @@
+{
+  "screen": {
+    "w": 360,
+    "h": 791,
+    "availW": 360,
+    "availH": 791
+  },
+  "inner": {
+    "w": 360,
+    "h": 707
+  },
+  "visualViewport": {
+    "w": 360,
+    "h": 707,
+    "offsetTop": 0,
+    "offsetLeft": 0,
+    "scale": 1
+  },
+  "documentElement": {
+    "clientH": 707,
+    "clientW": 360,
+    "scrollH": 707,
+    "scrollW": 360
+  },
+  "body": {
+    "clientH": 707,
+    "scrollH": 707,
+    "scrollW": 360
+  },
+  "scrollY": 0,
+  "dpr": 3,
+  "url": "https://localhost/",
+  "renderer": null,
+  "safeProbe": {
+    "top": "0px",
+    "right": "0px",
+    "bottom": "0px",
+    "left": "0px"
+  },
+  "rects": {
+    "App": {
+      "sel": ".App",
+      "top": 0,
+      "bottom": 707,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowX": "hidden",
+      "overflowY": "hidden"
+    },
+    "shellGame": {
+      "sel": ".app-shell--game",
+      "top": 0,
+      "bottom": 707,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowX": "hidden",
+      "overflowY": "hidden"
+    },
+    "gameBoard": {
+      "sel": ".game-board",
+      "top": 0,
+      "bottom": 707,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden auto",
+      "overflowX": "hidden",
+      "overflowY": "auto"
+    },
+    "inGameBar": {
+      "sel": ".in-game-bar",
+      "top": 0,
+      "bottom": 79.33333587646484,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 79.33333587646484,
+      "overflow": "visible",
+      "overflowX": "visible",
+      "overflowY": "visible"
+    },
+    "topStrip": {
+      "sel": ".top-strip",
+      "top": 79.33333587646484,
+      "bottom": 167.7916717529297,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 88.45833587646484,
+      "overflow": "visible",
+      "overflowX": "visible",
+      "overflowY": "visible"
+    },
+    "phaserRoot": {
+      "sel": ".sueca-phaser-root",
+      "top": 167.7916717529297,
+      "bottom": 606.1302337646484,
+      "left": 0,
+      "right": 360,
+      "width": 360,
+      "height": 438.33856201171875,
+      "overflow": "hidden",
+      "overflowX": "hidden",
+      "overflowY": "hidden"
+    },
+    "canvas": {
+      "sel": "canvas",
+      "top": 167.7916717529297,
+      "bottom": 606.1302337646484,
+      "width": 360,
+      "height": 438.33856201171875
+    },
+    "actions": null,
+    "playerHand": null,
+    "bottomNav": null
+  },
+  "phaser": {
+    "scaleW": 360,
+    "scaleH": 438.33856201171875,
+    "aspect": "portrait",
+    "handY": 305.33856201171875,
+    "cardHeight": 64,
+    "handBottomApprox": 337.33856201171875,
+    "bottomChromePx": 57,
+    "canvasToHandBottomGap": 101
+  },
+  "docScrolls": false,
+  "bodyScrolls": false
+}

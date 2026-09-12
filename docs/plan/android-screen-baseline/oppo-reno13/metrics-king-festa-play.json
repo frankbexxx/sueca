@@ -1,0 +1,136 @@
+{
+  "title": "King",
+  "screen": {
+    "w": 360,
+    "h": 791
+  },
+  "inner": {
+    "w": 360,
+    "h": 707
+  },
+  "visualViewport": {
+    "w": 360,
+    "h": 707,
+    "offsetTop": 0,
+    "scale": 1
+  },
+  "documentElement": {
+    "clientH": 707,
+    "scrollH": 707
+  },
+  "body": {
+    "clientH": 707,
+    "scrollH": 707
+  },
+  "scrollY": 0,
+  "dpr": 3,
+  "safeProbe": {
+    "top": "0px",
+    "right": "0px",
+    "bottom": "0px",
+    "left": "0px"
+  },
+  "boardScroll": {
+    "clientH": 707,
+    "scrollH": 707,
+    "scrollTop": 0,
+    "overflows": false
+  },
+  "rects": {
+    "App": {
+      "sel": ".App",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "shellGame": {
+      "sel": ".app-shell--game",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "gameBoard": {
+      "sel": ".game-board",
+      "top": 0,
+      "bottom": 707,
+      "width": 360,
+      "height": 707,
+      "overflow": "hidden auto",
+      "overflowY": "auto"
+    },
+    "inGameBar": {
+      "sel": ".in-game-bar",
+      "top": 0,
+      "bottom": 79.33,
+      "width": 360,
+      "height": 79.33,
+      "overflow": "visible",
+      "overflowY": "visible"
+    },
+    "topStrip": {
+      "sel": ".top-strip",
+      "top": 79.33,
+      "bottom": 167.79,
+      "width": 360,
+      "height": 88.46,
+      "overflow": "visible",
+      "overflowY": "visible"
+    },
+    "phaserRoot": {
+      "sel": ".sueca-phaser-root",
+      "top": 167.79,
+      "bottom": 606.13,
+      "width": 360,
+      "height": 438.34,
+      "overflow": "hidden",
+      "overflowY": "hidden"
+    },
+    "canvas": {
+      "top": 167.79,
+      "bottom": 606.13,
+      "width": 360,
+      "height": 438.34
+    },
+    "actions": null,
+    "playerHand": null,
+    "sheet": {
+      "top": 478.9,
+      "bottom": 691,
+      "height": 212.1,
+      "className": "variant-modal variant-modal--bottom-sheet dobo-panel variant-modal--festa-compact variant-modal--festa-setup"
+    }
+  },
+  "phaser": {
+    "parent": {
+      "w": 360,
+      "h": 438.34
+    },
+    "scaleW": 360,
+    "scaleH": 438.34,
+    "aspect": "portrait",
+    "handY": 305.34,
+    "cardHeight": 64,
+    "handBottomApprox": 337.34,
+    "bottomChromePx": 57,
+    "canvasToHandBottomGap": 101,
+    "handFitsInCanvas": true,
+    "handClipped": false
+  },
+  "sumChrome": {
+    "inGameBar": 79.33333587646484,
+    "hud": 88.45833587646484,
+    "phaser": 438.33856201171875,
+    "actions": 0,
+    "sum": 606.1302337646484,
+    "boardH": 707,
+    "excess": -100.87
+  },
+  "docScrolls": false,
+  "bodyScrolls": false
+}

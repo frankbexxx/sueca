@@ -1,0 +1,55 @@
+{
+  "screen": {
+    "w": 360,
+    "h": 791,
+    "availW": 360,
+    "availH": 791
+  },
+  "inner": {
+    "w": 360,
+    "h": 707
+  },
+  "visualViewport": {
+    "w": 360,
+    "h": 707,
+    "offsetTop": 0,
+    "offsetLeft": 0,
+    "scale": 1
+  },
+  "documentElement": {
+    "clientH": 707,
+    "clientW": 360,
+    "scrollH": 707,
+    "scrollW": 360
+  },
+  "body": {
+    "clientH": 707,
+    "scrollH": 707,
+    "scrollW": 360
+  },
+  "scrollY": 0,
+  "dpr": 3,
+  "url": "https://localhost/",
+  "renderer": null,
+  "safeProbe": {
+    "top": "0px",
+    "right": "0px",
+    "bottom": "0px",
+    "left": "0px"
+  },
+  "rects": {
+    "App": null,
+    "shellGame": null,
+    "gameBoard": null,
+    "inGameBar": null,
+    "topStrip": null,
+    "phaserRoot": null,
+    "canvas": null,
+    "actions": null,
+    "playerHand": null,
+    "bottomNav": null
+  },
+  "phaser": null,
+  "docScrolls": false,
+  "bodyScrolls": false
+}
