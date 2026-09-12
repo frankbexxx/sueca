@@ -334,7 +334,7 @@ export function computePremiumTableLayout(
     // Push north backs slightly down so seat chrome has clear air above.
     north: {
       x: zones.topSeat.cx,
-      y: zones.topSeat.cy + Math.round(opponentCardHeight * 0.22)
+      y: zones.topSeat.cy + Math.round(opponentCardHeight * 0.28)
     },
     east: { x: zones.rightSeat.cx, y: zones.rightSeat.cy }
   };

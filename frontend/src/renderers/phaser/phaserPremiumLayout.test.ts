@@ -143,6 +143,19 @@ describe('UX-P3.1 premium table layout', () => {
     const layout = buildPhaserTableLayout(390, 844);
     expect(layout.seatAnchor.north.y).toBeGreaterThan(layout.zones.topSeat.y + 8);
     expect(layout.zones.topSeat.height).toBeGreaterThanOrEqual(44);
+    const north = computeSeatPresentation({
+      name: 'Player 3',
+      handCount: 10,
+      isLocal: false,
+      isDealer: false,
+      teamLabel: 'Nós',
+      secondaryBadge: null,
+      showActiveHighlight: false,
+      aspect: 'portrait',
+      omitTeam: true
+    });
+    expect(north.labelText).toBe('Player 3');
+    expect(north.labelText).not.toMatch(/Nós/i);
   });
 
   it('card back path + texture key stay stable for swap', () => {

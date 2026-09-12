@@ -134,10 +134,10 @@ function seatLabelPosition(
     return { x: anchor.x, y: anchor.y - layout.cardHeight * 0.55 };
   }
   if (compass === 'north') {
-    // Clear air between identity chrome and the opponent fan.
+    // UX-P3.4b: more air between identity chrome and the opponent fan.
     return {
       x: anchor.x,
-      y: Math.max(14, anchor.y - layout.opponentCardHeight * 0.95)
+      y: Math.max(12, anchor.y - layout.opponentCardHeight * 1.12)
     };
   }
   // Side labels sit above the vertical stack so backs don't cover names.
@@ -297,7 +297,9 @@ export function mapTableModelToPhaserView(options: {
       secondaryBadge: bidLabel,
       showActiveHighlight,
       aspect: layout.aspect,
-      compactSide: layout.compactSideSeats && (compass === 'west' || compass === 'east')
+      compactSide: layout.compactSideSeats && (compass === 'west' || compass === 'east'),
+      // Top seat: identity only — team already in score strip for Sueca.
+      omitTeam: compass === 'north'
     });
 
     return {

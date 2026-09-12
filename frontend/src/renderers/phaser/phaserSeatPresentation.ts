@@ -19,6 +19,11 @@ export interface SeatPresentationInput {
   aspect: PhaserAspectMode;
   /** Narrow portrait west/east — shorter labels, skip team when possible. */
   compactSide?: boolean;
+  /**
+   * UX-P3.4b — top seat: name + monogram + D only (team lives in HUD scores).
+   * Local seat may still carry team for Sueca.
+   */
+  omitTeam?: boolean;
 }
 
 export interface SeatPresentation {
@@ -50,9 +55,9 @@ export function shortTeamLabel(raw: string | null | undefined): string | null {
 }
 
 /**
- * Canonical seat line (UX-P3.2): Name · [badge|team] · [D]
+ * Canonical seat line (UX-P3.2 / P3.4b): Name · [badge|team] · [D]
  * Card counts live in the global Vaza indicator — never on seats.
- * Compact side (360 phone): Name · [badge] · [D] — drop team to save width.
+ * Compact side / top seat: drop team; local Sueca may keep team.
  */
 export function computeSeatPresentation(input: SeatPresentationInput): SeatPresentation {
   const compact = Boolean(input.compactSide);
@@ -66,7 +71,8 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
   const parts: string[] = [shortName];
 
   const badge = input.secondaryBadge?.trim() || null;
-  const team = badge || compact ? null : shortTeamLabel(input.teamLabel);
+  const allowTeam = !badge && !compact && !input.omitTeam;
+  const team = allowTeam ? shortTeamLabel(input.teamLabel) : null;
   if (badge) parts.push(badge);
   else if (team) parts.push(team);
 

@@ -345,10 +345,16 @@ export class SuecaTableScene extends Phaser.Scene {
         (seat.compass === 'west' || seat.compass === 'east');
       const showMono = seat.compass !== 'south' || !seat.isLocal;
       const fontSize =
-        view.layout.aspect === 'landscape' ? '12px' : compactSide ? '11px' : '13px';
-      const monoSize = compactSide ? 10 : 11;
-      const monoR = compactSide ? 9 : 11;
-      const monoGap = compactSide ? 5 : 7;
+        view.layout.aspect === 'landscape'
+          ? '11px'
+          : compactSide
+            ? '10px'
+            : seat.compass === 'south'
+              ? '12px'
+              : '12px';
+      const monoSize = compactSide ? 9 : 10;
+      const monoR = compactSide ? 8 : 10;
+      const monoGap = compactSide ? 4 : 6;
 
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
@@ -394,13 +400,13 @@ export class SuecaTableScene extends Phaser.Scene {
 
       const textW = label.width;
       const monoW = showMono ? monoR * 2 + monoGap : 0;
-      const padX = compactSide ? 6 : 9;
-      const padY = compactSide ? 4 : 5;
+      const padX = compactSide ? 5 : seat.compass === 'south' ? 7 : 7;
+      const padY = compactSide ? 3 : 4;
       const pw = monoW + textW + padX * 2;
-      const ph = Math.max(monoR * 2 + 4, label.height + padY * 2);
+      const ph = Math.max(monoR * 2 + 2, label.height + padY * 2);
       const px = seat.labelPosition.x - pw / 2;
       const py = seat.labelPosition.y - ph / 2;
-      const radius = compactSide ? 8 : 10;
+      const radius = compactSide ? 7 : 8;
       const active = seat.showActiveHighlight;
       if (active) activeSeatIndex = seat.seatIndex;
 
@@ -409,7 +415,7 @@ export class SuecaTableScene extends Phaser.Scene {
       label.setPosition(textX, seat.labelPosition.y);
       if (mono && showMono) {
         mono.setPosition(monoCx, seat.labelPosition.y);
-        mono.setColor(active ? '#F5EBD4' : '#E8E0D0');
+        mono.setColor(active ? '#F2E8D4' : '#D8D0C2');
       }
 
       let panel = this.seatPanels.get(seat.seatIndex);
@@ -418,25 +424,26 @@ export class SuecaTableScene extends Phaser.Scene {
         this.seatPanels.set(seat.seatIndex, panel);
       }
       panel.clear();
-      panel.fillStyle(PREMIUM_TABLE.shadow, 0.38);
-      panel.fillRoundedRect(px + 1, py + 2, pw, ph, radius);
+      // Soft contact shadow — avoid heavy boxes competing with cards.
+      panel.fillStyle(PREMIUM_TABLE.shadow, 0.22);
+      panel.fillRoundedRect(px + 1, py + 1.5, pw, ph, radius);
       if (active) {
-        panel.fillStyle(this.theme.brass, 0.18);
+        panel.fillStyle(this.theme.brass, 0.1);
         panel.fillRoundedRect(px, py, pw, ph, radius);
       }
-      panel.fillStyle(this.theme.seatPanel, active ? 0.9 : 0.94);
+      panel.fillStyle(this.theme.seatPanel, active ? 0.78 : 0.7);
       panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(
-        active ? 2 : 1,
+        active ? 1.5 : 1,
         this.theme.brass,
-        active ? 0.88 : seat.isDealer ? 0.55 : 0.3
+        active ? 0.72 : seat.isDealer ? 0.42 : 0.22
       );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
 
       if (showMono) {
-        panel.fillStyle(active ? this.theme.brass : 0x243338, active ? 0.35 : 0.92);
+        panel.fillStyle(active ? this.theme.brass : 0x1e2a2e, active ? 0.28 : 0.78);
         panel.fillCircle(monoCx, seat.labelPosition.y, monoR);
-        panel.lineStyle(1.25, this.theme.brass, active ? 0.9 : 0.45);
+        panel.lineStyle(1, this.theme.brass, active ? 0.75 : 0.32);
         panel.strokeCircle(monoCx, seat.labelPosition.y, monoR);
       }
 
@@ -453,11 +460,11 @@ export class SuecaTableScene extends Phaser.Scene {
       this.seatPanels.has(activeSeatIndex)
     ) {
       const panel = this.seatPanels.get(activeSeatIndex)!;
-      panel.setAlpha(0.55);
+      panel.setAlpha(0.65);
       this.tweens.add({
         targets: panel,
         alpha: 1,
-        duration: 220,
+        duration: 160,
         ease: 'Sine.easeOut'
       });
     }
