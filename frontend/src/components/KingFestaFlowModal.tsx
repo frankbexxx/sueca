@@ -9,6 +9,7 @@ import {
   resolveKingFestaUiView,
   resolveNegotiationOwnerActionsAvailability
 } from '../models/games/king/kingFestaActionAvailability';
+import { KingAuctionTimeline } from './KingAuctionTimeline';
 import './VariantModals.css';
 
 const FestaSheet: React.FC<{ children: React.ReactNode; compact?: boolean }> = ({
@@ -160,11 +161,21 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   const view = resolveKingFestaUiView(king, localPlayerIndex);
   const currentAuctionPlayer =
     king.festaPhase === 'auction' ? king.auctionOrder[king.auctionTurnIndex] : null;
+  const playerNames = gameState.players.map((p) => p.name);
+  const auctionTimeline = (
+    <KingAuctionTimeline
+      history={king.auctionHistory}
+      playerNames={playerNames}
+      festaPhase={king.festaPhase}
+      bestBid={king.bestBid}
+    />
+  );
 
   if (view === 'auction_turn') {
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint king-auction-current-bid">
           {king.bestBid
             ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
@@ -187,6 +198,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint king-auction-current-bid">
           {king.bestBid
             ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
@@ -203,6 +215,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Resultado do leilão</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint king-auction-current-bid">
           {king.bestBid && winnerName
             ? `${winnerName} · ${formatBid(king.bestBid)}`
@@ -251,6 +264,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet>
         <h2>A aguardar resposta</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint">
           Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
         </p>
@@ -262,6 +276,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Pedido de subida</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint king-auction-current-bid">
           {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
         </p>
@@ -285,6 +300,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet>
         <h2>Negociação</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint">
           {bidder?.name} oferece {formatBid(king.bestBid)}.
         </p>
@@ -437,6 +453,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     return (
       <FestaSheet compact>
         <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
+        {auctionTimeline}
         <p className="variant-modal-hint">A aguardar decisão…</p>
       </FestaSheet>
     );

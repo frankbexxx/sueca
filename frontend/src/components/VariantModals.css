@@ -200,6 +200,67 @@
   line-height: 1.2;
 }
 
+.king-auction-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0.35rem 0 0.15rem;
+  max-width: 100%;
+}
+
+.king-auction-timeline__sep {
+  font-size: 0.62rem;
+  opacity: 0.45;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.king-auction-timeline__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.18rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(12, 18, 28, 0.55);
+  font-size: 0.68rem;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: rgba(245, 245, 245, 0.92);
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.king-auction-timeline__chip--latest {
+  border-color: rgba(196, 155, 88, 0.55);
+}
+
+.king-auction-timeline__chip--winner {
+  border-color: rgba(196, 155, 88, 0.85);
+  background: rgba(196, 155, 88, 0.12);
+}
+
+.king-auction-timeline__seat {
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.king-auction-timeline__dot {
+  opacity: 0.45;
+}
+
+.king-auction-timeline__value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.king-auction-timeline__mark {
+  margin-left: 0.1rem;
+  font-size: 0.62rem;
+  color: rgba(214, 178, 110, 0.95);
+}
+
 .king-auction-toolbar {
   display: flex;
   flex-wrap: nowrap;

@@ -38,8 +38,13 @@ import {
   KingFestaPhase,
   KingNegativeContract,
   KingPhase,
-  kingGameTitle
+  kingGameTitle,
+  KingAuctionHistoryEntry
 } from './king/kingContracts';
+import {
+  appendKingAuctionHistory,
+  buildDevAuctionHistoryFromActions
+} from './king/kingAuctionHistory';
 import {
   FESTA_POSITIVE_TRICK,
   negativeTrickPenalty,
@@ -89,6 +94,8 @@ export interface KingPtVariantState {
   scoringFrozen: boolean;
   earlyEndOffered: boolean;
   auctionPlayerActions: Partial<Record<number, KingBid | 'pass'>>;
+  /** Chronological auction log for UI — reset each festa auction. */
+  auctionHistory: KingAuctionHistoryEntry[];
   /**
    * DEV ONLY — when true, runAiFestaSteps / tickFestaAi are no-ops so auction
    * entry stays observable. Never set in production paths.
@@ -136,7 +143,8 @@ function defaultKingState(): KingPtVariantState {
     waitingForEarlyEnd: false,
     scoringFrozen: false,
     earlyEndOffered: false,
-    auctionPlayerActions: {}
+    auctionPlayerActions: {},
+    auctionHistory: []
   };
 }
 
@@ -159,6 +167,7 @@ export function getKingPtState(state: GameState): KingPtVariantState {
       penaltyCardsTaken: vs.roundBreakdown?.penaltyCardsTaken ?? [[], [], [], []]
     },
     gameHistory: vs.gameHistory ?? [],
+    auctionHistory: vs.auctionHistory ?? [],
     showScorePopup
   };
 }
@@ -283,6 +292,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (king.festaPhase !== 'auction') return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
     king.auctionPlayerActions[playerIndex] = 'pass';
+    king.auctionHistory = appendKingAuctionHistory(king.auctionHistory, playerIndex, 'pass');
     this.advanceAuctionTurn(king);
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -299,6 +309,7 @@ export class KingPtGame extends BaseGameAdapter {
       amount: clampBid(bidType, amount)
     };
     king.auctionPlayerActions[playerIndex] = bid;
+    king.auctionHistory = appendKingAuctionHistory(king.auctionHistory, playerIndex, 'bid', bid);
     if (canBeatBid(king.bestBid, bid, king.auctionOrder)) {
       king.bestBid = bid;
     }
@@ -546,6 +557,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.waitingForFestaSetup = false;
     king.nullAuctionStartNote = null;
     king.auctionPlayerActions = {};
+    king.auctionHistory = [];
   }
 
   /**
@@ -757,10 +769,23 @@ export class KingPtGame extends BaseGameAdapter {
       [(owner + 2) % 4]: 'pass',
       [(owner + 3) % 4]: 'pass'
     };
+    king.auctionHistory = buildDevAuctionHistoryFromActions(
+      king.auctionOrder,
+      king.auctionPlayerActions
+    );
     king.pauseFestaAiForDev = false;
 
     if (phase === 'fallback') {
       king.bestBid = null;
+      king.auctionPlayerActions = {
+        [(owner + 1) % 4]: 'pass',
+        [(owner + 2) % 4]: 'pass',
+        [(owner + 3) % 4]: 'pass'
+      };
+      king.auctionHistory = buildDevAuctionHistoryFromActions(
+        king.auctionOrder,
+        king.auctionPlayerActions
+      );
       this.enterFallback(king, 'no_bids');
       return;
     }

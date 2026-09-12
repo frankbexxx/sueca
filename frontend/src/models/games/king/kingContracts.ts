@@ -30,6 +30,17 @@ export interface KingBid {
   amount: number;
 }
 
+/** Chronological auction history — presentation/state only; not a rules input. */
+export interface KingAuctionHistoryEntry {
+  seat: number;
+  action: 'bid' | 'pass';
+  /** Bid amount in vazas when action === 'bid'. */
+  amount?: number;
+  /** Present for bids so UI can distinguish positivas vs nulos. */
+  bidType?: KingBidType;
+  sequence: number;
+}
+
 export type KingFestaPhase =
   | 'auction'
   | 'auction_result'
