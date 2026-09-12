@@ -1,8 +1,10 @@
+import { publicUrl } from '../config/runtimeEnv';
+
 const LANDING_FLAG = 'suecao-return-landing';
 
 export function exitAppToLanding(): void {
   sessionStorage.setItem(LANDING_FLAG, '1');
-  const base = process.env.PUBLIC_URL || '/';
+  const base = publicUrl() || '/';
   const target = base.endsWith('/') ? base : `${base}/`;
   window.location.assign(target);
   window.location.reload();

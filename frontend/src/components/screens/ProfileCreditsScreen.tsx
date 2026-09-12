@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../i18n/useLanguage';
+import { publicUrl } from '../../config/runtimeEnv';
 import { ShellHeader } from '../navigation/ShellHeader';
 import '../../styles/shell-screens.css';
 import '../CreditsModal.css';
@@ -27,7 +28,7 @@ export const ProfileCreditsScreen: React.FC<ProfileCreditsScreenProps> = ({
             <div className="credits-media">
               <div className="credits-media-frame">
                 <img
-                  src={`${process.env.PUBLIC_URL || ''}/image/Buga Bark Sueca 2.gif`}
+                  src={`${publicUrl()}/image/Buga Bark Sueca 2.gif`}
                   alt={t.credits.imageAlt}
                   className="credits-cover-image"
                   onError={(e) => {

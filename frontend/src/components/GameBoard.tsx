@@ -12,6 +12,7 @@ import { requestAiPlay } from '../services/aiClient';
 import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
+import { publicUrl } from '../config/runtimeEnv';
 import {
   AI_PLAY_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
@@ -836,7 +837,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const getCardImage = (card: Card): string => {
     const suit = SUIT_TO_NAME[card.suit];
     const rank = RANK_TO_IMAGE_NAME[card.rank];
-    return getCardImagePath(rank, suit, process.env.PUBLIC_URL || '');
+    return getCardImagePath(rank, suit, publicUrl());
   };
 
   /**

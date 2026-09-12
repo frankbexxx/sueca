@@ -71,7 +71,7 @@ describe('normalizeGameState', () => {
 
   it('pads players to four and warns', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    process.env.REACT_APP_DEBUG_MP = 'true';
+    process.env.VITE_DEBUG_MP = 'true';
 
     const fixed = normalizeGameState({
       ...minimalFullState(),
@@ -89,7 +89,7 @@ describe('normalizeGameState', () => {
     );
 
     warnSpy.mockRestore();
-    delete process.env.REACT_APP_DEBUG_MP;
+    delete process.env.VITE_DEBUG_MP;
   });
 
   it('defaults booleans to false when absent', () => {

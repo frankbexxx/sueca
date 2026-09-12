@@ -1,4 +1,5 @@
 import { AiPlayPayload } from './aiClient';
+import { vi } from 'vitest';
 
 const PAYLOAD: AiPlayPayload = {
   hand: ['AS', 'KD'],
@@ -8,7 +9,7 @@ const PAYLOAD: AiPlayPayload = {
 };
 
 beforeEach(() => {
-  jest.resetModules();
+  vi.resetModules();
 });
 
 afterEach(() => {
@@ -16,7 +17,7 @@ afterEach(() => {
 });
 
 it('throws immediately when USE_LOCAL_AI_ONLY is true, without calling fetch', async () => {
-  jest.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: true }));
+  vi.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: true }));
   const { requestAiPlay } = await import('./aiClient');
   global.fetch = jest.fn() as jest.Mock;
   await expect(requestAiPlay(PAYLOAD)).rejects.toThrow('External AI disabled');
@@ -24,7 +25,7 @@ it('throws immediately when USE_LOCAL_AI_ONLY is true, without calling fetch', a
 });
 
 it('returns the card code on a successful response', async () => {
-  jest.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
+  vi.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
   const { requestAiPlay } = await import('./aiClient');
   global.fetch = jest.fn().mockResolvedValueOnce({
     ok: true,
@@ -35,7 +36,7 @@ it('returns the card code on a successful response', async () => {
 });
 
 it('throws when response JSON lacks a play field', async () => {
-  jest.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
+  vi.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
   const { requestAiPlay } = await import('./aiClient');
   global.fetch = jest.fn().mockResolvedValueOnce({
     ok: true,
@@ -45,7 +46,7 @@ it('throws when response JSON lacks a play field', async () => {
 });
 
 it('throws when HTTP status is not ok (500)', async () => {
-  jest.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
+  vi.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
   const { requestAiPlay } = await import('./aiClient');
   global.fetch = jest.fn().mockResolvedValueOnce({
     ok: false,
@@ -55,7 +56,7 @@ it('throws when HTTP status is not ok (500)', async () => {
 });
 
 it('throws when the AbortController fires (timeout)', async () => {
-  jest.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
+  vi.doMock('../config/features', () => ({ USE_LOCAL_AI_ONLY: false }));
   const { requestAiPlay } = await import('./aiClient');
 
   global.fetch = jest.fn().mockImplementationOnce(

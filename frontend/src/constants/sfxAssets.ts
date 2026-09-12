@@ -1,6 +1,8 @@
+import { publicUrl } from '../config/runtimeEnv';
+
 export type SfxId = 'cardPlay1' | 'cardPlay2' | 'cardPlay3' | 'shuffle' | 'trickWin' | 'error' | 'uiClick';
 
-const base = `${process.env.PUBLIC_URL || ''}/assets/sfx`;
+const base = `${publicUrl()}/assets/sfx`;
 
 export const SFX_PATHS: Record<SfxId, string> = {
   cardPlay1: `${base}/card-play-1.ogg`,

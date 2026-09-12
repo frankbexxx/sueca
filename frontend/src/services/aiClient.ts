@@ -1,11 +1,12 @@
 import { USE_LOCAL_AI_ONLY } from '../config/features';
+import { readViteEnv } from '../config/runtimeEnv';
 
 /**
  * Default AI service URL
- * Can be overridden via REACT_APP_AI_SERVICE_URL environment variable
+ * Can be overridden via VITE_AI_SERVICE_URL environment variable
  * Falls back to localhost:8000 for development
  */
-const DEFAULT_AI_URL = process.env.REACT_APP_AI_SERVICE_URL || 'http://127.0.0.1:8000';
+const DEFAULT_AI_URL = readViteEnv('VITE_AI_SERVICE_URL') || 'http://127.0.0.1:8000';
 
 /**
  * Payload interface for AI service requests

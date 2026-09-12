@@ -1,3 +1,5 @@
-const base = `${process.env.PUBLIC_URL || ''}/assets/music`;
+import { publicUrl } from '../config/runtimeEnv';
+
+const base = `${publicUrl()}/assets/music`;
 
 export const AMBIANCE_PATH = `${base}/ambiance.ogg`;

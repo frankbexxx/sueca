@@ -1,16 +1,18 @@
-/** @jest-environment jsdom */
+/** @vitest-environment jsdom */
 
-const mockFeatures = {
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mockFeatures = vi.hoisted(() => ({
   CARD_INTELLIGENCE_DEBUG: false,
   CARD_INTELLIGENCE_DEV_LAB: false,
-  CARD_INTELLIGENCE_LLM_ADVISORY: false,
-};
+  CARD_INTELLIGENCE_LLM_ADVISORY: false
+}));
 
-jest.mock('../../../config/features', () => mockFeatures);
+vi.mock('../../../config/features', () => mockFeatures);
 
 describe('devLabConsole T12', () => {
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     mockFeatures.CARD_INTELLIGENCE_DEBUG = false;
     mockFeatures.CARD_INTELLIGENCE_DEV_LAB = false;
     delete window.__ciListScenarios;
@@ -23,13 +25,13 @@ describe('devLabConsole T12', () => {
     delete window.__ciGameReport;
   });
 
-  it('uses same __ciScenarioReport reference as debugConsole', () => {
+  it('uses same __ciScenarioReport reference as debugConsole', async () => {
     mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
     mockFeatures.CARD_INTELLIGENCE_DEV_LAB = true;
 
-    const { installCardIntelligenceDebugConsole } = require('../debugConsole');
-    const { installCardIntelligenceDevLabConsole } = require('../devLabConsole');
-    const { ciScenarioReport } = require('./buildScenarioReport');
+    const { installCardIntelligenceDebugConsole } = await import('../debugConsole');
+    const { installCardIntelligenceDevLabConsole } = await import('../devLabConsole');
+    const { ciScenarioReport } = await import('./buildScenarioReport');
 
     installCardIntelligenceDebugConsole();
     const fromDebug = window.__ciScenarioReport;

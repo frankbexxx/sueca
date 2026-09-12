@@ -1,7 +1,9 @@
+import { isProdMode, viteEnvFlag } from '../config/runtimeEnv';
+
 /** True when MP debug logs should print (dev, env flag, or localStorage). */
 export function isMpDebugEnabled(): boolean {
-  if (process.env.NODE_ENV !== 'production') return true;
-  if (process.env.REACT_APP_DEBUG_MP === 'true') return true;
+  if (!isProdMode()) return true;
+  if (viteEnvFlag('VITE_DEBUG_MP')) return true;
   try {
     return localStorage.getItem('sueca-mp-debug') === '1';
   } catch {

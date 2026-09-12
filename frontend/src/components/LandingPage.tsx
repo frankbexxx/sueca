@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../i18n/useLanguage';
+import { publicUrl } from '../config/runtimeEnv';
 import './LandingPage.css';
 
 interface LandingPageProps {
@@ -24,7 +25,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               <div className="landing-media">
                 <div className="landing-media-frame">
                   <img
-                    src={`${process.env.PUBLIC_URL || ''}/image/Buga Bark Sueca 2.gif`}
+                    src={`${publicUrl()}/image/Buga Bark Sueca 2.gif`}
                     alt={t.landing.imageAlt}
                     className="landing-cover-image"
                     onError={(e) => {

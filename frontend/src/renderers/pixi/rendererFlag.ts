@@ -5,11 +5,13 @@
  *
  * Activate (dev/archive only):
  *   `?renderer=pixi-archive` (Sueca solo)
- *   or `REACT_APP_TABLE_RENDERER=pixi-archive`
+ *   or `VITE_TABLE_RENDERER=pixi-archive`
  *
  * Plain `?renderer=pixi` is intentionally ignored.
  * See `docs/plan/RENDERER_DECISION_2026.md`.
  */
+import { readViteEnv } from '../../config/runtimeEnv';
+
 export function isPixiArchiveRendererRequested(): boolean {
   if (typeof window !== 'undefined') {
     try {
@@ -19,7 +21,7 @@ export function isPixiArchiveRendererRequested(): boolean {
       /* ignore */
     }
   }
-  return process.env.REACT_APP_TABLE_RENDERER === 'pixi-archive';
+  return readViteEnv('VITE_TABLE_RENDERER') === 'pixi-archive';
 }
 
 /** @deprecated Use isPixiArchiveRendererRequested — plain pixi flag is retired. */

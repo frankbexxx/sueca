@@ -1,49 +1,47 @@
 /**
- * Feature flags (CRA: REACT_APP_* at build time).
+ * Feature flags (Vite: VITE_* at build time).
  */
+import { isDevMode, readViteEnv, viteEnvFlag } from './runtimeEnv';
+
 export const USE_LOCAL_AI_ONLY =
-  process.env.REACT_APP_USE_LOCAL_AI_ONLY === 'true' ||
-  process.env.REACT_APP_PLATFORM === 'android';
+  viteEnvFlag('VITE_USE_LOCAL_AI_ONLY') || readViteEnv('VITE_PLATFORM') === 'android';
 
-export const MULTIPLAYER_ENABLED = process.env.REACT_APP_MULTIPLAYER_ENABLED === 'true';
+export const MULTIPLAYER_ENABLED = viteEnvFlag('VITE_MULTIPLAYER_ENABLED');
 
-export const ADS_ENABLED = process.env.REACT_APP_ADS_ENABLED === 'true';
+export const ADS_ENABLED = viteEnvFlag('VITE_ADS_ENABLED');
 
-export const GAMES_PER_INTERSTITIAL = Number(process.env.REACT_APP_GAMES_PER_AD || '20') || 20;
+export const GAMES_PER_INTERSTITIAL = Number(readViteEnv('VITE_GAMES_PER_AD') || '20') || 20;
 
-/** Card Intelligence logger — default on; set REACT_APP_CARD_INTELLIGENCE_LOGGER=false to disable */
+/** Card Intelligence logger — default on; set VITE_CARD_INTELLIGENCE_LOGGER=false to disable */
 export const CARD_INTELLIGENCE_LOGGER_ENABLED =
-  process.env.REACT_APP_CARD_INTELLIGENCE_LOGGER !== 'false';
+  readViteEnv('VITE_CARD_INTELLIGENCE_LOGGER') !== 'false';
 
-/** H3 / dev console: encode + IDB helpers on window.__ci* (npm start or REACT_APP_CARD_INTELLIGENCE_DEBUG=true) */
+/** H3 / dev console: encode + IDB helpers on window.__ci* (npm run dev or VITE_CARD_INTELLIGENCE_DEBUG=true) */
 export const CARD_INTELLIGENCE_DEBUG =
-  process.env.NODE_ENV === 'development' ||
-  process.env.REACT_APP_CARD_INTELLIGENCE_DEBUG === 'true';
+  isDevMode() || viteEnvFlag('VITE_CARD_INTELLIGENCE_DEBUG');
 
 /**
- * Mini-LLM advisory — default OFF everywhere (including npm start).
+ * Mini-LLM advisory — default OFF everywhere (including npm run dev).
  * Requires CARD_INTELLIGENCE_DEBUG for __ciGetMiniLLMAdvice helper.
  */
-export const CARD_INTELLIGENCE_LLM_ADVISORY =
-  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ADVISORY === 'true';
+export const CARD_INTELLIGENCE_LLM_ADVISORY = viteEnvFlag(
+  'VITE_CARD_INTELLIGENCE_LLM_ADVISORY'
+);
 
 /** LLM provider kind — mock default; ollama requires model env */
 export const CARD_INTELLIGENCE_LLM_PROVIDER =
-  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_PROVIDER === 'ollama'
-    ? 'ollama'
-    : 'mock';
+  readViteEnv('VITE_CARD_INTELLIGENCE_LLM_PROVIDER') === 'ollama' ? 'ollama' : 'mock';
 
 /** Ollama HTTP endpoint — local dev only */
 export const CARD_INTELLIGENCE_LLM_ENDPOINT =
-  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_ENDPOINT || 'http://localhost:11434';
+  readViteEnv('VITE_CARD_INTELLIGENCE_LLM_ENDPOINT') || 'http://localhost:11434';
 
 /** Ollama model name — empty disables real provider (falls back to mock) */
 export const CARD_INTELLIGENCE_LLM_MODEL =
-  process.env.REACT_APP_CARD_INTELLIGENCE_LLM_MODEL || '';
+  readViteEnv('VITE_CARD_INTELLIGENCE_LLM_MODEL') || '';
 
 /**
- * Dev Seeded Game Lab — default OFF everywhere (including npm start).
+ * Dev Seeded Game Lab — default OFF everywhere (including npm run dev).
  * Requires CARD_INTELLIGENCE_DEBUG for __ciListScenarios / __ciRunScenario helpers.
  */
-export const CARD_INTELLIGENCE_DEV_LAB =
-  process.env.REACT_APP_CARD_INTELLIGENCE_DEV_LAB === 'true';
+export const CARD_INTELLIGENCE_DEV_LAB = viteEnvFlag('VITE_CARD_INTELLIGENCE_DEV_LAB');

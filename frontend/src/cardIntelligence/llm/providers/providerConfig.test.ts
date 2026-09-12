@@ -1,10 +1,11 @@
-jest.mock('../../../config/features', () => ({
+vi.mock('../../../config/features', () => ({
   CARD_INTELLIGENCE_LLM_PROVIDER: 'mock',
   CARD_INTELLIGENCE_LLM_ENDPOINT: 'http://localhost:11434',
   CARD_INTELLIGENCE_LLM_MODEL: '',
 }));
 
 import { getDefaultMockProvider } from '../mockProvider';
+import { vi } from 'vitest';
 import { readLlmProviderConfigFromEnv, resolveProvider } from './providerConfig';
 
 describe('providerConfig', () => {

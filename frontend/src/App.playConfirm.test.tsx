@@ -4,16 +4,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from 'react-dom/test-utils';
+import { vi } from 'vitest';
 import { GameVariant } from './types/game';
 import { GameState } from './types/game';
 
-jest.mock('./components/GameBoard', () => ({
+vi.mock('./components/GameBoard', () => ({
   GameBoard: ({ config }: { config: { gameVariant: string } }) => (
     <div data-testid="game-board" data-variant={config.gameVariant} />
   )
 }));
 
-jest.mock('./components/LandingPage', () => ({
+vi.mock('./components/LandingPage', () => ({
   LandingPage: ({ onStart }: { onStart: () => void }) => (
     <button type="button" data-testid="enter-shell" onClick={onStart}>
       Entrar
@@ -21,7 +22,7 @@ jest.mock('./components/LandingPage', () => ({
   )
 }));
 
-jest.mock('./navigation/ShellRouter', () => ({
+vi.mock('./navigation/ShellRouter', () => ({
   ShellRouter: ({
     onContinue,
     onPlayVariant
@@ -40,28 +41,28 @@ jest.mock('./navigation/ShellRouter', () => ({
   )
 }));
 
-jest.mock('./components/navigation/BottomNav', () => ({
+vi.mock('./components/navigation/BottomNav', () => ({
   BottomNav: () => <nav data-testid="bottom-nav" />
 }));
 
-jest.mock('./services/audioService', () => ({
-  playUiClick: jest.fn(),
-  preloadAmbiance: jest.fn(),
-  preloadSfx: jest.fn(),
-  startAmbiance: jest.fn()
+vi.mock('./services/audioService', () => ({
+  playUiClick: vi.fn(),
+  preloadAmbiance: vi.fn(),
+  preloadSfx: vi.fn(),
+  startAmbiance: vi.fn()
 }));
 
-jest.mock('./navigation/useShellBrowserBack', () => ({
+vi.mock('./navigation/useShellBrowserBack', () => ({
   bindCapacitorBackButton: () => Promise.resolve(() => undefined),
-  useShellBrowserBack: () => ({ goBack: jest.fn() })
+  useShellBrowserBack: () => ({ goBack: vi.fn() })
 }));
 
-jest.mock('./hooks/useCustomThemeCSS', () => ({
-  useCustomThemeCSS: jest.fn()
+vi.mock('./hooks/useCustomThemeCSS', () => ({
+  useCustomThemeCSS: vi.fn()
 }));
 
-jest.mock('./services/multiplayerClient', () => ({
-  endSession: jest.fn(async () => undefined)
+vi.mock('./services/multiplayerClient', () => ({
+  endSession: vi.fn(async () => undefined)
 }));
 
 import App from './App';

@@ -1,4 +1,5 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
+import { vi } from 'vitest';
 import { Card, GameState } from '../../types/game';
 import { CardDecisionLogEvent, LogEvent } from '../shared/types/logEvents';
 import { appendLogEvent, setLogStoreForTests } from '../shared/storage/logStore';
@@ -12,7 +13,7 @@ import {
 import { resetLogFailureCountForTests } from './logFailureTelemetry';
 import { trickIndexTracker } from './resolveTrickIndex';
 
-jest.mock('../../config/features', () => ({
+vi.mock('../../config/features', () => ({
   CARD_INTELLIGENCE_LOGGER_ENABLED: true,
 }));
 
@@ -274,11 +275,11 @@ describe('playWithLogging', () => {
 
 describe('playWithLogging logger disabled', () => {
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
   });
 
   it('playCardAndLogDecision plays without logging when flag is off', async () => {
-    jest.doMock('../../config/features', () => ({
+    vi.doMock('../../config/features', () => ({
       CARD_INTELLIGENCE_LOGGER_ENABLED: false,
     }));
 
@@ -299,6 +300,6 @@ describe('playWithLogging logger disabled', () => {
     expect(events).toHaveLength(0);
 
     setLogStoreForTests(null);
-    jest.dontMock('../../config/features');
+    vi.doUnmock('../../config/features');
   });
 });

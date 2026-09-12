@@ -1,4 +1,5 @@
 import { GameVariant } from '../types/game';
+import { viteEnvFlag } from '../config/runtimeEnv';
 
 export interface GameMetadata {
   variant: GameVariant;
@@ -58,7 +59,7 @@ export const getGameMetadata = (variant: GameVariant): GameMetadata => {
 };
 
 const showExperimentalGames = (): boolean =>
-  process.env.REACT_APP_SHOW_EXPERIMENTAL_GAMES === 'true';
+  viteEnvFlag('VITE_SHOW_EXPERIMENTAL_GAMES');
 
 /** Games shown in the selector (active + optional experimental via env). */
 export const getAvailableGames = (): GameMetadata[] => {

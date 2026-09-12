@@ -2,27 +2,32 @@ import { createTestLogEvent } from '../encoder/encodeDecisionState';
 import { buildMiniLLMInput } from './buildMiniLLMInput';
 import { getMiniLLMAdvice } from './getMiniLLMAdvice';
 import { createMockProvider } from './mockProvider';
+import { vi } from 'vitest';
 
-jest.mock('../../config/features', () => ({
-  CARD_INTELLIGENCE_LLM_ADVISORY: false,
-}));
+vi.mock('../../config/features', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../config/features')>();
+  return {
+    ...actual,
+    CARD_INTELLIGENCE_LLM_ADVISORY: false
+  };
+});
 
 describe('getMiniLLMAdvice', () => {
   function makeInput() {
     const legalMoves = [
       { suit: 'clubs', rank: '2', id: '2c' },
-      { suit: 'hearts', rank: '3', id: '3h' },
+      { suit: 'hearts', rank: '3', id: '3h' }
     ];
     const event = createTestLogEvent({
       variant: 'sueca',
       handBefore: [...legalMoves],
       legalMoves,
-      chosenCard: legalMoves[0],
+      chosenCard: legalMoves[0]
     });
     return buildMiniLLMInput({
       event,
       legalMoves: event.legalMoves,
-      fallbackMove: event.legalMoves[0],
+      fallbackMove: event.legalMoves[0]
     });
   }
 
@@ -39,7 +44,7 @@ describe('getMiniLLMAdvice', () => {
     const input = makeInput();
     const result = await getMiniLLMAdvice(input, {
       forceAdvisory: true,
-      provider: createMockProvider('valid_fallback_index'),
+      provider: createMockProvider('valid_fallback_index')
     });
     expect(result.mode).toBe('advisory');
     expect(result.advisoryCard.id).toBe('2c');
@@ -52,7 +57,7 @@ describe('getMiniLLMAdvice', () => {
     const input = makeInput();
     const result = await getMiniLLMAdvice(input, {
       forceAdvisory: true,
-      provider: createMockProvider('illegal_card'),
+      provider: createMockProvider('illegal_card')
     });
     expect(result.usedFallback).toBe(true);
     expect(result.advisoryCard.id).toBe('2c');
@@ -63,7 +68,7 @@ describe('getMiniLLMAdvice', () => {
     const input = makeInput();
     const result = await getMiniLLMAdvice(input, {
       forceAdvisory: true,
-      provider: createMockProvider('throw'),
+      provider: createMockProvider('throw')
     });
     expect(result.usedFallback).toBe(true);
     expect(result.fallbackReason).toBe('provider_error');
@@ -76,13 +81,13 @@ describe('getMiniLLMAdvice', () => {
       eventId: 'immutable-llm',
       handBefore: [{ suit: 'clubs', rank: '2', id: '2c' }],
       legalMoves: [{ suit: 'clubs', rank: '2', id: '2c' }],
-      chosenCard: { suit: 'clubs', rank: '2', id: '2c' },
+      chosenCard: { suit: 'clubs', rank: '2', id: '2c' }
     });
     const snapshot = JSON.stringify(event);
     const input = buildMiniLLMInput({
       event,
       legalMoves: event.legalMoves,
-      fallbackMove: event.legalMoves[0],
+      fallbackMove: event.legalMoves[0]
     });
     await getMiniLLMAdvice(input, { forceAdvisory: true });
     expect(JSON.stringify(event)).toBe(snapshot);

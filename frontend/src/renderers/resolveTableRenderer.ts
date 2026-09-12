@@ -3,13 +3,15 @@
  *
  * Precedence:
  * 1. URL query `?renderer=`
- * 2. `REACT_APP_TABLE_RENDERER` env
+ * 2. `VITE_TABLE_RENDERER` env
  * 3. variant default
  *
  * Defaults:
  * - Sueca / Spades / Hearts / King → Phaser
  * - Unknown / non-capable variants → DOM
  */
+
+import { readViteEnv } from '../config/runtimeEnv';
 
 export type TableRendererId = 'phaser' | 'dom';
 
@@ -61,7 +63,7 @@ export interface ResolveTableRendererOptions {
   override?: RendererOverride;
   /** `window.location.search` or `?renderer=dom`. */
   search?: string | null;
-  /** Typically `process.env.REACT_APP_TABLE_RENDERER`. */
+  /** Typically `import.meta.env.VITE_TABLE_RENDERER`. */
   envOverride?: string | null;
 }
 
@@ -88,13 +90,13 @@ export function resolveTableRenderer(
   return 'phaser';
 }
 
-/** Browser helper: current location + CRA env. */
+/** Browser helper: current location + Vite env. */
 export function resolveTableRendererForBrowser(variant: string): TableRendererId {
   const search =
     typeof window !== 'undefined' ? window.location.search : null;
   return resolveTableRenderer(variant, {
     search,
-    envOverride: process.env.REACT_APP_TABLE_RENDERER
+    envOverride: readViteEnv('VITE_TABLE_RENDERER')
   });
 }
 
@@ -108,7 +110,7 @@ export function isPhaserTableRendererRequested(): boolean {
   return (
     resolveRendererOverride(
       typeof window !== 'undefined' ? window.location.search : null,
-      process.env.REACT_APP_TABLE_RENDERER
+      readViteEnv('VITE_TABLE_RENDERER')
     ) === 'phaser'
   );
 }

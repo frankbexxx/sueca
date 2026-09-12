@@ -1,4 +1,4 @@
-# CI for the CRA frontend (root: frontend/). Runs on PRs and pushes to main / v2-main.
+# CI for the Vite frontend (root: frontend/). Runs on PRs and pushes to main / v2-main.
 name: CI
 
 on:
@@ -52,13 +52,13 @@ jobs:
       - name: Test
         env:
           CI: true
-        run: npm test -- --watchAll=false
+        run: npm test
 
       - name: Build
         env:
           CI: true
-          REACT_APP_USE_LOCAL_AI_ONLY: "true"
-          REACT_APP_CARD_EXT: png
+          VITE_USE_LOCAL_AI_ONLY: "true"
+          VITE_CARD_EXT: png
         run: npm run build
 
       - name: Verify card assets

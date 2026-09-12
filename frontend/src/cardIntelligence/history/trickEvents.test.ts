@@ -1,4 +1,5 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
+import { vi } from 'vitest';
 import { Card, GameState } from '../../types/game';
 import { LogEvent } from '../shared/types/logEvents';
 import { setLogStoreForTests } from '../shared/storage/logStore';
@@ -14,7 +15,7 @@ import {
 import { resetRoundHistoryEngineForTests, roundHistoryEngine } from './roundHistory';
 import { heartsTrickPoints, suecaTrickPoints } from './historySelectors';
 
-jest.mock('../../config/features', () => ({
+vi.mock('../../config/features', () => ({
   CARD_INTELLIGENCE_LOGGER_ENABLED: true,
 }));
 

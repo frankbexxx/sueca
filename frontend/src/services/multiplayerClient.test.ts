@@ -7,7 +7,7 @@ const mockOnChildAdded = jest.fn(() => jest.fn());
 const mockOff = jest.fn();
 const mockRef = jest.fn((_db: unknown, path: string) => ({ path }));
 
-jest.mock('firebase/database', () => ({
+vi.mock('firebase/database', () => ({
   ref: (...args: unknown[]) => mockRef(...args),
   set: (...args: unknown[]) => mockSet(...args),
   get: (...args: unknown[]) => mockGet(...args),
@@ -18,7 +18,7 @@ jest.mock('firebase/database', () => ({
   off: (...args: unknown[]) => mockOff(...args),
 }));
 
-jest.mock('./firebaseConfig', () => ({ db: {} }));
+vi.mock('./firebaseConfig', () => ({ db: {} }));
 
 import {
   createSession,
@@ -28,6 +28,7 @@ import {
   publishState,
 } from './multiplayerClient';
 import { GameState } from '../types/game';
+import { vi } from 'vitest';
 
 describe('multiplayerClient', () => {
   beforeEach(() => {
