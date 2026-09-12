@@ -95,13 +95,17 @@ describe('kingAuctionHistory', () => {
     expect(king.auctionHistory).toHaveLength(1);
     expect(king.auctionHistory[0].action).toBe('bid');
     expect(king.auctionHistory[0].amount).toBe(6);
+    expect(king.waitingForAuctionContinue).toBe(true);
 
+    game.confirmAuctionContinue();
     game.submitAuctionPass(order[1]);
     king = getKingPtState(game.getCurrentState());
     expect(king.auctionHistory).toHaveLength(2);
     expect(king.auctionHistory[1].action).toBe('pass');
     expect(king.auctionHistory.map((e) => e.seat)).toEqual([order[0], order[1]]);
+    expect(king.waitingForAuctionContinue).toBe(true);
 
+    game.confirmAuctionContinue();
     game.submitAuctionBid(order[2], 'positive', 7);
     king = getKingPtState(game.getCurrentState());
     expect(king.auctionHistory).toHaveLength(3);
@@ -118,13 +122,24 @@ describe('kingAuctionHistory', () => {
     const game = new KingPtGame();
     enterAuction(game);
     const order = auctionBidderOrder(0);
+
     game.submitAuctionPass(order[0]);
+    expect(getKingPtState(game.getCurrentState()).waitingForAuctionContinue).toBe(true);
+    game.confirmAuctionContinue();
+
     game.submitAuctionPass(order[1]);
+    expect(getKingPtState(game.getCurrentState()).waitingForAuctionContinue).toBe(true);
+    game.confirmAuctionContinue();
+
     game.submitAuctionPass(order[2]);
     let king = getKingPtState(game.getCurrentState());
     expect(king.auctionHistory.every((e) => e.action === 'pass')).toBe(true);
     expect(king.auctionHistory).toHaveLength(3);
+    expect(king.auctionHistory.map((e) => e.seat)).toEqual(order);
+    expect(king.auctionHistory.map((e) => e.sequence)).toEqual([1, 2, 3]);
     expect(king.bestBid).toBeNull();
+    expect(king.festaPhase).toBe('auction_result');
+    expect(king.waitingForAuctionContinue).toBe(true);
 
     // New festa auction clears history (NODE_ENV=development fixture path)
     const prev = process.env.NODE_ENV;
