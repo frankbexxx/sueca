@@ -4,6 +4,7 @@ import { resolvePresetId } from '../../constants/rulesPresets';
 import { KingPtGame, getKingPtState } from './KingPtGame';
 import { KingSimplifiedGame } from './KingSimplifiedGame';
 import { KingBidType, KingFestaChoice } from './king/kingContracts';
+import type { KingNegativeContract } from './king/kingContracts';
 import { createKingVariantFlow, KingVariantFlow } from './variantFlowApi';
 
 type KingImpl = KingPtGame | KingSimplifiedGame;
@@ -134,6 +135,20 @@ export class KingGame extends BaseGameAdapter {
     const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
     if (isPtGame(game)) {
       return game.applyDevFestaFixture(playerNames, jump, options);
+    }
+    return game.initialize(playerNames, options);
+  }
+
+  /** DEV ONLY — mid-round negative with sample penalty cards. */
+  applyDevNegativeFixture(
+    playerNames: string[],
+    contract: KingNegativeContract,
+    options?: Record<string, unknown>
+  ): GameState {
+    this.impl = undefined;
+    const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
+    if (isPtGame(game)) {
+      return game.applyDevNegativeFixture(playerNames, contract, options);
     }
     return game.initialize(playerNames, options);
   }

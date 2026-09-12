@@ -42,6 +42,12 @@ import {
   parseDevKingFestaParams,
   type DevKingFestaJump
 } from '../dev/kingFestaJump';
+import {
+  applyDevNegativeFixture,
+  formatDevKingNegBadge,
+  parseDevKingNegParams
+} from '../dev/kingNegativeJump';
+import type { KingNegativeContract } from '../models/games/king/kingContracts';
 import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
@@ -116,6 +122,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const isHostOrSolo = !isMultiplayer || multiplayerPlayerIndex === 0;
   const [waitingForHost, setWaitingForHost] = useState(isJoiner);
   const [devKingFestaJump, setDevKingFestaJump] = useState<DevKingFestaJump | null>(null);
+  const [devKingNegContract, setDevKingNegContract] = useState<KingNegativeContract | null>(
+    null
+  );
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
@@ -381,25 +390,37 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
             rulesPresetId: config.rulesPresetId
           };
-          const devJump =
+          const search =
+            typeof window !== 'undefined' ? window.location.search : '';
+          const canDevJump =
             process.env.NODE_ENV === 'development' &&
             config.gameVariant === 'king' &&
             config.rulesPresetId === 'king-pt-normal' &&
-            !config.multiplayerEnabled
-              ? parseDevKingFestaParams(
-                  typeof window !== 'undefined' ? window.location.search : ''
-                )
-              : null;
-          if (devJump && adapter instanceof KingGame) {
+            !config.multiplayerEnabled;
+          const festaJump = canDevJump ? parseDevKingFestaParams(search) : null;
+          const negJump = canDevJump && !festaJump ? parseDevKingNegParams(search) : null;
+          if (festaJump && adapter instanceof KingGame) {
             initialState = adapter.applyDevFestaFixture(
               config.playerNames,
-              devJump,
+              festaJump,
               initOptions
             );
-            setDevKingFestaJump(devJump);
+            setDevKingFestaJump(festaJump);
+            setDevKingNegContract(null);
+          } else if (negJump && adapter instanceof KingGame) {
+            const negState = applyDevNegativeFixture(
+              adapter,
+              config.playerNames,
+              negJump,
+              initOptions
+            );
+            initialState = negState ?? adapter.initialize(config.playerNames, initOptions);
+            setDevKingNegContract(negJump);
+            setDevKingFestaJump(null);
           } else {
             initialState = adapter.initialize(config.playerNames, initOptions);
             setDevKingFestaJump(null);
+            setDevKingNegContract(null);
           }
         }
         freshStartRef.current = false;
@@ -1178,7 +1199,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       data-table-renderer={usePhaserTable ? 'phaser' : usePixiTable ? 'pixi-archive' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
     >
-      {devKingFestaJump && process.env.NODE_ENV === 'development' ? (
+      {(devKingFestaJump || devKingNegContract) ? (
         <div
           className="dev-king-festa-badge"
           style={{
@@ -1197,7 +1218,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             pointerEvents: 'none'
           }}
         >
-          {formatDevKingFestaBadge(devKingFestaJump)}
+          {devKingFestaJump
+            ? formatDevKingFestaBadge(devKingFestaJump)
+            : formatDevKingNegBadge(devKingNegContract!)}
         </div>
       ) : null}
       <InGameBar

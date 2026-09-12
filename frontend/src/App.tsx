@@ -26,6 +26,7 @@ import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useSh
 import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
 import { ConfirmDialog } from './components/common/ConfirmDialog';
 import { parseDevKingFestaParams } from './dev/kingFestaJump';
+import { parseDevKingNegParams } from './dev/kingNegativeJump';
 import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
@@ -105,10 +106,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const jump = parseDevKingFestaParams(
-      typeof window !== 'undefined' ? window.location.search : ''
-    );
-    if (!jump) return;
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const festaJump = parseDevKingFestaParams(search);
+    const negJump = parseDevKingNegParams(search);
+    if (!festaJump && !negJump) return;
     clearGameSession('king');
     clearMultiplayerLocalStorage();
     startGame({

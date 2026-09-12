@@ -8,6 +8,12 @@ import {
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
+import { shouldShowKingPenaltyCards } from '../../models/games/king/kingHudPenaltyDisplay';
+import {
+  formatKingHudTotalLabel,
+  formatSignedScore,
+  resolveKingNegativeHudScore
+} from '../../models/games/king/kingHudScoreDisplay';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { getHeartsRulesHint } from '../HeartsRulesHelper';
 import { getHeartsState } from '../../models/games/HeartsGame';
@@ -22,13 +28,6 @@ export interface UnifiedGameStatusPanelProps {
   /** Compact global trick progress (replaces seat card counts). */
   trickLabel?: string;
 }
-
-const PENALTY_CARD_CONTRACTS: KingNegativeContract[] = [
-  'no_hearts',
-  'no_queens',
-  'no_men',
-  'no_king_hearts'
-];
 
 function penaltyCardImage(card: { rank: string; suit: string }): string {
   const rankName = RANK_TO_IMAGE_NAME[card.rank as keyof typeof RANK_TO_IMAGE_NAME];
@@ -50,7 +49,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
   const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
 
-  const scores =
+  const fallbackTotals =
     variant === 'hearts'
       ? getHeartsState(gameState).playerScores
       : kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
@@ -115,10 +114,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   }
 
   const showPenaltyCards =
-    (variant === 'king' &&
-      kingContract !== null &&
-      PENALTY_CARD_CONTRACTS.includes(kingContract)) ||
-    variant === 'hearts';
+    (variant === 'king' && shouldShowKingPenaltyCards(kingContract)) || variant === 'hearts';
 
   // King festa trump face only during positive festa play.
   const showTrump =
@@ -144,29 +140,54 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
           <div className="game-status-panel__col game-status-panel__col--scores">
             <div className="game-status-panel__label">{pointsLabel}</div>
             <div className="game-status-panel__scores">
-              {gameState.players.map((player, index) => (
-                <div key={player.id} className="game-status-panel__score-row">
-                  <span className="game-status-panel__score-item">
-                    {variant === 'hearts' ? player.name : `P${index + 1}`}: {scores[index] ?? 0}
-                  </span>
-                  {showPenaltyCards && penaltyCardsByPlayer[index]?.length > 0 && (
-                    <div className="game-status-panel__penalty-cards">
-                      {penaltyCardsByPlayer[index].map((card) => {
-                        const src = penaltyCardImage(card);
-                        if (!src) return null;
-                        return (
-                          <img
-                            key={card.id}
-                            src={src}
-                            alt={`${card.rank} ${card.suit}`}
-                            className="game-status-panel__penalty-card"
-                          />
-                        );
-                      })}
+              {gameState.players.map((player, index) => {
+                const kingHud =
+                  kingPtState != null
+                    ? resolveKingNegativeHudScore({
+                        gameIndex: kingPtState.gameIndex,
+                        phase: kingPtState.phase,
+                        lastRoundDeltas: kingPtState.lastRoundDeltas,
+                        playerScores: kingPtState.playerScores,
+                        playerIndex: index
+                      })
+                    : null;
+                const useRoundPrimary = Boolean(kingHud?.roundPrimary);
+                const primaryValue = useRoundPrimary
+                  ? formatSignedScore(kingHud!.roundDelta)
+                  : String(fallbackTotals[index] ?? 0);
+                const seatLabel = variant === 'hearts' ? player.name : `P${index + 1}`;
+
+                return (
+                  <div key={player.id} className="game-status-panel__score-row">
+                    <div className="game-status-panel__score-item">
+                      <span className="game-status-panel__score-primary">
+                        {seatLabel}: {primaryValue}
+                      </span>
+                      {useRoundPrimary ? (
+                        <span className="game-status-panel__score-total">
+                          {formatKingHudTotalLabel(kingHud!.totalScore, locale)}
+                        </span>
+                      ) : null}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {showPenaltyCards && penaltyCardsByPlayer[index]?.length > 0 && (
+                      <div className="game-status-panel__penalty-cards">
+                        {penaltyCardsByPlayer[index].map((card) => {
+                          const src = penaltyCardImage(card);
+                          if (!src) return null;
+                          return (
+                            <img
+                              key={card.id}
+                              src={src}
+                              alt={`${card.rank} ${card.suit}`}
+                              className="game-status-panel__penalty-card"
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="game-status-panel__divider" aria-hidden="true" />

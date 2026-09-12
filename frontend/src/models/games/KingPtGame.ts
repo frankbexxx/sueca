@@ -755,6 +755,66 @@ export class KingPtGame extends BaseGameAdapter {
     return this.getCurrentState();
   }
 
+  /**
+   * DEV ONLY — mid-round negative contract with sample captured cards / deltas.
+   * Outside development, falls back to normal initialize.
+   */
+  applyDevNegativeFixture(
+    playerNames: string[],
+    contract: KingNegativeContract,
+    options?: Record<string, unknown>
+  ): GameState {
+    if (process.env.NODE_ENV !== 'development') {
+      return this.initialize(playerNames, options);
+    }
+
+    const gameIndex = KING_NEGATIVE_CONTRACTS.findIndex((c) => c.id === contract);
+    if (gameIndex < 0) {
+      return this.initialize(playerNames, options);
+    }
+
+    const roundStartScores =
+      (options?.roundStartScores as number[] | undefined) ?? [-50, 20, -30, 60];
+    const lastRoundDeltas =
+      (options?.lastRoundDeltas as number[] | undefined) ?? [0, 0, 0, 0];
+    const playerScores =
+      (options?.playerScores as number[] | undefined) ??
+      roundStartScores.map((s, i) => s + (lastRoundDeltas[i] ?? 0));
+    const penaltyCardsTaken =
+      (options?.penaltyCardsTaken as Card[][] | undefined) ?? [[], [], [], []];
+
+    this.state = this.buildState(
+      playerNames,
+      {
+        ...options,
+        kohPlayerIndex: (options?.kohPlayerIndex as number | undefined) ?? 0
+      },
+      [...playerScores],
+      gameIndex,
+      false
+    );
+
+    const king = getKingPtState(this.state);
+    king.phase = 'negative';
+    king.contract = contract;
+    king.gameIndex = gameIndex;
+    king.roundStartScores = [...roundStartScores];
+    king.lastRoundDeltas = [...lastRoundDeltas];
+    king.playerScores = [...playerScores];
+    king.trickNumber = 5;
+    king.roundBreakdown = initBreakdownForRound(
+      king.gameIndex,
+      king.contract,
+      king.festaMode,
+      king.activeContract
+    );
+    king.roundBreakdown.penaltyCardsTaken = penaltyCardsTaken.map((row) => [...row]);
+    this.state!.waitingForRoundStart = false;
+    this.state!.waitingForRoundEnd = false;
+    this.syncKing(king);
+    return this.getCurrentState();
+  }
+
   /** Advance a post-auction festa fixture to a valid later phase (DEV). */
   private applyDevFestaPhaseFixture(king: KingPtVariantState, phase: KingFestaPhase): void {
     if (phase === 'auction' || phase == null) return;
