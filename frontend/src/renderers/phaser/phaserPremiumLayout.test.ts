@@ -161,7 +161,7 @@ describe('UX-P3.1 premium table layout', () => {
   });
 
   it('card back path + texture key stay stable for swap', () => {
-    expect(CARD_BACK_PATH).toContain('/assets/cards2/card_back.');
+    expect(CARD_BACK_PATH).toContain('/assets/cards3/card_back.');
     expect(CARD_BACK_TEXTURE_KEY).toBe('card-back');
   });
 
