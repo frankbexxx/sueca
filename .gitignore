@@ -10,6 +10,11 @@ desktop.ini
 folderico*.ico
 .env
 
+# Android release signing (never commit)
+*.keystore
+*.jks
+keystore.properties
+
 # Python cache
 __pycache__/
 *.py[cod]
