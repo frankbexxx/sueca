@@ -32,7 +32,6 @@ import {
 } from '../table/mapTableModelToDomProps';
 import { resolveTableRendererForBrowser } from '../renderers/phaser/rendererFlag';
 import { PhaserTableErrorBoundary } from '../renderers/phaser/PhaserTableErrorBoundary';
-import { shouldUseSuecaPixiTable } from '../renderers/pixi/rendererFlag';
 import { GameFactory } from '../models/games/GameFactory';
 import { GameAdapter } from '../models/games/GameAdapter';
 import { KingGame } from '../models/games/KingGame';
@@ -87,11 +86,6 @@ export interface GameBoardProps {
 const SuecaPhaserRenderer = React.lazy(() =>
   import('../renderers/phaser/SuecaPhaserRenderer').then((m) => ({
     default: m.SuecaPhaserRenderer
-  }))
-);
-const SuecaPixiRenderer = React.lazy(() =>
-  import('../renderers/pixi/SuecaPixiRenderer').then((m) => ({
-    default: m.SuecaPixiRenderer
   }))
 );
 
@@ -1111,11 +1105,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     resolveTableRendererForBrowser(gameVariant) === 'phaser' &&
     !isMultiplayerActive &&
     !phaserInitFailed;
-  // Pixi Sueca POC is archived — only ?renderer=pixi-archive (see RENDERER_DECISION_2026.md).
-  const usePixiTable =
-    !usePhaserTable &&
-    shouldUseSuecaPixiTable(gameVariant) &&
-    !isMultiplayerActive;
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return;
@@ -1192,7 +1181,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   return (
     <div
       className={boardClassName}
-      data-table-renderer={usePhaserTable ? 'phaser' : usePixiTable ? 'pixi-archive' : 'dom'}
+      data-table-renderer={usePhaserTable ? 'phaser' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
     >
       {(devKingFestaJump || devKingNegContract) ? (
@@ -1239,26 +1228,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         rulesPresetId={rulesPresetId}
       />
 
-      {usePhaserTable || usePixiTable ? (
+      {usePhaserTable ? (
         <React.Suspense
           fallback={
-            <div
-              className={`game-table-zone ${
-                usePixiTable ? 'sueca-pixi-root' : 'sueca-phaser-root'
-              }`}
-            >
-              {usePixiTable ? 'A carregar mesa Pixi…' : 'A carregar mesa Phaser…'}
+            <div className="game-table-zone sueca-phaser-root">
+              A carregar mesa Phaser…
             </div>
           }
         >
           <div className="game-table-zone">
-            {usePixiTable ? (
-              <SuecaPixiRenderer
+            <PhaserTableErrorBoundary
+              fallback={domTableContent}
+              onFallback={handlePhaserFallback}
+            >
+              <SuecaPhaserRenderer
                 model={tableModel}
                 getCardImage={getCardImage}
                 getTeamName={getTeamName}
                 selectedCardIndex={selectedCard}
                 isLocalCardPlayable={isLocalCardPlayable}
+                onInitError={handlePhaserFallback}
                 events={{
                   onLocalCardClick: handlePhaserCardClick,
                   onContinueTrick: () => {
@@ -1268,29 +1257,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   }
                 }}
               />
-            ) : (
-              <PhaserTableErrorBoundary
-                fallback={domTableContent}
-                onFallback={handlePhaserFallback}
-              >
-                <SuecaPhaserRenderer
-                  model={tableModel}
-                  getCardImage={getCardImage}
-                  getTeamName={getTeamName}
-                  selectedCardIndex={selectedCard}
-                  isLocalCardPlayable={isLocalCardPlayable}
-                  onInitError={handlePhaserFallback}
-                  events={{
-                    onLocalCardClick: handlePhaserCardClick,
-                    onContinueTrick: () => {
-                      if (!gameAdapter || !gameState.waitingForTrickEnd) return;
-                      gameAdapter.finishTrick(gameAdapter.getCurrentState());
-                      afterHostMutation();
-                    }
-                  }}
-                />
-              </PhaserTableErrorBoundary>
-            )}
+            </PhaserTableErrorBoundary>
           </div>
         </React.Suspense>
       ) : (

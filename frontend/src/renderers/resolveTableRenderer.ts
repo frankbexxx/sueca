@@ -9,6 +9,8 @@
  * Defaults:
  * - Sueca / Spades / Hearts / King → Phaser
  * - Unknown / non-capable variants → DOM
+ *
+ * Legacy `pixi` / `pixi-archive` overrides are ignored (Phaser default).
  */
 
 import { readViteEnv } from '../config/runtimeEnv';

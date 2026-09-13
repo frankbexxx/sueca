@@ -23,7 +23,7 @@ Ordem principal:
 
 **Fase D** (isolamento multiplayer / storage / session): **pós-POC por defeito**. Só sobe de prioridade se o POC exigir, houver bug concreto, ou multiplayer voltar a ser prioridade. **Não bloqueia E1.**
 
-Phaser E1 está **validado** e foi **escolhido** para evolução (comparação Pixi concluída — POC Pixi arquivado). Detalhe: `docs/plan/RENDERER_DECISION_2026.md`. Godot só com evidência de insuficiência em Android real.
+Phaser é **default** dos 4 jogos; DOM = fallback. Pixi foi comparado e **removido** do tree. Detalhe: `docs/plan/RENDERER_DECISION_2026.md`. Godot só com evidência de insuficiência em Android real.
 
 **Primeira etapa funcional:** **A1** (capote Sueca).  
 A alteração `.gitignore` (`desktop.ini`, `folderico*.ico`) entra no commit deste roadmap — **não** existe etapa A0.

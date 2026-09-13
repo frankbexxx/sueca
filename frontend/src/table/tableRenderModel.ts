@@ -2,7 +2,7 @@
  * Table render boundary (C5)
  * --------------------------
  * Pure read model + props/events contract between game flows and any table
- * renderer (current React/DOM, future Phaser/Pixi). Not engine state.
+ * renderer (DOM or Phaser). Not engine state.
  */
 
 import type { Card, GameVariant, Suit } from '../types/game';

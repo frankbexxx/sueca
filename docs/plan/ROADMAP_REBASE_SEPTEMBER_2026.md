@@ -164,7 +164,7 @@ Legenda: **DONE** · **PARTIAL** · **STILL OPEN** · **SUPERSEDED** · **NO LON
 ### Renderer
 - **Phaser** default: sueca / spades / hearts / king
 - **DOM** via `?renderer=dom` ou erro Phaser / MP
-- **Pixi** arquivado (`pixi-archive` only)
+- **Pixi** removido (`chore(renderer): remove archived pixi renderer`)
 
 ### Cards
 - Faces: **Casino** global (`/assets/cards3`)
@@ -241,7 +241,7 @@ Não é o log completo — só o que mudou o estado do roadmap.
 ### P2 — polish / future-facing
 1. Preparar `theme → deckId` **sem activar** decks alternativos  
 2. SmallCards em UI compacta (históricos / mini)  
-3. Retirar Pixi archive do bundle quando conveniente  
+3. ~~Retirar Pixi archive do bundle~~ **DONE**
 4. Blind nil Spades (A15) — decisão de produto  
 5. Sons: serviço existe; Phaser `noAudio` — afinamento SFX de mesa  
 6. Preferences nativas Capacitor (D3)

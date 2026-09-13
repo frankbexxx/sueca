@@ -123,12 +123,36 @@ describe('resolveTableRenderer', () => {
       expect(resolveRendererOverride('?renderer=phaser', 'dom')).toBe('phaser');
     });
 
-    it('ignores unknown renderer query values', () => {
+    it('ignores legacy pixi / pixi-archive and falls back to Phaser', () => {
       expect(parseRendererOverrideFromQuery('?renderer=pixi-archive')).toBe(null);
+      expect(parseRendererOverrideFromQuery('?renderer=pixi')).toBe(null);
       expect(parseRendererOverrideFromEnv('pixi-archive')).toBe(null);
+      expect(parseRendererOverrideFromEnv('pixi')).toBe(null);
       expect(
         resolveTableRenderer('sueca', {
           search: '?renderer=pixi-archive',
+          envOverride: null
+        })
+      ).toBe('phaser');
+      expect(
+        resolveTableRenderer('sueca', {
+          search: null,
+          envOverride: 'pixi-archive'
+        })
+      ).toBe('phaser');
+      expect(
+        resolveTableRenderer('king', {
+          search: '?renderer=pixi',
+          envOverride: 'pixi-archive'
+        })
+      ).toBe('phaser');
+    });
+
+    it('ignores other unknown renderer query values', () => {
+      expect(parseRendererOverrideFromQuery('?renderer=godot')).toBe(null);
+      expect(
+        resolveTableRenderer('sueca', {
+          search: '?renderer=unknown',
           envOverride: null
         })
       ).toBe('phaser');
