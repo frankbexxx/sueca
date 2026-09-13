@@ -63,10 +63,40 @@ jobs:
 
       - name: Verify card assets
         run: |
-          png=$(ls -1 public/assets/cards2/*_of_*.png 2>/dev/null | wc -l)
-          svg=$(ls -1 public/assets/cards2/*_of_*.svg 2>/dev/null | wc -l)
-          total=$((png + svg))
-          test "$total" -ge 52
+          set -euo pipefail
+          dir=public/assets/cards3
+          test -d "$dir"
+
+          # Casino faces: Rank_of_Suit.png (exactly 52; backs use card_back*.png and must not count)
+          ranks=(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
+          suits=(Clubs Diamonds Hearts Spades)
+          missing=0
+          for r in "${ranks[@]}"; do
+            for s in "${suits[@]}"; do
+              f="$dir/${r}_of_${s}.png"
+              if [[ ! -f "$f" ]]; then
+                echo "MISSING face: $f"
+                missing=$((missing + 1))
+              fi
+            done
+          done
+          test "$missing" -eq 0
+
+          faces=$(find "$dir" -maxdepth 1 -type f -name '*_of_*.png' | wc -l)
+          test "$faces" -eq 52
+
+          for back in \
+            card_back.png \
+            card_back_casino_05.png \
+            card_back_casino_06.png \
+            card_back_casino_07.png \
+            card_back_casino_08.png \
+            card_back_red.png
+          do
+            test -f "$dir/$back" || { echo "MISSING back: $dir/$back"; exit 1; }
+          done
+
+          echo "Verify card assets: PASS (faces=$faces backs=6)"
 
   backend:
     runs-on: ubuntu-latest
