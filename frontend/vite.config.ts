@@ -3,13 +3,17 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-export default defineConfig({
+/**
+ * Sourcemaps: keep for default/web builds; omit for Android store package
+ * (`vite build --mode android` via `npm run build:android`).
+ */
+export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [react()],
   publicDir: 'public',
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: mode !== 'android',
     emptyOutDir: true
   },
   server: {
@@ -30,4 +34,4 @@ export default defineConfig({
     clearMocks: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}']
   }
-});
+}));
