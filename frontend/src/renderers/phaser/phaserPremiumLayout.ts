@@ -69,8 +69,11 @@ export const PREMIUM_TABLE = {
   ivory: 0xe8e0d0,
   /** Trick card display vs hand card size. */
   trickScale: 1.11,
-  /** Local hand presence bump (UX-P3.3) — display only; hit area follows displaySize. */
-  handPresenceScale: 1.06,
+  /**
+   * Local hand display scale vs layout.cardWidth (trick/opponents unchanged).
+   * PHASER-HAND-POLISH-01: ~+15% vs prior 1.06.
+   */
+  handPresenceScale: 1.22,
   /** Soft contact shadow under cards / panels. */
   shadow: 0x050808,
   /** Table chrome typeface (loaded for game board). */
@@ -300,12 +303,14 @@ export function computePremiumTableLayout(
   const trickCardWidth = Math.round(cardWidth * PREMIUM_TABLE.trickScale);
   const trickCardHeight = Math.round(cardHeight * PREMIUM_TABLE.trickScale);
 
+  // Reserve for *display* hand height so larger local cards stay inside the canvas.
+  const handDisplayH = cardHeight * PREMIUM_TABLE.handPresenceScale;
   const handReserve =
     aspect === 'portrait'
-      ? Math.max(cardHeight * 0.78, 76)
+      ? Math.max(handDisplayH * 0.72, 82)
       : aspect === 'landscape'
-        ? Math.max(cardHeight * 0.58, 54)
-        : Math.max(cardHeight * 0.64, 64);
+        ? Math.max(handDisplayH * 0.52, 54)
+        : Math.max(handDisplayH * 0.58, 64);
   const handY = h - handReserve - bottomChromePx;
 
   const zones = computeTableZones({

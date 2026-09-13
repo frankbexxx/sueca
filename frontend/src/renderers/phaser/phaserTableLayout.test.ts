@@ -1,9 +1,12 @@
 import {
+  HAND_LAYOUT,
   buildPhaserTableLayout,
   computeLocalHandLayout,
+  handExposedFraction,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
   layoutTrickSlot,
+  localHandDisplayWidth,
   playerIndexToCompass,
   pointInDropZone,
   resolveAspectMode,
@@ -170,6 +173,60 @@ describe('phaserTableLayout E2', () => {
     expect(layoutOpponentBackPositions(5, 'north', layout)).toHaveLength(5);
   });
 
+  it('uses continuous hand spacing (no tier jumps) across counts', () => {
+    const phone = { width: 360, height: 495 };
+    const counts = [13, 10, 8, 7, 5, 4, 3, 1] as const;
+    const spacings: number[] = [];
+    for (const n of counts) {
+      const { layout, slots } = computeLocalHandLayout({ ...phone, cardCount: n });
+      expect(slots).toHaveLength(n);
+      if (n === 1) {
+        expect(slots[0].x).toBeCloseTo(layout.width / 2, 5);
+        continue;
+      }
+      const spacing = slots[1].x - slots[0].x;
+      spacings.push(spacing);
+      const displayW = localHandDisplayWidth(layout);
+      const expose = spacing / displayW;
+      // Dense 13 stays in the readable expose band; looser counts open up.
+      if (n === 13) {
+        expect(expose).toBeGreaterThanOrEqual(0.28);
+        expect(expose).toBeLessThanOrEqual(0.38);
+      }
+      // Hand stays centered and inside canvas
+      const left = slots[0].x - displayW / 2;
+      const right = slots[n - 1].x + displayW / 2;
+      expect(left).toBeGreaterThanOrEqual(-2);
+      expect(right).toBeLessThanOrEqual(layout.width + 2);
+      expect((slots[0].x + slots[n - 1].x) / 2).toBeCloseTo(layout.width / 2, 4);
+      // Right card on top
+      expect(slots[n - 1].depth).toBeGreaterThan(slots[0].depth);
+    }
+    // Monotonic: fewer cards ⇒ spacing never shrinks (8→7, 5→4 included)
+    for (let i = 1; i < spacings.length; i++) {
+      expect(spacings[i]).toBeGreaterThanOrEqual(spacings[i - 1] - 1e-6);
+    }
+    // No abrupt tier cliff around 8→7 / 5→4
+    const s8 = computeLocalHandLayout({ ...phone, cardCount: 8 }).slots;
+    const s7 = computeLocalHandLayout({ ...phone, cardCount: 7 }).slots;
+    const s5 = computeLocalHandLayout({ ...phone, cardCount: 5 }).slots;
+    const s4 = computeLocalHandLayout({ ...phone, cardCount: 4 }).slots;
+    const d87 = (s7[1].x - s7[0].x) - (s8[1].x - s8[0].x);
+    const d54 = (s4[1].x - s4[0].x) - (s5[1].x - s5[0].x);
+    expect(d87).toBeLessThan(4);
+    expect(d54).toBeLessThan(4);
+  });
+
+  it('exposes ~30–35% at 13 and opens by 10 without discrete tiers', () => {
+    expect(HAND_LAYOUT.exposeAt13).toBeGreaterThanOrEqual(0.3);
+    expect(HAND_LAYOUT.exposeAt13).toBeLessThanOrEqual(0.35);
+    expect(handExposedFraction(13)).toBeCloseTo(HAND_LAYOUT.exposeAt13, 5);
+    expect(handExposedFraction(10)).toBeGreaterThan(handExposedFraction(13));
+    expect(handExposedFraction(7)).toBeGreaterThan(handExposedFraction(8));
+    expect(handExposedFraction(4)).toBeGreaterThan(handExposedFraction(5));
+    expect(handExposedFraction(2)).toBeCloseTo(HAND_LAYOUT.exposeAt2, 5);
+  });
+
   it('uses the same hand layout rules for 10 and 13 cards across variants', () => {
     const phone = { width: 390, height: 720 };
     const sueca = computeLocalHandLayout({ ...phone, cardCount: 10 });
@@ -186,7 +243,6 @@ describe('phaserTableLayout E2', () => {
       king.slots.map((s) => [s.x, s.y, s.rotationDeg])
     );
     expect(spades.slots[0].x).toBeLessThan(spades.slots[12].x);
-    // denser count ⇒ tighter spacing, same baseline system
     const spacing10 = sueca.slots[1].x - sueca.slots[0].x;
     const spacing13 = spades.slots[1].x - spades.slots[0].x;
     expect(spacing13).toBeLessThanOrEqual(spacing10 + 1e-9);

@@ -11,6 +11,7 @@
  */
 
 import {
+  PREMIUM_TABLE,
   computePremiumTableLayout,
   premiumToPhaserTableLayout,
   premiumTrickOffset,
@@ -58,18 +59,46 @@ export interface PhaserTableLayout {
   compactSideSeats: boolean;
 }
 
-/** Shared hand fan knobs — not variant-specific. */
+/**
+ * Shared hand fan knobs — not variant-specific.
+ * Spacing uses a continuous expose curve (no discrete tiers).
+ * `expose*` = fraction of *display* card width between card centers
+ * (≈ left strip of each covered card that stays visible).
+ */
 export const HAND_LAYOUT = {
-  overlapDense: 0.52,
-  overlapMid: 0.62,
-  overlapLoose: 0.7,
-  denseFromCount: 8,
-  midFromCount: 5,
-  portraitArc: 1.2,
-  landscapeArc: 1.6,
-  portraitFanDeg: 2.2,
-  landscapeFanDeg: 1.4
+  /** ~13 cards: dense but rank/suit readable (~30–35% expose). */
+  exposeAt13: 0.33,
+  /** ~2 cards: open fan. */
+  exposeAt2: 0.72,
+  referenceCountHigh: 13,
+  referenceCountLow: 2,
+  portraitArc: 1.15,
+  landscapeArc: 1.5,
+  portraitFanDeg: 2.0,
+  landscapeFanDeg: 1.3
 } as const;
+
+/**
+ * Continuous visible-width fraction for local-hand spacing.
+ * Higher count → more compressed; no step at 8→7 or 5→4.
+ */
+export function handExposedFraction(count: number): number {
+  if (count <= 1) return 1;
+  const hi = HAND_LAYOUT.referenceCountHigh;
+  const lo = HAND_LAYOUT.referenceCountLow;
+  const t = Math.max(0, Math.min(1, (hi - count) / (hi - lo)));
+  // Ease-out: mid counts open a bit before linear would.
+  const eased = 1 - (1 - t) * (1 - t);
+  return (
+    HAND_LAYOUT.exposeAt13 +
+    eased * (HAND_LAYOUT.exposeAt2 - HAND_LAYOUT.exposeAt13)
+  );
+}
+
+/** Display width of a local hand card (layout width × presence). */
+export function localHandDisplayWidth(layout: Pick<PhaserTableLayout, 'cardWidth'>): number {
+  return layout.cardWidth * PREMIUM_TABLE.handPresenceScale;
+}
 
 export interface PhaserLayoutOptions {
   /** Lift hand / south seat above React bottom-sheet chrome. */
@@ -139,14 +168,13 @@ export function layoutLocalHandPositions(
   layout: PhaserTableLayout
 ): PhaserHandSlot[] {
   if (count <= 0) return [];
-  const { handY, cardWidth, handSpreadMax } = layout;
-  const overlap =
-    count >= HAND_LAYOUT.denseFromCount
-      ? HAND_LAYOUT.overlapDense
-      : count >= HAND_LAYOUT.midFromCount
-        ? HAND_LAYOUT.overlapMid
-        : HAND_LAYOUT.overlapLoose;
-  const spacing = Math.min(cardWidth * overlap, handSpreadMax / Math.max(count, 1));
+  const { handY, handSpreadMax } = layout;
+  const displayW = localHandDisplayWidth(layout);
+  const expose = handExposedFraction(count);
+  const spacing = Math.min(
+    displayW * expose,
+    handSpreadMax / Math.max(count, 1)
+  );
   const total = spacing * (count - 1);
   const startX = layout.width / 2 - total / 2;
   const mid = (count - 1) / 2;
@@ -160,7 +188,8 @@ export function layoutLocalHandPositions(
       x: startX + i * spacing,
       y: handY + arc,
       rotationDeg: t * fanDeg,
-      depth: 20 + i
+      // Rightmost on top — preserves left-edge rank visibility under overlap.
+      depth: PREMIUM_TABLE.depthHand + i
     };
   });
 }
