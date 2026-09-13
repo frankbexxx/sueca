@@ -1,12 +1,18 @@
 /**
  * Optional per-theme card visuals.
- * Faces stay on the global `casino` deck; only backs are theme-selectable here.
+ * `deckId` and `backId` are independent decisions.
+ * - deckId omitted / invalid → global default `casino` (cards3)
+ * - backId omitted / invalid → `suecao-navy`
  *
  * Curation (THEME-CARD-BACK-02): contraste com felt > coerência > variedade.
- * Invalid/missing theme entry → resolver falls back to suecao-navy.
  */
 
 export type ThemeCardVisuals = {
+  /**
+   * Face deck id from `CARD_DECKS`.
+   * Optional — omit to use the global default (`casino`).
+   */
+  deckId?: string;
   /** Card back id from `CARD_BACKS`. Invalid/missing → suecao-navy. */
   backId?: string;
 };
@@ -17,6 +23,7 @@ export type ThemeCardVisualConfig = {
 
 /**
  * Explicit backId for every built-in theme.
+ * deckId is omitted on purpose: absence = casino (no noise until alternate decks ship).
  * Pilot re-eval: classic/midnight kept; thebes↔thule swapped for felt contrast
  * (cyan on warm sand; red on arctic blue).
  */

@@ -239,7 +239,7 @@ Não é o log completo — só o que mudou o estado do roadmap.
 4. **Licença Casino** clarificar antes de distribuição comercial  
 
 ### P2 — polish / future-facing
-1. Preparar `theme → deckId` **sem activar** decks alternativos  
+1. ~~Preparar `theme → deckId` **sem activar** decks alternativos~~ **DONE** (THEME-DECK-ID-01 — API pronta; todos → casino)  
 2. SmallCards em UI compacta (históricos / mini)  
 3. ~~Retirar Pixi archive do bundle~~ **DONE**
 4. Blind nil Spades (A15) — decisão de produto  
@@ -260,7 +260,7 @@ Não é o log completo — só o que mudou o estado do roadmap.
 | bloco | valor | risco | esforço | dependências |
 |-------|-------|-------|---------|--------------|
 | Polish cartas/mão Phaser (OPPO) | alto | baixo | S–M | baseline OPPO; Casino já in |
-| Prep `theme→deckId` (sem activar) | médio | baixo | S | registry actual |
+| Prep `theme→deckId` (sem activar) | médio | baixo | S | **DONE** — `resolveCardDeckForTheme`; sem decks alt. |
 | Android release readiness | alto p/ store | médio | M | signing docs; Cap 6 ok |
 | King UX bugfix (só se repro) | médio | baixo | S | sessões reais |
 | Sons mesa (SFX on play/trick) | médio | baixo | S | `audioService` |
@@ -273,9 +273,9 @@ Não é o log completo — só o que mudou o estado do roadmap.
 ## 8. Ordem recomendada — Setembro (curta)
 
 1. **Polish cartas/mão Phaser (OPPO-first)** — melhora o que o jogador vê agora; audits pedem isto; Casino/backs já estáveis.  
-2. **Prep `theme→deckId` sem activar** — arquitectura barata; fecha o plano visual sem risco de faces erradas.  
+2. ~~**Prep `theme→deckId` sem activar**~~ **DONE** (THEME-DECK-ID-01).  
 3. **Android release readiness** (signing/checklist) — quando quiserem loja; sem misturar Cap major.  
-4. **Cleanup opcional** Pixi archive / packs mortos — reduz ruído.  
+4. **Cleanup opcional** packs mortos — reduz ruído (Pixi archive já removido).  
 5. **Sons de mesa** — polish perceptível, isolado.  
 
 *(Cap 7 e MP ficam fora desta sequência.)*

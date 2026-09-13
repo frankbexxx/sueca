@@ -1,18 +1,23 @@
 /**
  * Public card image assets (Vite serves from public/).
- * Faces: active deck from `cardDeckRegistry` (Casino Normal in cards3).
+ * Faces: resolved per theme via `resolveCardDeckForTheme` (default casino → cards3).
  * Back: resolved per theme via `resolveCardBackForTheme` (fallback suecao-navy).
+ * deckId and backId are independent.
  */
 import {
   DEFAULT_CARD_BACK_ID,
   readActiveThemeIdFromDom,
   resolveActiveBack,
   resolveActiveDeck,
-  resolveCardBackForTheme
+  resolveCardBackForTheme,
+  resolveCardDeckForTheme
 } from './cardDeckRegistry';
 import { publicUrl, readViteEnv } from '../config/runtimeEnv';
 
-/** Active face pack directory (e.g. `/assets/cards3`). */
+/**
+ * Default face pack directory (casino / cards3).
+ * Prefer `getCardAssetsDir(themeId)` at call sites that may gain per-theme decks.
+ */
 export const CARD_ASSETS_DIR = resolveActiveDeck().facePath;
 
 /** PNG pack; override via VITE_CARD_EXT if needed */
@@ -36,6 +41,11 @@ export function getPublicAssetPath(
   return `${base}${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}`;
 }
 
+/** Face directory for a theme (falls back to casino). */
+export function getCardAssetsDir(themeId?: string | null): string {
+  return resolveCardDeckForTheme(themeId).facePath;
+}
+
 /** Relative public path for a theme's card back (with extension). */
 export function getCardBackPath(themeId?: string | null): string {
   const back = resolveCardBackForTheme(themeId);
@@ -51,13 +61,18 @@ export function getActiveThemeCardBackPath(
 
 /**
  * Builds the public URL for a card face image.
+ * Uses theme deck resolver (currently always casino / cards3).
  * Back assets must use getCardBackPath / CARD_BACK_PATH, not this helper.
  */
 export function getCardImagePath(
   rankImageName: string,
   suitImageName: string,
-  publicBase = ''
+  publicBase = '',
+  themeId?: string | null
 ): string {
   const basePath = publicBase && !publicBase.endsWith('/') ? publicBase : publicBase || '';
-  return `${basePath}${CARD_ASSETS_DIR}/${rankImageName}_of_${suitImageName}.${CARD_EXT}`;
+  const resolvedTheme =
+    themeId === undefined ? readActiveThemeIdFromDom() : themeId;
+  const dir = getCardAssetsDir(resolvedTheme);
+  return `${basePath}${dir}/${rankImageName}_of_${suitImageName}.${CARD_EXT}`;
 }

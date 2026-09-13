@@ -23,7 +23,7 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 
 | Id | Tipo | Path / notas |
 |----|------|----------------|
-| `casino` | deck (**único / global**) | `/assets/cards3` — 52 faces Normal |
+| `casino` | deck (**default / único runtime**) | `/assets/cards3` — 52 faces Normal |
 | `suecao-navy` | back (**fallback**) | `/assets/cards3/card_back` |
 | `casino-05` | back | red diamond |
 | `casino-06` | back | black/white star (alto contraste) |
@@ -33,8 +33,16 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 
 **Removido:** `cards1/` (unused), `cards2/` (legacy Hazmat faces), staging `cards-pack-import/hazmat/`.
 
-**Faces** = deck global `casino`. **Backs** = configuráveis por tema (`cardVisuals.backId`).  
-`theme → deckId` fica para fase futura.
+**API por tema** (`THEME_CARD_VISUALS.cardVisuals`):
+
+| Campo | Estado | Notas |
+|-------|--------|--------|
+| `backId` | **activo** | 30 temas com valor explícito; inválido → `suecao-navy` |
+| `deckId` | **preparado** | opcional; ausência / inválido → `casino`. Nenhum tema define `deckId` nesta fase |
+
+Resolvers (nunca crasham): `resolveCardDeckForTheme`, `resolveCardBackForTheme`.  
+`deckId` e `backId` são **independentes** — futuros decks faces não obrigam a mudar backs.  
+Novos decks registam-se em `CARD_DECKS` sem alterar esta API de tema.
 
 ### Back por tema (THEME-CARD-BACK-02)
 
@@ -115,7 +123,7 @@ Staging de referência (gitignored `_temp/`):
 
 1. Fonte local: `_temp/` (gitignored) ou `cards-pack-import/`
 2. Mapear: `node tools/map-card-pack.mjs --input … --output frontend/public/assets/cards3`
-3. Confirmar `ACTIVE_CARD_DECK_ID === 'casino'` e `facePath` → `/assets/cards3`
+3. Confirmar `DEFAULT_CARD_DECK_ID === 'casino'` / `resolveCardDeckForTheme(theme)` → `/assets/cards3`
 4. `npm test` + smoke visual
 
 > Nota: o pack Hazmat legado (`cards2/`) foi **removido** do runtime. Não reintroduzir sem decisão de produto explícita.

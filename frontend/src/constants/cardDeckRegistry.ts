@@ -1,7 +1,7 @@
 /**
  * Central card deck / back registry.
- * Faces and backs are independent so themes can swap backs
- * without changing the global face deck (`casino`).
+ * Faces (`deckId`) and backs (`backId`) are independent so themes can
+ * swap either without coupling. Runtime currently ships only `casino` faces.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -71,8 +71,14 @@ export const CARD_BACKS = {
 
 export type CardBackId = keyof typeof CARD_BACKS;
 
-/** Global face deck — fixed for this phase. */
-export const ACTIVE_CARD_DECK_ID: CardDeckId = 'casino';
+/**
+ * Default / fallback face deck when theme has no valid deckId.
+ * Only `casino` is registered in this phase.
+ */
+export const DEFAULT_CARD_DECK_ID: CardDeckId = 'casino';
+
+/** @deprecated Prefer DEFAULT_CARD_DECK_ID — alias kept for existing call sites. */
+export const ACTIVE_CARD_DECK_ID: CardDeckId = DEFAULT_CARD_DECK_ID;
 
 /** Default / fallback back when theme has no valid backId. */
 export const DEFAULT_CARD_BACK_ID: CardBackId = 'suecao-navy';
@@ -80,10 +86,38 @@ export const DEFAULT_CARD_BACK_ID: CardBackId = 'suecao-navy';
 /** @deprecated Prefer DEFAULT_CARD_BACK_ID — kept for call-site clarity. */
 export const ACTIVE_CARD_BACK_ID: CardBackId = DEFAULT_CARD_BACK_ID;
 
+export function isCardDeckId(id: string | null | undefined): id is CardDeckId {
+  return typeof id === 'string' && Object.prototype.hasOwnProperty.call(CARD_DECKS, id);
+}
+
 export function resolveActiveDeck(
-  deckId: CardDeckId = ACTIVE_CARD_DECK_ID
+  deckId: CardDeckId = DEFAULT_CARD_DECK_ID
 ): CardDeckDefinition {
   return CARD_DECKS[deckId];
+}
+
+export function resolveCardDeckFromId(
+  raw?: string | null
+): CardDeckDefinition {
+  if (isCardDeckId(raw)) return CARD_DECKS[raw];
+  return CARD_DECKS[DEFAULT_CARD_DECK_ID];
+}
+
+/**
+ * Resolve face deck for a theme id.
+ * Missing theme / missing cardVisuals / invalid deckId → casino.
+ * Never throws.
+ */
+export function resolveCardDeckForTheme(
+  themeId?: string | null
+): CardDeckDefinition {
+  try {
+    if (!themeId) return CARD_DECKS[DEFAULT_CARD_DECK_ID];
+    const config = THEME_CARD_VISUALS[themeId];
+    return resolveCardDeckFromId(config?.cardVisuals?.deckId);
+  } catch {
+    return CARD_DECKS[DEFAULT_CARD_DECK_ID];
+  }
 }
 
 export function isCardBackId(id: string | null | undefined): id is CardBackId {
@@ -106,7 +140,7 @@ export function resolveCardBackFromId(
 /**
  * Resolve card back for a theme id.
  * Missing theme / missing cardVisuals / invalid backId → suecao-navy.
- * Never throws.
+ * Never throws. Independent of deckId.
  */
 export function resolveCardBackForTheme(
   themeId?: string | null
