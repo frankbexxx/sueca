@@ -14,7 +14,8 @@ ThemesScreen + aplicar `data-theme` no shell via billingService.
 - [x] classic / forest / midnight seleccionáveis
 - [x] Persistência localStorage
 - [x] Preview visual na tab
-- [x] Back por tema (piloto): classic→suecao-navy, thebes→casino-05, midnight→casino-06, thule→casino-07; resto→fallback suecao-navy
+- [x] Back por tema (piloto THEME-CARD-BACK-01): classic→suecao-navy, thebes→casino-05, midnight→casino-06, thule→casino-07; resto→fallback
+- [x] Back por tema (THEME-CARD-BACK-02): 30 temas built-in com `backId` explícito; thebes→casino-07, thule→casino-05 (contraste felt); fallback suecao-navy para custom/ausente
 
 ## Fora de âmbito
 - IAP real, alterar mesa profundamente

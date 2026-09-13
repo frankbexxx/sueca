@@ -35,21 +35,49 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 **Faces** = deck global `casino`. **Backs** = configuráveis por tema (`cardVisuals.backId`).  
 `theme → deckId` fica para fase futura.
 
-### Back por tema (THEME-CARD-BACK-01)
+### Back por tema (THEME-CARD-BACK-02)
 
-Config: `THEME_CARD_VISUALS` em `themeCardVisuals.ts`.  
-Resolver: `resolveCardBackForTheme(themeId)` — nunca crasha; inválido/ausente → `suecao-navy`.
+Config: `THEME_CARD_VISUALS` em `themeCardVisuals.ts` — **todos os 30 temas built-in** têm `backId` explícito.  
+Resolver: `resolveCardBackForTheme(themeId)` — nunca crasha; tema ausente / `backId` inválido → `suecao-navy`.  
+`hazmat-red` permanece reservado (não atribuído).
 
-Piloto (só estes têm override):
+Critério: contraste com felt/mesa > coerência cromática > variedade.
 
 | Tema | backId |
 |------|--------|
 | `classic` | `suecao-navy` |
-| `thebes` | `casino-05` |
+| `forest` | `casino-05` |
 | `midnight` | `casino-06` |
-| `thule` | `casino-07` |
+| `thule` | `casino-05` |
+| `hyperborea` | `casino-08` |
+| `skara-brae` | `casino-08` |
+| `avalon` | `casino-07` |
+| `knossos` | `casino-05` |
+| `thebes` | `casino-07` |
+| `cartago` | `casino-07` |
+| `atlantida` | `casino-05` |
+| `babylon` | `casino-05` |
+| `ur` | `casino-08` |
+| `petra` | `casino-07` |
+| `persepolis` | `casino-08` |
+| `axum` | `casino-07` |
+| `meroe` | `casino-05` |
+| `great-zimbabwe` | `suecao-navy` |
+| `xanadu` | `suecao-navy` |
+| `shambhala` | `casino-07` |
+| `mohenjo-daro` | `casino-08` |
+| `yamatai` | `casino-06` |
+| `angkor` | `suecao-navy` |
+| `tikal` | `casino-05` |
+| `teotihuacan` | `casino-06` |
+| `tiwanaku` | `casino-07` |
+| `caral` | `suecao-navy` |
+| `el-dorado` | `casino-05` |
+| `rapanui` | `casino-08` |
+| `nanmadol` | `casino-06` |
 
-Restantes temas → fallback `suecao-navy`. Phaser faz hot-swap do texture `card-back` ao mudar `data-theme`.
+Distribuição: `suecao-navy` 5 · `casino-05` 8 · `casino-06` 4 · `casino-07` 7 · `casino-08` 6.  
+Piloto re-eval: `thebes`/`thule` trocados (cyan no felt quente; vermelho no felt azul). Phaser faz hot-swap do texture `card-back` ao mudar `data-theme`.
 
 ## Casino pack (CASINO-DECK-INTEGRATION-01)
 
