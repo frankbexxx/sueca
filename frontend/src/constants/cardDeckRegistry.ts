@@ -1,10 +1,10 @@
 /**
  * Central card deck / back registry.
- * Faces and backs are independent so future themes can swap backs
- * without changing the global face deck.
- *
- * Phase 1: fixed active ids (no UI theme picker yet).
+ * Faces and backs are independent so themes can swap backs
+ * without changing the global face deck (`casino`).
  */
+
+import { THEME_CARD_VISUALS } from './themeCardVisuals';
 
 export type CardDeckDefinition = {
   id: string;
@@ -47,6 +47,26 @@ export const CARD_BACKS = {
     assetPathBase: '/assets/cards3/card_back',
     label: 'Suecão navy'
   },
+  'casino-05': {
+    id: 'casino-05',
+    assetPathBase: '/assets/cards3/card_back_casino_05',
+    label: 'Casino red diamond'
+  },
+  'casino-06': {
+    id: 'casino-06',
+    assetPathBase: '/assets/cards3/card_back_casino_06',
+    label: 'Casino black star'
+  },
+  'casino-07': {
+    id: 'casino-07',
+    assetPathBase: '/assets/cards3/card_back_casino_07',
+    label: 'Casino cyan wave'
+  },
+  'casino-08': {
+    id: 'casino-08',
+    assetPathBase: '/assets/cards3/card_back_casino_08',
+    label: 'Casino cube gradient'
+  },
   /** Reserved / future IAP */
   'hazmat-red': {
     id: 'hazmat-red',
@@ -57,9 +77,14 @@ export const CARD_BACKS = {
 
 export type CardBackId = keyof typeof CARD_BACKS;
 
-/** Product defaults — no runtime UI selection in this phase. */
+/** Global face deck — fixed for this phase. */
 export const ACTIVE_CARD_DECK_ID: CardDeckId = 'casino';
-export const ACTIVE_CARD_BACK_ID: CardBackId = 'suecao-navy';
+
+/** Default / fallback back when theme has no valid backId. */
+export const DEFAULT_CARD_BACK_ID: CardBackId = 'suecao-navy';
+
+/** @deprecated Prefer DEFAULT_CARD_BACK_ID — kept for call-site clarity. */
+export const ACTIVE_CARD_BACK_ID: CardBackId = DEFAULT_CARD_BACK_ID;
 
 export function resolveActiveDeck(
   deckId: CardDeckId = ACTIVE_CARD_DECK_ID
@@ -67,8 +92,47 @@ export function resolveActiveDeck(
   return CARD_DECKS[deckId];
 }
 
+export function isCardBackId(id: string | null | undefined): id is CardBackId {
+  return typeof id === 'string' && Object.prototype.hasOwnProperty.call(CARD_BACKS, id);
+}
+
 export function resolveActiveBack(
-  backId: CardBackId = ACTIVE_CARD_BACK_ID
+  backId: CardBackId = DEFAULT_CARD_BACK_ID
 ): CardBackDefinition {
   return CARD_BACKS[backId];
+}
+
+export function resolveCardBackFromId(
+  raw?: string | null
+): CardBackDefinition {
+  if (isCardBackId(raw)) return CARD_BACKS[raw];
+  return CARD_BACKS[DEFAULT_CARD_BACK_ID];
+}
+
+/**
+ * Resolve card back for a theme id.
+ * Missing theme / missing cardVisuals / invalid backId → suecao-navy.
+ * Never throws.
+ */
+export function resolveCardBackForTheme(
+  themeId?: string | null
+): CardBackDefinition {
+  try {
+    if (!themeId) return CARD_BACKS[DEFAULT_CARD_BACK_ID];
+    const config = THEME_CARD_VISUALS[themeId];
+    return resolveCardBackFromId(config?.cardVisuals?.backId);
+  } catch {
+    return CARD_BACKS[DEFAULT_CARD_BACK_ID];
+  }
+}
+
+/** Active CSS theme id from shell `data-theme`, else classic. */
+export function readActiveThemeIdFromDom(
+  root: Element | null = typeof document !== 'undefined'
+    ? document.querySelector('.app-shell') || document.documentElement
+    : null
+): string {
+  if (!root) return 'classic';
+  const id = root.getAttribute('data-theme');
+  return id && id.trim() ? id.trim() : 'classic';
 }

@@ -1,11 +1,14 @@
 /**
  * Public card image assets (Vite serves from public/).
  * Faces: active deck from `cardDeckRegistry` (Casino Normal in cards3).
- * Back: independent Suecão navy (`suecao-navy`) — not tied to face pack swap.
+ * Back: resolved per theme via `resolveCardBackForTheme` (fallback suecao-navy).
  */
 import {
+  DEFAULT_CARD_BACK_ID,
+  readActiveThemeIdFromDom,
   resolveActiveBack,
-  resolveActiveDeck
+  resolveActiveDeck,
+  resolveCardBackForTheme
 } from './cardDeckRegistry';
 import { publicUrl, readViteEnv } from '../config/runtimeEnv';
 
@@ -15,8 +18,11 @@ export const CARD_ASSETS_DIR = resolveActiveDeck().facePath;
 /** PNG pack; override via VITE_CARD_EXT if needed */
 const CARD_EXT = readViteEnv('VITE_CARD_EXT') === 'svg' ? 'svg' : 'png';
 
-/** Suecão navy card back — independent of face deck. */
-export const CARD_BACK_PATH = `${resolveActiveBack().assetPathBase}.${CARD_EXT}`;
+/**
+ * Default back path (suecao-navy). Prefer `getCardBackPath()` / theme resolution
+ * at render time so theme changes swap backs.
+ */
+export const CARD_BACK_PATH = `${resolveActiveBack(DEFAULT_CARD_BACK_ID).assetPathBase}.${CARD_EXT}`;
 export const CARD_BACK_TEXTURE_KEY = 'card-back';
 
 /** Alternate back (Hazmat red) — future theme / IAP */
@@ -30,9 +36,22 @@ export function getPublicAssetPath(
   return `${base}${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}`;
 }
 
+/** Relative public path for a theme's card back (with extension). */
+export function getCardBackPath(themeId?: string | null): string {
+  const back = resolveCardBackForTheme(themeId);
+  return `${back.assetPathBase}.${CARD_EXT}`;
+}
+
+/** Back path for the currently active shell theme. */
+export function getActiveThemeCardBackPath(
+  root?: Element | null
+): string {
+  return getCardBackPath(readActiveThemeIdFromDom(root ?? undefined));
+}
+
 /**
  * Builds the public URL for a card face image.
- * Back assets must use CARD_BACK_PATH, not this helper.
+ * Back assets must use getCardBackPath / CARD_BACK_PATH, not this helper.
  */
 export function getCardImagePath(
   rankImageName: string,

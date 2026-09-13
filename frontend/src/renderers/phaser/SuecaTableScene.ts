@@ -6,7 +6,8 @@
 import Phaser from 'phaser';
 import type { Card } from '../../types/game';
 import type { TableRenderModel } from '../../table/tableRenderModel';
-import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
+import { getCardBackPath, getPublicAssetPath } from '../../constants/cardAssets';
+import { DEFAULT_CARD_BACK_ID } from '../../constants/cardDeckRegistry';
 import {
   mapTableModelToPhaserView,
   PhaserHandCardEntity,
@@ -68,8 +69,10 @@ export class SuecaTableScene extends Phaser.Scene {
   private trickExtras: Phaser.GameObjects.GameObject[] = [];
   private animatingClear = false;
   private backKey = 'card-back';
-  /** Public texture key for QA — must stay `card-back` (CARD_BACK_PATH). */
+  /** Public texture key for QA — stable key; URL swaps with theme back. */
   static readonly CARD_BACK_TEXTURE_KEY = 'card-back';
+  /** Currently loaded back id (avoids stale / duplicate textures). */
+  private loadedBackId: string | null = null;
   private syncGeneration = 0;
   private clickLockUntil = 0;
   private dragCardId: string | null = null;
@@ -95,7 +98,9 @@ export class SuecaTableScene extends Phaser.Scene {
     if (this.tableReady) {
       this.drawTableSurface(true);
       if (this.trumpText) this.trumpText.setColor(theme.text);
-      if (this.latestModel) this.syncFromModel(true);
+      this.ensureCardBackTexture(theme.cardBackId, theme.cardBackPath, () => {
+        if (this.latestModel) this.syncFromModel(true);
+      });
     }
   }
 
@@ -106,9 +111,12 @@ export class SuecaTableScene extends Phaser.Scene {
   }
 
   preload(): void {
-    const backUrl = getPublicAssetPath(CARD_BACK_PATH);
+    const backId = this.theme.cardBackId || DEFAULT_CARD_BACK_ID;
+    const backPath = this.theme.cardBackPath || getCardBackPath(backId);
+    const backUrl = getPublicAssetPath(backPath);
     if (!this.textures.exists(this.backKey)) {
       this.load.image(this.backKey, backUrl);
+      this.loadedBackId = backId;
     }
   }
 
@@ -132,7 +140,38 @@ export class SuecaTableScene extends Phaser.Scene {
       .setVisible(false);
 
     this.scale.on('resize', this.handleResize, this);
-    if (this.latestModel) this.syncFromModel(true);
+    this.ensureCardBackTexture(this.theme.cardBackId, this.theme.cardBackPath, () => {
+      if (this.latestModel) this.syncFromModel(true);
+    });
+  }
+
+  /**
+   * Swap opponent / face-down back texture when theme backId changes.
+   * Keeps a stable texture key; removes + reloads source to avoid stale cache.
+   */
+  private ensureCardBackTexture(
+    backId: string,
+    backPath: string,
+    onReady?: () => void
+  ): void {
+    const id = backId || DEFAULT_CARD_BACK_ID;
+    const path = backPath || getCardBackPath(id);
+    if (this.loadedBackId === id && this.textures.exists(this.backKey)) {
+      onReady?.();
+      return;
+    }
+    const url = getPublicAssetPath(path);
+    if (this.textures.exists(this.backKey)) {
+      this.textures.remove(this.backKey);
+    }
+    this.load.image(this.backKey, url);
+    const finish = () => {
+      this.load.off(Phaser.Loader.Events.COMPLETE, finish);
+      this.loadedBackId = id;
+      onReady?.();
+    };
+    this.load.once(Phaser.Loader.Events.COMPLETE, finish);
+    if (!this.load.isLoading()) this.load.start();
   }
 
   private drawTableSurface(_force: boolean): void {

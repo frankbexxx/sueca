@@ -7,7 +7,7 @@ import {
 import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { getTablePositionForPlayer } from '../../utils/tableLayout';
-import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
+import { getActiveThemeCardBackPath, getPublicAssetPath } from '../../constants/cardAssets';
 import { PlayerInfoBox } from './PlayerInfoBox';
 import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
 
@@ -53,7 +53,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
           return (
             <div className="hand-back-stack">
               <img
-                src={getPublicAssetPath(CARD_BACK_PATH)}
+                src={getPublicAssetPath(getActiveThemeCardBackPath())}
                 alt=""
                 className="card-back-small"
                 draggable={false}

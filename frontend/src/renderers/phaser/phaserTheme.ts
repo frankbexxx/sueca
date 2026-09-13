@@ -1,8 +1,15 @@
 /**
  * Minimal Phaser table theme tokens from the active CSS theme (or defaults).
  * UX-P3.1 Premium Classic Table defaults; CSS theme can still tint accents.
+ * Card back follows theme via cardDeckRegistry (fallback suecao-navy).
  */
 
+import { getCardBackPath } from '../../constants/cardAssets';
+import {
+  DEFAULT_CARD_BACK_ID,
+  readActiveThemeIdFromDom,
+  resolveCardBackForTheme
+} from '../../constants/cardDeckRegistry';
 import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
 export interface PhaserThemeView {
@@ -20,6 +27,10 @@ export interface PhaserThemeView {
   seatBg: string;
   illegalAlpha: number;
   inactiveAlpha: number;
+  /** Resolved card back id for opponent / face-down sprites. */
+  cardBackId: string;
+  /** Relative public path including extension. */
+  cardBackPath: string;
 }
 
 const DEFAULT_THEME: PhaserThemeView = {
@@ -37,7 +48,9 @@ const DEFAULT_THEME: PhaserThemeView = {
   seatBg: '#182426ee',
   /** Kept for theme parity; scene uses `phaserHandVisual` as source of truth. */
   illegalAlpha: 0.9,
-  inactiveAlpha: 0.94
+  inactiveAlpha: 0.94,
+  cardBackId: DEFAULT_CARD_BACK_ID,
+  cardBackPath: getCardBackPath(null)
 };
 
 /** Read tokens from `.app-shell` / `:root` when available. */
@@ -46,8 +59,16 @@ export function resolvePhaserThemeFromDom(
     ? document.querySelector('.app-shell') || document.documentElement
     : null
 ): PhaserThemeView {
+  const themeId = readActiveThemeIdFromDom(root);
+  const back = resolveCardBackForTheme(themeId);
+  const cardBackPath = getCardBackPath(themeId);
+
   if (!root || typeof window === 'undefined' || !window.getComputedStyle) {
-    return { ...DEFAULT_THEME };
+    return {
+      ...DEFAULT_THEME,
+      cardBackId: back.id,
+      cardBackPath
+    };
   }
   const cs = window.getComputedStyle(root as Element);
   const text =
@@ -67,7 +88,9 @@ export function resolvePhaserThemeFromDom(
     ...DEFAULT_THEME,
     text,
     active,
-    accent
+    accent,
+    cardBackId: back.id,
+    cardBackPath
   };
 }
 
@@ -79,7 +102,9 @@ export function themesEqual(a: PhaserThemeView, b: PhaserThemeView): boolean {
     a.exterior === b.exterior &&
     a.text === b.text &&
     a.active === b.active &&
-    a.accent === b.accent
+    a.accent === b.accent &&
+    a.cardBackId === b.cardBackId &&
+    a.cardBackPath === b.cardBackPath
   );
 }
 

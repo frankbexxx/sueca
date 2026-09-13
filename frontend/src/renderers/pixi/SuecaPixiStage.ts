@@ -14,7 +14,7 @@ import {
 } from 'pixi.js';
 import type { Card } from '../../types/game';
 import type { TableRenderModel } from '../../table/tableRenderModel';
-import { CARD_BACK_PATH, getPublicAssetPath } from '../../constants/cardAssets';
+import { getActiveThemeCardBackPath, getPublicAssetPath } from '../../constants/cardAssets';
 import {
   mapTableModelToPixiView,
   PixiTableViewModel
@@ -119,7 +119,7 @@ export class SuecaPixiStage {
     app.ticker.add(this.onTick);
 
     try {
-      const backUrl = getPublicAssetPath(CARD_BACK_PATH);
+      const backUrl = getPublicAssetPath(getActiveThemeCardBackPath());
       const tex = await Assets.load(backUrl);
       if (!this.destroyed) this.textureCache.set(BACK_ALIAS, tex);
     } catch {

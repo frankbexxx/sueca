@@ -8,7 +8,8 @@
 | Pack | Path | Estado |
 |------|------|--------|
 | Cartas (activo) | `frontend/public/assets/cards3/*.png` | **Casino Normal** faces (352×512) |
-| Costa (activo) | `frontend/public/assets/cards3/card_back.png` | **Suecão navy** — independente do face deck |
+| Costa (default) | `frontend/public/assets/cards3/card_back.png` | **Suecão navy** — fallback |
+| Costa Casino | `card_back_casino_05`…`08.png` | Disponíveis via `backId` por tema |
 | Legacy Hazmat | `frontend/public/assets/cards2/*.png` | Faces + backs anteriores (não activos) |
 | Import Hazmat | `frontend/public/assets/cards-pack-import/hazmat/` | Flat staging; `node tools/stage-hazmat.mjs` |
 | UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
@@ -18,16 +19,37 @@
 
 ### Registry
 
-Código: `frontend/src/constants/cardDeckRegistry.ts` + `cardAssets.ts`
+Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts`
 
 | Id | Tipo | Path / notas |
 |----|------|----------------|
-| `casino` | deck (activo) | `/assets/cards3` — 52 faces Normal |
+| `casino` | deck (**global fixo**) | `/assets/cards3` — 52 faces Normal |
 | `hazmat` | deck (legacy) | `/assets/cards2` — não activo |
-| `suecao-navy` | back (activo) | `/assets/cards3/card_back` |
+| `suecao-navy` | back (**fallback**) | `/assets/cards3/card_back` |
+| `casino-05` | back | red diamond |
+| `casino-06` | back | black/white star (alto contraste) |
+| `casino-07` | back | cyan wave |
+| `casino-08` | back | cube gradient |
 | `hazmat-red` | back (reservado) | IAP / tema futuro |
 
-Faces e backs são **independentes** (preparação para futura feature `tema → backId`).
+**Faces** = deck global `casino`. **Backs** = configuráveis por tema (`cardVisuals.backId`).  
+`theme → deckId` fica para fase futura.
+
+### Back por tema (THEME-CARD-BACK-01)
+
+Config: `THEME_CARD_VISUALS` em `themeCardVisuals.ts`.  
+Resolver: `resolveCardBackForTheme(themeId)` — nunca crasha; inválido/ausente → `suecao-navy`.
+
+Piloto (só estes têm override):
+
+| Tema | backId |
+|------|--------|
+| `classic` | `suecao-navy` |
+| `thebes` | `casino-05` |
+| `midnight` | `casino-06` |
+| `thule` | `casino-07` |
+
+Restantes temas → fallback `suecao-navy`. Phaser faz hot-swap do texture `card-back` ao mudar `data-theme`.
 
 ## Casino pack (CASINO-DECK-INTEGRATION-01)
 
@@ -35,9 +57,10 @@ Faces e backs são **independentes** (preparação para futura feature `tema →
 |------|---------|
 | Faces no jogo | **Casino Normal** (`Cards/` 352×512) em `cards3/` |
 | SmallCards (66×96) | **Não** no gameplay Phaser — redesenhos jumbo; reservadas para UI compacta futura (históricos, mini-indicadores, logs de vazas) |
-| Back default | **Suecão navy** (não Casino backs) |
-| Casino `Back_06` | Alternativa de alto contraste — **não** integrada; candidata a temas |
-| Casino backs 01–08 | Catalogados em `_temp/casino-pack-normalized/backs/` — futura feature |
+| Back default | **Suecão navy** (fallback) |
+| Casino backs 05–08 | Integrados em `cards3/`; seleccionáveis por tema |
+| Casino backs 01–04 | Catalogados em `_temp` — não no produto |
+| SmallCards backs | **Não** integrados |
 | Chips / Dice | `_temp/.../future/` — **não** integrados |
 | Jokers | Não usados (Sueca/Spades/Hearts/King) |
 | Origem | `_temp/Casino_1` → `_temp/casino-pack-normalized/` |
