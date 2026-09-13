@@ -23,18 +23,12 @@ export type CardBackDefinition = {
   label: string;
 };
 
-/** Available face decks (product + catalogued legacy). */
+/** Available face decks — runtime ships Casino only (`cards3`). */
 export const CARD_DECKS = {
   casino: {
     id: 'casino',
     facePath: '/assets/cards3',
     label: 'Casino Normal'
-  },
-  /** Legacy Hazmat faces — kept for reference; not active. */
-  hazmat: {
-    id: 'hazmat',
-    facePath: '/assets/cards2',
-    label: 'Hazmat (legacy)'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 

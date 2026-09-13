@@ -7,11 +7,11 @@
 
 | Pack | Path | Estado |
 |------|------|--------|
-| Cartas (activo) | `frontend/public/assets/cards3/*.png` | **Casino Normal** faces (352×512) |
+| Cartas (activo) | `frontend/public/assets/cards3/*.png` | **Casino Normal** faces (352×512) — **único deck runtime** |
 | Costa (default) | `frontend/public/assets/cards3/card_back.png` | **Suecão navy** — fallback |
 | Costa Casino | `card_back_casino_05`…`08.png` | Disponíveis via `backId` por tema |
-| Legacy Hazmat | `frontend/public/assets/cards2/*.png` | Faces + backs anteriores (não activos) |
-| Import Hazmat | `frontend/public/assets/cards-pack-import/hazmat/` | Flat staging; `node tools/stage-hazmat.mjs` |
+| Costa reservada | `cards3/card_back_red.png` | `hazmat-red` (IAP / tema futuro) |
+| Staging import | `frontend/public/assets/cards-pack-import/` | Vazio / tools only (Hazmat pack removido do tree) |
 | UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
 | UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
 | SFX | `frontend/public/assets/sfx/*.ogg` | Kenney CC0 — ver secção abaixo |
@@ -23,14 +23,15 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 
 | Id | Tipo | Path / notas |
 |----|------|----------------|
-| `casino` | deck (**global fixo**) | `/assets/cards3` — 52 faces Normal |
-| `hazmat` | deck (legacy) | `/assets/cards2` — não activo |
+| `casino` | deck (**único / global**) | `/assets/cards3` — 52 faces Normal |
 | `suecao-navy` | back (**fallback**) | `/assets/cards3/card_back` |
 | `casino-05` | back | red diamond |
 | `casino-06` | back | black/white star (alto contraste) |
 | `casino-07` | back | cyan wave |
 | `casino-08` | back | cube gradient |
-| `hazmat-red` | back (reservado) | IAP / tema futuro |
+| `hazmat-red` | back (reservado) | `/assets/cards3/card_back_red` — IAP / tema futuro |
+
+**Removido:** `cards1/` (unused), `cards2/` (legacy Hazmat faces), staging `cards-pack-import/hazmat/`.
 
 **Faces** = deck global `casino`. **Backs** = configuráveis por tema (`cardVisuals.backId`).  
 `theme → deckId` fica para fase futura.
@@ -110,13 +111,14 @@ Staging de referência (gitignored `_temp/`):
 
 **Fontes sugeridas:** itch.io, Kenney, Craftpix, GraphicRiver.
 
-## Integrar pack (legado Hazmat)
+## Integrar pack (novo baralho)
 
-1. Fonte local: `_temp/` (gitignored)
-2. Hazmat: `node tools/stage-hazmat.mjs`
-3. Mapear: `node tools/map-card-pack.mjs --input frontend/public/assets/cards-pack-import/hazmat --output frontend/public/assets/cards2`
-4. Activar via `cardDeckRegistry` (`ACTIVE_CARD_DECK_ID`) se necessário
-5. `npm test` + smoke visual
+1. Fonte local: `_temp/` (gitignored) ou `cards-pack-import/`
+2. Mapear: `node tools/map-card-pack.mjs --input … --output frontend/public/assets/cards3`
+3. Confirmar `ACTIVE_CARD_DECK_ID === 'casino'` e `facePath` → `/assets/cards3`
+4. `npm test` + smoke visual
+
+> Nota: o pack Hazmat legado (`cards2/`) foi **removido** do runtime. Não reintroduzir sem decisão de produto explícita.
 
 ### Figma / Penpot
 
@@ -153,7 +155,7 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen). Código: `fronten
 |-------|---------|-------|
 | Casino Normal faces (`cards3`) | **Indeterminada** (pack sem LICENSE nos ficheiros) | Origem `_temp/Casino_1`; clarificar antes de distribuição comercial |
 | Suecão navy card back | Suecão / produto | Mantido como back activo |
-| Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — legado em `cards2/` |
+| Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — **removido** do runtime (`cards2/` deleted); `hazmat-red` back reservado fica em `cards3/card_back_red.png` |
 | DOBO Vector UI Pack | Comercial OK; no resell/redistribute | [dobo-ui.itch.io](https://dobo-ui.itch.io/vector-ui-pack) — crédito recomendado |
 | Kenney Casino Audio + Interface Sounds | CC0 | [kenney.nl](https://kenney.nl) — crédito opcional |
 | Placeholder SVG (removido) | — | Substituído por Hazmat PNG Maio 2026 |

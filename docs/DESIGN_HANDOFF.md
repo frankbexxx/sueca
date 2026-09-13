@@ -14,7 +14,7 @@
 
 ## Convenção de ficheiros — cartas
 
-Destino: `frontend/public/assets/cards2/`
+Destino: `frontend/public/assets/cards3/`
 
 | Ficheiro | Exemplo |
 |----------|---------|
@@ -27,7 +27,7 @@ Import intermédio: `frontend/public/assets/cards-pack-import/` (qualquer nome; 
 ```bash
 node tools/map-card-pack.mjs \
   --input frontend/public/assets/cards-pack-import \
-  --output frontend/public/assets/cards2
+  --output frontend/public/assets/cards3
 ```
 
 ## Convenção — UI chrome (menus, modais)
@@ -51,7 +51,7 @@ Usar variáveis em [`design-tokens.css`](../frontend/src/styles/design-tokens.cs
 - [ ] `git status` limpo ou só ficheiros pretendidos
 - [ ] `cd frontend && npm ci && npm test -- --watchAll=false`
 - [ ] `npm run build` sem 404 de cartas
-- [ ] Contagem ≥ 40 cartas em `cards2/` (52 para variantes 52)
+- [ ] Contagem ≥ 40 cartas em `cards3/` (52 para variantes 52)
 - [ ] Licença anotada em [ASSETS.md](ASSETS.md)
 
 ## Build Android após assets

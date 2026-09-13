@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Maps imported card pack filenames to SUECÂO convention: Rank_of_Suit.png
- * Usage: node tools/map-card-pack.mjs --input ./import --output ./frontend/public/assets/cards2 [--dry-run]
+ * Usage: node tools/map-card-pack.mjs --input ./import --output ./frontend/public/assets/cards3 [--dry-run]
  */
 import fs from 'fs';
 import path from 'path';
@@ -33,7 +33,7 @@ const BACK_ALIASES = new Set([
 function parseArgs() {
   const args = process.argv.slice(2);
   let input = 'frontend/public/assets/cards-pack-import';
-  let output = 'frontend/public/assets/cards2';
+  let output = 'frontend/public/assets/cards3';
   let dryRun = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input') input = args[++i];

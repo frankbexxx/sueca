@@ -171,7 +171,7 @@ Legenda: **DONE** · **PARTIAL** · **STILL OPEN** · **SUPERSEDED** · **NO LON
 - Back fallback: **Suecão navy**
 - Backs por tema: 30 temas → `backId` (`THEME_CARD_VISUALS`)
 - SmallCards Casino: catalogadas — **UI compacta futura**, não gameplay
-- Hazmat/`cards2`: legacy; `cards1`: unused
+- Casino `cards3`: **único** deck runtime; `cards1`/`cards2` removidos do tree
 
 ### Android
 - Capacitor **6.2.x**; compile/target **34**; minSdk **22**
@@ -218,7 +218,7 @@ Não é o log completo — só o que mudou o estado do roadmap.
 | Decisão futura de renderer | **SUPERSEDED** — Phaser escolhido e default 4 jogos |
 | Spades/Hearts/King permanecem DOM após G | **SUPERSEDED** |
 | CRA / react-scripts como base | **SUPERSEDED** — Vite |
-| Hazmat `cards2` como deck activo | **SUPERSEDED** — Casino |
+| Hazmat `cards2` como deck activo | **REMOVED** — Casino `cards3` only |
 | “Sem temas / redesign” nesta fase | **SUPERSEDED** — N5 themes + backs |
 | Viewport tratado como browser-first | **SUPERSEDED** — Android/OPPO é referência |
 | Cap upgrade urgente para E2 | **SUPERSEDED** — Cap 6 suficiente agora |

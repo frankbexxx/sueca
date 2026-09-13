@@ -6,7 +6,7 @@ import path from 'path';
 const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
 const suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades'];
 const suitColor = { Clubs: '#1a1a1a', Spades: '#1a1a1a', Hearts: '#c0392b', Diamonds: '#c0392b' };
-const outDir = path.join(process.cwd(), 'frontend/public/assets/cards2');
+const outDir = path.join(process.cwd(), 'frontend/public/assets/cards3');
 
 fs.mkdirSync(outDir, { recursive: true });
 
