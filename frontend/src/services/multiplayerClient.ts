@@ -1,10 +1,15 @@
 import { ref, set, get, push, onValue, onChildAdded, off, runTransaction } from 'firebase/database';
-import { db } from './firebaseConfig';
+import { getFirebaseDatabase } from './firebaseConfig';
 import { GameState, GameVariant } from '../types/game';
 import { GameAction } from '../types/multiplayerActions';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
 
 const LOCAL_PLAYER_KEY = 'sueca-mp-local-index';
+
+/** Lazy RTDB handle — initializes Firebase only when a multiplayer API is called. */
+function db() {
+  return getFirebaseDatabase();
+}
 
 /** RTDB rejects undefined anywhere in the payload. */
 function sanitizeForRtdb<T>(value: T): T {
@@ -38,7 +43,7 @@ export async function createSession(
 ): Promise<string> {
   const code = generateCode();
   const meta: SessionMeta = { variant, slots, status: 'waiting' };
-  await set(ref(db, `sessions/${code}`), meta);
+  await set(ref(db(), `sessions/${code}`), meta);
   localStorage.setItem(`${LOCAL_PLAYER_KEY}-${code}`, '0');
   return code;
 }
@@ -49,7 +54,7 @@ export async function createSession(
 export async function joinSession(
   code: string
 ): Promise<{ localPlayerIndex: number; variant: GameVariant; slots: SessionSlot[] }> {
-  const sessionRef = ref(db, `sessions/${code}`);
+  const sessionRef = ref(db(), `sessions/${code}`);
   const snapshot = await get(sessionRef);
   if (!snapshot.exists()) throw new Error(`Session "${code}" not found`);
 
@@ -82,29 +87,29 @@ export async function joinSession(
 
 /** Marks the session as playing (called by host when starting the game). */
 export async function startSession(code: string): Promise<void> {
-  await set(ref(db, `sessions/${code}/status`), 'playing');
+  await set(ref(db(), `sessions/${code}/status`), 'playing');
 }
 
 /** Marks session ended and clears runtime nodes (host should call when leaving). */
 export async function endSession(code: string): Promise<void> {
-  await set(ref(db, `sessions/${code}/status`), 'ended');
-  await set(ref(db, `sessions/${code}/state`), null);
-  await set(ref(db, `sessions/${code}/actions`), null);
+  await set(ref(db(), `sessions/${code}/status`), 'ended');
+  await set(ref(db(), `sessions/${code}/state`), null);
+  await set(ref(db(), `sessions/${code}/actions`), null);
 }
 
 export async function fetchSessionMeta(code: string): Promise<SessionMeta | null> {
-  const snapshot = await get(ref(db, `sessions/${code}`));
+  const snapshot = await get(ref(db(), `sessions/${code}`));
   if (!snapshot.exists()) return null;
   return snapshot.val() as SessionMeta;
 }
 
 /** Publishes the full game state to Firebase (host only). */
 export async function publishState(code: string, state: GameState): Promise<void> {
-  await set(ref(db, `sessions/${code}/state`), sanitizeForRtdb(normalizeGameState(state)));
+  await set(ref(db(), `sessions/${code}/state`), sanitizeForRtdb(normalizeGameState(state)));
 }
 
 export async function fetchSessionState(code: string): Promise<GameState | null> {
-  const snapshot = await get(ref(db, `sessions/${code}/state`));
+  const snapshot = await get(ref(db(), `sessions/${code}/state`));
   if (!snapshot.exists()) return null;
   return normalizeGameState(snapshot.val() as Partial<GameState>);
 }
@@ -113,7 +118,7 @@ export function subscribeToState(
   code: string,
   callback: (state: GameState) => void
 ): () => void {
-  const stateRef = ref(db, `sessions/${code}/state`);
+  const stateRef = ref(db(), `sessions/${code}/state`);
   const listener = onValue(stateRef, (snapshot) => {
     if (snapshot.exists()) {
       callback(normalizeGameState(snapshot.val() as Partial<GameState>));
@@ -126,7 +131,7 @@ export function subscribeToSessionStatus(
   code: string,
   callback: (status: SessionMeta['status']) => void
 ): () => void {
-  const statusRef = ref(db, `sessions/${code}/status`);
+  const statusRef = ref(db(), `sessions/${code}/status`);
   const listener = onValue(statusRef, (snapshot) => {
     if (snapshot.exists()) callback(snapshot.val() as SessionMeta['status']);
   });
@@ -137,7 +142,7 @@ export function subscribeToSlots(
   code: string,
   callback: (slots: SessionSlot[]) => void
 ): () => void {
-  const slotsRef = ref(db, `sessions/${code}/slots`);
+  const slotsRef = ref(db(), `sessions/${code}/slots`);
   const listener = onValue(slotsRef, (snapshot) => {
     if (snapshot.exists()) callback(snapshot.val() as SessionSlot[]);
   });
@@ -146,7 +151,7 @@ export function subscribeToSlots(
 
 /** Push a player intent (joiners; host may use for symmetry). */
 export async function pushAction(code: string, action: GameAction): Promise<void> {
-  await push(ref(db, `sessions/${code}/actions`), action);
+  await push(ref(db(), `sessions/${code}/actions`), action);
 }
 
 /** Host listens for new intents. */
@@ -154,7 +159,7 @@ export function subscribeToActions(
   code: string,
   callback: (action: GameAction, actionId: string) => void
 ): () => void {
-  const actionsRef = ref(db, `sessions/${code}/actions`);
+  const actionsRef = ref(db(), `sessions/${code}/actions`);
   const listener = onChildAdded(actionsRef, (snapshot) => {
     if (!snapshot.exists()) return;
     callback(snapshot.val() as GameAction, snapshot.key ?? '');

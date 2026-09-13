@@ -18,7 +18,7 @@ vi.mock('firebase/database', () => ({
   off: (...args: unknown[]) => mockOff(...args),
 }));
 
-vi.mock('./firebaseConfig', () => ({ db: {} }));
+vi.mock('./firebaseConfig', () => ({ getFirebaseDatabase: () => ({}) }));
 
 import {
   createSession,
