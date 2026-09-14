@@ -1,7 +1,8 @@
 /**
  * Central card deck / back registry.
  * Faces (`deckId`) and backs (`backId`) are independent so themes can
- * swap either without coupling. Runtime currently ships only `casino` faces.
+ * swap either without coupling. Default faces remain `casino`; `cardmeister`
+ * is available via registry / `?deck=` without theme assignment.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -23,12 +24,17 @@ export type CardBackDefinition = {
   label: string;
 };
 
-/** Available face decks — runtime ships Casino only (`cards3`). */
+/** Available face decks — Casino default; CardMeister optional second deck. */
 export const CARD_DECKS = {
   casino: {
     id: 'casino',
     facePath: '/assets/cards3',
     label: 'Casino Normal'
+  },
+  cardmeister: {
+    id: 'cardmeister',
+    facePath: '/assets/cards-cardmeister',
+    label: 'Classic Vector'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 
@@ -73,7 +79,7 @@ export type CardBackId = keyof typeof CARD_BACKS;
 
 /**
  * Default / fallback face deck when theme has no valid deckId.
- * Only `casino` is registered in this phase.
+ * Themes do not select `cardmeister` yet — default remains casino.
  */
 export const DEFAULT_CARD_DECK_ID: CardDeckId = 'casino';
 
@@ -118,6 +124,43 @@ export function resolveCardDeckForTheme(
   } catch {
     return CARD_DECKS[DEFAULT_CARD_DECK_ID];
   }
+}
+
+/**
+ * Dev/query override mirroring `?renderer=` — `?deck=cardmeister`.
+ * Invalid / absent → null (use theme / default).
+ */
+export function parseDeckOverrideFromQuery(
+  search?: string | null
+): CardDeckId | null {
+  if (search == null || search === '') return null;
+  try {
+    const raw = search.startsWith('?') ? search.slice(1) : search;
+    const param = new URLSearchParams(raw).get('deck');
+    if (!param) return null;
+    return isCardDeckId(param) ? param : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Effective face deck: query `?deck=` → theme deckId → casino.
+ * Pure when `search` is passed (tests); otherwise reads `window.location.search`.
+ */
+export function resolveEffectiveDeck(
+  themeId?: string | null,
+  search?: string | null
+): CardDeckDefinition {
+  const resolvedSearch =
+    search !== undefined
+      ? search
+      : typeof window !== 'undefined'
+        ? window.location.search
+        : null;
+  const fromQuery = parseDeckOverrideFromQuery(resolvedSearch);
+  if (fromQuery) return CARD_DECKS[fromQuery];
+  return resolveCardDeckForTheme(themeId);
 }
 
 export function isCardBackId(id: string | null | undefined): id is CardBackId {

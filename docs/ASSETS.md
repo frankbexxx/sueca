@@ -23,7 +23,8 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 
 | Id | Tipo | Path / notas |
 |----|------|----------------|
-| `casino` | deck (**default / único runtime**) | `/assets/cards3` — 52 faces Normal |
+| `casino` | deck (**default**) | `/assets/cards3` — 52 faces Normal |
+| `cardmeister` | deck (opcional; `?deck=cardmeister`) | `/assets/cards-cardmeister` — Classic Vector PNG |
 | `suecao-navy` | back (**fallback**) | `/assets/cards3/card_back` |
 | `casino-05` | back | red diamond |
 | `casino-06` | back | black/white star (alto contraste) |
@@ -38,7 +39,7 @@ Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + 
 | Campo | Estado | Notas |
 |-------|--------|--------|
 | `backId` | **activo** | 30 temas com valor explícito; inválido → `suecao-navy` |
-| `deckId` | **preparado** | opcional; ausência / inválido → `casino`. Nenhum tema define `deckId` nesta fase |
+| `deckId` | **preparado** | opcional; ausência / inválido → `casino`. Decks registados: `casino`, `cardmeister`. Nenhum tema define `deckId` ainda. Dev: `?deck=cardmeister` |
 
 Resolvers (nunca crasham): `resolveCardDeckForTheme`, `resolveCardBackForTheme`.  
 `deckId` e `backId` são **independentes** — futuros decks faces não obrigam a mudar backs.  

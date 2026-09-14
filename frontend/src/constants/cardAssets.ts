@@ -1,6 +1,7 @@
 /**
  * Public card image assets (Vite serves from public/).
- * Faces: resolved per theme via `resolveCardDeckForTheme` (default casino → cards3).
+ * Faces: theme deck via `resolveCardDeckForTheme` (default casino → cards3),
+ * optional dev override `?deck=cardmeister`.
  * Back: resolved per theme via `resolveCardBackForTheme` (fallback suecao-navy).
  * deckId and backId are independent.
  */
@@ -10,13 +11,13 @@ import {
   resolveActiveBack,
   resolveActiveDeck,
   resolveCardBackForTheme,
-  resolveCardDeckForTheme
+  resolveEffectiveDeck
 } from './cardDeckRegistry';
 import { publicUrl, readViteEnv } from '../config/runtimeEnv';
 
 /**
  * Default face pack directory (casino / cards3).
- * Prefer `getCardAssetsDir(themeId)` at call sites that may gain per-theme decks.
+ * Prefer `getCardAssetsDir(themeId)` at call sites that may use per-theme decks.
  */
 export const CARD_ASSETS_DIR = resolveActiveDeck().facePath;
 
@@ -41,9 +42,15 @@ export function getPublicAssetPath(
   return `${base}${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}`;
 }
 
-/** Face directory for a theme (falls back to casino). */
-export function getCardAssetsDir(themeId?: string | null): string {
-  return resolveCardDeckForTheme(themeId).facePath;
+/**
+ * Face directory for a theme (falls back to casino).
+ * Honors optional `?deck=` query when `search` omitted (browser) or passed (tests).
+ */
+export function getCardAssetsDir(
+  themeId?: string | null,
+  search?: string | null
+): string {
+  return resolveEffectiveDeck(themeId, search).facePath;
 }
 
 /** Relative public path for a theme's card back (with extension). */
@@ -61,18 +68,19 @@ export function getActiveThemeCardBackPath(
 
 /**
  * Builds the public URL for a card face image.
- * Uses theme deck resolver (currently always casino / cards3).
+ * Uses effective deck resolver (theme + optional `?deck=`).
  * Back assets must use getCardBackPath / CARD_BACK_PATH, not this helper.
  */
 export function getCardImagePath(
   rankImageName: string,
   suitImageName: string,
   publicBase = '',
-  themeId?: string | null
+  themeId?: string | null,
+  search?: string | null
 ): string {
   const basePath = publicBase && !publicBase.endsWith('/') ? publicBase : publicBase || '';
   const resolvedTheme =
     themeId === undefined ? readActiveThemeIdFromDom() : themeId;
-  const dir = getCardAssetsDir(resolvedTheme);
+  const dir = getCardAssetsDir(resolvedTheme, search);
   return `${basePath}${dir}/${rankImageName}_of_${suitImageName}.${CARD_EXT}`;
 }
