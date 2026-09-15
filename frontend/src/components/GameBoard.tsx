@@ -15,10 +15,10 @@ import { getCardImagePath } from '../constants/cardAssets';
 import { publicUrl } from '../config/runtimeEnv';
 import {
   AI_PLAY_DELAY_MS,
+  DEAL_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
-  SHUFFLE_DELAY_MS,
-  TRICK_WIN_DELAY_MS
+  TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
 import { createGameOverExitController } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
@@ -176,7 +176,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const [phaserInitFailed, setPhaserInitFailed] = useState(false);
   const [pinConfirmOpen, setPinConfirmOpen] = useState(false);
-  const { playCardSound, playErrorSound, playShuffleSound, playTrickWinSound } = useSound();
+  const { playCardSound, playDealSound, playErrorSound, playShuffleSound, playTrickCollectSound } =
+    useSound();
+  const playShuffleSoundRef = useRef(playShuffleSound);
+  const playDealSoundRef = useRef(playDealSound);
+  playShuffleSoundRef.current = playShuffleSound;
+  playDealSoundRef.current = playDealSound;
   const layoutSnapshot = useLayoutSnapshot();
 
   const applyRemoteState = useCallback((remoteState: GameState) => {
@@ -312,9 +317,35 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
+  const prevHandsDealtRef = useRef(false);
+  const lastDealRoundSfxAtRef = useRef(0);
   const shuffleTimerRef = useRef<number | null>(null);
-  const trickWinTimerRef = useRef<number | null>(null);
+  const dealTimerRef = useRef<number | null>(null);
+  const trickCollectTimerRef = useRef<number | null>(null);
   const freshStartRef = useRef(false);
+  const scheduleDealRoundSfx = useCallback(() => {
+    const now = Date.now();
+    if (now - lastDealRoundSfxAtRef.current <= 2000) return;
+    lastDealRoundSfxAtRef.current = now;
+    if (shuffleTimerRef.current !== null) {
+      window.clearTimeout(shuffleTimerRef.current);
+      shuffleTimerRef.current = null;
+    }
+    if (dealTimerRef.current !== null) {
+      window.clearTimeout(dealTimerRef.current);
+      dealTimerRef.current = null;
+    }
+    // Both delayed slightly so Android WebView is past the startGame tick;
+    // shuffle leads, then one deal cue (never per-card).
+    shuffleTimerRef.current = window.setTimeout(() => {
+      playShuffleSoundRef.current();
+      shuffleTimerRef.current = null;
+    }, 50);
+    dealTimerRef.current = window.setTimeout(() => {
+      playDealSoundRef.current();
+      dealTimerRef.current = null;
+    }, DEAL_DELAY_MS);
+  }, []);
   const [gameInitKey, setGameInitKey] = useState(0);
 
   const variantFlow = useMemo(
@@ -454,6 +485,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         }
         setGameStarted(true);
 
+        // Spades/Hearts/King often initialize with hands already dealt — cue here so
+        // we do not miss the first paint edge in the shared effect.
+        const handsReady =
+          initialState.players.length > 0 &&
+          initialState.players.every((p) => p.hand.length > 0);
+        if (handsReady && !(isJoiner && remoteState)) {
+          window.setTimeout(() => scheduleDealRoundSfx(), 0);
+        }
+
         if (isHost) {
           publishHostStateRef.current(adapter.getCurrentState());
         }
@@ -477,6 +517,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     isJoiner,
     isHost,
     applyRemoteState,
+    scheduleDealRoundSfx,
   ]);
 
   // Host publishes when the adapter is ready so joiners can sync immediately
@@ -493,50 +534,76 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     );
   }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, dealingMethod, gameVariant]);
 
+  /**
+   * Shared deal/round SFX (all variants):
+   * - when hands first become fully dealt, OR
+   * - when waitingForRoundStart clears while hands exist
+   * Debounced so Sueca (both edges) does not double-fire.
+   * One shuffle + one deal cue — never per-card.
+   * Timers are NOT cleared on every players[] identity change (avoids cancelling cues).
+   */
   useEffect(() => {
-    if (!gameStarted) return;
-    const wasWaiting = prevWaitingRoundStartRef.current;
-    if (wasWaiting === true && !gameState.waitingForRoundStart) {
-      const hasHands = gameState.players.length > 0 && gameState.players.every((p) => p.hand.length > 0);
-      if (hasHands) {
-        if (shuffleTimerRef.current !== null) {
-          window.clearTimeout(shuffleTimerRef.current);
-        }
-        shuffleTimerRef.current = window.setTimeout(() => {
-          playShuffleSound();
-          shuffleTimerRef.current = null;
-        }, SHUFFLE_DELAY_MS);
-      }
+    if (!gameStarted) {
+      prevWaitingRoundStartRef.current = null;
+      prevHandsDealtRef.current = false;
+      return;
     }
+
+    const handsDealt =
+      gameState.players.length > 0 && gameState.players.every((p) => p.hand.length > 0);
+    const wasWaiting = prevWaitingRoundStartRef.current;
+    const roundStartCleared = wasWaiting === true && !gameState.waitingForRoundStart;
+    const handsJustDealt = handsDealt && !prevHandsDealtRef.current;
+
+    const shouldCue = handsDealt && (handsJustDealt || roundStartCleared);
+    if (shouldCue) {
+      scheduleDealRoundSfx();
+    }
+
     prevWaitingRoundStartRef.current = gameState.waitingForRoundStart;
+    prevHandsDealtRef.current = handsDealt;
+  }, [
+    gameStarted,
+    gameState.waitingForRoundStart,
+    gameState.players,
+    scheduleDealRoundSfx
+  ]);
+
+  useEffect(() => {
     return () => {
       if (shuffleTimerRef.current !== null) {
         window.clearTimeout(shuffleTimerRef.current);
         shuffleTimerRef.current = null;
       }
+      // Intentionally do not clear dealTimer on unmount — avoids dropping the
+      // delayed deal cue when GameBoard remounts during variant start.
     };
-  }, [gameStarted, gameState.waitingForRoundStart, gameState.players, playShuffleSound]);
+  }, []);
 
+  /** One trick-collect SFX per completed trick (not on finishTrick continue). */
   useEffect(() => {
     if (!gameStarted) return;
     const wasWaiting = prevWaitingTrickEndRef.current;
     if (wasWaiting === false && gameState.waitingForTrickEnd) {
-      if (trickWinTimerRef.current !== null) {
-        window.clearTimeout(trickWinTimerRef.current);
+      if (trickCollectTimerRef.current !== null) {
+        window.clearTimeout(trickCollectTimerRef.current);
       }
-      trickWinTimerRef.current = window.setTimeout(() => {
-        playTrickWinSound();
-        trickWinTimerRef.current = null;
-      }, TRICK_WIN_DELAY_MS);
+      trickCollectTimerRef.current = window.setTimeout(() => {
+        playTrickCollectSound();
+        trickCollectTimerRef.current = null;
+      }, TRICK_COLLECT_DELAY_MS);
     }
     prevWaitingTrickEndRef.current = gameState.waitingForTrickEnd;
+  }, [gameStarted, gameState.waitingForTrickEnd, playTrickCollectSound]);
+
+  useEffect(() => {
     return () => {
-      if (trickWinTimerRef.current !== null) {
-        window.clearTimeout(trickWinTimerRef.current);
-        trickWinTimerRef.current = null;
+      if (trickCollectTimerRef.current !== null) {
+        window.clearTimeout(trickCollectTimerRef.current);
+        trickCollectTimerRef.current = null;
       }
     };
-  }, [gameStarted, gameState.waitingForTrickEnd, playTrickWinSound]);
+  }, []);
 
   /**
    * Converts a Card object to a string code (e.g., "AS" for Ace of Spades)

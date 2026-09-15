@@ -9,7 +9,8 @@ const DEFAULT_VOLUMES: Record<SfxId, number> = {
   cardPlay2: 0.55,
   cardPlay3: 0.55,
   shuffle: 0.6,
-  trickWin: 0.5,
+  deal: 0.55,
+  trickCollect: 0.52,
   error: 0.65,
   uiClick: 0.4
 };
@@ -111,8 +112,12 @@ export function playShuffleSound(): void {
   playSfx('shuffle');
 }
 
-export function playTrickWinSound(): void {
-  playSfx('trickWin');
+export function playDealSound(): void {
+  playSfx('deal');
+}
+
+export function playTrickCollectSound(): void {
+  playSfx('trickCollect');
 }
 
 export function playErrorSound(): void {

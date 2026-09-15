@@ -1,15 +1,16 @@
 import { useCallback, useEffect } from 'react';
 import {
+  playDealSound as playDealSfx,
   playErrorSound as playErrorSfx,
   playRandomCardPlay,
   playShuffleSound as playShuffleSfx,
-  playTrickWinSound as playTrickWinSfx,
+  playTrickCollectSound as playTrickCollectSfx,
   playUiClick as playUiClickSfx,
   preloadSfx
 } from '../services/audioService';
 
 /**
- * Hook for playing game sound effects from Kenney CC0 assets.
+ * Hook for playing game sound effects via audioService.
  */
 export const useSound = () => {
   useEffect(() => {
@@ -28,8 +29,12 @@ export const useSound = () => {
     playShuffleSfx();
   }, []);
 
-  const playTrickWinSound = useCallback(() => {
-    playTrickWinSfx();
+  const playDealSound = useCallback(() => {
+    playDealSfx();
+  }, []);
+
+  const playTrickCollectSound = useCallback(() => {
+    playTrickCollectSfx();
   }, []);
 
   const playUiClick = useCallback(() => {
@@ -40,7 +45,8 @@ export const useSound = () => {
     playCardSound,
     playErrorSound,
     playShuffleSound,
-    playTrickWinSound,
+    playDealSound,
+    playTrickCollectSound,
     playUiClick
   };
 };

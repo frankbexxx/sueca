@@ -144,17 +144,18 @@ Staging de referência (gitignored `_temp/`):
 - [ ] `npm run build` sem 404 de assets
 - [x] Licença / origem registada neste ficheiro (Casino: indeterminada)
 
-## SFX (Kenney CC0)
+## SFX (runtime)
 
 | Ficheiro | Origem | Uso |
 |----------|--------|-----|
-| `card-play-1.ogg` | Casino Audio · card-place-2 | Jogar carta |
-| `card-play-2.ogg` | Casino Audio · card-place-1 | Variação |
-| `card-play-3.ogg` | Casino Audio · card-slide-3 | Variação |
-| `card-shuffle.ogg` | Casino Audio · card-shuffle | Baralhar / deal |
-| `trick-win.ogg` | Interface Sounds · confirmation_001 | Vaza completa |
-| `error.ogg` | Interface Sounds · error_001 | Jogada ilegal |
-| `ui-click.ogg` | Interface Sounds · click_002 | Cliques UI |
+| `card-play-1.ogg` | Kenney Casino Audio · card-place-2 | Jogar carta |
+| `card-play-2.ogg` | Kenney Casino Audio · card-place-1 | Variação |
+| `card-play-3.ogg` | Kenney Casino Audio · card-slide-3 | Variação |
+| `card-shuffle.ogg` | Freesound BMacZero 96130 (CC0) | Baralhar (após mãos) |
+| `deal-1.ogg` | Freesound el_boss 571576 (CC0) | Deal / entrada de mão |
+| `trick-collect.ogg` | Freesound KevinHilt 196541 crop (CC0) | Vaza completa |
+| `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal |
+| `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI |
 
 Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen). Código: `frontend/src/services/audioService.ts`.
 

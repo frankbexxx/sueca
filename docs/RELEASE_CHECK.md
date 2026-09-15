@@ -40,7 +40,7 @@ vercel --prod
 - [ ] Smoke King PT: viragem K♥ automática · folha 10×4 · festa 13 cartas scroll + bottom sheet · aceitar 1 positiva · sem NÓS/ELES na mesa
 - [ ] King `no_king_hearts`: K♥ tomado → popup terminar cedo (aceitar/recusar)
 - [ ] Hearts: Q♠ + 13 copas → popup terminar cedo
-- [ ] SFX: trick-win após 4.ª carta (~200 ms); shuffle após deal (~250 ms)
+- [ ] SFX: trick-collect após 4.ª carta (~200 ms); shuffle imediato + deal (~600 ms) após mãos
 - [ ] Tab Regras King PT mostra secções completas (negativos, leilão, invariantes)
 
 ## Android (Capacitor)

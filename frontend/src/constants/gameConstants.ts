@@ -23,8 +23,17 @@ export const MODAL_Z_INDEX_GAME_OVER = 1001;
 
 // Game delays
 export const GAME_OVER_DELAY_MS = 3000; // Delay before showing start menu after game over (3s)
-export const TRICK_WIN_DELAY_MS = 200;
-export const SHUFFLE_DELAY_MS = 250;
+/** Delay after trick completes before trick-collect SFX. */
+export const TRICK_COLLECT_DELAY_MS = 200;
+/**
+ * Shuffle leads the shared deal/round cue (short delay for WebView stability).
+ */
+export const SHUFFLE_DELAY_MS = 50;
+/**
+ * Deal SFX after the same hands-appeared / round-start cue as shuffle.
+ * One short deal cue (not per-card).
+ */
+export const DEAL_DELAY_MS = 600;
 
 // Card layout thresholds
 export const HAND_SCROLL_THRESHOLD = 8;
