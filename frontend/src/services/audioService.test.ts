@@ -3,6 +3,10 @@ import { AMBIANCE_PATH } from '../constants/musicAssets';
 import {
   isSoundEnabled,
   playDealSound,
+  playGameLoseSound,
+  playGameWinSound,
+  playRoundEndSound,
+  playRoundStartSound,
   playShuffleSound,
   playSfx,
   playTrickCollectSound,
@@ -19,13 +23,17 @@ describe('audioService', () => {
     localStorage.clear();
   });
 
-  it('exports non-empty sfx paths including deal, shuffle, trick-collect', () => {
+  it('exports non-empty sfx paths including deal, shuffle, trick-collect, round/game cues', () => {
     Object.values(SFX_PATHS).forEach((path) => {
       expect(path).toMatch(/\/assets\/sfx\/.*\.ogg$/);
     });
     expect(SFX_PATHS.deal).toMatch(/\/deal-1\.ogg$/);
     expect(SFX_PATHS.shuffle).toMatch(/\/card-shuffle\.ogg$/);
     expect(SFX_PATHS.trickCollect).toMatch(/\/trick-collect\.ogg$/);
+    expect(SFX_PATHS.roundStart).toMatch(/\/round-start\.ogg$/);
+    expect(SFX_PATHS.roundEnd).toMatch(/\/round-end\.ogg$/);
+    expect(SFX_PATHS.gameWin).toMatch(/\/game-win\.ogg$/);
+    expect(SFX_PATHS.gameLose).toMatch(/\/game-lose\.ogg$/);
     expect(CARD_PLAY_VARIANTS).toHaveLength(3);
   });
 
@@ -51,9 +59,13 @@ describe('audioService', () => {
     expect(() => playDealSound()).not.toThrow();
     expect(() => playShuffleSound()).not.toThrow();
     expect(() => playTrickCollectSound()).not.toThrow();
+    expect(() => playRoundStartSound()).not.toThrow();
+    expect(() => playRoundEndSound()).not.toThrow();
+    expect(() => playGameWinSound()).not.toThrow();
+    expect(() => playGameLoseSound()).not.toThrow();
   });
 
-  it('mute blocks deal/shuffle/trick-collect play attempts', () => {
+  it('mute blocks deal/shuffle/trick-collect and round/game cues', () => {
     const play = jest.fn().mockResolvedValue(undefined);
     const audioMock = {
       loop: false,
@@ -72,6 +84,10 @@ describe('audioService', () => {
     playDealSound();
     playShuffleSound();
     playTrickCollectSound();
+    playRoundStartSound();
+    playRoundEndSound();
+    playGameWinSound();
+    playGameLoseSound();
     expect(play).not.toHaveBeenCalled();
   });
 

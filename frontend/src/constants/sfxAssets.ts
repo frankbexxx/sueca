@@ -7,6 +7,10 @@ export type SfxId =
   | 'shuffle'
   | 'deal'
   | 'trickCollect'
+  | 'roundStart'
+  | 'roundEnd'
+  | 'gameWin'
+  | 'gameLose'
   | 'error'
   | 'uiClick';
 
@@ -19,6 +23,10 @@ export const SFX_PATHS: Record<SfxId, string> = {
   shuffle: `${base}/card-shuffle.ogg`,
   deal: `${base}/deal-1.ogg`,
   trickCollect: `${base}/trick-collect.ogg`,
+  roundStart: `${base}/round-start.ogg`,
+  roundEnd: `${base}/round-end.ogg`,
+  gameWin: `${base}/game-win.ogg`,
+  gameLose: `${base}/game-lose.ogg`,
   error: `${base}/error.ogg`,
   uiClick: `${base}/ui-click.ogg`
 };

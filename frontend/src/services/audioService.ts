@@ -11,6 +11,11 @@ const DEFAULT_VOLUMES: Record<SfxId, number> = {
   shuffle: 0.6,
   deal: 0.55,
   trickCollect: 0.52,
+  // Hierarchy: round-start < round-end < game-win; game-lose < game-win
+  roundStart: 0.36,
+  roundEnd: 0.46,
+  gameWin: 0.55,
+  gameLose: 0.44,
   error: 0.65,
   uiClick: 0.4
 };
@@ -118,6 +123,22 @@ export function playDealSound(): void {
 
 export function playTrickCollectSound(): void {
   playSfx('trickCollect');
+}
+
+export function playRoundStartSound(): void {
+  playSfx('roundStart');
+}
+
+export function playRoundEndSound(): void {
+  playSfx('roundEnd');
+}
+
+export function playGameWinSound(): void {
+  playSfx('gameWin');
+}
+
+export function playGameLoseSound(): void {
+  playSfx('gameLose');
 }
 
 export function playErrorSound(): void {

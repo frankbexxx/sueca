@@ -34,6 +34,10 @@ export const SHUFFLE_DELAY_MS = 50;
  * One short deal cue (not per-card).
  */
 export const DEAL_DELAY_MS = 600;
+/**
+ * Soft round-start cue after shuffle→deal (audio only; no gameplay delay).
+ */
+export const ROUND_START_SFX_DELAY_MS = 1000;
 
 // Card layout thresholds
 export const HAND_SCROLL_THRESHOLD = 8;

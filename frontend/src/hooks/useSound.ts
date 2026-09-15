@@ -2,7 +2,11 @@ import { useCallback, useEffect } from 'react';
 import {
   playDealSound as playDealSfx,
   playErrorSound as playErrorSfx,
+  playGameLoseSound as playGameLoseSfx,
+  playGameWinSound as playGameWinSfx,
   playRandomCardPlay,
+  playRoundEndSound as playRoundEndSfx,
+  playRoundStartSound as playRoundStartSfx,
   playShuffleSound as playShuffleSfx,
   playTrickCollectSound as playTrickCollectSfx,
   playUiClick as playUiClickSfx,
@@ -37,6 +41,22 @@ export const useSound = () => {
     playTrickCollectSfx();
   }, []);
 
+  const playRoundStartSound = useCallback(() => {
+    playRoundStartSfx();
+  }, []);
+
+  const playRoundEndSound = useCallback(() => {
+    playRoundEndSfx();
+  }, []);
+
+  const playGameWinSound = useCallback(() => {
+    playGameWinSfx();
+  }, []);
+
+  const playGameLoseSound = useCallback(() => {
+    playGameLoseSfx();
+  }, []);
+
   const playUiClick = useCallback(() => {
     playUiClickSfx();
   }, []);
@@ -47,6 +67,10 @@ export const useSound = () => {
     playShuffleSound,
     playDealSound,
     playTrickCollectSound,
+    playRoundStartSound,
+    playRoundEndSound,
+    playGameWinSound,
+    playGameLoseSound,
     playUiClick
   };
 };

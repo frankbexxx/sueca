@@ -18,11 +18,16 @@ import {
   DEAL_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
+  ROUND_START_SFX_DELAY_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
 import { createGameOverExitController } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
+import {
+  resolveHumanGameAudioResult,
+  shouldPlayRoundEndCue
+} from '../utils/roundGameCues';
 import { createVariantFlowControllers } from '../flow/createVariantFlowControllers';
 import { buildTableRenderModel } from '../table/buildTableRenderModel';
 import {
@@ -176,12 +181,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const [phaserInitFailed, setPhaserInitFailed] = useState(false);
   const [pinConfirmOpen, setPinConfirmOpen] = useState(false);
-  const { playCardSound, playDealSound, playErrorSound, playShuffleSound, playTrickCollectSound } =
-    useSound();
+  const {
+    playCardSound,
+    playDealSound,
+    playErrorSound,
+    playGameLoseSound,
+    playGameWinSound,
+    playRoundEndSound,
+    playRoundStartSound,
+    playShuffleSound,
+    playTrickCollectSound
+  } = useSound();
   const playShuffleSoundRef = useRef(playShuffleSound);
   const playDealSoundRef = useRef(playDealSound);
+  const playRoundStartSoundRef = useRef(playRoundStartSound);
   playShuffleSoundRef.current = playShuffleSound;
   playDealSoundRef.current = playDealSound;
+  playRoundStartSoundRef.current = playRoundStartSound;
   const layoutSnapshot = useLayoutSnapshot();
 
   const applyRemoteState = useCallback((remoteState: GameState) => {
@@ -317,10 +333,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const prevWaitingRoundStartRef = useRef<boolean | null>(null);
   const prevWaitingTrickEndRef = useRef<boolean | null>(null);
+  const prevWaitingRoundEndRef = useRef<boolean | null>(null);
   const prevHandsDealtRef = useRef(false);
   const lastDealRoundSfxAtRef = useRef(0);
   const shuffleTimerRef = useRef<number | null>(null);
   const dealTimerRef = useRef<number | null>(null);
+  const roundStartTimerRef = useRef<number | null>(null);
   const trickCollectTimerRef = useRef<number | null>(null);
   const freshStartRef = useRef(false);
   const scheduleDealRoundSfx = useCallback(() => {
@@ -335,8 +353,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       window.clearTimeout(dealTimerRef.current);
       dealTimerRef.current = null;
     }
+    if (roundStartTimerRef.current !== null) {
+      window.clearTimeout(roundStartTimerRef.current);
+      roundStartTimerRef.current = null;
+    }
     // Both delayed slightly so Android WebView is past the startGame tick;
-    // shuffle leads, then one deal cue (never per-card).
+    // shuffle → deal → round-start (audio only; never per-card).
     shuffleTimerRef.current = window.setTimeout(() => {
       playShuffleSoundRef.current();
       shuffleTimerRef.current = null;
@@ -345,6 +367,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       playDealSoundRef.current();
       dealTimerRef.current = null;
     }, DEAL_DELAY_MS);
+    roundStartTimerRef.current = window.setTimeout(() => {
+      playRoundStartSoundRef.current();
+      roundStartTimerRef.current = null;
+    }, ROUND_START_SFX_DELAY_MS);
   }, []);
   const [gameInitKey, setGameInitKey] = useState(0);
 
@@ -546,6 +572,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!gameStarted) {
       prevWaitingRoundStartRef.current = null;
       prevHandsDealtRef.current = false;
+      prevWaitingRoundEndRef.current = null;
       return;
     }
 
@@ -575,8 +602,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         window.clearTimeout(shuffleTimerRef.current);
         shuffleTimerRef.current = null;
       }
-      // Intentionally do not clear dealTimer on unmount — avoids dropping the
-      // delayed deal cue when GameBoard remounts during variant start.
+      // Intentionally do not clear deal/round-start timers on unmount — avoids dropping
+      // delayed cues when GameBoard remounts during variant start.
     };
   }, []);
 
@@ -604,6 +631,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       }
     };
   }, []);
+
+  /** Intermediate round-end only — never when the same transition is game over. */
+  useEffect(() => {
+    if (!gameStarted) return;
+    if (
+      shouldPlayRoundEndCue({
+        prevWaitingForRoundEnd: prevWaitingRoundEndRef.current,
+        waitingForRoundEnd: gameState.waitingForRoundEnd,
+        isGameOver: gameState.isGameOver
+      })
+    ) {
+      playRoundEndSound();
+    }
+    prevWaitingRoundEndRef.current = gameState.waitingForRoundEnd;
+  }, [
+    gameStarted,
+    gameState.waitingForRoundEnd,
+    gameState.isGameOver,
+    playRoundEndSound
+  ]);
 
   /**
    * Converts a Card object to a string code (e.g., "AS" for Ace of Spades)
@@ -902,7 +949,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   /**
-   * Effect to handle game over — record stats once and schedule delayed exit.
+   * Effect to handle game over — record stats once, play result cue once, schedule delayed exit.
    * Timer is cancelled on New Game / leave / unmount so it cannot affect a new match.
    */
   useEffect(() => {
@@ -930,6 +977,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         playerWon,
         summary: `${winnerName} · ${scores.join('/')}`
       });
+      const audioResult = resolveHumanGameAudioResult({
+        variant: 'hearts',
+        winner: gameState.winner,
+        localPlayerIndex: localIdx,
+        players: gameState.players,
+        individualScores: scores
+      });
+      if (audioResult === 'win') playGameWinSound();
+      else if (audioResult === 'lose') playGameLoseSound();
     } else if (kingCtrl) {
       const scores = kingCtrl.readPlayerScores(gameState);
       const winnerIndex = scores.indexOf(Math.max(...scores));
@@ -942,6 +998,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         playerWon,
         summary: `${winnerName} · ${scores.join('/')}`
       });
+      const audioResult = resolveHumanGameAudioResult({
+        variant: 'king',
+        winner: gameState.winner,
+        localPlayerIndex: localIdx,
+        players: gameState.players,
+        individualScores: scores
+      });
+      if (audioResult === 'win') playGameWinSound();
+      else if (audioResult === 'lose') playGameLoseSound();
     } else {
       const us = gameState.players[localIdx]?.team;
       const playerWon = us === gameState.winner;
@@ -954,6 +1019,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         playerWon,
         summary: `${winnerLabel} · ${scoreSummary}`
       });
+      const audioResult = resolveHumanGameAudioResult({
+        variant: gameVariant,
+        winner: gameState.winner,
+        localPlayerIndex: localIdx,
+        players: gameState.players
+      });
+      if (audioResult === 'win') playGameWinSound();
+      else if (audioResult === 'lose') playGameLoseSound();
     }
 
     clearGameSession(gameVariant);
@@ -971,6 +1044,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameVariant,
     isMultiplayer,
     multiplayerPlayerIndex,
+    playGameLoseSound,
+    playGameWinSound,
     t.gameBoard.them,
     t.gameBoard.us
   ]);

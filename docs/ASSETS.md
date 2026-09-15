@@ -154,6 +154,10 @@ Staging de referência (gitignored `_temp/`):
 | `card-shuffle.ogg` | Freesound BMacZero 96130 (CC0) | Baralhar (após mãos) |
 | `deal-1.ogg` | Freesound el_boss 571576 (CC0) | Deal / entrada de mão |
 | `trick-collect.ogg` | Freesound KevinHilt 196541 crop (CC0) | Vaza completa |
+| `round-start.ogg` | Suecão NumPy synth + FFmpeg (original) | Início de ronda |
+| `round-end.ogg` | Suecão NumPy synth + FFmpeg (original) | Fim de ronda intermédia |
+| `game-win.ogg` | Suecão NumPy synth + FFmpeg (original) | Vitória final |
+| `game-lose.ogg` | Suecão NumPy synth + FFmpeg (original) | Derrota final |
 | `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal |
 | `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI |
 
@@ -168,4 +172,5 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen). Código: `fronten
 | Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — **removido** do runtime (`cards2/` deleted); `hazmat-red` back reservado fica em `cards3/card_back_red.png` |
 | DOBO Vector UI Pack | Comercial OK; no resell/redistribute | [dobo-ui.itch.io](https://dobo-ui.itch.io/vector-ui-pack) — crédito recomendado |
 | Kenney Casino Audio + Interface Sounds | CC0 | [kenney.nl](https://kenney.nl) — crédito opcional |
+| Round/game cues (`round-start`, `round-end`, `game-win`, `game-lose`) | Suecão original | Synth NumPy + FFmpeg; sem asset externo |
 | Placeholder SVG (removido) | — | Substituído por Hazmat PNG Maio 2026 |
