@@ -6,6 +6,7 @@ import {
   getMusicTrack,
   getMusicTrackUrl
 } from '../constants/musicCatalog';
+import { initMusicCache } from '../audio/musicCacheService';
 import { resolveMusicTrackIdForTheme } from '../constants/musicThemeMap';
 import type { ThemeId } from './billingService';
 import { getActiveTheme } from './billingService';
@@ -181,6 +182,8 @@ export function preloadMusic(): void {
   if (typeof window === 'undefined') return;
   currentTrackId = resolveMusicTrackIdForTheme(getActiveTheme());
   ensureMusicAudio();
+  // Android: load Directory.Data/music manifest (no-op on web). Never throws.
+  void initMusicCache();
 }
 
 /** @deprecated Use preloadMusic */

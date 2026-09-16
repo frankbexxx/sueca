@@ -15,6 +15,10 @@ import {
   MusicAvailability,
   getMusicAvailability
 } from './musicAvailability';
+import {
+  getCachedEntry,
+  lookupCachedTrackSync
+} from './musicCacheService';
 import { getRemoteMusicTrack } from './remoteMusicCatalog';
 
 export type MusicTrackSource = 'core' | 'remote';
@@ -31,8 +35,13 @@ export type ResolvedMusicTrack = {
   streamingSafe: boolean;
   contentId: boolean;
   version: number | null;
-  /** True when bytes are local core; remotes stay false until download/stream is wired. */
+  /**
+   * True for core, or remote with verified local cache.
+   * Mock remote URLs alone are never ready for production playback.
+   */
   readyForPlayback: boolean;
+  /** True when cached file exists but catalog version/sha differs. */
+  cacheStale: boolean;
 };
 
 function resolveCore(
@@ -48,53 +57,107 @@ function resolveCore(
     family: track.family,
     playableUrl: getMusicTrackUrl(track.id),
     fallbackTrackId,
-    availability: 'AVAILABLE_LOCAL',
+    availability: 'AVAILABLE_LOCAL_CORE',
     streamingSafe: track.streamingSafe,
     contentId: track.contentId,
     version: null,
-    readyForPlayback: true
+    readyForPlayback: true,
+    cacheStale: false
   };
+}
+
+function cachedPlayableUrl(filePath: string): string {
+  // Sync path: Capacitor convertFileSrc needs async getUri in production.
+  // Resolver uses a stable relative marker; callers that need a web URL should
+  // prefer lookupCachedTrack() async. For sync resolve we expose filePath;
+  // audioService still plays core only in this phase.
+  return `capacitor-cache://${filePath}`;
 }
 
 function resolveRemoteOrFallback(
   trackId: string,
   fallbackTrackId: MusicTrackId
 ): ResolvedMusicTrack {
-  const availability = getMusicAvailability(trackId);
-  if (availability === 'UNAVAILABLE') {
-    return resolveCore(fallbackTrackId, FALLBACK_MUSIC_TRACK_ID);
-  }
-
   if (isMusicTrackId(trackId)) {
     return resolveCore(trackId, fallbackTrackId);
   }
 
   const remote = getRemoteMusicTrack(trackId);
-  if (!remote || availability !== 'REMOTE_AVAILABLE') {
-    return resolveCore(fallbackTrackId, FALLBACK_MUSIC_TRACK_ID);
+  const expected = remote
+    ? { version: remote.version, sha256: remote.sha256 }
+    : null;
+  const cached = lookupCachedTrackSync(trackId, expected);
+  const availability = getMusicAvailability(trackId);
+
+  // 1) Remote with verified cache (hit or stale file still on disk)
+  if (
+    remote &&
+    (cached.status === 'hit' || cached.status === 'stale') &&
+    cached.entry
+  ) {
+    return {
+      source: 'remote',
+      id: remote.id,
+      title: remote.title,
+      artist: remote.artist,
+      family: remote.family,
+      playableUrl: cachedPlayableUrl(cached.entry.filePath),
+      fallbackTrackId,
+      availability: 'AVAILABLE_LOCAL_CACHE',
+      streamingSafe: remote.streamingSafe,
+      contentId: remote.contentId,
+      version: cached.entry.version,
+      readyForPlayback: true,
+      cacheStale: cached.status === 'stale'
+    };
   }
 
-  return {
-    source: 'remote',
-    id: remote.id,
-    title: remote.title,
-    artist: remote.artist,
-    family: remote.family,
-    playableUrl: remote.url,
-    fallbackTrackId,
-    availability: 'REMOTE_AVAILABLE',
-    streamingSafe: remote.streamingSafe,
-    contentId: remote.contentId,
-    version: remote.version,
-    // MOCK phase: do not treat mock URLs as playable audio sources.
-    readyForPlayback: false
-  };
+  // Orphan cache without catalog metadata
+  if (!remote && cached.entry && (cached.status === 'hit' || cached.status === 'stale')) {
+    const entry = getCachedEntry(trackId)!;
+    return {
+      source: 'remote',
+      id: entry.trackId,
+      title: entry.trackId,
+      artist: 'cached',
+      family: 'Casino Jazz / Lounge',
+      playableUrl: cachedPlayableUrl(entry.filePath),
+      fallbackTrackId,
+      availability: 'AVAILABLE_LOCAL_CACHE',
+      streamingSafe: true,
+      contentId: false,
+      version: entry.version,
+      readyForPlayback: true,
+      cacheStale: cached.status === 'stale'
+    };
+  }
+
+  // 2) Remote catalog metadata (not downloaded / not playable yet)
+  if (remote && availability === 'REMOTE_AVAILABLE') {
+    return {
+      source: 'remote',
+      id: remote.id,
+      title: remote.title,
+      artist: remote.artist,
+      family: remote.family,
+      playableUrl: remote.url,
+      fallbackTrackId,
+      availability: 'REMOTE_AVAILABLE',
+      streamingSafe: remote.streamingSafe,
+      contentId: remote.contentId,
+      version: remote.version,
+      readyForPlayback: false,
+      cacheStale: false
+    };
+  }
+
+  // 3) Core fallback
+  return resolveCore(fallbackTrackId, FALLBACK_MUSIC_TRACK_ID);
 }
 
 /**
- * Resolve any track id to core or remote metadata.
- * Unknown / unavailable → core fallback (`casino-jazz` unless overridden).
- * Never throws.
+ * Resolve any track id to core, cached remote, remote metadata, or core fallback.
+ * Never throws. Does not auto-play remotes in production (audioService still uses core).
  */
 export function resolveMusicTrack(
   trackId: string | null | undefined,
@@ -112,8 +175,7 @@ export function resolveMusicTrack(
 }
 
 /**
- * Theme resolution using preferred + core fallback from THEME_DEFAULTS_PLAN.
- * Preferred remote resolves as remote metadata; playback readiness stays false for remotes.
+ * Theme resolution: preferred → cache → remote metadata → core fallback.
  * Never throws.
  */
 export function resolveThemeMusic(themeId: ThemeId): ResolvedMusicTrack {
@@ -128,8 +190,4 @@ export function resolveThemeMusic(themeId: ThemeId): ResolvedMusicTrack {
   }
 }
 
-/**
- * Track id that Theme Default / audioService should play today (always core).
- * Re-export for callers that need the playable core without hybrid metadata.
- */
 export { resolveMusicTrackIdForTheme };

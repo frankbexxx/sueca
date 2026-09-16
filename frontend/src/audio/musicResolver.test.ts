@@ -12,6 +12,13 @@ import {
   resolveMusicTrackIdForTheme
 } from '../constants/musicThemeMap';
 import { getMusicAvailability } from './musicAvailability';
+import { createMemoryMusicCacheFs } from './musicCacheFs';
+import {
+  __resetMusicCacheForTests,
+  __setMusicCacheFsForTests,
+  cacheRemoteTrack,
+  initMusicCache
+} from './musicCacheService';
 import {
   MOCK_MUSIC_CDN_ORIGIN,
   MOCK_REMOTE_MUSIC_CATALOG
@@ -27,6 +34,7 @@ import {
   resolveMusicTrack,
   resolveThemeMusic
 } from './musicResolver';
+import { sha256Hex } from './sha256';
 
 const BUILT_IN_THEMES = Object.keys(THEME_MUSIC_FAMILY) as BuiltInThemeId[];
 
@@ -115,11 +123,31 @@ describe('remoteMusicCatalog mock', () => {
 });
 
 describe('musicAvailability', () => {
-  it('classifies core, remote, and unknown', () => {
-    expect(getMusicAvailability('casino-jazz')).toBe('AVAILABLE_LOCAL');
+  beforeEach(async () => {
+    __setMusicCacheFsForTests(createMemoryMusicCacheFs());
+    await initMusicCache();
+  });
+
+  afterEach(() => {
+    __resetMusicCacheForTests();
+    __setMusicCacheFsForTests(null);
+  });
+
+  it('classifies core, remote, cache, and unknown', async () => {
+    expect(getMusicAvailability('casino-jazz')).toBe('AVAILABLE_LOCAL_CORE');
     expect(getMusicAvailability('celtic-traveler')).toBe('REMOTE_AVAILABLE');
     expect(getMusicAvailability('no-such-track')).toBe('UNAVAILABLE');
     expect(getMusicAvailability(null)).toBe('UNAVAILABLE');
+
+    const bytes = new TextEncoder().encode('cache-avail');
+    const hash = await sha256Hex(bytes);
+    const remote = getRemoteMusicTrack('celtic-traveler')!;
+    const result = await cacheRemoteTrack(
+      { ...remote, size: bytes.length, sha256: hash },
+      { kind: 'bytes', data: bytes }
+    );
+    expect(result.ok).toBe(true);
+    expect(getMusicAvailability('celtic-traveler')).toBe('AVAILABLE_LOCAL_CACHE');
   });
 });
 
@@ -128,10 +156,40 @@ describe('musicResolver', () => {
     const resolved = resolveMusicTrack('yamatai-shizima');
     expect(resolved.source).toBe('core');
     expect(resolved.id).toBe('yamatai-shizima');
-    expect(resolved.availability).toBe('AVAILABLE_LOCAL');
+    expect(resolved.availability).toBe('AVAILABLE_LOCAL_CORE');
     expect(resolved.readyForPlayback).toBe(true);
     expect(resolved.playableUrl).toBe(getMusicTrackUrl('yamatai-shizima'));
     expect(resolved.fallbackTrackId).toBe(FALLBACK_MUSIC_TRACK_ID);
+  });
+
+  it('promotes cached remote to LOCAL_CACHE with readyForPlayback', async () => {
+    __setMusicCacheFsForTests(createMemoryMusicCacheFs());
+    await initMusicCache();
+    try {
+      const bytes = new TextEncoder().encode('resolver-cache');
+      const hash = await sha256Hex(bytes);
+      const remote = getRemoteMusicTrack('khmer-roneat')!;
+      expect(
+        (
+          await cacheRemoteTrack(
+            { ...remote, size: bytes.length, sha256: hash },
+            { kind: 'bytes', data: bytes }
+          )
+        ).ok
+      ).toBe(true);
+
+      const resolved = resolveMusicTrack('khmer-roneat', {
+        fallbackTrackId: 'yamatai-shizima'
+      });
+      expect(resolved.source).toBe('remote');
+      expect(resolved.availability).toBe('AVAILABLE_LOCAL_CACHE');
+      expect(resolved.readyForPlayback).toBe(true);
+      expect(resolved.cacheStale).toBe(false);
+      expect(resolved.fallbackTrackId).toBe('yamatai-shizima');
+    } finally {
+      __resetMusicCacheForTests();
+      __setMusicCacheFsForTests(null);
+    }
   });
 
   it('resolves remote tracks to mock metadata without marking ready', () => {
