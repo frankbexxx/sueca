@@ -1,4 +1,4 @@
-/** SHA-256 helpers (Web Crypto) — browser + Android WebView. */
+/** SHA-256 helpers (Web Crypto) — browser, Android WebView, and Node/vitest. */
 
 const HEX = '0123456789abcdef';
 
@@ -30,11 +30,38 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+function toUint8Array(data: ArrayBuffer | Uint8Array): Uint8Array {
+  return data instanceof Uint8Array ? data : new Uint8Array(data);
+}
+
+/**
+ * Normalize to a BufferSource accepted by the active SubtleCrypto implementation.
+ *
+ * Vitest uses jsdom: `new Uint8Array(...).buffer` is a jsdom ArrayBuffer, while
+ * `crypto.subtle` is Node's. Node then throws:
+ * "Failed to execute 'digest' on 'SubtleCrypto': 2nd argument is not instance of ArrayBuffer..."
+ *
+ * On Node, `Buffer.from(...)` yields a same-realm BufferSource.
+ * In browser / Android WebView, copy into a same-realm Uint8Array view.
+ */
+function toSubtleBufferSource(data: ArrayBuffer | Uint8Array): BufferSource {
+  const src = toUint8Array(data);
+  const BufferCtor = (globalThis as { Buffer?: { from(data: Uint8Array): Uint8Array } })
+    .Buffer;
+  if (typeof BufferCtor !== 'undefined') {
+    return BufferCtor.from(src);
+  }
+  const copy = new Uint8Array(src.byteLength);
+  copy.set(src);
+  return copy;
+}
+
 export async function sha256Hex(data: ArrayBuffer | Uint8Array): Promise<string> {
-  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const digest = await crypto.subtle.digest('SHA-256', copy.buffer);
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) {
+    throw new Error('Web Crypto SubtleCrypto unavailable');
+  }
+  const digest = await subtle.digest('SHA-256', toSubtleBufferSource(data));
   return bytesToHex(digest);
 }
 
