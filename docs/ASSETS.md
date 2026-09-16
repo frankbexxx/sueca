@@ -166,21 +166,31 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Códig
 
 ## Música de ambiente (core v1 — híbrido)
 
-Arquitectura: **D — HYBRID** (6 core bundled; catálogo remoto **mock**; cache Android Filesystem; **R2 ainda NÃO**; downloads **não** activos na UI).
+Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Android cache-first playback; web stream-direct; **R2 / URLs reais ainda NÃO**.
 
 | Item | Valor |
 |------|--------|
 | Path core | `frontend/public/assets/music/core/*.ogg` |
 | Catálogo core | `frontend/src/constants/musicCatalog.ts` |
-| Theme → core play | `frontend/src/constants/musicThemeMap.ts` (`resolveMusicTrackIdForTheme`) |
-| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + `getThemeMusicPreference` |
-| Catálogo remoto mock | `frontend/src/audio/remoteMusicCatalog.mock.ts` (23 ids; URLs `music.example.invalid` — **nunca fetch**) |
-| Resolver híbrido | `frontend/src/audio/musicResolver.ts` (`resolveMusicTrack` / `resolveThemeMusic`) |
-| Cache Android | `frontend/src/audio/musicCacheService.ts` — `Directory.Data/music/` + `manifest.json` |
+| Theme → play | `resolveThemeMusic` → `playResolvedMusic` (`audioService`) |
+| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + core fallback |
+| Catálogo remoto mock | `remoteMusicCatalog.mock.ts` (23 ids; `.invalid` **nunca** fetch) |
+| Playback URL provider | `musicRemoteUrlProvider.ts` (overrides só teste/smoke) |
+| Prepare remoto | `musicRemotePrepare.ts` — Android download/cache; web stream |
+| Cache Android | `musicCacheService.ts` — `Directory.Data/music/` + SHA-256 |
+| Local URI | `musicLocalUri.ts` — `getUri` + `convertFileSrc` |
 | Plugin | `@capacitor/filesystem` (Capacitor 6) |
-| Modos settings | **Theme default** / **Off** (`sueca-music-mode`) — sem UI remota / download |
-| Volume | `0.28` (mesmo nível do antigo ambiance) |
-| Legacy | `ambiance.ogg` **removido** do runtime |
+| Modos settings | **Theme default** / **Off** — sem UI remota |
+| Volume | `0.28` |
+| Smoke opcional | `VITE_MUSIC_REMOTE_SMOKE=true` mapeia 1 remote → OGG core bundled |
+
+### Playback
+
+| Plataforma | Comportamento |
+|------------|---------------|
+| **Android** | cache hit → tocar local; miss → download+SHA → cache → tocar; falha → core (stale válido mantém-se) |
+| **Web** | stream URL remota (HTTP cache); erro → core |
+| **Produção actual** | sem URL remota real → preferred remote resolve para core via fallback |
 
 ### 6 faixas core (bundled)
 
@@ -193,17 +203,14 @@ Arquitectura: **D — HYBRID** (6 core bundled; catálogo remoto **mock**; cache
 | `meso-aztec-relic` | Mesoamerican | StockTune PD/commercial |
 | `andes-peruvian` | Andes / Mythic gold | Pixabay Content License |
 
-### Catálogo remoto + cache (MUSIC-REMOTE-MOCK-01 / MUSIC-ANDROID-CACHE-01)
+### Catálogo remoto + cache + playback
 
-- **23** candidatas RELEASE OK (não-core) em memória; URLs mock **bloqueadas** para fetch.
-- Cache nativo: `music/{trackId}/{version}/{trackId}.ogg` + verificação SHA-256; download atómico via `.part`.
+- **23** candidatas RELEASE OK (não-core); URLs mock bloqueadas.
 - Disponibilidade: `AVAILABLE_LOCAL_CORE` \| `AVAILABLE_LOCAL_CACHE` \| `REMOTE_AVAILABLE` \| `UNAVAILABLE`.
-- `resolveThemeMusic` pode devolver cache local (`readyForPlayback: true`) ou remote metadata (`readyForPlayback: false`).
-- **Theme Default** continua a tocar só core via `resolveMusicTrackIdForTheme` (30/30 → uma das 6; desconhecido → `casino-jazz`).
-- **Web:** sem Filesystem cache; remotes ficam `REMOTE_AVAILABLE`.
-- **R2 / CDN real:** ainda não. Próxima fase: remote playback/fallback (ainda sem R2 se necessário).
+- Theme Default usa preferred track internamente; sem R2 o resultado audível continua core.
+- **R2 / CDN real:** ainda não configurado.
 
-Preparação / proveniência detalhada: staging `_temp/_musicas/` (gitignored) — `MUSIC_CORE_CATALOG.json`, `MUSIC_PROVENANCE.md`, `MUSIC_REMOTE_ARCHITECTURE.md`.
+Preparação / proveniência: `_temp/_musicas/` (gitignored).
 
 ## Licenças
 

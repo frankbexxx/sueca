@@ -130,6 +130,24 @@ const byId = new Map<string, RemoteMusicTrack>(
   REMOTE_MUSIC_CATALOG.tracks.map((t) => [t.id, t])
 );
 
+/** Runtime overlays (tests / controlled smoke) — never ship production CDN here. */
+const overlays = new Map<string, RemoteMusicTrack>();
+
+export function upsertRemoteMusicTrackOverlay(track: RemoteMusicTrack): void {
+  if (!isValidRemoteMusicTrack(track)) return;
+  overlays.set(track.id, track);
+  byId.set(track.id, track);
+}
+
+export function clearRemoteMusicTrackOverlays(): void {
+  for (const id of overlays.keys()) {
+    const original = REMOTE_MUSIC_CATALOG.tracks.find((t) => t.id === id);
+    if (original) byId.set(id, original);
+    else byId.delete(id);
+  }
+  overlays.clear();
+}
+
 export function getRemoteMusicTrack(id: string | null | undefined): RemoteMusicTrack | null {
   if (!id) return null;
   return byId.get(id) ?? null;
@@ -140,7 +158,7 @@ export function isRemoteMusicTrackId(id: string): boolean {
 }
 
 export function listRemoteMusicTracks(): readonly RemoteMusicTrack[] {
-  return REMOTE_MUSIC_CATALOG.tracks;
+  return Array.from(byId.values());
 }
 
 export function getRemoteCatalogVersion(): number {

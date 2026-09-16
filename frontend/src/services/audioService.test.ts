@@ -183,4 +183,57 @@ describe('audioService', () => {
     await setMusicTrack('not-real');
     expect(getCurrentMusicTrack()).toBe(FALLBACK_MUSIC_TRACK_ID);
   });
+
+  it('remote without playback URL falls back to core before fading out forever', async () => {
+    const { audioMock, play, load } = makeAudioMock();
+    // @ts-expect-error test mock
+    global.Audio = vi.fn(() => audioMock);
+    audioMock.paused = false;
+    playMusic();
+    expect(play).toHaveBeenCalled();
+
+    // khmer-roneat has no real URL → family core yamatai-shizima
+    await setMusicTrack('khmer-roneat');
+    expect(getCurrentMusicTrack()).toBe('yamatai-shizima');
+    expect(load).toHaveBeenCalled();
+  });
+
+  it('web remote override streams then error falls back once', async () => {
+    const { setRemotePlaybackUrlOverride, clearRemotePlaybackUrlOverrides } =
+      await import('../audio/musicRemoteUrlProvider');
+    const { __setRemotePlaybackPlatformForTests, __resetRemotePlaybackForTests } =
+      await import('../audio/musicRemotePrepare');
+    const {
+      upsertRemoteMusicTrackOverlay,
+      clearRemoteMusicTrackOverlays,
+      getRemoteMusicTrack
+    } = await import('../audio/remoteMusicCatalog');
+
+    __setRemotePlaybackPlatformForTests('web');
+    const base = getRemoteMusicTrack('celtic-traveler')!;
+    upsertRemoteMusicTrackOverlay({
+      ...base,
+      url: 'https://cdn.test/stream.ogg'
+    });
+    setRemotePlaybackUrlOverride('celtic-traveler', 'https://cdn.test/stream.ogg');
+
+    const { audioMock, listeners } = makeAudioMock();
+    // @ts-expect-error test mock
+    global.Audio = vi.fn(() => audioMock);
+
+    await setMusicTrack('celtic-traveler');
+    expect(getCurrentMusicTrack()).toBe('celtic-traveler');
+    expect(String(audioMock.src)).toContain('cdn.test/stream.ogg');
+
+    const errs = listeners.get('error') ?? [];
+    for (const cb of errs) cb();
+    await Promise.resolve();
+    await Promise.resolve();
+    // Celtic family core fallback
+    expect(getCurrentMusicTrack()).toBe('nordic-kalte');
+
+    clearRemotePlaybackUrlOverrides();
+    clearRemoteMusicTrackOverlays();
+    __resetRemotePlaybackForTests();
+  });
 });

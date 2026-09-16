@@ -4,10 +4,22 @@ import {
   MUSIC_VOLUME,
   MusicTrackId,
   getMusicTrack,
-  getMusicTrackUrl
+  getMusicTrackUrl,
+  isMusicTrackId
 } from '../constants/musicCatalog';
 import { initMusicCache } from '../audio/musicCacheService';
-import { resolveMusicTrackIdForTheme } from '../constants/musicThemeMap';
+import {
+  ResolvedMusicTrack,
+  resolveMusicTrack,
+  resolveThemeMusic
+} from '../audio/musicResolver';
+import { ensureRemotePlayable } from '../audio/musicRemotePrepare';
+import { bootstrapMusicRemoteSmokeIfEnabled } from '../audio/musicRemoteSmoke';
+import { getRemoteMusicTrack } from '../audio/remoteMusicCatalog';
+import {
+  FAMILY_CORE_TRACK,
+  getThemeMusicPreference
+} from '../constants/musicThemeMap';
 import type { ThemeId } from './billingService';
 import { getActiveTheme } from './billingService';
 
@@ -37,9 +49,12 @@ let preloaded = false;
 
 let musicAudio: HTMLAudioElement | null = null;
 let musicPlaying = false;
-let currentTrackId: MusicTrackId = FALLBACK_MUSIC_TRACK_ID;
+/** Current music id (core or remote). */
+let currentTrackId: string = FALLBACK_MUSIC_TRACK_ID;
 let fadeTimer: ReturnType<typeof setInterval> | null = null;
 let switchToken = 0;
+/** Prevents infinite fallback loops on error (max 1 remote→core per switch). */
+let fallbackUsedForToken = -1;
 
 export function isSoundEnabled(): boolean {
   if (typeof window === 'undefined') return false;
@@ -109,25 +124,109 @@ function fadeTo(
 
 function ensureMusicAudio(): HTMLAudioElement {
   if (!musicAudio) {
-    musicAudio = new Audio(getMusicTrackUrl(currentTrackId));
+    musicAudio = new Audio(getMusicTrackUrl(FALLBACK_MUSIC_TRACK_ID));
     musicAudio.loop = true;
     musicAudio.preload = 'auto';
     musicAudio.volume = MUSIC_VOLUME;
     musicAudio.addEventListener('error', () => {
-      if (currentTrackId === FALLBACK_MUSIC_TRACK_ID) return;
-      void setMusicTrack(FALLBACK_MUSIC_TRACK_ID, { forceRestart: true });
+      void handleMusicPlaybackError();
     });
   }
   return musicAudio;
 }
 
-export function getCurrentMusicTrack(): MusicTrackId {
+async function handleMusicPlaybackError(): Promise<void> {
+  if (fallbackUsedForToken === switchToken) return;
+  if (currentTrackId === FALLBACK_MUSIC_TRACK_ID) return;
+
+  fallbackUsedForToken = switchToken;
+  let fallbackId: MusicTrackId = FALLBACK_MUSIC_TRACK_ID;
+  if (!isMusicTrackId(currentTrackId)) {
+    const remote = getRemoteMusicTrack(currentTrackId);
+    fallbackId = remote
+      ? FAMILY_CORE_TRACK[remote.family] ?? FALLBACK_MUSIC_TRACK_ID
+      : getThemeMusicPreference(getActiveTheme()).fallbackCoreTrackId;
+  }
+
+  await applyCoreTrack(fallbackId, { forceRestart: true, fromError: true });
+}
+
+export function getCurrentMusicTrack(): string {
   return currentTrackId;
 }
 
-export async function setMusicTrack(
-  trackId: string,
-  options?: { forceRestart?: boolean }
+type ApplyOptions = {
+  forceRestart?: boolean;
+  fromError?: boolean;
+  /** Skip prepare when URL already known (internal). */
+  playableUrl?: string;
+};
+
+async function resolvePlayableTarget(
+  trackId: string
+): Promise<{ id: string; url: string; remoteAttempted: boolean }> {
+  const resolved = resolveMusicTrack(trackId);
+  if (resolved.source === 'core') {
+    return {
+      id: resolved.id,
+      url: resolved.playableUrl,
+      remoteAttempted: false
+    };
+  }
+
+  // One remote prepare attempt per call.
+  const prepared = await ensureRemotePlayable(resolved.id);
+  if (prepared.ok) {
+    return {
+      id: resolved.id,
+      url: prepared.url,
+      remoteAttempted: true
+    };
+  }
+
+  const fallback = getMusicTrack(resolved.fallbackTrackId);
+  return {
+    id: fallback.id,
+    url: getMusicTrackUrl(fallback.id),
+    remoteAttempted: true
+  };
+}
+
+function applySrcToAudio(
+  audio: HTMLAudioElement,
+  token: number,
+  nextId: string,
+  nextUrl: string,
+  wasPlaying: boolean
+): void {
+  if (token !== switchToken) return;
+  currentTrackId = nextId;
+  audio.src = nextUrl;
+  audio.loop = true;
+  audio.load();
+  if (
+    wasPlaying ||
+    (isSoundEnabled() && getMusicMode() === 'theme-default' && musicPlaying)
+  ) {
+    audio.volume = 0;
+    void audio
+      .play()
+      .then(() => {
+        if (token !== switchToken) return;
+        musicPlaying = true;
+        fadeTo(audio, MUSIC_VOLUME, FADE_MS);
+      })
+      .catch(() => {
+        musicPlaying = false;
+      });
+  } else {
+    audio.volume = MUSIC_VOLUME;
+  }
+}
+
+async function applyCoreTrack(
+  trackId: MusicTrackId | string,
+  options?: ApplyOptions
 ): Promise<void> {
   if (typeof window === 'undefined') return;
   const next = getMusicTrack(trackId).id;
@@ -135,55 +234,132 @@ export async function setMusicTrack(
     return;
   }
 
-  const token = ++switchToken;
+  const token = options?.fromError ? switchToken : ++switchToken;
+  if (!options?.fromError) {
+    fallbackUsedForToken = -1;
+  }
   const audio = ensureMusicAudio();
-  const wasPlaying = musicPlaying && !audio.paused && isSoundEnabled() && getMusicMode() === 'theme-default';
+  const wasPlaying =
+    musicPlaying &&
+    !audio.paused &&
+    isSoundEnabled() &&
+    getMusicMode() === 'theme-default';
+  const url = options?.playableUrl ?? getMusicTrackUrl(next);
 
-  const applySrc = () => {
-    if (token !== switchToken) return;
-    currentTrackId = next;
-    audio.src = getMusicTrackUrl(next);
-    audio.loop = true;
-    audio.load();
-    if (wasPlaying || (isSoundEnabled() && getMusicMode() === 'theme-default' && musicPlaying)) {
-      audio.volume = 0;
-      void audio
-        .play()
-        .then(() => {
-          if (token !== switchToken) return;
-          musicPlaying = true;
-          fadeTo(audio, MUSIC_VOLUME, FADE_MS);
-        })
-        .catch(() => {
-          musicPlaying = false;
-        });
-    } else {
-      audio.volume = MUSIC_VOLUME;
-    }
-  };
+  const apply = () => applySrcToAudio(audio, token, next, url, wasPlaying);
 
   if (wasPlaying && !audio.paused) {
     fadeTo(audio, 0, FADE_MS, () => {
       if (token !== switchToken) return;
       audio.pause();
-      applySrc();
+      apply();
     });
   } else {
-    applySrc();
+    apply();
   }
 }
 
+/**
+ * Play a resolved hybrid track. Remotes are prepared (download/stream) BEFORE
+ * fading out the current bed to avoid long silence during Android download.
+ */
+export async function playResolvedMusic(
+  resolved: ResolvedMusicTrack,
+  options?: { forceRestart?: boolean }
+): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (getMusicMode() === 'off' || !isSoundEnabled()) {
+    if (resolved.source === 'core' && resolved.id === currentTrackId) return;
+  }
+
+  if (
+    resolved.id === currentTrackId &&
+    !options?.forceRestart &&
+    resolved.source === 'core'
+  ) {
+    return;
+  }
+
+  const token = ++switchToken;
+  fallbackUsedForToken = -1;
+  const audio = ensureMusicAudio();
+  const wasPlaying =
+    musicPlaying &&
+    !audio.paused &&
+    isSoundEnabled() &&
+    getMusicMode() === 'theme-default';
+
+  let nextId = resolved.id;
+  let nextUrl = resolved.playableUrl;
+
+  if (resolved.source === 'remote') {
+    // Keep current audio playing while preparing remote.
+    const prepared = await ensureRemotePlayable(resolved.id);
+    if (token !== switchToken) return;
+    if (prepared.ok) {
+      nextId = resolved.id;
+      nextUrl = prepared.url;
+    } else {
+      const core = getMusicTrack(resolved.fallbackTrackId);
+      nextId = core.id;
+      nextUrl = getMusicTrackUrl(core.id);
+      fallbackUsedForToken = token;
+    }
+  } else {
+    nextId = resolved.id;
+    nextUrl = getMusicTrackUrl(resolved.id as MusicTrackId);
+  }
+
+  if (nextId === currentTrackId && !options?.forceRestart && audio.src) {
+    // Same bed already playing (e.g. remote failed → same core as current).
+    return;
+  }
+
+  const apply = () => applySrcToAudio(audio, token, nextId, nextUrl, wasPlaying);
+
+  if (wasPlaying && !audio.paused) {
+    fadeTo(audio, 0, FADE_MS, () => {
+      if (token !== switchToken) return;
+      audio.pause();
+      apply();
+    });
+  } else {
+    apply();
+  }
+}
+
+export async function setMusicTrack(
+  trackId: string,
+  options?: { forceRestart?: boolean }
+): Promise<void> {
+  if (typeof window === 'undefined') return;
+
+  if (isMusicTrackId(trackId)) {
+    await applyCoreTrack(trackId, options);
+    return;
+  }
+
+  const remote = getRemoteMusicTrack(trackId);
+  const fallbackTrackId = remote
+    ? FAMILY_CORE_TRACK[remote.family] ?? FALLBACK_MUSIC_TRACK_ID
+    : FALLBACK_MUSIC_TRACK_ID;
+  const resolved = resolveMusicTrack(trackId, { fallbackTrackId });
+  await playResolvedMusic(resolved, options);
+}
+
 export function syncMusicToTheme(themeId: ThemeId): void {
-  const trackId = resolveMusicTrackIdForTheme(themeId);
-  void setMusicTrack(trackId);
+  const resolved = resolveThemeMusic(themeId);
+  void playResolvedMusic(resolved);
 }
 
 export function preloadMusic(): void {
   if (typeof window === 'undefined') return;
-  currentTrackId = resolveMusicTrackIdForTheme(getActiveTheme());
+  const resolved = resolveThemeMusic(getActiveTheme());
+  currentTrackId =
+    resolved.source === 'core' ? resolved.id : resolved.fallbackTrackId;
   ensureMusicAudio();
-  // Android: load Directory.Data/music manifest (no-op on web). Never throws.
   void initMusicCache();
+  void bootstrapMusicRemoteSmokeIfEnabled();
 }
 
 /** @deprecated Use preloadMusic */
@@ -192,7 +368,9 @@ export function preloadAmbiance(): void {
 }
 
 export function playMusic(): void {
-  if (typeof window === 'undefined' || !isSoundEnabled() || getMusicMode() === 'off') return;
+  if (typeof window === 'undefined' || !isSoundEnabled() || getMusicMode() === 'off') {
+    return;
+  }
 
   try {
     const audio = ensureMusicAudio();
@@ -316,4 +494,10 @@ export function resetAudioServiceForTests(): void {
   currentTrackId = FALLBACK_MUSIC_TRACK_ID;
   preloaded = false;
   switchToken = 0;
+  fallbackUsedForToken = -1;
+}
+
+/** Exposed for tests — resolve playable target with one remote attempt. */
+export async function __resolvePlayableTargetForTests(trackId: string) {
+  return resolvePlayableTarget(trackId);
 }
