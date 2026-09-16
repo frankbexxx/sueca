@@ -20,7 +20,13 @@ import { endSession } from './services/multiplayerClient';
 import { consumeLandingReturnFlag } from './services/appLifecycle';
 import { getActiveTheme, ThemeId } from './services/billingService';
 import { useLanguage } from './i18n/useLanguage';
-import { playUiClick, preloadAmbiance, preloadSfx, startAmbiance } from './services/audioService';
+import {
+  playMusic,
+  playUiClick,
+  preloadMusic,
+  preloadSfx,
+  syncMusicToTheme
+} from './services/audioService';
 import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
 import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
@@ -51,9 +57,10 @@ function App() {
 
   useEffect(() => {
     preloadSfx();
-    preloadAmbiance();
+    preloadMusic();
+    syncMusicToTheme(getActiveTheme());
     const onClick = (event: MouseEvent) => {
-      startAmbiance();
+      playMusic();
       const target = (event.target as Element | null)?.closest(UI_CLICK_SELECTOR);
       if (!target) return;
       if (target instanceof HTMLButtonElement && target.disabled) return;
@@ -197,6 +204,7 @@ function App() {
 
   const handleThemeChange = useCallback((theme: ThemeId) => {
     setActiveTheme(theme);
+    syncMusicToTheme(theme);
   }, []);
 
   const handleShellBack = useCallback(() => {

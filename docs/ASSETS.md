@@ -15,6 +15,7 @@
 | UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
 | UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
 | SFX | `frontend/public/assets/sfx/*.ogg` | Kenney CC0 — ver secção abaixo |
+| Música core | `frontend/public/assets/music/core/*.ogg` | 6 beds tema (híbrido v1) — ver secção abaixo |
 | Ícones app | `image/ico/buga_ico_draw/` | Usado no Capacitor |
 
 ### Registry
@@ -161,7 +162,36 @@ Staging de referência (gitignored `_temp/`):
 | `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal |
 | `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI |
 
-Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen). Código: `frontend/src/services/audioService.ts`.
+Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Código: `frontend/src/services/audioService.ts`.
+
+## Música de ambiente (core v1 — híbrido)
+
+Arquitectura: **D — HYBRID** (core bundled agora; catálogo remoto/R2 mais tarde).
+
+| Item | Valor |
+|------|--------|
+| Path | `frontend/public/assets/music/core/*.ogg` |
+| Catálogo TS | `frontend/src/constants/musicCatalog.ts` |
+| Theme → track | `frontend/src/constants/musicThemeMap.ts` |
+| Modos settings | **Theme default** / **Off** (`sueca-music-mode`) |
+| Volume | `0.28` (mesmo nível do antigo ambiance) |
+| Legacy | `ambiance.ogg` **removido** do runtime |
+
+### 6 faixas core (bundled)
+
+| id | família | licença (resumo) |
+|----|---------|------------------|
+| `casino-jazz` | Casino Jazz / Lounge | Pixabay Content License |
+| `nordic-kalte` | Nordic / Dark / Forest fallback | Pixabay Content License |
+| `maghreb-oud` | Maghreb / Med / Africa fallback | Pixabay Content License |
+| `yamatai-shizima` | Japanese / Asia fallback | PeriTune Konohana (comercial OK; crédito opcional) |
+| `meso-aztec-relic` | Mesoamerican | StockTune PD/commercial |
+| `andes-peruvian` | Andes / Mythic gold | Pixabay Content License |
+
+Os **30 temas** built-in resolvem sempre para uma destas 6 (fallback desconhecido → `casino-jazz`).  
+Restantes faixas da shortlist BALANCED **não** estão no runtime ainda (fase remota).
+
+Preparação / proveniência detalhada: staging `_temp/_musicas/` (gitignored) — `MUSIC_CORE_CATALOG.json`, `MUSIC_PROVENANCE.md`.
 
 ## Licenças
 

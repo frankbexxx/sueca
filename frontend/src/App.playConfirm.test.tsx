@@ -47,9 +47,10 @@ vi.mock('./components/navigation/BottomNav', () => ({
 
 vi.mock('./services/audioService', () => ({
   playUiClick: vi.fn(),
-  preloadAmbiance: vi.fn(),
+  preloadMusic: vi.fn(),
   preloadSfx: vi.fn(),
-  startAmbiance: vi.fn()
+  playMusic: vi.fn(),
+  syncMusicToTheme: vi.fn()
 }));
 
 vi.mock('./navigation/useShellBrowserBack', () => ({

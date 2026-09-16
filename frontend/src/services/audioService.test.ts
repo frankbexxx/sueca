@@ -1,26 +1,60 @@
+import { vi } from 'vitest';
 import { CARD_PLAY_VARIANTS, SFX_PATHS } from '../constants/sfxAssets';
-import { AMBIANCE_PATH } from '../constants/musicAssets';
+import { coreTrackPath } from '../constants/musicAssets';
+import { FALLBACK_MUSIC_TRACK_ID } from '../constants/musicCatalog';
 import {
+  getCurrentMusicTrack,
+  getMusicMode,
   isSoundEnabled,
   playDealSound,
   playGameLoseSound,
   playGameWinSound,
+  playMusic,
   playRoundEndSound,
   playRoundStartSound,
   playShuffleSound,
   playSfx,
   playTrickCollectSound,
+  preloadMusic,
   preloadSfx,
   resetAudioServiceForTests,
+  setMusicMode,
+  setMusicTrack,
   setSoundEnabled,
-  startAmbiance,
-  stopAmbiance
+  stopMusic,
+  syncMusicToTheme
 } from './audioService';
+
+function makeAudioMock() {
+  const play = vi.fn().mockResolvedValue(undefined);
+  const pause = vi.fn();
+  const load = vi.fn();
+  const listeners = new Map<string, Array<() => void>>();
+  const audioMock: Record<string, unknown> = {
+    loop: false,
+    preload: '',
+    volume: 1,
+    pause,
+    play,
+    load,
+    paused: true,
+    currentTime: 0,
+    src: '',
+    addEventListener: (event: string, cb: () => void) => {
+      const list = listeners.get(event) ?? [];
+      list.push(cb);
+      listeners.set(event, list);
+    },
+    cloneNode: () => ({ ...audioMock, play, volume: 1 })
+  };
+  return { audioMock, play, pause, load, listeners };
+}
 
 describe('audioService', () => {
   beforeEach(() => {
     resetAudioServiceForTests();
     localStorage.clear();
+    vi.useRealTimers();
   });
 
   it('exports non-empty sfx paths including deal, shuffle, trick-collect, round/game cues', () => {
@@ -53,6 +87,13 @@ describe('audioService', () => {
     expect(isSoundEnabled()).toBe(true);
   });
 
+  it('music mode defaults to theme-default and persists Off', () => {
+    expect(getMusicMode()).toBe('theme-default');
+    setMusicMode('off');
+    expect(getMusicMode()).toBe('off');
+    expect(localStorage.getItem('sueca-music-mode')).toBe('off');
+  });
+
   it('playSfx does not throw when sound is disabled', () => {
     localStorage.setItem('sueca-sound-enabled', 'false');
     expect(() => playSfx('uiClick')).not.toThrow();
@@ -66,19 +107,9 @@ describe('audioService', () => {
   });
 
   it('mute blocks deal/shuffle/trick-collect and round/game cues', () => {
-    const play = jest.fn().mockResolvedValue(undefined);
-    const audioMock = {
-      loop: false,
-      preload: '',
-      volume: 1,
-      pause: jest.fn(),
-      play,
-      paused: true,
-      currentTime: 0,
-      cloneNode: () => ({ ...audioMock, play, volume: 1 })
-    };
+    const { audioMock, play } = makeAudioMock();
     // @ts-expect-error test mock
-    global.Audio = jest.fn(() => audioMock);
+    global.Audio = vi.fn(() => audioMock);
 
     localStorage.setItem('sueca-sound-enabled', 'false');
     playDealSound();
@@ -91,25 +122,65 @@ describe('audioService', () => {
     expect(play).not.toHaveBeenCalled();
   });
 
-  it('preloadSfx can be called without throwing', () => {
+  it('preloadSfx / preloadMusic can be called without throwing', () => {
     expect(() => preloadSfx()).not.toThrow();
+    expect(() => preloadMusic()).not.toThrow();
   });
 
-  it('exports ambiance path', () => {
-    expect(AMBIANCE_PATH).toMatch(/\/assets\/music\/ambiance\.ogg$/);
+  it('core track paths use /assets/music/core/', () => {
+    expect(coreTrackPath('casino-jazz.ogg')).toMatch(/\/assets\/music\/core\/casino-jazz\.ogg$/);
   });
 
-  it('setSoundEnabled stops ambiance when disabled', () => {
-    const pause = jest.fn();
-    const play = jest.fn().mockResolvedValue(undefined);
-    const audioMock = { loop: false, preload: '', volume: 1, pause, play, paused: false, currentTime: 0 };
+  it('setSoundEnabled stops music when disabled', async () => {
+    const { audioMock, pause, play } = makeAudioMock();
     // @ts-expect-error test mock
-    global.Audio = jest.fn(() => audioMock);
+    global.Audio = vi.fn(() => audioMock);
 
-    startAmbiance();
+    playMusic();
+    expect(play).toHaveBeenCalled();
     setSoundEnabled(false);
     expect(pause).toHaveBeenCalled();
     expect(isSoundEnabled()).toBe(false);
-    stopAmbiance();
+    stopMusic();
+  });
+
+  it('syncMusicToTheme changes track and skips restart for same bed', async () => {
+    const { audioMock, load } = makeAudioMock();
+    // @ts-expect-error test mock
+    global.Audio = vi.fn(() => audioMock);
+
+    syncMusicToTheme('classic');
+    await setMusicTrack('casino-jazz');
+    expect(getCurrentMusicTrack()).toBe('casino-jazz');
+    const loadsAfterClassic = load.mock.calls.length;
+
+    syncMusicToTheme('classic');
+    await setMusicTrack('casino-jazz');
+    expect(load.mock.calls.length).toBe(loadsAfterClassic);
+
+    syncMusicToTheme('yamatai');
+    await Promise.resolve();
+    expect(getCurrentMusicTrack()).toBe('yamatai-shizima');
+  });
+
+  it('music Off stops playback while SFX can still play when unmuted', async () => {
+    const { audioMock, play, pause } = makeAudioMock();
+    // @ts-expect-error test mock
+    global.Audio = vi.fn(() => audioMock);
+
+    playMusic();
+    setMusicMode('off');
+    expect(pause).toHaveBeenCalled();
+    play.mockClear();
+    playDealSound();
+    expect(play).toHaveBeenCalled();
+  });
+
+  it('failed unknown track id falls back to casino-jazz via getMusicTrack', async () => {
+    const { audioMock } = makeAudioMock();
+    // @ts-expect-error test mock
+    global.Audio = vi.fn(() => audioMock);
+    await setMusicTrack('not-real');
+    expect(getCurrentMusicTrack()).toBe(FALLBACK_MUSIC_TRACK_ID);
   });
 });

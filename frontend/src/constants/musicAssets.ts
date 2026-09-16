@@ -1,5 +1,8 @@
 import { publicUrl } from '../config/runtimeEnv';
 
-const base = `${publicUrl()}/assets/music`;
+const musicBase = `${publicUrl()}/assets/music`;
+const coreBase = `${musicBase}/core`;
 
-export const AMBIANCE_PATH = `${base}/ambiance.ogg`;
+export function coreTrackPath(fileName: string): string {
+  return `${coreBase}/${fileName}`;
+}

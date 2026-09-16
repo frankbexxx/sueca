@@ -297,6 +297,9 @@ export interface Translations {
     credits: string;
     playerName: string;
     sound: string;
+    music: string;
+    musicThemeDefault: string;
+    musicOff: string;
     language: string;
     editName: string;
     saveName: string;
@@ -553,6 +556,9 @@ export const translations: Record<Language, Translations> = {
       credits: 'Créditos',
       playerName: 'O teu nome',
       sound: 'Som',
+      music: 'Música',
+      musicThemeDefault: 'Tema por defeito',
+      musicOff: 'Desligada',
       language: 'Idioma',
       editName: 'Editar nome',
       saveName: 'Guardar',
@@ -903,6 +909,9 @@ export const translations: Record<Language, Translations> = {
       credits: 'Credits',
       playerName: 'Your name',
       sound: 'Sound',
+      music: 'Music',
+      musicThemeDefault: 'Theme default',
+      musicOff: 'Off',
       language: 'Language',
       editName: 'Edit name',
       saveName: 'Save',
