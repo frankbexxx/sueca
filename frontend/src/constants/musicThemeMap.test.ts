@@ -3,6 +3,8 @@ import { CORE_MUSIC_TRACKS, FALLBACK_MUSIC_TRACK_ID } from './musicCatalog';
 import {
   FAMILY_CORE_TRACK,
   THEME_MUSIC_FAMILY,
+  THEME_PREFERRED_TRACK_ID,
+  getThemeMusicPreference,
   resolveMusicTrackIdForTheme
 } from './musicThemeMap';
 
@@ -40,6 +42,17 @@ describe('musicThemeMap', () => {
   it('every family has a core fallback', () => {
     for (const family of Object.values(THEME_MUSIC_FAMILY)) {
       expect(FAMILY_CORE_TRACK[family]).toBeTruthy();
+    }
+  });
+
+  it('exposes preferred + fallbackCore for all 30 themes', () => {
+    expect(Object.keys(THEME_PREFERRED_TRACK_ID)).toHaveLength(30);
+    const coreIds = new Set(CORE_MUSIC_TRACKS.map((t) => t.id));
+    for (const theme of BUILT_IN_THEMES) {
+      const pref = getThemeMusicPreference(theme);
+      expect(pref.preferredTrackId).toBe(THEME_PREFERRED_TRACK_ID[theme]);
+      expect(coreIds.has(pref.fallbackCoreTrackId)).toBe(true);
+      expect(pref.fallbackCoreTrackId).toBe(resolveMusicTrackIdForTheme(theme));
     }
   });
 });

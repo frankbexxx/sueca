@@ -43,7 +43,7 @@ export const THEME_MUSIC_FAMILY: Record<BuiltInThemeId, MusicFamily> = {
   nanmadol: 'Polynesian / Pacific'
 };
 
-/** Core fallback track per family (remote beds not shipped yet). */
+/** Core fallback track per family (always playable from APK/web bundle). */
 export const FAMILY_CORE_TRACK: Record<MusicFamily, MusicTrackId> = {
   'Casino Jazz / Lounge': 'casino-jazz',
   'Nordic / Arctic': 'nordic-kalte',
@@ -66,6 +66,48 @@ export const FAMILY_CORE_TRACK: Record<MusicFamily, MusicTrackId> = {
   'Polynesian / Pacific': 'nordic-kalte'
 };
 
+/**
+ * Preferred bed per theme (MUSIC_THEME_DEFAULTS_PLAN) — may be core or remote id.
+ * Playback still uses core via `resolveMusicTrackIdForTheme` until remote play is wired.
+ */
+export const THEME_PREFERRED_TRACK_ID: Record<BuiltInThemeId, string> = {
+  classic: 'casino-jazz',
+  forest: 'celtic-nature',
+  midnight: 'nordic-kalte',
+  thule: 'nordic-kalte',
+  hyperborea: 'nordic-kalte',
+  'skara-brae': 'celtic-traveler',
+  avalon: 'celtic-traveler',
+  knossos: 'ancient-temple',
+  thebes: 'ancient-temple',
+  cartago: 'andalusian-perc',
+  atlantida: 'nordic-kalte',
+  babylon: 'maghreb-oud',
+  ur: 'maghreb-oud',
+  petra: 'sahara-sunset',
+  persepolis: 'andalusian-dreams',
+  axum: 'ethiopia-groove',
+  meroe: 'ethiopia-groove',
+  'great-zimbabwe': 'southern-mara',
+  xanadu: 'mongolia-atlas',
+  shambhala: 'tibet-ocean',
+  'mohenjo-daro': 'ancient-echoes',
+  yamatai: 'yamatai-shizima',
+  angkor: 'khmer-roneat',
+  tikal: 'meso-aztec-relic',
+  teotihuacan: 'meso-aztec-relic',
+  tiwanaku: 'andes-peruvian',
+  caral: 'andes-peruvian',
+  'el-dorado': 'andes-peruvian',
+  rapanui: 'hawaii-relax',
+  nanmadol: 'hawaii-relax'
+};
+
+export type ThemeMusicPreference = {
+  preferredTrackId: string;
+  fallbackCoreTrackId: MusicTrackId;
+};
+
 const BUILT_IN = new Set<string>(Object.keys(THEME_MUSIC_FAMILY));
 
 export function getMusicFamilyForTheme(themeId: ThemeId): MusicFamily {
@@ -75,6 +117,32 @@ export function getMusicFamilyForTheme(themeId: ThemeId): MusicFamily {
   return 'Casino Jazz / Lounge';
 }
 
+/** Preferred + core fallback for a theme (unknown → casino-jazz / casino-jazz). */
+export function getThemeMusicPreference(themeId: ThemeId): ThemeMusicPreference {
+  try {
+    if (BUILT_IN.has(themeId as string)) {
+      const builtIn = themeId as BuiltInThemeId;
+      const family = THEME_MUSIC_FAMILY[builtIn];
+      const fallbackCoreTrackId =
+        FAMILY_CORE_TRACK[family] ?? FALLBACK_MUSIC_TRACK_ID;
+      return {
+        preferredTrackId: THEME_PREFERRED_TRACK_ID[builtIn] ?? fallbackCoreTrackId,
+        fallbackCoreTrackId
+      };
+    }
+  } catch {
+    /* fall through */
+  }
+  return {
+    preferredTrackId: FALLBACK_MUSIC_TRACK_ID,
+    fallbackCoreTrackId: FALLBACK_MUSIC_TRACK_ID
+  };
+}
+
+/**
+ * Playable core track for Theme Default (unchanged behaviour).
+ * Always returns a bundled id — remotes are not auto-played yet.
+ */
 export function resolveMusicTrackIdForTheme(themeId: ThemeId): MusicTrackId {
   try {
     const family = getMusicFamilyForTheme(themeId);

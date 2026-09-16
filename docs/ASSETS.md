@@ -166,14 +166,17 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Códig
 
 ## Música de ambiente (core v1 — híbrido)
 
-Arquitectura: **D — HYBRID** (core bundled agora; catálogo remoto/R2 mais tarde).
+Arquitectura: **D — HYBRID** (6 core bundled; catálogo remoto **mock** + resolver híbrido; sem rede/R2/cache ainda).
 
 | Item | Valor |
 |------|--------|
-| Path | `frontend/public/assets/music/core/*.ogg` |
-| Catálogo TS | `frontend/src/constants/musicCatalog.ts` |
-| Theme → track | `frontend/src/constants/musicThemeMap.ts` |
-| Modos settings | **Theme default** / **Off** (`sueca-music-mode`) |
+| Path core | `frontend/public/assets/music/core/*.ogg` |
+| Catálogo core | `frontend/src/constants/musicCatalog.ts` |
+| Theme → core play | `frontend/src/constants/musicThemeMap.ts` (`resolveMusicTrackIdForTheme`) |
+| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + `getThemeMusicPreference` |
+| Catálogo remoto mock | `frontend/src/audio/remoteMusicCatalog.mock.ts` (23 ids; URLs `music.example.invalid`) |
+| Resolver híbrido | `frontend/src/audio/musicResolver.ts` (`resolveMusicTrack` / `resolveThemeMusic`) |
+| Modos settings | **Theme default** / **Off** (`sueca-music-mode`) — sem UI remota |
 | Volume | `0.28` (mesmo nível do antigo ambiance) |
 | Legacy | `ambiance.ogg` **removido** do runtime |
 
@@ -188,10 +191,14 @@ Arquitectura: **D — HYBRID** (core bundled agora; catálogo remoto/R2 mais tar
 | `meso-aztec-relic` | Mesoamerican | StockTune PD/commercial |
 | `andes-peruvian` | Andes / Mythic gold | Pixabay Content License |
 
-Os **30 temas** built-in resolvem sempre para uma destas 6 (fallback desconhecido → `casino-jazz`).  
-Restantes faixas da shortlist BALANCED **não** estão no runtime ainda (fase remota).
+### Catálogo remoto (mock — MUSIC-REMOTE-MOCK-01)
 
-Preparação / proveniência detalhada: staging `_temp/_musicas/` (gitignored) — `MUSIC_CORE_CATALOG.json`, `MUSIC_PROVENANCE.md`.
+- **23** candidatas RELEASE OK (não-core) em memória; **sem fetch**, sem Filesystem, sem Cloudflare.
+- `resolveThemeMusic` pode devolver `source: 'remote'` com URL mock; `readyForPlayback: false`.
+- **Theme Default** continua a tocar só core via `resolveMusicTrackIdForTheme` (30/30 → uma das 6; desconhecido → `casino-jazz`).
+- Próxima fase: Android download/cache; depois R2 real.
+
+Preparação / proveniência detalhada: staging `_temp/_musicas/` (gitignored) — `MUSIC_CORE_CATALOG.json`, `MUSIC_PROVENANCE.md`, `MUSIC_REMOTE_ARCHITECTURE.md`.
 
 ## Licenças
 
