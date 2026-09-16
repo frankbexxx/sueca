@@ -31,5 +31,8 @@ arquivo/
 # Local asset trials (itch.io downloads, npm svg-cards test)
 _temp/
 
+# Cloudflare Wrangler local state
+.wrangler/
+
 # Repomix generated packs (regenerate via: npx repomix --config repomix.config.json)
 docs/ai/repo-review/packs/generated/

@@ -22,6 +22,10 @@ interface ImportMetaEnv {
   readonly VITE_CARD_INTELLIGENCE_LLM_ENDPOINT?: string;
   readonly VITE_CARD_INTELLIGENCE_LLM_MODEL?: string;
   readonly VITE_CARD_INTELLIGENCE_DEV_LAB?: string;
+  /** Smoke/dev remote music base (e.g. r2.dev). Omit in production CDN contract. */
+  readonly VITE_MUSIC_REMOTE_BASE_URL?: string;
+  /** Optional same-origin smoke when base URL unset. */
+  readonly VITE_MUSIC_REMOTE_SMOKE?: string;
   readonly BASE_URL: string;
   readonly MODE: string;
   readonly DEV: boolean;

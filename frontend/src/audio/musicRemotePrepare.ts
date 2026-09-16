@@ -3,6 +3,7 @@ import {
   cacheRemoteTrack,
   lookupCachedTrack
 } from './musicCacheService';
+import { musicRemoteDevLog } from './musicRemoteConfig';
 import { resolveRemotePlaybackUrl } from './musicRemoteUrlProvider';
 import { getRemoteMusicTrack } from './remoteMusicCatalog';
 import type { RemoteMusicTrack } from './remoteMusicTypes';
@@ -66,6 +67,7 @@ async function prepareNative(
 
   if (cached.status === 'hit' && cached.playableUrl) {
     downloadState.set(track.id, 'READY');
+    musicRemoteDevLog('cache hit', { trackId: track.id });
     return {
       ok: true,
       url: cached.playableUrl,
@@ -87,6 +89,7 @@ async function prepareNative(
 
   if (result.ok) {
     downloadState.set(track.id, 'READY');
+    musicRemoteDevLog('remote download', { trackId: track.id });
     return {
       ok: true,
       url: result.playableUrl,
@@ -109,6 +112,7 @@ async function prepareNative(
   }
 
   downloadState.set(track.id, 'FAILED');
+  musicRemoteDevLog('fallback', { trackId: track.id, reason: result.reason });
   return { ok: false, reason: result.reason, trackId: track.id };
 }
 
@@ -137,6 +141,7 @@ async function prepareOnce(trackId: string): Promise<RemotePrepareResult> {
   const playbackUrl = resolveRemotePlaybackUrl(track);
   if (!playbackUrl) {
     downloadState.set(trackId, 'FAILED');
+    musicRemoteDevLog('fallback', { trackId, reason: 'no_playback_url' });
     return { ok: false, reason: 'no_playback_url', trackId };
   }
 
@@ -144,10 +149,12 @@ async function prepareOnce(trackId: string): Promise<RemotePrepareResult> {
     if (isNativePlayback()) {
       return await prepareNative(track, playbackUrl);
     }
+    musicRemoteDevLog('web stream', { trackId });
     return await prepareWeb(track, playbackUrl);
   } catch (err) {
     downloadState.set(trackId, 'FAILED');
     const reason = err instanceof Error ? err.message : 'prepare_failed';
+    musicRemoteDevLog('fallback', { trackId, reason });
     return { ok: false, reason, trackId };
   }
 }

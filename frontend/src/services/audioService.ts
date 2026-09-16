@@ -14,7 +14,7 @@ import {
   resolveThemeMusic
 } from '../audio/musicResolver';
 import { ensureRemotePlayable } from '../audio/musicRemotePrepare';
-import { bootstrapMusicRemoteSmokeIfEnabled } from '../audio/musicRemoteSmoke';
+import { bootstrapMusicRemoteAtStartup } from '../audio/musicRemoteBootstrap';
 import { getRemoteMusicTrack } from '../audio/remoteMusicCatalog';
 import {
   FAMILY_CORE_TRACK,
@@ -359,7 +359,7 @@ export function preloadMusic(): void {
     resolved.source === 'core' ? resolved.id : resolved.fallbackTrackId;
   ensureMusicAudio();
   void initMusicCache();
-  void bootstrapMusicRemoteSmokeIfEnabled();
+  void bootstrapMusicRemoteAtStartup();
 }
 
 /** @deprecated Use preloadMusic */

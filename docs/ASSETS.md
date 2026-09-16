@@ -166,7 +166,7 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Códig
 
 ## Música de ambiente (core v1 — híbrido)
 
-Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Android cache-first playback; web stream-direct; **R2 / URLs reais ainda NÃO**.
+Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock + smoke R2 opcional; Android cache-first; web stream-direct.
 
 | Item | Valor |
 |------|--------|
@@ -175,6 +175,10 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Androi
 | Theme → play | `resolveThemeMusic` → `playResolvedMusic` (`audioService`) |
 | Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + core fallback |
 | Catálogo remoto mock | `remoteMusicCatalog.mock.ts` (23 ids; `.invalid` **nunca** fetch) |
+| Base URL remota | `VITE_MUSIC_REMOTE_BASE_URL` (`musicRemoteConfig.ts`) — omitida = remoto desligado |
+| Fetch catálogo | `{base}/music/v1/catalog.json` → `musicRemoteCatalogFetch.ts` |
+| Smoke R2 activo | só `celtic-traveler` + `ethiopia-groove` (paths relativos resolvidos) |
+| Endpoint smoke | `*.r2.dev` = **dev/smoke only**, não contrato de produção |
 | Playback URL provider | `musicRemoteUrlProvider.ts` (overrides só teste/smoke) |
 | Prepare remoto | `musicRemotePrepare.ts` — Android download/cache; web stream |
 | Cache Android | `musicCacheService.ts` — `Directory.Data/music/` + SHA-256 |
@@ -182,7 +186,7 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Androi
 | Plugin | `@capacitor/filesystem` (Capacitor 6) |
 | Modos settings | **Theme default** / **Off** — sem UI remota |
 | Volume | `0.28` |
-| Smoke opcional | `VITE_MUSIC_REMOTE_SMOKE=true` mapeia 1 remote → OGG core bundled |
+| Smoke same-origin | `VITE_MUSIC_REMOTE_SMOKE=true` (só se base URL ausente) |
 
 ### Playback
 
@@ -190,7 +194,8 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Androi
 |------------|---------------|
 | **Android** | cache hit → tocar local; miss → download+SHA → cache → tocar; falha → core (stale válido mantém-se) |
 | **Web** | stream URL remota (HTTP cache); erro → core |
-| **Produção actual** | sem URL remota real → preferred remote resolve para core via fallback |
+| **Sem base URL** | preferred remote → core via fallback |
+| **Com base URL (smoke)** | 2 tracks R2 activas; restantes remote continuam mock `.invalid` |
 
 ### 6 faixas core (bundled)
 
@@ -207,8 +212,9 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock; Androi
 
 - **23** candidatas RELEASE OK (não-core); URLs mock bloqueadas.
 - Disponibilidade: `AVAILABLE_LOCAL_CORE` \| `AVAILABLE_LOCAL_CACHE` \| `REMOTE_AVAILABLE` \| `UNAVAILABLE`.
-- Theme Default usa preferred track internamente; sem R2 o resultado audível continua core.
-- **R2 / CDN real:** ainda não configurado.
+- Theme Default usa preferred track internamente (`skara-brae`/`avalon` → celtic; `axum`/`meroe` → ethiopia).
+- Smoke R2 via `VITE_MUSIC_REMOTE_BASE_URL` (dev/android); falha de fetch → core, sem retry loop.
+- **CDN produção final:** ainda não — `r2.dev` é endpoint temporário de smoke.
 
 Preparação / proveniência: `_temp/_musicas/` (gitignored).
 
