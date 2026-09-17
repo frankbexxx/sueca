@@ -68,7 +68,7 @@ export const FAMILY_CORE_TRACK: Record<MusicFamily, MusicTrackId> = {
 
 /**
  * Preferred bed per theme (MUSIC_THEME_DEFAULTS_PLAN) — may be core or remote id.
- * Playback still uses core via `resolveMusicTrackIdForTheme` until remote play is wired.
+ * Hybrid resolve uses preferred when remote catalog is live; else core fallback.
  */
 export const THEME_PREFERRED_TRACK_ID: Record<BuiltInThemeId, string> = {
   classic: 'casino-jazz',

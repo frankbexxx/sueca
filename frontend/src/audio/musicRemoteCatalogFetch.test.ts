@@ -12,7 +12,6 @@ import {
   teardownMusicRemoteCatalogOverlays
 } from './musicRemoteCatalogFetch';
 import {
-  MUSIC_REMOTE_SMOKE_TRACK_IDS,
   resolveRemoteAssetUrl,
   rewriteRemoteCatalogUrls
 } from './musicRemoteUrlResolve';
@@ -30,9 +29,7 @@ import {
   __setRemotePlaybackPlatformForTests,
   ensureRemotePlayable
 } from './musicRemotePrepare';
-import {
-  createMemoryMusicCacheFs
-} from './musicCacheFs';
+import { createMemoryMusicCacheFs } from './musicCacheFs';
 import {
   __resetMusicCacheForTests,
   __setMusicCacheFsForTests,
@@ -40,11 +37,21 @@ import {
   lookupCachedTrack
 } from './musicCacheService';
 import { sha256Hex } from './sha256';
+import { resolveThemeMusic } from './musicResolver';
+import {
+  THEME_MUSIC_FAMILY,
+  THEME_PREFERRED_TRACK_ID,
+  getThemeMusicPreference
+} from '../constants/musicThemeMap';
+import { CORE_MUSIC_TRACKS, isMusicTrackId } from '../constants/musicCatalog';
+import { BuiltInThemeId } from '../services/billingService';
+import { MOCK_REMOTE_MUSIC_CATALOG } from './remoteMusicCatalog.mock';
 
 const BASE = 'https://pub-smoke-test.example';
 
 const CELTIC_REL = 'music/v1/tracks/celtic-traveler/1/celtic-traveler.ogg';
 const ETH_REL = 'music/v1/tracks/ethiopia-groove/1/ethiopia-groove.ogg';
+const JAZZ_REL = 'music/v1/tracks/jazz-orchestra/1/jazz-orchestra.ogg';
 
 function sampleCatalog(overrides?: {
   celticUrl?: string;
@@ -84,6 +91,19 @@ function sampleCatalog(overrides?: {
       },
       ...(overrides?.extra ?? [])
     ]
+  };
+}
+
+/** Build a full 23-entry relative catalog mirroring mock ids. */
+function fullRelativeCatalogFromMock(): unknown {
+  return {
+    catalogVersion: 1,
+    tracks: MOCK_REMOTE_MUSIC_CATALOG.tracks.map((t) => ({
+      ...t,
+      url: `music/v1/tracks/${t.id}/1/${t.id}.ogg`,
+      size: Math.max(1, t.size),
+      duration: Math.max(0.1, t.duration)
+    }))
   };
 }
 
@@ -141,13 +161,13 @@ describe('applyRemoteCatalogFromRaw', () => {
     clearRemotePlaybackUrlOverrides();
   });
 
-  it('applies only approved smoke tracks with resolved absolute URLs', () => {
+  it('applies all valid catalog tracks (full remote set)', () => {
     const extra = {
       id: 'jazz-orchestra',
       title: 'Jazz',
       artist: 'A',
       family: 'Casino Jazz / Lounge',
-      url: 'music/v1/tracks/jazz-orchestra/1/jazz-orchestra.ogg',
+      url: JAZZ_REL,
       duration: 10,
       size: 10,
       sha256: 'c'.repeat(64),
@@ -161,20 +181,63 @@ describe('applyRemoteCatalogFromRaw', () => {
       BASE
     );
     expect(result.ok).toBe(true);
-    expect(result.applied).toBe(2);
-    expect(MUSIC_REMOTE_SMOKE_TRACK_IDS.size).toBe(2);
+    expect(result.applied).toBe(3);
 
     const celtic = getRemoteMusicTrack('celtic-traveler')!;
     expect(celtic.url).toBe(`${BASE}/${CELTIC_REL}`);
     expect(resolveRemotePlaybackUrl(celtic)).toBe(`${BASE}/${CELTIC_REL}`);
 
-    const eth = getRemoteMusicTrack('ethiopia-groove')!;
-    expect(eth.url).toBe(`${BASE}/${ETH_REL}`);
-
-    // Non-approved remote stays on mock .invalid (no invented URL).
     const jazz = getRemoteMusicTrack('jazz-orchestra')!;
-    expect(jazz.url).toMatch(/\.invalid/);
-    expect(resolveRemotePlaybackUrl(jazz)).toBeNull();
+    expect(jazz.url).toBe(`${BASE}/${JAZZ_REL}`);
+    expect(resolveRemotePlaybackUrl(jazz)).toBe(`${BASE}/${JAZZ_REL}`);
+  });
+
+  it('loads all 23 RELEASE OK remotes from relative catalog', () => {
+    const result = applyRemoteCatalogFromRaw(fullRelativeCatalogFromMock(), BASE);
+    expect(result.ok).toBe(true);
+    expect(result.applied).toBe(23);
+    expect(MOCK_REMOTE_MUSIC_CATALOG.tracks).toHaveLength(23);
+
+    for (const t of MOCK_REMOTE_MUSIC_CATALOG.tracks) {
+      const live = getRemoteMusicTrack(t.id)!;
+      expect(live.url).toBe(`${BASE}/music/v1/tracks/${t.id}/1/${t.id}.ogg`);
+      expect(resolveRemotePlaybackUrl(live)).not.toBeNull();
+    }
+
+    const cid = ['whiskey-jazz', 'northern-glow', 'hawaii-relax'];
+    for (const id of cid) {
+      expect(getRemoteMusicTrack(id)!.contentId).toBe(true);
+      expect(getRemoteMusicTrack(id)!.streamingSafe).toBe(false);
+    }
+  });
+
+  it('ignores malformed single entries without rejecting the catalog', () => {
+    const result = applyRemoteCatalogFromRaw(
+      sampleCatalog({
+        extra: [
+          { id: 'bad', title: 'x' },
+          {
+            id: 'zero-size',
+            title: 'Z',
+            artist: 'A',
+            family: 'Celtic',
+            url: 'music/v1/tracks/zero-size/1/zero-size.ogg',
+            duration: 10,
+            size: 0,
+            sha256: 'd'.repeat(64),
+            streamingSafe: true,
+            contentId: false,
+            bundled: false,
+            version: 1
+          }
+        ]
+      }),
+      BASE
+    );
+    expect(result.ok).toBe(true);
+    expect(result.applied).toBe(2);
+    expect(result.dropped).toBeGreaterThanOrEqual(2);
+    expect(getRemoteMusicTrack('zero-size')).toBeNull();
   });
 
   it('rejects malformed catalog without applying overlays', () => {
@@ -190,6 +253,14 @@ describe('applyRemoteCatalogFromRaw', () => {
     expect(dropped).toBe(0);
     expect(catalog.tracks).toHaveLength(2);
     expect(catalog.tracks[0].url.startsWith('https://')).toBe(true);
+  });
+
+  it('does not prefetch / download tracks when applying catalog', () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    applyRemoteCatalogFromRaw(fullRelativeCatalogFromMock(), BASE);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });
 
@@ -217,7 +288,7 @@ describe('bootstrapMusicRemoteCatalog fetch', () => {
     expect(fetch).toHaveBeenCalledWith(`${BASE}/music/v1/catalog.json`);
   });
 
-  it('FAIL: leaves overlays untouched when fetch fails', async () => {
+  it('FAIL: catalog failure → core-only (mock .invalid remains)', async () => {
     __setMusicRemoteBaseUrlForTests(BASE);
     const before = getRemoteMusicTrack('celtic-traveler')!.url;
     vi.stubGlobal(
@@ -232,6 +303,8 @@ describe('bootstrapMusicRemoteCatalog fetch', () => {
     expect(result.reason).toBe('http_500');
     expect(getRemoteMusicTrack('celtic-traveler')!.url).toBe(before);
     expect(resolveRemotePlaybackUrl(getRemoteMusicTrack('celtic-traveler')!)).toBeNull();
+    // Themes still resolve (remote metadata / core fallback path)
+    expect(resolveThemeMusic('classic').source).toBe('core');
   });
 
   it('FAIL: invalid base disables bootstrap', async () => {
@@ -241,6 +314,47 @@ describe('bootstrapMusicRemoteCatalog fetch', () => {
     const result = await bootstrapMusicRemoteCatalog();
     expect(result.reason).toBe('disabled');
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('theme preferred mapping (full remote)', () => {
+  afterEach(() => {
+    teardownMusicRemoteCatalogOverlays();
+    clearRemoteMusicTrackOverlays();
+  });
+
+  it('resolves 30/30 themes with core fallback always valid', () => {
+    applyRemoteCatalogFromRaw(fullRelativeCatalogFromMock(), BASE);
+    const themes = Object.keys(THEME_MUSIC_FAMILY) as BuiltInThemeId[];
+    expect(themes).toHaveLength(30);
+    const coreIds = new Set(CORE_MUSIC_TRACKS.map((t) => t.id));
+
+    let remotePreferred = 0;
+    let corePreferred = 0;
+
+    for (const theme of themes) {
+      const pref = getThemeMusicPreference(theme);
+      expect(coreIds.has(pref.fallbackCoreTrackId)).toBe(true);
+      const resolved = resolveThemeMusic(theme);
+      expect(resolved.id).toBeTruthy();
+      expect(coreIds.has(resolved.fallbackTrackId)).toBe(true);
+
+      if (isMusicTrackId(pref.preferredTrackId)) {
+        corePreferred += 1;
+        expect(resolved.source).toBe('core');
+        expect(resolved.id).toBe(pref.preferredTrackId);
+      } else {
+        remotePreferred += 1;
+        expect(resolved.source).toBe('remote');
+        expect(resolved.id).toBe(pref.preferredTrackId);
+        expect(resolveRemotePlaybackUrl(getRemoteMusicTrack(resolved.id)!)).not.toBeNull();
+      }
+    }
+
+    expect(remotePreferred + corePreferred).toBe(30);
+    expect(remotePreferred).toBeGreaterThan(0);
+    expect(corePreferred).toBeGreaterThan(0);
+    expect(Object.keys(THEME_PREFERRED_TRACK_ID)).toHaveLength(30);
   });
 });
 
@@ -341,7 +455,6 @@ describe('remote prepare with R2 overlays', () => {
 
     const second = await ensureRemotePlayable('celtic-traveler');
     expect(second.ok).toBe(false);
-    // Second call may fetch again (new prepare), but not an automatic loop inside one call.
     expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(2);
   });
 });

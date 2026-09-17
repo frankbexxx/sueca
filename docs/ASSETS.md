@@ -166,25 +166,24 @@ Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Códig
 
 ## Música de ambiente (core v1 — híbrido)
 
-Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock + smoke R2 opcional; Android cache-first; web stream-direct.
+Arquitectura: **D — HYBRID** — 6 core bundled + **23 remote R2**; Android cache-first; web stream-direct.
 
 | Item | Valor |
 |------|--------|
 | Path core | `frontend/public/assets/music/core/*.ogg` |
 | Catálogo core | `frontend/src/constants/musicCatalog.ts` |
 | Theme → play | `resolveThemeMusic` → `playResolvedMusic` (`audioService`) |
-| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + core fallback |
-| Catálogo remoto mock | `remoteMusicCatalog.mock.ts` (23 ids; `.invalid` **nunca** fetch) |
+| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + core fallback (`MUSIC_THEME_DEFAULTS_PLAN`) |
+| Catálogo remoto mock | `remoteMusicCatalog.mock.ts` (23 ids; `.invalid` **nunca** fetch sem base URL) |
 | Base URL remota | `VITE_MUSIC_REMOTE_BASE_URL` (`musicRemoteConfig.ts`) — omitida = remoto desligado |
-| Fetch catálogo | `{base}/music/v1/catalog.json` → `musicRemoteCatalogFetch.ts` |
-| Smoke R2 activo | só `celtic-traveler` + `ethiopia-groove` (paths relativos resolvidos) |
-| Endpoint smoke | `*.r2.dev` = **dev/smoke only**, não contrato de produção |
+| Fetch catálogo | `{base}/music/v1/catalog.json` → `musicRemoteCatalogFetch.ts` (23 entradas) |
+| Endpoint actual | `*.r2.dev` = **dev/smoke only** — custom domain ainda pendente |
 | Playback URL provider | `musicRemoteUrlProvider.ts` (overrides só teste/smoke) |
-| Prepare remoto | `musicRemotePrepare.ts` — Android download/cache; web stream |
-| Cache Android | `musicCacheService.ts` — `Directory.Data/music/` + SHA-256 |
+| Prepare remoto | `musicRemotePrepare.ts` — Android download/cache on-demand; web stream |
+| Cache Android | `musicCacheService.ts` — `Directory.Data/music/` + SHA-256 (sem prefetch das 23) |
 | Local URI | `musicLocalUri.ts` — `getUri` + `convertFileSrc` |
 | Plugin | `@capacitor/filesystem` (Capacitor 6) |
-| Modos settings | **Theme default** / **Off** — sem UI remota |
+| Modos settings | **Theme default** / **Off** — advanced music UI ainda pendente |
 | Volume | `0.28` |
 | Smoke same-origin | `VITE_MUSIC_REMOTE_SMOKE=true` (só se base URL ausente) |
 
@@ -195,7 +194,7 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock + smoke
 | **Android** | cache hit → tocar local; miss → download+SHA → cache → tocar; falha → core (stale válido mantém-se) |
 | **Web** | stream URL remota (HTTP cache); erro → core |
 | **Sem base URL** | preferred remote → core via fallback |
-| **Com base URL (smoke)** | 2 tracks R2 activas; restantes remote continuam mock `.invalid` |
+| **Com base URL** | 23 remotes R2 activas (paths relativos resolvidos) |
 
 ### 6 faixas core (bundled)
 
@@ -210,11 +209,13 @@ Arquitectura: **D — HYBRID** — 6 core bundled; catálogo remoto mock + smoke
 
 ### Catálogo remoto + cache + playback
 
-- **23** candidatas RELEASE OK (não-core); URLs mock bloqueadas.
+- **6** core bundled + **23** remote RELEASE OK no R2 (`catalogVersion` 1).
+- Content ID = SIM (3): `whiskey-jazz`, `northern-glow`, `hawaii-relax` — metadata só; UI Streaming Safe depois.
 - Disponibilidade: `AVAILABLE_LOCAL_CORE` \| `AVAILABLE_LOCAL_CACHE` \| `REMOTE_AVAILABLE` \| `UNAVAILABLE`.
-- Theme Default usa preferred track internamente (`skara-brae`/`avalon` → celtic; `axum`/`meroe` → ethiopia).
-- Smoke R2 via `VITE_MUSIC_REMOTE_BASE_URL` (dev/android); falha de fetch → core, sem retry loop.
-- **CDN produção final:** ainda não — `r2.dev` é endpoint temporário de smoke.
+- Theme Default: preferred pode ser core ou remote; fallback sempre core.
+- `VITE_MUSIC_REMOTE_BASE_URL` (dev/android); falha de fetch → core-only, sem retry loop, sem prefetch.
+- **CDN produção / custom domain:** ainda pendente — `r2.dev` é endpoint temporário de smoke/dev.
+- Advanced settings (Random / Family / Specific / Streaming Safe): ainda pendentes.
 
 Preparação / proveniência: `_temp/_musicas/` (gitignored).
 

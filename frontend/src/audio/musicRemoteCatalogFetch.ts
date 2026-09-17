@@ -8,21 +8,20 @@ import {
   sanitizeRemoteMusicCatalog,
   upsertRemoteMusicTrackOverlay
 } from './remoteMusicCatalog';
-import {
-  isMusicRemoteSmokeTrackId,
-  rewriteRemoteCatalogUrls
-} from './musicRemoteUrlResolve';
+import { rewriteRemoteCatalogUrls } from './musicRemoteUrlResolve';
 
 export type MusicRemoteCatalogBootstrapResult = {
   ok: boolean;
   applied: number;
   catalogVersion: number;
+  dropped?: number;
   reason?: string;
 };
 
 /**
- * Apply a fetched/raw catalog: resolve relative URLs, sanitize, overlay only
- * smoke-approved track ids. Never throws; empty/invalid → no overlays.
+ * Apply a fetched/raw catalog: resolve relative URLs, sanitize, overlay all
+ * valid remote tracks. Malformed entries are dropped individually.
+ * Never throws; empty/invalid catalog → no overlays (core-only).
  */
 export function applyRemoteCatalogFromRaw(
   raw: unknown,
@@ -38,27 +37,18 @@ export function applyRemoteCatalogFromRaw(
         ok: false,
         applied: 0,
         catalogVersion: catalog.catalogVersion,
+        dropped,
         reason: 'empty_or_invalid'
       };
     }
 
+    // Replace prior remote overlays with this catalog snapshot.
+    clearRemoteMusicTrackOverlays();
+
     let applied = 0;
     for (const track of catalog.tracks) {
-      if (!isMusicRemoteSmokeTrackId(track.id)) continue;
       upsertRemoteMusicTrackOverlay(track);
       applied += 1;
-    }
-
-    if (applied === 0) {
-      musicRemoteDevLog('catalog had no approved smoke tracks', {
-        total: catalog.tracks.length
-      });
-      return {
-        ok: false,
-        applied: 0,
-        catalogVersion: catalog.catalogVersion,
-        reason: 'no_approved_tracks'
-      };
     }
 
     musicRemoteDevLog('catalog loaded', {
@@ -71,7 +61,8 @@ export function applyRemoteCatalogFromRaw(
     return {
       ok: true,
       applied,
-      catalogVersion: catalog.catalogVersion
+      catalogVersion: catalog.catalogVersion,
+      dropped
     };
   } catch {
     return { ok: false, applied: 0, catalogVersion: 0, reason: 'apply_error' };
@@ -79,7 +70,7 @@ export function applyRemoteCatalogFromRaw(
 }
 
 /**
- * Fetch `{base}/music/v1/catalog.json` and overlay approved remotes.
+ * Fetch `{base}/music/v1/catalog.json` and overlay all valid remotes.
  * Failures leave mock/local catalog unchanged (core fallback).
  */
 export async function bootstrapMusicRemoteCatalog(): Promise<MusicRemoteCatalogBootstrapResult> {

@@ -4,16 +4,6 @@
  * accepted when they share the configured base origin and music/v1 prefix.
  */
 
-/** Smoke-phase R2 tracks with real objects uploaded. */
-export const MUSIC_REMOTE_SMOKE_TRACK_IDS = new Set([
-  'celtic-traveler',
-  'ethiopia-groove'
-]);
-
-export function isMusicRemoteSmokeTrackId(id: string): boolean {
-  return MUSIC_REMOTE_SMOKE_TRACK_IDS.has(id);
-}
-
 /**
  * Join base + relative path, or re-validate absolute URL under base.
  * Returns null when the path must not be used for fetch/stream.

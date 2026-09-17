@@ -45,10 +45,10 @@ export function isValidRemoteMusicTrack(item: unknown): item is RemoteMusicTrack
   if (typeof t.artist !== 'string' || !t.artist.trim()) return false;
   if (typeof t.family !== 'string' || !MUSIC_FAMILIES.has(t.family)) return false;
   if (!isAbsoluteHttpUrl(t.url)) return false;
-  if (typeof t.duration !== 'number' || !Number.isFinite(t.duration) || t.duration < 0) {
+  if (typeof t.duration !== 'number' || !Number.isFinite(t.duration) || t.duration <= 0) {
     return false;
   }
-  if (typeof t.size !== 'number' || !Number.isFinite(t.size) || t.size < 0) return false;
+  if (typeof t.size !== 'number' || !Number.isFinite(t.size) || t.size <= 0) return false;
   if (typeof t.sha256 !== 'string' || !SHA256_RE.test(t.sha256)) return false;
   if (typeof t.streamingSafe !== 'boolean') return false;
   if (typeof t.contentId !== 'boolean') return false;
