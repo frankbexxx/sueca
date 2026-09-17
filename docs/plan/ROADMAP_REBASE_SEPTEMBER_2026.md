@@ -386,7 +386,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Pixi no bundle | — | **SUPERSEDED** | Removido |
 | Ambiance single-file only | — | **SUPERSEDED** | Core+remote |
 | “AI mesa” como único DEFERRED | — | **SUPERSEDED** | Substituído por §5 |
-| Final Visual Pass — Sueca | **P1** | **TWEAKS OPEN** | §12.3 + `docs/plan/SUECA_FINAL_VISUAL_PASS.md` (2026-09-17) |
+| Final Visual Pass — Sueca | **P1** | **LOCAL PASS / GLOBAL CLEANUP PENDING** | §12.3 + `docs/plan/SUECA_FINAL_VISUAL_PASS.md` (2026-09-17) |
 | Final Visual Pass — Spades | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Final Visual Pass — Hearts | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Final Visual Pass — King | **P1** | **OPEN** | §12 — NOT REVIEWED |
@@ -555,17 +555,16 @@ Prioridade ao criar tickets: **BUG** · **UX** · **POLISH**
 
 ### 12.3 Sueca — Final Visual Pass
 
-**STATUS:** **TWEAKS OPEN** · Gate: **TWEAKS OPEN**  
+**STATUS:** **LOCAL PASS — GLOBAL CLEANUP PENDING** · Gate: **não** é release PASS absoluto enquanto globais pendentes  
 **Doc detalhado:** [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md)  
 **Screenshots:** `E:\SUECAO\_temp\sueca-visual-pass\` (OPPO portrait, 2026-09-17)  
 **Nota:** auditoria automática revista manualmente por Francisco; lista consolidada S1–S10 + globais.
 
-**Issues Sueca (todos OPEN, P2):** S1 HUD/Phaser overlap · S2 remove fallback label · S4 modal distribuição · S5 Pausa auto · S6 mão (sem +spacing cego) · S7 trick anchors · S9 artefactos faces  
+**Issues Sueca locais DONE:** S1 · S2 · S4 · S5 · S6 · S7 · S9  
 
-**Issues globais (via Sueca; cleanup transversal):** S3→GLOBAL-UI-01 · S8→GLOBAL-UI-02 · S10→GLOBAL-UI-03 · GLOBAL-CARDS-01  
+**Issues globais ainda pendentes:** S3→GLOBAL-UI-01 · S8→GLOBAL-UI-02 · S10→GLOBAL-UI-03 · GLOBAL-CARDS-01 (PARTIAL)  
 
-**Ordem provisória:** S1 → S4 → S5 → S9+GLOBAL-CARDS-01 → S6 → S7 → S2 → (S3/S8/S10 transversais).  
-**Nenhuma correcção DONE.**
+**Próximo (transversal):** GLOBAL-UI-01/02/03 + fecho GLOBAL-CARDS-01 em Hearts/King.
 
 ### 12.4 Spades — Final Visual Pass
 
@@ -617,7 +616,7 @@ Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
 | **GLOBAL-UI-01** | Legacy purple remnants | P2 | OPEN |
 | **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN |
 | **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN |
-| **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | OPEN |
+| **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | PARTIAL |
 
 Detalhe e contexto Sueca: [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md).  
 Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mãos.

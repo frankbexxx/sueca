@@ -12,7 +12,7 @@ import { requestAiPlay } from '../services/aiClient';
 import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
-import { publicUrl } from '../config/runtimeEnv';
+import { isDevMode, publicUrl } from '../config/runtimeEnv';
 import {
   AI_PLAY_DELAY_MS,
   DEAL_DELAY_MS,
@@ -1437,7 +1437,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <InGameBar
         playerName={playerNames[localPlayerIndex] || 'Player 1'}
         gameLabel={gameLabel}
-        metaLabel={aiSource === 'external' ? t.gameBoard.aiExternal : t.gameBoard.aiLocal}
+        metaLabel={
+          isDevMode()
+            ? aiSource === 'external'
+              ? t.gameBoard.aiExternal
+              : t.gameBoard.aiLocal
+            : undefined
+        }
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}

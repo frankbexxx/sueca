@@ -1,7 +1,7 @@
 # Sueca — Final Visual Pass
 
 **Data:** 2026-09-17  
-**Estado:** `TWEAKS OPEN` — batch-01 DONE; cards polish (S9 DONE, GLOBAL-CARDS-01 PARTIAL); batch-02 (S6/S7) DONE  
+**Estado:** `LOCAL PASS — GLOBAL CLEANUP PENDING` — issues locais S1/S2/S4/S5/S6/S7/S9 DONE; restam globais S3/S8/S10 + GLOBAL-CARDS-01 PARTIAL  
 **Screenshots batch-01:** `E:\SUECAO\_temp\sueca-visual-batch-01\`  
 **Screenshots cards polish:** `E:\SUECAO\_temp\sueca-cards-render-polish-01\`  
 **Screenshots batch-02:** `E:\SUECAO\_temp\sueca-visual-batch-02\`  
@@ -58,12 +58,14 @@
 |-------|--------|
 | TYPE | UX / POLISH |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** Remover `AI Local (fallback)` do header in-game em release.
 
 É informação técnica/debug sem valor para o jogador.  
 **Não** substituir automaticamente por outro label.
+
+**Fix (SUECA-VISUAL-S2-CLOSE-01):** `InGameBar` deixa de receber `metaLabel` em produção; em `isDevMode()` continua a mostrar AI Local / AI Externa. Strings i18n e lógica `aiSource` intactas.
 
 ---
 
@@ -274,9 +276,11 @@ Cue de jogador activo subtil; alinhar Premium Classic Table em todos os jogos.
 7. S2  
 8. S3 / S8 / S10 → cleanup transversal posterior  
 
-Ordem provisória; pode mudar após cada batch.  
-**Nenhuma correcção marcada DONE nesta revisão.**
+**Locais DONE:** S1, S2, S4, S5, S6, S7, S9.  
+**Pendentes (globais):** S3 / S8 / S10 + GLOBAL-CARDS-01 (PARTIAL).  
+**Não** marcar Final Visual Pass Sueca como release PASS absoluto enquanto globais estiverem abertos.
 
 ---
 
-*SUECA-VISUAL-PASS-REGISTER-01 · 2026-09-17 · documentação apenas*
+*SUECA-VISUAL-PASS-REGISTER-01 · 2026-09-17 · documentação*  
+*SUECA-VISUAL-S2-CLOSE-01 · 2026-09-17 · S2 DONE → LOCAL PASS / GLOBAL CLEANUP PENDING*

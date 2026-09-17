@@ -82,6 +82,19 @@ describe('InGameBar confirm gates', () => {
     expect(props.onExit).toHaveBeenCalledTimes(1);
   });
 
+  it('omits technical AI meta label when metaLabel is unset', () => {
+    renderBar();
+    expect(container.querySelector('.in-game-bar-title')?.textContent).toBe('Sueca');
+    expect(container.querySelector('.in-game-bar-meta')).toBeNull();
+  });
+
+  it('renders optional metaLabel only when provided (dev/debug)', () => {
+    renderBar({ metaLabel: 'AI Local (fallback)' });
+    expect(container.querySelector('.in-game-bar-meta')?.textContent).toBe(
+      'AI Local (fallback)'
+    );
+  });
+
   it('Pausar does not open confirm dialog', () => {
     const props = renderBar();
     act(() => {
