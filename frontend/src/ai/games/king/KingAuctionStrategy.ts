@@ -1,7 +1,11 @@
 import { Player } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
 import { KingBidType } from '../../../models/games/king/kingContracts';
-import { minBidToBeat, canUseFourThreeThree } from '../../../models/games/king/kingAuction';
+import {
+  canBeatBid,
+  canUseFourThreeThree,
+  minBidToBeat
+} from '../../../models/games/king/kingAuction';
 
 /**
  * Minimal interface for auction mutations — implemented by KingPtGame.
@@ -20,13 +24,9 @@ export interface KingAuctionController {
 
 /**
  * Runs a single AI festa step and returns true if the AI acted.
- * Call in a loop until it returns false (human decision required).
  *
- * Auction: 35% chance to pass if no bid yet, otherwise min-bid or pass.
- * Negotiation counter: 55% chance to accept if there is a requested bid.
- * Negotiation: AI owner always accepts contract.
- * Fallback: random among four_by_three (30%), nulos (40%), no_trump (30%).
- * Festa setup: AI owner always confirms immediately.
+ * Auction is multi-round: AI may bid on later cycles; pass removes them permanently.
+ * Only legal improving (or preference-equalizing) bids are submitted.
  */
 export function runOneAiFestaStep(
   king: KingPtVariantState,
@@ -37,12 +37,20 @@ export function runOneAiFestaStep(
     const current = controller.getCurrentAuctionPlayer(king);
     if (current === null) return false;
     if (players[current]?.type !== 'ai') return false;
-    if (Math.random() < 0.35 && !king.bestBid) {
+    if (!king.activeBidders.includes(current)) return false;
+
+    const standing = king.standingBid ?? king.bestBid;
+
+    if (Math.random() < 0.35 && !standing) {
       controller.submitAuctionPass(current);
+      return true;
+    }
+
+    const min = minBidToBeat(standing, king.auctionOrder, current);
+    if (min && canBeatBid(standing, min, king.auctionOrder)) {
+      controller.submitAuctionBid(current, min.bidType, min.amount);
     } else {
-      const min = minBidToBeat(king.bestBid, king.auctionOrder, current);
-      if (min) controller.submitAuctionBid(current, min.bidType, min.amount);
-      else controller.submitAuctionPass(current);
+      controller.submitAuctionPass(current);
     }
     return true;
   }
@@ -79,7 +87,7 @@ export function runOneAiFestaStep(
   if (king.waitingForFallback) {
     const owner = players[king.festaOwnerIndex];
     if (owner?.type === 'ai') {
-      if (canUseFourThreeThree(king.bestBid) && Math.random() < 0.3) {
+      if (canUseFourThreeThree(king.bestBid, king.highestEquivalentValue) && Math.random() < 0.3) {
         controller.chooseFallback('four_by_three');
       } else if (Math.random() < 0.4) {
         controller.chooseFallback('nulos');

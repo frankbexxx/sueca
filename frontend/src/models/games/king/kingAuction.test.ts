@@ -4,6 +4,7 @@ import {
   bidEquivalentPositive,
   canBeatBid,
   canUseFourThreeThree,
+  compareKingOffers,
   formatAuctionActionShort,
   isWeakBid
 } from './kingAuction';
@@ -19,6 +20,9 @@ describe('kingAuction', () => {
   it('equates 3 positive to 1 null', () => {
     expect(bidAbsoluteValue({ bidType: 'positive', amount: 3, bidderIndex: 1 })).toBe(75);
     expect(bidAbsoluteValue({ bidType: 'null', amount: 1, bidderIndex: 1 })).toBe(75);
+    expect(bidEquivalentPositive({ bidType: 'null', amount: 2, bidderIndex: 1 })).toBe(6);
+    expect(bidEquivalentPositive({ bidType: 'null', amount: 3, bidderIndex: 1 })).toBe(9);
+    expect(bidEquivalentPositive({ bidType: 'null', amount: 4, bidderIndex: 1 })).toBe(12);
   });
 
   it('earlier bidder keeps preference on equal value', () => {
@@ -27,6 +31,8 @@ describe('kingAuction', () => {
     expect(canBeatBid(first, second, order)).toBe(false);
     expect(canBeatBid(null, first, order)).toBe(true);
     expect(canBeatBid(first, { bidderIndex: 2, bidType: 'positive', amount: 4 }, order)).toBe(true);
+    expect(compareKingOffers(second, first, order)).toBe('equal_no_preference');
+    expect(compareKingOffers(first, second, order)).toBe('beats');
   });
 
   it('detects weak bids below 4 positive equivalent', () => {
@@ -36,10 +42,15 @@ describe('kingAuction', () => {
     expect(isWeakBid(null)).toBe(true);
   });
 
-  it('gates 4x3x3 on weak bids', () => {
+  it('gates 4x3x3 on watermark when provided', () => {
     expect(canUseFourThreeThree(null)).toBe(true);
     expect(canUseFourThreeThree({ bidderIndex: 1, bidType: 'positive', amount: 3 })).toBe(true);
     expect(canUseFourThreeThree({ bidderIndex: 1, bidType: 'positive', amount: 4 })).toBe(false);
+    expect(canUseFourThreeThree(null, 3)).toBe(true);
+    expect(canUseFourThreeThree(null, 4)).toBe(false);
+    expect(
+      canUseFourThreeThree({ bidderIndex: 1, bidType: 'positive', amount: 2 }, 5)
+    ).toBe(false);
     expect(bidEquivalentPositive({ bidType: 'null', amount: 1, bidderIndex: 1 })).toBe(3);
   });
 

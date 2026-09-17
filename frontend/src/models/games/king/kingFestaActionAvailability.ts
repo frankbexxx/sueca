@@ -8,6 +8,8 @@ export interface KingFestaUiState {
   benefitOwnerIndex: number | null;
   auctionOrder: number[];
   auctionTurnIndex: number;
+  currentBidder?: number | null;
+  activeBidders?: number[];
   bestBid: KingBid | null;
   requestedBid: KingBid | null;
   eightOrNullsPending: boolean;
@@ -15,6 +17,7 @@ export interface KingFestaUiState {
   waitingForFallback: boolean;
   waitingForFestaSetup: boolean;
   waitingForAuctionContinue?: boolean;
+  highestEquivalentValue?: number;
 }
 
 export type KingFestaUiViewKind =
@@ -61,7 +64,9 @@ export function resolveKingFestaUiView(
   localPlayerIndex: number
 ): KingFestaUiViewKind {
   const currentAuctionPlayer =
-    king.festaPhase === 'auction' ? king.auctionOrder[king.auctionTurnIndex] : null;
+    king.festaPhase === 'auction'
+      ? (king.currentBidder ?? king.auctionOrder[king.auctionTurnIndex] ?? null)
+      : null;
 
   if (king.festaPhase === 'auction' && king.waitingForAuctionContinue) {
     return 'auction_continue';
@@ -125,12 +130,13 @@ export function fourByThreeDisabledReason(locale: 'pt' | 'en' = 'pt'): string {
     : 'Unavailable: the bid is not weak enough.';
 }
 
-/** Fallback choices — uses engine canUseFourThreeThree only. */
+/** Fallback choices — 4×3×3 uses historical watermark when provided. */
 export function resolveFallbackActionsAvailability(
   bestBid: KingBid | null,
-  locale: 'pt' | 'en' = 'pt'
+  locale: 'pt' | 'en' = 'pt',
+  highestEquivalentValue?: number
 ): KingFallbackActionsAvailability {
-  const allow433 = canUseFourThreeThree(bestBid);
+  const allow433 = canUseFourThreeThree(bestBid, highestEquivalentValue);
   return {
     trump: { enabled: true },
     noTrump: { enabled: true },

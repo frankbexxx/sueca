@@ -169,7 +169,9 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   const view = resolveKingFestaUiView(king, localPlayerIndex);
   const currentAuctionPlayer =
-    king.festaPhase === 'auction' ? king.auctionOrder[king.auctionTurnIndex] : null;
+    king.festaPhase === 'auction'
+      ? (king.currentBidder ?? king.auctionOrder[king.auctionTurnIndex] ?? null)
+      : null;
   const playerNames = gameState.players.map((p) => p.name);
   const auctionTimeline = (
     <KingAuctionTimeline
@@ -409,7 +411,11 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   }
 
   if (view === 'fallback_owner') {
-    const fallbackActions = resolveFallbackActionsAvailability(king.bestBid, 'pt');
+    const fallbackActions = resolveFallbackActionsAvailability(
+      king.bestBid,
+      'pt',
+      king.highestEquivalentValue
+    );
     return (
       <FestaSheet>
         <h2>Festa de {owner?.name}</h2>

@@ -14,7 +14,7 @@ export function bidAbsoluteValue(bid: Pick<KingBid, 'bidType' | 'amount'>): numb
     : bid.amount * NULL_TRICK_VALUE;
 }
 
-/** Equivalent positive tricks for comparison (fractional for nulls). */
+/** Equivalent positive tricks for comparison (1 nulo = 3V, 2 nulos = 6V, …). */
 export function bidEquivalentPositive(bid: Pick<KingBid, 'bidType' | 'amount'>): number {
   return bid.bidType === 'positive'
     ? bid.amount
@@ -29,23 +29,40 @@ export function auctionBidderOrder(beneficiaryIndex: number): number[] {
   ];
 }
 
-/** Earlier bidders in order have preference on equal value. */
+/** Earlier bidders in order have preference on equal value (lower rank = better). */
 export function bidderPreferenceRank(bidderIndex: number, order: number[]): number {
   return order.indexOf(bidderIndex);
 }
 
+export type KingOfferCompareResult = 'beats' | 'loses' | 'equal_no_preference';
+
+/**
+ * Compare candidate vs standing offer: equivalent value first, then preference.
+ * `beats` ⇒ candidate may become the new standing leader.
+ */
+export function compareKingOffers(
+  candidate: KingBid,
+  standing: KingBid | null,
+  preferenceOrder: number[]
+): KingOfferCompareResult {
+  if (!standing) return 'beats';
+  const candVal = bidEquivalentPositive(candidate);
+  const standVal = bidEquivalentPositive(standing);
+  if (candVal > standVal) return 'beats';
+  if (candVal < standVal) return 'loses';
+  const candPref = bidderPreferenceRank(candidate.bidderIndex, preferenceOrder);
+  const standPref = bidderPreferenceRank(standing.bidderIndex, preferenceOrder);
+  if (candPref >= 0 && standPref >= 0 && candPref < standPref) return 'beats';
+  return 'equal_no_preference';
+}
+
+/** @deprecated Prefer compareKingOffers — kept for call-site compatibility. */
 export function canBeatBid(
   current: KingBid | null,
   challenger: KingBid,
   order: number[]
 ): boolean {
-  if (!current) return true;
-  const curVal = bidAbsoluteValue(current);
-  const newVal = bidAbsoluteValue(challenger);
-  if (newVal > curVal) return true;
-  if (newVal < curVal) return false;
-  return bidderPreferenceRank(challenger.bidderIndex, order) <
-    bidderPreferenceRank(current.bidderIndex, order);
+  return compareKingOffers(challenger, current, order) === 'beats';
 }
 
 export function isWeakBid(best: KingBid | null): boolean {
@@ -53,7 +70,17 @@ export function isWeakBid(best: KingBid | null): boolean {
   return bidEquivalentPositive(best) < WEAK_BID_POSITIVE_THRESHOLD;
 }
 
-export function canUseFourThreeThree(best: KingBid | null): boolean {
+/**
+ * 4×3×3 allowed only if historical watermark &lt; 4 equivalent positives.
+ * Pass `highestEquivalentValue` when available; otherwise fall back to standing bid.
+ */
+export function canUseFourThreeThree(
+  best: KingBid | null,
+  highestEquivalentValue?: number
+): boolean {
+  if (typeof highestEquivalentValue === 'number') {
+    return highestEquivalentValue < WEAK_BID_POSITIVE_THRESHOLD;
+  }
   return isWeakBid(best);
 }
 
@@ -84,19 +111,62 @@ export function clampBid(bidType: KingBidType, amount: number): number {
   return Math.max(1, Math.min(MAX_NULL_BID, Math.round(amount)));
 }
 
-/** Minimum bid to beat current best (for AI / UI hints). */
-export function minBidToBeat(current: KingBid | null, order: number[], bidderIndex: number): KingBid | null {
+/** Next active seat after `fromSeat` in preference/table order (wraps). */
+export function nextActiveBidder(
+  order: number[],
+  activeBidders: number[],
+  fromSeat: number,
+  options?: { skipSeat?: number | null }
+): number | null {
+  if (activeBidders.length === 0) return null;
+  const active = new Set(activeBidders);
+  const skip = options?.skipSeat;
+  const start = order.indexOf(fromSeat);
+  if (start < 0) {
+    return activeBidders.find((s) => s !== skip) ?? activeBidders[0] ?? null;
+  }
+  for (let step = 1; step <= order.length; step++) {
+    const seat = order[(start + step) % order.length];
+    if (!active.has(seat)) continue;
+    if (skip != null && seat === skip && activeBidders.length > 1) continue;
+    return seat;
+  }
+  return activeBidders.find((s) => s !== skip) ?? activeBidders[0] ?? null;
+}
+
+/** Sync auctionTurnIndex with currentBidder for legacy UI. */
+export function auctionTurnIndexForSeat(order: number[], seat: number | null): number {
+  if (seat === null) return Math.max(0, order.length);
+  const idx = order.indexOf(seat);
+  return idx >= 0 ? idx : 0;
+}
+
+/** Minimum bid to beat current standing (for AI / UI hints). */
+export function minBidToBeat(
+  current: KingBid | null,
+  order: number[],
+  bidderIndex: number
+): KingBid | null {
   if (!current) {
     return { bidderIndex, bidType: 'positive', amount: 1 };
   }
   const pref = bidderPreferenceRank(bidderIndex, order);
   const curPref = bidderPreferenceRank(current.bidderIndex, order);
+  // Better preference may equalize on equivalent value (prefer positive form of eq).
   if (pref < curPref) {
+    const eq = bidEquivalentPositive(current);
+    if (eq <= MAX_POSITIVE_BID && eq === Math.floor(eq)) {
+      return { bidderIndex, bidType: 'positive', amount: eq };
+    }
     return { bidderIndex, bidType: current.bidType, amount: current.amount };
   }
   if (current.bidType === 'positive') {
-    return { bidderIndex, bidType: 'positive', amount: clampBid('positive', current.amount + 1) };
+    const next = current.amount + 1;
+    if (next > MAX_POSITIVE_BID) return null;
+    return { bidderIndex, bidType: 'positive', amount: next };
   }
   const eqPos = current.amount * POSITIVE_TO_NULL_RATIO;
-  return { bidderIndex, bidType: 'positive', amount: clampBid('positive', eqPos + 1) };
+  const nextPos = eqPos + 1;
+  if (nextPos > MAX_POSITIVE_BID) return null;
+  return { bidderIndex, bidType: 'positive', amount: nextPos };
 }

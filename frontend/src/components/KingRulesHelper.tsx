@@ -122,7 +122,7 @@ export function getKingRulesHint(gameState: GameState, locale: 'pt' | 'en'): Kin
   }
 
   if (king.waitingForFallback) {
-    const allow433 = canUseFourThreeThree(king.bestBid);
+    const allow433 = canUseFourThreeThree(king.bestBid, king.highestEquivalentValue);
     return {
       title: isPt ? 'Decisão do beneficiário' : 'Beneficiary choice',
       body: kingFallbackBody(king.fallbackReason, !!king.bestBid, allow433, locale)

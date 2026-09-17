@@ -6,10 +6,13 @@ import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
 import {
   auctionBidderOrder,
+  auctionTurnIndexForSeat,
   bidAbsoluteValue,
-  canBeatBid,
+  bidEquivalentPositive,
   canUseFourThreeThree,
-  clampBid
+  clampBid,
+  compareKingOffers,
+  nextActiveBidder
 } from './king/kingAuction';
 import {
   emptyBreakdown,
@@ -71,6 +74,16 @@ export interface KingPtVariantState {
   festaPhase: KingFestaPhase;
   auctionOrder: number[];
   auctionTurnIndex: number;
+  /** Seats still allowed to bid/pass this festa auction. */
+  activeBidders: number[];
+  /** Seats that passed permanently this auction. */
+  passedBidders: number[];
+  /** Seat whose turn it is (synced with auctionTurnIndex). */
+  currentBidder: number | null;
+  /** Standing offer — same reference as bestBid during auction/negotiation. */
+  standingBid: KingBid | null;
+  /** Historical max equivalent positives (≥4 permanently blocks 4×3×3). */
+  highestEquivalentValue: number;
   bestBid: KingBid | null;
   requestedBid: KingBid | null;
   activeContract: KingActiveContract | null;
@@ -127,6 +140,11 @@ function defaultKingState(): KingPtVariantState {
     festaPhase: null,
     auctionOrder: [],
     auctionTurnIndex: 0,
+    activeBidders: [],
+    passedBidders: [],
+    currentBidder: null,
+    standingBid: null,
+    highestEquivalentValue: 0,
     bestBid: null,
     requestedBid: null,
     activeContract: null,
@@ -175,6 +193,25 @@ export function getKingPtState(state: GameState): KingPtVariantState {
     gameHistory: vs.gameHistory ?? [],
     auctionHistory: vs.auctionHistory ?? [],
     waitingForAuctionContinue: Boolean(vs.waitingForAuctionContinue),
+    activeBidders: Array.isArray(vs.activeBidders)
+      ? [...vs.activeBidders]
+      : vs.festaPhase === 'auction' && Array.isArray(vs.auctionOrder)
+        ? [...vs.auctionOrder]
+        : [],
+    passedBidders: Array.isArray(vs.passedBidders) ? [...vs.passedBidders] : [],
+    currentBidder:
+      typeof vs.currentBidder === 'number'
+        ? vs.currentBidder
+        : vs.festaPhase === 'auction' && Array.isArray(vs.auctionOrder)
+          ? (vs.auctionOrder[vs.auctionTurnIndex ?? 0] ?? null)
+          : null,
+    standingBid: vs.standingBid ?? vs.bestBid ?? null,
+    highestEquivalentValue: Math.max(
+      typeof vs.highestEquivalentValue === 'number' ? vs.highestEquivalentValue : 0,
+      vs.bestBid ? bidEquivalentPositive(vs.bestBid) : 0,
+      vs.standingBid ? bidEquivalentPositive(vs.standingBid) : 0
+    ),
+    bestBid: vs.bestBid ?? vs.standingBid ?? null,
     showScorePopup
   };
 }
@@ -263,7 +300,27 @@ export class KingPtGame extends BaseGameAdapter {
 
   getCurrentAuctionPlayer(king: KingPtVariantState): number | null {
     if (king.festaPhase !== 'auction') return null;
+    if (king.currentBidder !== null && king.activeBidders.includes(king.currentBidder)) {
+      return king.currentBidder;
+    }
     return king.auctionOrder[king.auctionTurnIndex] ?? null;
+  }
+
+  private setStandingBid(king: KingPtVariantState, bid: KingBid | null): void {
+    king.standingBid = bid;
+    king.bestBid = bid;
+  }
+
+  private bumpWatermark(king: KingPtVariantState, bid: KingBid): void {
+    const eq = bidEquivalentPositive(bid);
+    if (eq > king.highestEquivalentValue) {
+      king.highestEquivalentValue = eq;
+    }
+  }
+
+  private syncAuctionTurnPointer(king: KingPtVariantState, seat: number | null): void {
+    king.currentBidder = seat;
+    king.auctionTurnIndex = auctionTurnIndexForSeat(king.auctionOrder, seat);
   }
 
   advanceKohRevealStep(): void {
@@ -299,9 +356,20 @@ export class KingPtGame extends BaseGameAdapter {
     if (king.festaPhase !== 'auction') return;
     if (king.waitingForAuctionContinue) return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
+    if (!king.activeBidders.includes(playerIndex)) return;
+
     king.auctionPlayerActions[playerIndex] = 'pass';
     king.auctionHistory = appendKingAuctionHistory(king.auctionHistory, playerIndex, 'pass');
-    this.advanceAuctionTurn(king);
+    king.activeBidders = king.activeBidders.filter((s) => s !== playerIndex);
+    if (!king.passedBidders.includes(playerIndex)) {
+      king.passedBidders = [...king.passedBidders, playerIndex];
+    }
+    // Leader forfeits standing offer; watermark kept.
+    if (king.standingBid?.bidderIndex === playerIndex) {
+      this.setStandingBid(king, null);
+    }
+
+    this.continueAuctionAfterVoice(king, playerIndex);
     king.waitingForAuctionContinue = true;
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -313,17 +381,23 @@ export class KingPtGame extends BaseGameAdapter {
     if (king.festaPhase !== 'auction') return;
     if (king.waitingForAuctionContinue) return;
     if (this.getCurrentAuctionPlayer(king) !== playerIndex) return;
+    if (!king.activeBidders.includes(playerIndex)) return;
+    if (king.passedBidders.includes(playerIndex)) return;
+
     const bid: KingBid = {
       bidderIndex: playerIndex,
       bidType,
       amount: clampBid(bidType, amount)
     };
+
     king.auctionPlayerActions[playerIndex] = bid;
     king.auctionHistory = appendKingAuctionHistory(king.auctionHistory, playerIndex, 'bid', bid);
-    if (canBeatBid(king.bestBid, bid, king.auctionOrder)) {
-      king.bestBid = bid;
+    this.bumpWatermark(king, bid);
+    if (compareKingOffers(bid, king.standingBid ?? king.bestBid, king.auctionOrder) === 'beats') {
+      this.setStandingBid(king, bid);
     }
-    this.advanceAuctionTurn(king);
+
+    this.continueAuctionAfterVoice(king, playerIndex);
     king.waitingForAuctionContinue = true;
     this.syncKing(king);
     this.runAiFestaSteps();
@@ -405,7 +479,8 @@ export class KingPtGame extends BaseGameAdapter {
         amount: clampBid(bidType, amount)
       };
       if (bidAbsoluteValue(newBid) >= bidAbsoluteValue(king.requestedBid)) {
-        king.bestBid = newBid;
+        this.bumpWatermark(king, newBid);
+        this.setStandingBid(king, newBid);
         king.requestedBid = null;
         king.festaPhase = 'negotiation';
       }
@@ -435,7 +510,8 @@ export class KingPtGame extends BaseGameAdapter {
     king.eightOrNullsTarget = null;
     if (offerEight) {
       const bid: KingBid = { bidderIndex, bidType: 'positive', amount: 8 };
-      king.bestBid = bid;
+      this.bumpWatermark(king, bid);
+      this.setStandingBid(king, bid);
       this.applyContractFromBid(king, bid);
     } else {
       king.benefitOwnerIndex = king.festaOwnerIndex;
@@ -451,7 +527,7 @@ export class KingPtGame extends BaseGameAdapter {
     if (!king.waitingForFallback) return;
 
     if (choice === 'four_by_three') {
-      if (!canUseFourThreeThree(king.bestBid)) return;
+      if (!canUseFourThreeThree(king.bestBid, king.highestEquivalentValue)) return;
       king.waitingForFallback = false;
       king.fallbackReason = null;
       king.benefitOwnerIndex = king.festaOwnerIndex;
@@ -554,14 +630,46 @@ export class KingPtGame extends BaseGameAdapter {
     this.state!.variantState = { ...this.state!.variantState, kingPt: king, rulesPresetId: 'king-pt-normal' };
   }
 
-  private advanceAuctionTurn(king: KingPtVariantState): void {
-    king.auctionTurnIndex += 1;
-    if (king.auctionTurnIndex >= king.auctionOrder.length) {
+  /**
+   * After a bid/pass: finish if ≤1 active, else advance to next active seat (wrap).
+   */
+  private continueAuctionAfterVoice(king: KingPtVariantState, fromSeat: number): void {
+    if (king.activeBidders.length === 0) {
       this.finishAuction(king);
+      return;
     }
+    if (king.activeBidders.length === 1) {
+      const sole = king.activeBidders[0];
+      // Sole remaining already holds standing offer → they win without another voice.
+      if (king.standingBid?.bidderIndex === sole) {
+        this.finishAuction(king);
+        return;
+      }
+      // All others passed with no standing (or orphaned) — sole must bid or pass.
+      this.syncAuctionTurnPointer(king, sole);
+      return;
+    }
+    const standingLeader = king.standingBid?.bidderIndex ?? null;
+    const next = nextActiveBidder(king.auctionOrder, king.activeBidders, fromSeat, {
+      skipSeat: standingLeader
+    });
+    this.syncAuctionTurnPointer(king, next);
   }
 
   private finishAuction(king: KingPtVariantState): void {
+    // Sole remaining bidder keeps standing offer if they hold it; else keep last standing.
+    if (king.activeBidders.length === 1) {
+      const winner = king.activeBidders[0];
+      if (king.standingBid && king.standingBid.bidderIndex !== winner) {
+        // Should not happen if leader-pass clears standing; keep watermark only.
+        if (!king.passedBidders.includes(king.standingBid.bidderIndex)) {
+          this.setStandingBid(king, king.standingBid);
+        }
+      }
+      this.syncAuctionTurnPointer(king, winner);
+    } else {
+      this.syncAuctionTurnPointer(king, null);
+    }
     // Presentation pause — negotiation / fallback only after confirmAuctionContinue.
     king.festaPhase = 'auction_result';
     king.waitingForAuctionContinue = true;
@@ -570,6 +678,13 @@ export class KingPtGame extends BaseGameAdapter {
   /** Advance from auction result presentation to negotiation or no-bids fallback. */
   private resolveAuctionResultPresentation(king: KingPtVariantState): void {
     if (king.festaPhase !== 'auction_result') return;
+    // Prefer standingBid; keep bestBid in sync for negotiation APIs.
+    if (king.standingBid && !king.bestBid) {
+      king.bestBid = king.standingBid;
+    }
+    if (king.bestBid && !king.standingBid) {
+      king.standingBid = king.bestBid;
+    }
     if (!king.bestBid) {
       this.enterFallback(king, 'no_bids');
       return;
@@ -588,8 +703,10 @@ export class KingPtGame extends BaseGameAdapter {
   private startAuction(king: KingPtVariantState): void {
     king.festaPhase = 'auction';
     king.auctionOrder = auctionBidderOrder(king.festaOwnerIndex);
-    king.auctionTurnIndex = 0;
-    king.bestBid = null;
+    king.activeBidders = [...king.auctionOrder];
+    king.passedBidders = [];
+    king.highestEquivalentValue = 0;
+    this.setStandingBid(king, null);
     king.requestedBid = null;
     king.activeContract = null;
     king.benefitOwnerIndex = null;
@@ -602,6 +719,7 @@ export class KingPtGame extends BaseGameAdapter {
     king.auctionPlayerActions = {};
     king.auctionHistory = [];
     king.waitingForAuctionContinue = false;
+    this.syncAuctionTurnPointer(king, king.auctionOrder[0] ?? null);
   }
 
   /**
@@ -878,7 +996,11 @@ export class KingPtGame extends BaseGameAdapter {
     king.pauseFestaAiForDev = false;
 
     if (phase === 'fallback') {
-      king.bestBid = null;
+      this.setStandingBid(king, null);
+      king.activeBidders = [];
+      king.passedBidders = [...king.auctionOrder];
+      king.currentBidder = null;
+      king.highestEquivalentValue = 0;
       king.auctionPlayerActions = {
         [(owner + 1) % 4]: 'pass',
         [(owner + 2) % 4]: 'pass',
@@ -892,7 +1014,11 @@ export class KingPtGame extends BaseGameAdapter {
       return;
     }
 
-    king.bestBid = bid;
+    this.setStandingBid(king, bid);
+    king.highestEquivalentValue = Math.max(king.highestEquivalentValue, bidEquivalentPositive(bid));
+    king.activeBidders = [bidder];
+    king.passedBidders = king.auctionOrder.filter((s) => s !== bidder);
+    king.currentBidder = bidder;
 
     if (phase === 'negotiation') {
       king.festaPhase = 'negotiation';
@@ -908,7 +1034,14 @@ export class KingPtGame extends BaseGameAdapter {
     if (phase === 'setup') {
       // DEV: local seat (0) configures so jump is interactive for UX smoke.
       const setupBid: KingBid = { bidderIndex: 0, bidType: 'positive', amount: 5 };
-      king.bestBid = setupBid;
+      this.setStandingBid(king, setupBid);
+      king.highestEquivalentValue = Math.max(
+        king.highestEquivalentValue,
+        bidEquivalentPositive(setupBid)
+      );
+      king.activeBidders = [0];
+      king.passedBidders = [1, 2, 3];
+      king.currentBidder = 0;
       king.auctionPlayerActions = {
         0: setupBid,
         1: 'pass',

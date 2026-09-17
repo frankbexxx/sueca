@@ -21,6 +21,11 @@ function enterAuction(game: KingPtGame): void {
   king.festaPhase = 'auction';
   king.auctionOrder = auctionBidderOrder(0);
   king.auctionTurnIndex = 0;
+  king.activeBidders = [...king.auctionOrder];
+  king.passedBidders = [];
+  king.currentBidder = king.auctionOrder[0];
+  king.standingBid = null;
+  king.highestEquivalentValue = 0;
   king.bestBid = null;
   king.auctionPlayerActions = {};
   king.auctionHistory = [];
@@ -110,12 +115,19 @@ describe('kingAuctionHistory', () => {
     king = getKingPtState(game.getCurrentState());
     expect(king.auctionHistory).toHaveLength(3);
     expect(king.auctionHistory.map((e) => e.sequence)).toEqual([1, 2, 3]);
-    expect(king.festaPhase).toBe('auction_result');
+    expect(king.festaPhase).toBe('auction');
     expect(king.bestBid).toEqual({
       bidderIndex: order[2],
       bidType: 'positive',
       amount: 7
     });
+
+    game.confirmAuctionContinue();
+    game.submitAuctionPass(order[0]);
+    king = getKingPtState(game.getCurrentState());
+    expect(king.festaPhase).toBe('auction_result');
+    expect(king.bestBid?.bidderIndex).toBe(order[2]);
+    expect(king.auctionHistory).toHaveLength(4);
   });
 
   it('records three PASS for no-bids and resets on new auction', () => {

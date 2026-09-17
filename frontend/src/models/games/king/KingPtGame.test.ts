@@ -582,6 +582,11 @@ describe('KingPtGame', () => {
       festaOwnerIndex: 0,
       auctionOrder: [1, 2, 3],
       auctionTurnIndex: 2,
+      activeBidders: [3],
+      passedBidders: [1, 2],
+      currentBidder: 3,
+      standingBid: null,
+      highestEquivalentValue: 0,
       bestBid: null,
       auctionPlayerActions: { 1: 'pass', 2: 'pass' }
     });
@@ -715,6 +720,11 @@ describe('KingPtGame', () => {
     king.festaPhase = 'auction';
     king.auctionOrder = [1, 2, 3];
     king.auctionTurnIndex = 0;
+    king.activeBidders = [1, 2, 3];
+    king.passedBidders = [];
+    king.currentBidder = 1;
+    king.standingBid = null;
+    king.highestEquivalentValue = 0;
     king.auctionPlayerActions = {};
     internal.state.waitingForRoundStart = true;
     internal.state.players[1].type = 'human';
@@ -745,8 +755,16 @@ describe('KingPtGame', () => {
     king.festaPhase = 'auction';
     king.auctionOrder = [1, 2, 3];
     king.auctionTurnIndex = 2;
+    king.activeBidders = [1, 3];
+    king.passedBidders = [2];
+    king.currentBidder = 3;
+    king.standingBid = { bidderIndex: 1, bidType: 'positive', amount: 1 };
     king.bestBid = { bidderIndex: 1, bidType: 'positive', amount: 1 };
+    king.highestEquivalentValue = 1;
     internal.state.waitingForRoundStart = true;
+    internal.state.players[1].type = 'human';
+    internal.state.players[2].type = 'human';
+    internal.state.players[3].type = 'human';
     internal.state.variantState = { ...internal.state.variantState, kingPt: king };
 
     game.submitAuctionPass(3);
@@ -798,6 +816,11 @@ describe('KingPtGame', () => {
     king.festaPhase = 'auction';
     king.auctionOrder = [1, 2, 3];
     king.auctionTurnIndex = 0;
+    king.activeBidders = [1, 2, 3];
+    king.passedBidders = [];
+    king.currentBidder = 1;
+    king.standingBid = null;
+    king.highestEquivalentValue = 0;
     king.auctionPlayerActions = {};
     king.bestBid = null;
     internal.state.waitingForRoundStart = true;
@@ -815,6 +838,7 @@ describe('KingPtGame', () => {
     const after = getKingPtState(game.getCurrentState());
     const aiActed =
       after.auctionTurnIndex > 0 ||
+      after.currentBidder !== 1 ||
       after.bestBid !== null ||
       Object.keys(after.auctionPlayerActions).length > 0;
     expect(aiActed).toBe(true);
@@ -822,7 +846,7 @@ describe('KingPtGame', () => {
     // Still auction or result — not drained into negotiation in one tick.
     expect(['auction', 'auction_result']).toContain(after.festaPhase);
     if (after.festaPhase === 'auction') {
-      expect(after.auctionTurnIndex).toBe(1);
+      expect(after.currentBidder).not.toBeNull();
     }
     expect(game.tickFestaAi()).toBe(false);
   });
