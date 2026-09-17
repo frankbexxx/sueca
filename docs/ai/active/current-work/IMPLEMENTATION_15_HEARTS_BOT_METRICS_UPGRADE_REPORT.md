@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md](../../archive/implementation-prompts/IMPLEMENTATION_15_HEARTS_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — **H15-OK: Parcial** 2026-06-06 (Francisco — smoke manual)
+**Estado:** implementação concluída — **H15-OK: OK — 2026-09-17** (HEARTS-H15-OK-CLOSURE-01)
 
 ---
 
@@ -126,28 +126,32 @@ Em jogo real (**Medium/Hard**), comportamento **«assim assim»**: os bots tende
 | Checkpoint | Estado |
 |------------|--------|
 | CI testes + build | OK |
-| **H15-OK** smoke Medium/Hard | **Parcial** — 2026-06-06 (Francisco) |
+| **H15-OK** smoke Medium/Hard | **OK — 2026-09-17** |
 
-Assinatura fechada: `**H15-OK:** OK — YYYY-MM-DD` *(após validação completa ou aceite do gap v2)*
+Assinatura: `**H15-OK:** OK — 2026-09-17` (HEARTS-H15-OK-CLOSURE-01)
 
-### Evidência H15-OK (2026-06-06)
+### Evidência H15-OK (2026-09-17)
+
+| Canal | Resultado |
+|-------|-----------|
+| Vitest Hearts targeted + smoke | **PASS** (`heartsH15FullMatch.smoke.test.ts` Medium/Hard; pass L/R/across/hold; first-trick void; broken; Q♠; moon deltas/display) |
+| Regras / AI legal | **PASS** — sem stalls; sem cartas duplicadas/perdidas |
+| Gap «cartas altas guardadas» | **DEFERRED** Hearts bot v2 — **não** bloqueia H15-OK funcional |
+
+### Evidência histórica (2026-06-06 — Parcial)
 
 | Canal | Resultado |
 |-------|-----------|
 | Jest `ai/games/hearts` | **34/34** OK |
-| Smoke manual | Medium/Hard — **assim assim**; ver gap **cartas altas guardadas** |
-
-**Notas smoke manual:**
-
-- Melhoria parcial vs baseline (H07/H11 visíveis em casos óbvios).
-- **Gap principal:** bots **retêm** Q♠/♥ altas quando deveriam **limpar** em contexto seguro — defer **Hearts v2**.
+| Smoke manual | Medium/Hard — **assim assim**; gap polish v2 |
 
 ---
 
 ## Próximos passos
 
-1. **Hearts bot v2** — H13 alargado, **H12** meninos, slough perigo cedo (cartas altas guardadas); H10 moon.
-2. King bot (Impl 16+).
+1. ~~Fechar H15-OK~~ — **DONE** 2026-09-17  
+2. **Hearts bot v2** (opcional) — H13 alargado, **H12** meninos, slough perigo cedo; H10 moon.  
+3. Gaps transversais restantes.
 
 ---
 

@@ -31,8 +31,8 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Classe | N |
 |--------|---|
-| **DONE** | 91 |
-| **PARTIAL** | 15 |
+| **DONE** | 92 |
+| **PARTIAL** | 14 |
 | **OPEN** | 16 |
 | **DEFERRED** | 11 |
 | **SUPERSEDED** | 13 |
@@ -41,10 +41,10 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 |------------|---|
 | **P0** | 0 |
 | **P1** | 5 |
-| **P2** | 8 |
+| **P2** | 7 |
 | **P3** | 10 |
 
-*(Contagens: +1 DONE King H16-OK; −1 PARTIAL; −1 P1 (H16 gate fechado). Visual Pass + Themes/Audio da revisão anterior mantidos.)*
+*(Contagens: +1 DONE Hearts H15-OK; −1 PARTIAL; −1 P2 (H15 fecho). King H16 + Visual Pass + Themes/Audio mantidos.)*
 
 ### Roadmap summary — visual / audio UX
 
@@ -268,7 +268,7 @@ Histórico (`docs/ai/active/ROADMAP_AI.md`): metrics → logger → encoder → 
 **Sequência vigente (2026-09):**
 
 1. **Game AI core** (legal / fallback / difficulty / adapters) — **DONE**  
-2. **Métricas de bot** (heurísticas por jogo) — **PARTIAL** (Sueca madura; Hearts Impl15; King Impl16+16.1 smoke pendente; Spades ok mas menos “metrics ID”)  
+2. **Métricas de bot** (heurísticas por jogo) — **DONE** cobertura jogável (Sueca/Spades/Hearts H15/King H16); polish Hearts v2 (cartas altas) **DEFERRED**  
 3. **Logger / history** — **DONE** (live)  
 4. **State encoder** — **DONE** (biblioteca; 4 variantes)  
 5. **Decision evaluator** — **DONE** (biblioteca + testes; **não** no loop de play)  
@@ -335,7 +335,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 |------|---------|-------------------|-------|
 | **Sueca** | **DONE** | **DONE** (lib) | Estratégia madura; `aiClient` legado Sueca-oriented |
 | **Spades** | **DONE** | **DONE** (lib) | Play strategy + tests; menos “Impl metrics ID” |
-| **Hearts** | **PARTIAL** | **DONE** (lib) | Impl 15; **H15-OK: Parcial** (smoke manual) |
+| **Hearts** | **DONE** | **DONE** (lib) | Impl 15; **H15-OK: DONE** 2026-09-17 (full-match smoke + suites); polish «cartas altas» → Hearts v2 DEFERRED |
 | **King** | **DONE** | **DONE** (lib) | Impl 16 + hotfix 16.1; **H16-OK: DONE** (2026-09-17, smoke seed + suites) |
 
 ### 5.G Prioridade Dedicated AI (não P3 automático)
@@ -349,11 +349,12 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 
 ### 5.H Gaps top (Dedicated AI)
 
-1. **Hearts H15-OK** — fechar “Parcial” ou documentar aceite  
-2. **CI não no loop de decisão** — evaluator/memory offline; logger só observa  
-3. **Sem modelo dedicado on-device** (ONNX/WASM)  
-4. **Advisory LLM off + sem UX** — mock/Ollama não são produto mesa  
+1. **CI não no loop de decisão** — evaluator/memory offline; logger só observa  
+2. **Sem modelo dedicado on-device** (ONNX/WASM)  
+3. **Advisory LLM off + sem UX** — mock/Ollama não são produto mesa  
+4. **Hearts bot v2** (opcional) — slough perigo cedo / H12 / H13 alargado — **DEFERRED** polish, não bloqueia H15-OK  
 
+~~Hearts H15-OK~~ — **DONE** 2026-09-17 (`heartsH15FullMatch.smoke` + suites).  
 ~~King H16-OK~~ — **DONE** 2026-09-17 (`kingH16FullMatch.smoke` + suites auction/AI/play).
 
 ---
@@ -376,7 +377,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | DevLab console test timeouts (full suite load) | P3 | **OPEN** | Flaky sob carga (`devLabConsole` / `debugConsoleAlias`); PASS isolados — **não** blocker H16; estabilizar depois |
 | Play Store listing | P1 | **OPEN** | Signing já OK |
 | CI productization (evaluator/memory/UX) | **P2** | **PARTIAL** | §5.B–C |
-| Hearts metrics smoke H15 | **P2** | **PARTIAL** | §5.F |
+| Hearts metrics smoke H15 | — | **DONE** | 2026-09-17 — full match Medium/Hard + regras/moon/pass |
 | Mini-LLM ONNX/WASM | **P3** | **DEFERRED** | §5.E |
 | MP Online focus | — | **DEFERRED** | |
 | Custom domain R2 | — | **DEFERRED** | §4 |
@@ -408,15 +409,16 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 
 ~~King Game AI — H16-OK~~ — **DONE** 2026-09-17
 
-### P2 (8)
+### P2 (7)
 1. **Tweaks do Final Visual Pass** (BUG / UX / POLISH em batches pequenos)  
 2. Card Intelligence productization (evaluator/memory opcional; warnings)  
-3. Hearts H15-OK fecho / aceite documentado  
-4. SmallCards / history compact UI  
-5. Native Preferences adoption  
-6. Dev Lab / external review workflow polish  
-7. Residual hand/visual polish se sessões reais pedirem (fora do gate formal §12)  
-8. Docs stale (CRA/Hazmat audits)  
+3. SmallCards / history compact UI  
+4. Native Preferences adoption  
+5. Dev Lab / external review workflow polish  
+6. Residual hand/visual polish se sessões reais pedirem (fora do gate formal §12)  
+7. Docs stale (CRA/Hazmat audits)
+
+~~Hearts H15-OK fecho~~ — **DONE** 2026-09-17  
 9. **Estabilizar timeouts flaky DevLab** (`devLabConsole` / `debugConsoleAlias` sob suite completa) — não blocker; PASS isolados (2026-09-17)
 
 ### P3 / DEFERRED (10 + Themes/Audio design)
@@ -475,7 +477,7 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 | Infra/CDN | **YELLOW** | R2 funciona via `r2.dev` smoke; custom domain pendente. |
 | Licenses | **YELLOW** | Music policies claras; Casino comercial a fechar p/ loja. |
 | Release readiness | **YELLOW** | Artefactos OK; falta visual gate ×4 + store/CDN/casino license. |
-| **Game AI** | **GREEN** | Core+4 jogos; King **H16-OK DONE** 2026-09-17; Hearts H15 ainda parcial. |
+| **Game AI** | **GREEN** | Core+4 jogos; **H15-OK** + **H16-OK DONE** 2026-09-17. |
 | **Card Intelligence** | **YELLOW** | Pipeline library madura + logger live; evaluator/memory/Dev Lab offline/flag. |
 | **Dedicated AI / Mini-LLM** | **RED** | Advisory mock/Ollama only; sem ONNX/WASM; flags off; não produto mesa. |
 
@@ -692,4 +694,4 @@ O redesign futuro deve **reutilizar** (não recomeçar do zero):
 
 ---
 
-*ROADMAP-REFINE-VISUAL-AUDIO-UX-01 + KING-H16-OK-CLOSURE-01 · base `8843533` · H16 fechado nesta revisão*
+*ROADMAP + KING-H16-OK-CLOSURE-01 + HEARTS-H15-OK-CLOSURE-01 · H15/H16 fechados 2026-09-17*
