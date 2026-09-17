@@ -86,6 +86,9 @@ export interface TableVariantUiRenderModel {
     playerBidTypes: string[];
     team1Bid: number;
     team2Bid: number;
+    /** Current-hand team tricks (engine SoT mirrored for renderers). */
+    team1Tricks: number;
+    team2Tricks: number;
   } | null;
   /**
    * Hearts presentation slice for table renderers.

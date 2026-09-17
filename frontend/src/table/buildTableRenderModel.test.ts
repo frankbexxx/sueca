@@ -177,6 +177,49 @@ describe('buildTableRenderModel', () => {
     });
     expect(model.status.spadesBidActive).toBe(true);
     expect(model.chrome.boardModifiers).toContain('game-board--spades-bid');
+    expect(model.variantUi.spades?.team1Tricks).toBe(0);
+    expect(model.variantUi.spades?.team2Tricks).toBe(0);
+    expect(model.variantUi.spades?.team1Bid).toBe(0);
+    expect(model.variantUi.spades?.team2Bid).toBe(0);
+  });
+
+  it('propagates current-hand team tricks and bids for Spades play', () => {
+    const gameState = baseState({
+      variantState: {
+        spades: {
+          playerBids: [3, 2, 3, 3],
+          playerBidTypes: ['normal', 'normal', 'normal', 'normal'],
+          bidLeaderIndex: 0,
+          currentBidderIndex: 0,
+          team1Bid: 6,
+          team2Bid: 5,
+          team1Tricks: 4,
+          team2Tricks: 3,
+          playerTricks: [2, 1, 2, 2],
+          team1Bags: 1,
+          team2Bags: 2,
+          waitingForBids: false,
+          spadesBroken: true,
+          nilEnabled: true,
+          blindNilEnabled: false
+        }
+      }
+    });
+    const boardFlow = resolveGameBoardFlow({ variant: 'spades', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'spades',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      spadesState: gameState.variantState?.spades as never
+    });
+    expect(model.variantUi.spades?.team1Tricks).toBe(4);
+    expect(model.variantUi.spades?.team2Tricks).toBe(3);
+    expect(model.variantUi.spades?.team1Bid).toBe(6);
+    expect(model.variantUi.spades?.team2Bid).toBe(5);
+    expect(model.variantUi.spades?.spadesBroken).toBe(true);
   });
 
   it('enables king auction badges only during auction festa phase', () => {

@@ -344,6 +344,12 @@
   opacity: 0.95;
 }
 
+.score-block .line.spades-tricks-bid {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
 .score-block .line.spades-bags--warn {
   font-weight: 700;
   text-decoration: underline dotted;

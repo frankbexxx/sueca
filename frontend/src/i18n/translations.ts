@@ -127,6 +127,8 @@ export interface Translations {
   spadesStatus: {
     bagsWord: string;
     bagsLine: (bags: number) => string;
+    tricksBidAria: (tricks: number, bid: number) => string;
+    scoreShort: string;
     spadesClosed: string;
     spadesBroken: string;
   };
@@ -679,6 +681,8 @@ export const translations: Record<Language, Translations> = {
     spadesStatus: {
       bagsWord: 'bags',
       bagsLine: (bags) => `${bags} bags`,
+      tricksBidAria: (tricks, bid) => `Vazas ${tricks} / Bid ${bid}`,
+      scoreShort: 'Score',
       spadesClosed: '♠ Fechadas',
       spadesBroken: '♠ Quebradas'
     },
@@ -1040,6 +1044,8 @@ export const translations: Record<Language, Translations> = {
     spadesStatus: {
       bagsWord: 'bags',
       bagsLine: (bags) => `${bags} bags`,
+      tricksBidAria: (tricks, bid) => `Tricks ${tricks} / Bid ${bid}`,
+      scoreShort: 'Score',
       spadesClosed: '♠ Closed',
       spadesBroken: '♠ Broken'
     },

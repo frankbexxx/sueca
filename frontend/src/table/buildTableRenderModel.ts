@@ -159,7 +159,9 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
             playerBids: [...spadesState.playerBids],
             playerBidTypes: [...spadesState.playerBidTypes],
             team1Bid: spadesState.team1Bid,
-            team2Bid: spadesState.team2Bid
+            team2Bid: spadesState.team2Bid,
+            team1Tricks: spadesState.team1Tricks,
+            team2Tricks: spadesState.team2Tricks
           }
         : null,
       hearts: heartsState

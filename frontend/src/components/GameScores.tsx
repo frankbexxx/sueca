@@ -2,7 +2,13 @@ import React from 'react';
 import { GameState } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import { getSpadesState } from '../models/games/SpadesGame';
-import { getTeamBags, isBagsNearPenalty } from '../utils/spadesStatusDisplay';
+import {
+  formatSpadesTricksBidLine,
+  getTeamBags,
+  getTeamBid,
+  getTeamTricks,
+  isBagsNearPenalty
+} from '../utils/spadesStatusDisplay';
 
 interface TeamScoreBlockProps {
   gameState: GameState;
@@ -26,14 +32,23 @@ export const TeamScoreBlock: React.FC<TeamScoreBlockProps> = ({
 
   if (variant === 'spades') {
     const spades = getSpadesState(gameState);
-    const bid = teamNum === 1 ? spades.team1Bid : spades.team2Bid;
+    const tricks = getTeamTricks(spades, teamNum);
+    const bid = getTeamBid(spades, teamNum);
+    const tricksBid = formatSpadesTricksBidLine(tricks, bid);
     const bags = getTeamBags(spades, teamNum);
     const bagsWarn = isBagsNearPenalty(bags);
     return (
       <div className={`score-block ${isUs ? 'us' : 'them'}`}>
         <div className="label">{isUs ? t.gameBoard.us : t.gameBoard.them}</div>
-        <div className="line">Bid: {bid ?? 0}</div>
-        <div className="line">Score: {gameState.gameScore[scoreKey]}</div>
+        <div
+          className="line spades-tricks-bid"
+          aria-label={t.spadesStatus.tricksBidAria(tricks, bid)}
+        >
+          {tricksBid}
+        </div>
+        <div className="line">
+          {t.spadesStatus.scoreShort} {gameState.gameScore[scoreKey]}
+        </div>
         <div
           className={`line spades-bags${bagsWarn ? ' spades-bags--warn' : ''}`}
           aria-label={t.spadesStatus.bagsLine(bags)}
