@@ -16,7 +16,6 @@ interface SuecaDealingModalProps {
 
 /** Shown before each Sueca deal — method + direction (outside rules preset). */
 export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
-  round,
   dealingMethod,
   dealingDirection,
   onMethodChange,
@@ -24,55 +23,68 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   onConfirm
 }) => {
   const { t } = useLanguage();
+
   return (
-    <div className="variant-modal-overlay">
-      <div className="variant-modal dobo-panel">
-        <h2>
-          {t.startMenu.dealingMethod} — #{round}
+    <div className="variant-modal-overlay dealing-modal-overlay">
+      <div
+        className="variant-modal dealing-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dealing-modal-title"
+      >
+        <h2 id="dealing-modal-title" className="dealing-modal-title">
+          {t.modals.dealingTitle}
         </h2>
-        <p className="variant-modal-hint">{t.startMenu.dealingMethod}</p>
-        <div className="radio-group">
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="sueca-deal-method"
-              checked={dealingMethod === 'A'}
-              onChange={() => onMethodChange('A')}
-            />
-            <span>{t.startMenu.methodA}</span>
-          </label>
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="sueca-deal-method"
-              checked={dealingMethod === 'B'}
-              onChange={() => onMethodChange('B')}
-            />
-            <span>{t.startMenu.methodB}</span>
-          </label>
+
+        <div className="dealing-modal-section">
+          <div className="dealing-modal-label">{t.modals.dealingMethodLabel}</div>
+          <div className="dealing-modal-radios" role="radiogroup" aria-label={t.modals.dealingMethodLabel}>
+            <label className="dealing-modal-radio">
+              <input
+                type="radio"
+                name="sueca-deal-method"
+                checked={dealingMethod === 'A'}
+                onChange={() => onMethodChange('A')}
+              />
+              <span>{t.modals.dealingMethodA}</span>
+            </label>
+            <label className="dealing-modal-radio">
+              <input
+                type="radio"
+                name="sueca-deal-method"
+                checked={dealingMethod === 'B'}
+                onChange={() => onMethodChange('B')}
+              />
+              <span>{t.modals.dealingMethodB}</span>
+            </label>
+          </div>
         </div>
-        <p className="variant-modal-hint">Direção de distribuição</p>
-        <div className="radio-group">
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="sueca-deal-dir"
-              checked={dealingDirection === 'left'}
-              onChange={() => onDirectionChange('left')}
-            />
-            <span>Esquerda (anti-horário)</span>
-          </label>
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="sueca-deal-dir"
-              checked={dealingDirection === 'right'}
-              onChange={() => onDirectionChange('right')}
-            />
-            <span>Direita (horário)</span>
-          </label>
+
+        <div className="dealing-modal-section">
+          <div className="dealing-modal-label">{t.modals.dealingDirectionLabel}</div>
+          <div className="dealing-modal-radios" role="radiogroup" aria-label={t.modals.dealingDirectionLabel}>
+            <label className="dealing-modal-radio">
+              <input
+                type="radio"
+                name="sueca-deal-dir"
+                checked={dealingDirection === 'left'}
+                onChange={() => onDirectionChange('left')}
+              />
+              <span>{t.modals.dealingDirLeft}</span>
+            </label>
+            <label className="dealing-modal-radio">
+              <input
+                type="radio"
+                name="sueca-deal-dir"
+                checked={dealingDirection === 'right'}
+                onChange={() => onDirectionChange('right')}
+              />
+              <span>{t.modals.dealingDirRight}</span>
+            </label>
+          </div>
         </div>
-        <button type="button" className="variant-modal-primary dobo-btn" onClick={onConfirm}>
+
+        <button type="button" className="variant-modal-primary dobo-btn dealing-modal-start" onClick={onConfirm}>
           {t.modals.startGame}
         </button>
       </div>

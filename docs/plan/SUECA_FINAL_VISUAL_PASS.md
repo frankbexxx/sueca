@@ -1,9 +1,9 @@
 # Sueca — Final Visual Pass
 
 **Data:** 2026-09-17  
-**Estado:** `TWEAKS OPEN`  
-**Origem:** revisão manual de screenshots OPPO portrait  
-**Screenshots:** `E:\SUECAO\_temp\sueca-visual-pass\`  
+**Estado:** `TWEAKS OPEN` — batch-01 (S1/S4/S5) aplicado; restantes OPEN  
+**Screenshots batch-01:** `E:\SUECAO\_temp\sueca-visual-batch-01\`  
+**Screenshots audit:** `E:\SUECAO\_temp\sueca-visual-pass\`  
 **Nota:** auditoria automática inicial revista manualmente por Francisco. Esta lista **substitui/refina** a interpretação automática.
 
 **Roadmap:** `docs/plan/ROADMAP_REBASE_SEPTEMBER_2026.md` §12.3  
@@ -36,7 +36,7 @@
 |-------|--------|
 | TYPE | BUG visual |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** A mesa Phaser invade parcialmente o HUD superior.
 
@@ -45,7 +45,8 @@
 - parte inferior dos painéis superiores ocultada.
 
 **Não afirmar** que `Pontos/Jogos` estão ilegíveis: nas screenshots continuam legíveis.  
-**Não assumir** solução técnica ainda.
+
+**Fix (SUECA-VISUAL-BATCH-01):** o `game-table-zone` centrava um canvas `~70vh` no slot flex, o que fazia overflow para cima sobre o strip. Solução mínima: `align-items: stretch` + `overflow: hidden` no zone; `.sueca-phaser-root` em team-table com `height/max-height: 100%` e `min-height: 0`; `z-index` no strip como rede de segurança. Sem empurrar a mesa com padding morto.
 
 ---
 
@@ -86,7 +87,7 @@
 |-------|--------|
 | TYPE | UX |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** Simplificar o modal.
 
@@ -110,6 +111,8 @@ Direcção
 
 Remover `— #1` salvo se houver razão funcional demonstrável.
 
+**Fix (SUECA-VISUAL-BATCH-01):** copy compacta (i18n `modals.dealing*`); radios em linha; padding/gap reduzidos; mesma API/comportamento de deal.
+
 ---
 
 ### S5 — Pausa auto
@@ -118,7 +121,7 @@ Remover `— #1` salvo se houver razão funcional demonstrável.
 |-------|--------|
 | TYPE | UX |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** `Pausa auto` está visualmente tratado como CTA primário e compete com `Continuar`.
 
@@ -127,6 +130,8 @@ Separar conceptualmente:
 - `Pausa auto` = controlo persistente secundário.
 
 **Não** decidir ainda a localização final global.
+
+**Fix (SUECA-VISUAL-BATCH-01):** estilo local `ghost` + tipografia/altura reduzidas; idle alinhado à direita; Continuar mantém `primary`. Sem redesign transversal / top bar.
 
 ---
 

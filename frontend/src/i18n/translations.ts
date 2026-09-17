@@ -63,6 +63,13 @@ export interface Translations {
     won: string;
     finalGames: string;
     dealingMethodNext: string;
+    dealingTitle: string;
+    dealingMethodLabel: string;
+    dealingDirectionLabel: string;
+    dealingMethodA: string;
+    dealingMethodB: string;
+    dealingDirLeft: string;
+    dealingDirRight: string;
     newGame: string;
     heartsRoundTitle: string;
     heartsRoundPoints: string;
@@ -705,6 +712,13 @@ export const translations: Record<Language, Translations> = {
       won: 'Venceu!',
       finalGames: 'Jogos Finais:',
       dealingMethodNext: 'Método de Distribuição para o Próximo Jogo:',
+      dealingTitle: 'Distribuição',
+      dealingMethodLabel: 'Método',
+      dealingDirectionLabel: 'Direcção',
+      dealingMethodA: 'Standard',
+      dealingMethodB: 'Dealer First',
+      dealingDirLeft: 'Esquerda (anti-horário)',
+      dealingDirRight: 'Direita (horário)',
       newGame: 'Novo Jogo',
       heartsRoundTitle: 'Fim da ronda',
       heartsRoundPoints: 'Pontos desta ronda',
@@ -1068,6 +1082,13 @@ export const translations: Record<Language, Translations> = {
       won: 'Won!',
       finalGames: 'Final Games:',
       dealingMethodNext: 'Dealing Method for Next Game:',
+      dealingTitle: 'Dealing',
+      dealingMethodLabel: 'Method',
+      dealingDirectionLabel: 'Direction',
+      dealingMethodA: 'Standard',
+      dealingMethodB: 'Dealer First',
+      dealingDirLeft: 'Left (counter-clockwise)',
+      dealingDirRight: 'Right (clockwise)',
       newGame: 'Start New Game',
       heartsRoundTitle: 'Round complete',
       heartsRoundPoints: 'Points this round',

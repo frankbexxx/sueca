@@ -97,8 +97,8 @@ export const GameActions: React.FC<GameActionsProps> = ({
         )}
         <button
           type="button"
-          className={`sueca-btn sueca-btn--compact action-auto-pause-btn${
-            autoPause ? ' sueca-btn--toggle-on' : ' sueca-btn--secondary'
+          className={`sueca-btn sueca-btn--ghost sueca-btn--compact action-auto-pause-btn${
+            autoPause ? ' sueca-btn--toggle-on' : ''
           }`}
           onClick={toggleAutoPause}
           aria-pressed={autoPause}

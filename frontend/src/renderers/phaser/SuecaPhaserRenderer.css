@@ -13,6 +13,13 @@
   );
 }
 
+/* Team-table boards size the canvas from the flex slot (see GameBoard.css). */
+.game-board--team-table .sueca-phaser-root {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+}
+
 .sueca-phaser-canvas-host {
   width: 100%;
   height: 100%;
@@ -30,11 +37,23 @@
     /* Prefer portrait aspect on tall phones / Capacitor WebView (was 56vh → near-square → desktop mode). */
     height: min(70vh, 680px);
   }
+
+  .game-board--team-table .sueca-phaser-root {
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
   .sueca-phaser-root {
     min-height: 240px;
     height: min(70vh, 420px);
+  }
+
+  .game-board--team-table .sueca-phaser-root {
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
   }
 }
