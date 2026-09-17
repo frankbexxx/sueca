@@ -1285,8 +1285,11 @@
   width: calc(var(--card-w) * 0.92);
   height: calc(var(--card-h) * 0.93);
   border-radius: 6px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.32);
+  /* GLOBAL-CARDS-01 — thin lateral edge so white faces don't fuse (DOM fallback). */
+  border: 1px solid rgba(14, 20, 22, 0.72);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(14, 20, 22, 0.25);
   transition: box-shadow 0.2s ease, filter 0.15s ease, opacity 0.15s ease;
+  box-sizing: border-box;
 }
 
 .player-hand-bar {

@@ -66,6 +66,7 @@ export class SuecaTableScene extends Phaser.Scene {
   private winnerRings = new Map<string, Phaser.GameObjects.Ellipse>();
   private cardShadows: Phaser.GameObjects.Ellipse[] = [];
   private handShadows: Phaser.GameObjects.Ellipse[] = [];
+  private handEdges: Phaser.GameObjects.Rectangle[] = [];
   private trickExtras: Phaser.GameObjects.GameObject[] = [];
   private animatingClear = false;
   private backKey = 'card-back';
@@ -649,6 +650,8 @@ export class SuecaTableScene extends Phaser.Scene {
     const { cardWidth, cardHeight } = view.layout;
     this.handShadows.forEach((s) => s.destroy());
     this.handShadows = [];
+    this.handEdges.forEach((e) => e.destroy());
+    this.handEdges = [];
 
     view.localHand.forEach((entity) => {
       const id = entity.card.id;
@@ -679,6 +682,15 @@ export class SuecaTableScene extends Phaser.Scene {
         )
         .setDepth(Math.max(PREMIUM_TABLE.depthHand - 1, entity.position.depth - 1));
       this.handShadows.push(shadow);
+
+      // Dark mat behind face — peeks as a thin lateral rim under overlap
+      // (GLOBAL-CARDS-01). Clarifies card boundaries without changing fan (S6).
+      const pad = PREMIUM_TABLE.handEdgePad;
+      const edge = this.add
+        .rectangle(targetX, targetY, dw + pad * 2, dh + pad * 2, PREMIUM_TABLE.handEdge, PREMIUM_TABLE.handEdgeAlpha)
+        .setAngle(entity.position.rotationDeg)
+        .setDepth(entity.position.depth - 0.15);
+      this.handEdges.push(edge);
 
       if (!sprite) {
         sprite = this.add

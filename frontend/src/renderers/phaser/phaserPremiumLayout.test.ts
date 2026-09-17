@@ -139,6 +139,10 @@ describe('UX-P3.1 premium table layout', () => {
     expect(PREMIUM_TABLE.trickScale).toBe(1.11);
     expect(PREMIUM_TABLE.handPresenceScale).toBeGreaterThanOrEqual(1.18);
     expect(PREMIUM_TABLE.handPresenceScale).toBeLessThanOrEqual(1.26);
+    expect(PREMIUM_TABLE.handEdgePad).toBeGreaterThan(0);
+    expect(PREMIUM_TABLE.handEdgePad).toBeLessThanOrEqual(4);
+    expect(PREMIUM_TABLE.handEdgeAlpha).toBeGreaterThan(0.5);
+    expect(PREMIUM_TABLE.handEdgeAlpha).toBeLessThanOrEqual(1);
   });
 
   it('separates north seat chrome above opponent backs', () => {

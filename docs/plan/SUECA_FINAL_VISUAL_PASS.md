@@ -1,8 +1,9 @@
 # Sueca — Final Visual Pass
 
 **Data:** 2026-09-17  
-**Estado:** `TWEAKS OPEN` — batch-01 (S1/S4/S5) aplicado; restantes OPEN  
+**Estado:** `TWEAKS OPEN` — batch-01 DONE; cards polish (S9 DONE, GLOBAL-CARDS-01 PARTIAL)  
 **Screenshots batch-01:** `E:\SUECAO\_temp\sueca-visual-batch-01\`  
+**Screenshots cards polish:** `E:\SUECAO\_temp\sueca-cards-render-polish-01\`  
 **Screenshots audit:** `E:\SUECAO\_temp\sueca-visual-pass\`  
 **Nota:** auditoria automática inicial revista manualmente por Francisco. Esta lista **substitui/refina** a interpretação automática.
 
@@ -191,12 +192,13 @@ Tratar transversalmente. **Não** escolher ainda overflow/menu final.
 |-------|--------|
 | TYPE | BUG / POLISH |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** Existem artefactos visuais aparentes nas faces quando sobrepostas.
 
-Antes de corrigir, diagnosticar: asset; crop; scale; clipping; renderer.  
-**Não** assumir que é UV/crop.
+**Diagnóstico (SUECA-CARDS-RENDER-POLISH-01):** não é crop/UV. Pipeline Phaser carrega PNG completo 352×512. Causa = combinação de overlap denso + outline baked que some no downscale + face Casino (campo cinza + painel branco). Evidência: `_temp/sueca-cards-render-polish-01/DIAGNOSIS.md`.
+
+**Fix:** mat escura atrás de cada face da mão (`PREMIUM_TABLE.handEdge*` + `handEdgePad`) — o stroke fino sozinho era invisível após downscale WebView; fan spacing **não** alterado.
 
 ---
 
@@ -256,15 +258,13 @@ Cue de jogador activo subtil; alinhar Premium Classic Table em todos os jogos.
 |-------|--------|
 | TYPE | GLOBAL CARDS / POLISH |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | PARTIAL |
 
 **PROBLEM:** Cartas sobrepostas com bordo/contraste lateral demasiado fraco → várias cartas brancas parecem uma faixa contínua (mãos 10 e 13).
 
-**AUDIT FUTURO:** Casino; CardMeister; DOM; Phaser; mãos; trick.
+**Fix (SUECA-CARDS-RENDER-POLISH-01):** mat Phaser atrás da mão local + `border`/box-shadow CSS em `.card-hand` (DOM fallback). Casino e CardMeister partilham o mesmo pipeline. **PARTIAL** até validação visual explícita Spades/Hearts/King em play (Spades 13 já smokeado no OPPO).
 
-**Possíveis testes futuros:** bordo fino mais definido; sombra muito discreta; contraste lateral. Evitar aspecto pesado/sticker.
-
-**IMPORTANTE:** Testar isto **antes** de aumentar significativamente o spacing das mãos.
+**Não** aumentou spacing do fan (S6).
 
 ---
 

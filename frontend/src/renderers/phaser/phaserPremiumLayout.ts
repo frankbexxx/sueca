@@ -67,6 +67,14 @@ export const PREMIUM_TABLE = {
   seatPanel: 0x182426,
   brass: 0xc5a45b,
   ivory: 0xe8e0d0,
+  /**
+   * Hand-face edge mat (GLOBAL-CARDS-01 / S9): dark plate behind each face so
+   * white cards separate under dense overlap. Prefer mat over top stroke —
+   * stroke alone was too thin after WebView downscale/screencap.
+   */
+  handEdge: 0x0e1416,
+  handEdgeAlpha: 0.9,
+  handEdgePad: 3.5,
   /** Trick card display vs hand card size. */
   trickScale: 1.11,
   /**
