@@ -2,10 +2,10 @@
 
 **Modo:** DOCUMENTAÇÃO (actualização de estado; sem alterações de produto nesta revisão)  
 **Root:** `E:\SUECAO`  
-**Branch:** `v2-main` @ `462315c` (`feat(audio): add advanced music settings`)  
+**Branch:** `v2-main` @ `7fb89f1` (Spades current-tricks HUD + histórico até advanced music)  
 **Data de revisão:** 2026-09-17  
-**Revisão:** ROADMAP-ADD-DEDICATED-AI-01 (após ROADMAP-REFRESH-SEPTEMBER-2026)  
-**Base anterior:** rebase `03681f8` @ `5d49c0e` (2026-09-13) + commits até `462315c`
+**Revisão:** ROADMAP-REFINE-VISUAL-AUDIO-UX-01 (após ROADMAP-ADD-DEDICATED-AI-01)  
+**Base anterior:** rebase `03681f8` @ `5d49c0e` (2026-09-13) + commits até `7fb89f1`
 
 ---
 
@@ -13,15 +13,19 @@
 
 Produto **solo jogável** nas quatro variantes, **Phaser default**, **Vite**, **Capacitor 6**, baseline **OPPO Reno13 5G**, deck **Casino** + **CardMeister** disponível (ainda sem atribuição temática), **backs por tema**, **SFX de mesa**, e **música híbrida v1** (6 core + 23 remote R2 + modos avançados) validada em web + OPPO.
 
-Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing release, remoção Pixi/cards2, CardMeister deck, theme→deckId API, SFX round/game, core music, cache Android, R2 catalog completo, advanced music settings.
+Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing release, remoção Pixi/cards2, CardMeister deck, theme→deckId API, SFX round/game, core music, cache Android, R2 catalog completo, advanced music settings, Spades current-tricks HUD.
 
 **Não há P0 técnico** para solo play no OPPO.
 
 **Feature diferenciadora (produto):** **AI dedicada** (Game AI + Card Intelligence + eventual mini-modelo) — workstream próprio em §5; não confundir bots de partida com a camada de observação/métricas.
 
-**Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM.
+**Release gate visual (§12):** cada jogo (Sueca / Spades / Hearts / King) precisa de um **Final Visual Pass** manual próprio — **não** um único item genérico “UX polish”. Automação sozinha **não** fecha este gate.
 
-**Próximo bloco recomendado:** (1) gate Game AI King H16-OK smoke → (2) curadoria theme↔deck / release-licensing → (3) Card Intelligence produto opcional (P2) → (4) mini-LLM experimental **DEFERRED**.
+**Themes + Audio (§13):** redesign futuro da personalização (Theme ↔ Music ↔ SFX) — **DEFERRED / DESIGN PENDING**; Francisco decide o desenho; **não** é blocker imediato.
+
+**Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM, redesign Themes/Audio/UI unificada.
+
+**Próximo bloco recomendado:** (1) gate Game AI King H16-OK smoke → (2) **Final Visual Pass por jogo** (release gate) → (3) curadoria theme↔deck / release-licensing → (4) Card Intelligence produto opcional (P2) → (5) Themes+Audio redesign (**DEFERRED**, só com decisão de desenho) → (6) mini-LLM experimental **DEFERRED**.
 
 ### Contagens desta revisão
 
@@ -29,18 +33,28 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 |--------|---|
 | **DONE** | 90 |
 | **PARTIAL** | 16 |
-| **OPEN** | 12 |
-| **DEFERRED** | 10 |
+| **OPEN** | 16 |
+| **DEFERRED** | 11 |
 | **SUPERSEDED** | 13 |
 
 | Prioridade | N |
 |------------|---|
 | **P0** | 0 |
-| **P1** | 5 |
-| **P2** | 7 |
+| **P1** | 6 |
+| **P2** | 8 |
 | **P3** | 10 |
 
-*(Contagens agregam itens das secções 2–6 + §5 Dedicated AI; recalculadas de raiz nesta revisão.)*
+*(Contagens agregam itens das secções 2–6 + §5 Dedicated AI + §12 Visual Pass + §13 Themes/Audio; recalculadas nesta revisão. +4 OPEN visual passes; +1 DEFERRED Themes+Audio redesign; +1 P1 visual gate; +1 P2 tweaks do pass.)*
+
+### Roadmap summary — visual / audio UX
+
+| Área | Estado |
+|------|--------|
+| Sueca Visual Pass | **OPEN** |
+| Spades Visual Pass | **OPEN** |
+| Hearts Visual Pass | **OPEN** |
+| King Visual Pass | **OPEN** |
+| Themes + Audio UX | **DEFERRED / DESIGN PENDING** |
 
 ---
 
@@ -48,7 +62,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Fonte | Uso |
 |-------|-----|
-| Este ficheiro (rebase 13 Set + refresh 17 Set) | baseline |
+| Este ficheiro (rebase 13 Set + refresh/AI 17 Set + visual/audio UX refine) | baseline |
 | `docs/plan/ROADMAP_GAMEPLAY_UX_2026.md` | histórico A–H |
 | `docs/ASSETS.md` | Casino, CardMeister, music hybrid, R2 |
 | `docs/ANDROID_SIGNING.md` | signing release |
@@ -369,6 +383,12 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Pixi no bundle | — | **SUPERSEDED** | Removido |
 | Ambiance single-file only | — | **SUPERSEDED** | Core+remote |
 | “AI mesa” como único DEFERRED | — | **SUPERSEDED** | Substituído por §5 |
+| Final Visual Pass — Sueca | **P1** | **OPEN** | §12 — NOT REVIEWED |
+| Final Visual Pass — Spades | **P1** | **OPEN** | §12 — NOT REVIEWED |
+| Final Visual Pass — Hearts | **P1** | **OPEN** | §12 — NOT REVIEWED |
+| Final Visual Pass — King | **P1** | **OPEN** | §12 — NOT REVIEWED |
+| Visual tweaks (BUG/UX/POLISH) do Final Pass | **P2** | **OPEN** | Criados após review; batches pequenos |
+| Themes + Audio Experience Redesign | — | **DEFERRED** / DESIGN PENDING | §13 — não blocker imediato |
 
 ---
 
@@ -377,23 +397,25 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 ### P0
 **Nenhum.** Solo OPPO + web estáveis; music v1 fechada.
 
-### P1 (5)
+### P1 (6)
 1. **King Game AI — H16-OK re-smoke** (qualidade bots; não CI)  
-2. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
-3. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
-4. Play Store listing / políticas (quando for a loja)  
-5. Docs/roadmap housekeeping (esta revisão + stale audits)
+2. **Final Visual Pass por jogo** (Sueca / Spades / Hearts / King) — **release gate** (§12)  
+3. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
+4. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
+5. Play Store listing / políticas (quando for a loja)  
+6. Docs/roadmap housekeeping (esta revisão + stale audits)
 
-### P2 (7)
-1. Card Intelligence productization (evaluator/memory opcional; warnings)  
-2. Hearts H15-OK fecho / aceite documentado  
-3. SmallCards / history compact UI  
-4. Native Preferences adoption  
-5. Dev Lab / external review workflow polish  
-6. Residual hand/visual polish se sessões reais pedirem  
-7. Docs stale (CRA/Hazmat audits)
+### P2 (8)
+1. **Tweaks do Final Visual Pass** (BUG / UX / POLISH em batches pequenos)  
+2. Card Intelligence productization (evaluator/memory opcional; warnings)  
+3. Hearts H15-OK fecho / aceite documentado  
+4. SmallCards / history compact UI  
+5. Native Preferences adoption  
+6. Dev Lab / external review workflow polish  
+7. Residual hand/visual polish se sessões reais pedirem (fora do gate formal §12)  
+8. Docs stale (CRA/Hazmat audits)
 
-### P3 / DEFERRED (10)
+### P3 / DEFERRED (10 + Themes/Audio design)
 1. Mini-LLM ONNX/WASM dedicated model  
 2. LLM advisory productizado (flags/UX)  
 3. Blind nil / optional rules  
@@ -405,19 +427,30 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 9. Extra music packs  
 10. Ads / IAP reais  
 
+**DEFERRED / DESIGN (não P3 de implementação imediata):**  
+- Themes + Audio Experience Redesign (§13)  
+- Unified customization UI  
+- Theme ↔ Music relationship (A/B/C — DECISION OPEN)  
+- SFX na mesma área de personalização  
+- Preview theme/deck/music/SFX  
+
+Não transformar o redesign Themes/Audio em blocker enquanto o desenho não estiver decidido.
+
 ---
 
 ## 8. Ordem recomendada (curta e realista)
 
 1. **King H16-OK smoke** (Game AI gate) — curto  
-2. **Theme ↔ deck curation** (CardMeister)  
-3. **Release / licensing** (Casino + store checklist)  
-4. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
-5. **Domínio / site / CDN** — **DEFERRED, não hoje**  
-6. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
-7. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
-8. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
-9. **Final release readiness** (listing, políticas, CDN prod)
+2. **Final Visual Pass** por jogo (§12) — **antes de release**; smokes automáticos não fecham  
+3. **Theme ↔ deck curation** (CardMeister)  
+4. **Release / licensing** (Casino + store checklist)  
+5. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
+6. **Themes + Audio UX redesign** — **DEFERRED**; só após decisão de desenho (Francisco)  
+7. **Domínio / site / CDN** — **DEFERRED, não hoje**  
+8. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
+9. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
+10. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
+11. **Final release readiness** (listing, políticas, CDN prod, **visual gate PASS ×4**)
 
 ---
 
@@ -426,15 +459,17 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Área | Estado | 1 linha |
 |------|--------|---------|
 | Gameplay | **GREEN** | 4 variantes; P0/P1 regras do roadmap original fechados. |
-| UX | **GREEN** | HUD/mão/continue; landscape e fine polish não bloqueiam. |
+| UX (baseline) | **GREEN** | HUD/mão/continue; landscape fine polish não bloqueia baseline. |
+| **Final Visual Pass** | **YELLOW** | 4 jogos **NOT REVIEWED**; gate de release §12. |
 | Cards | **GREEN** | Casino + backs; CardMeister ready; curadoria theme↔deck OPEN. |
-| Audio SFX | **GREEN** | Mesa + round/game; mute/Off OK. |
-| Music | **GREEN** | Hybrid v1 + advanced modes + OPPO; CDN custom DEFERRED. |
+| Audio SFX | **GREEN** | Mesa + round/game; mute/Off OK; redesign unificado **DEFERRED**. |
+| Music | **GREEN** | Hybrid v1 + advanced modes + OPPO; CDN custom DEFERRED; UX Theme↔Music gap §13. |
+| Themes + Audio UX | **YELLOW** | Runtime OK; personalização conceptualmente desagregada — redesign DESIGN PENDING. |
 | Android | **GREEN** | Cap 6, signing, AAB/APK, OPPO smokes. |
 | Web | **GREEN** | Vite/CI; Vercel path conhecido. |
 | Infra/CDN | **YELLOW** | R2 funciona via `r2.dev` smoke; custom domain pendente. |
 | Licenses | **YELLOW** | Music policies claras; Casino comercial a fechar p/ loja. |
-| Release readiness | **YELLOW** | Artefactos assinados OK; store listing / CDN prod / casino license. |
+| Release readiness | **YELLOW** | Artefactos OK; falta visual gate ×4 + store/CDN/casino license. |
 | **Game AI** | **YELLOW** | Core+4 jogos wired; Sueca/Spades sólidos; Hearts/King smoke parcial/pendente. |
 | **Card Intelligence** | **YELLOW** | Pipeline library madura + logger live; evaluator/memory/Dev Lab offline/flag. |
 | **Dedicated AI / Mini-LLM** | **RED** | Advisory mock/Ollama only; sem ONNX/WASM; flags off; não produto mesa. |
@@ -460,10 +495,196 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 
 - `ROADMAP_GAMEPLAY_UX_2026.md` = **histórico cumprido**, não fila activa.  
 - `docs/ai/active/ROADMAP_AI.md` + status/Impl reports = detalhe técnico AI; **fila de produto AI** = **§5** deste ficheiro.  
-- **Fila activa geral** = §6–§8 deste ficheiro.  
-- Workstream **música** = **fechado** (v1 + advanced); CDN/domínio permanece **DEFERRED**.  
-- Próxima actualização sugerida: após H16-OK ou theme↔deck curation, ou ao abrir CDN/domínio / Cap 7 / Play Store.
+- **Fila activa geral** = §6–§8 + **§12** (visual) + **§13** (themes/audio design).  
+- Workstream **música runtime** = **fechado** (v1 + advanced); CDN/domínio permanece **DEFERRED**; **UX Theme↔Music** = **§13 DEFERRED / DESIGN PENDING**.  
+- Próxima actualização sugerida: após H16-OK, fecho de um Visual Pass por jogo, theme↔deck curation, ou decisão de desenho Themes+Audio / CDN / Cap 7 / Play Store.
 
 ---
 
-*ROADMAP-ADD-DEDICATED-AI-01 · commit base `462315c` · alterações de código nesta tarefa: ZERO*
+## 12. PER-GAME VISUAL POLISH / FINAL TWEAK PASS
+
+**STATUS workstream:** **OPEN**  
+**Prioridade:** **P1** (gate de release); tweaks encontrados → **P2**  
+**Motivo:** Os ecrãs variam entre Sueca, Spades, Hearts e King. Grande parte da validação anterior foi automática; cada jogo precisa de uma passagem **visual/manual** própria antes de release.
+
+**Este workstream NÃO é um único item genérico “UX polish”.** Subsecções independentes abaixo.
+
+### 12.0 Release gate
+
+**Condição de release:** `Final Visual Pass completed for all 4 games`
+
+| Jogo | Gate state |
+|------|------------|
+| Sueca | **NOT REVIEWED** |
+| Spades | **NOT REVIEWED** |
+| Hearts | **NOT REVIEWED** |
+| King | **NOT REVIEWED** |
+
+Estados possíveis por jogo: **NOT REVIEWED** · **IN REVIEW** · **TWEAKS OPEN** · **PASS**
+
+Não fechar este workstream (nem o gate) apenas com testes automáticos.
+
+### 12.1 Tipo de tarefas desta fase
+
+Aceitar **pequenos itens independentes** (tickets/tweaks) sem obrigar a abrir uma grande feature, por exemplo:
+
+- text overflow · alinhamento · hierarquia visual  
+- componente demasiado grande · informação pouco legível  
+- botão mal colocado · estado pouco evidente · modal confuso  
+- informação em falta · redundância · spacing · card sizing · contraste  
+- animações/transições · leitura em portrait · inconsistência entre jogos  
+
+Prioridade ao criar tickets: **BUG** · **UX** · **POLISH**
+
+### 12.2 Método (por jogo)
+
+1. Jogar manualmente uma partida  
+2. Tirar screenshots dos estados relevantes  
+3. Criar lista de tweaks  
+4. Priorizar: BUG / UX / POLISH  
+5. Implementar em **pequenos batches**  
+6. Smoke real (device/web conforme o caso)  
+7. Fechar o jogo visualmente (**PASS**)  
+
+### 12.3 Sueca — Final Visual Pass
+
+**STATUS:** **OPEN** · Gate: **NOT REVIEWED**
+
+Rever manualmente:
+
+- mesa / gameplay  
+- bids / contract info se aplicável  
+- score  
+- trick / current player cues  
+- modals  
+- transitions  
+- mobile portrait  
+- spacing · typography · cards/overlap  
+- inconsistências visuais · pequenos bugs visíveis · oportunidades de melhoria  
+
+### 12.4 Spades — Final Visual Pass
+
+**STATUS:** **OPEN** · Gate: **NOT REVIEWED**
+
+Rever:
+
+- bidding screen  
+- tricks/bid HUD  
+- score / bags  
+- nil indicators  
+- round result  
+- gameplay table  
+- mobile portrait  
+- spacing / alignment · clareza visual  
+
+### 12.5 Hearts — Final Visual Pass
+
+**STATUS:** **OPEN** · Gate: **NOT REVIEWED**
+
+Rever:
+
+- passing phase  
+- hearts broken indication  
+- penalties  
+- moon states  
+- current score / round score  
+- table / gameplay  
+- mobile portrait  
+- modals / transitions  
+
+### 12.6 King — Final Visual Pass
+
+**STATUS:** **OPEN** · Gate: **NOT REVIEWED**
+
+Rever **separadamente**:
+
+- negativos · festas · auction · auction timeline · negotiation  
+- 8-or-nulls · 4x3x3  
+- contract display · score / history  
+- table / gameplay · mobile portrait  
+
+---
+
+## 13. THEMES + AUDIO EXPERIENCE REDESIGN
+
+**STATUS:** **DEFERRED / DESIGN PENDING**  
+**Prioridade:** não é P1/P2 de implementação imediata — **DESIGN** até Francisco decidir.
+
+### 13.1 Motivo
+
+Temas visuais e música **funcionam tecnicamente**, mas estão **conceptualmente desagregados**.
+
+**Música (settings actuais):** Theme Default · Random · Random Streaming Safe · Family · Specific Track · Off  
+
+**Temas:** controlam visual / table / back / deck / etc.
+
+A relação existe no runtime, mas **não está suficientemente clara na UX**.
+
+### 13.2 Objectivo futuro
+
+Redesenhar para que **Theme** e **Music / Sound** pareçam partes da **mesma experiência de personalização**.
+
+**Não definir ainda a solução final.**
+
+### 13.3 Possível direcção — NÃO IMPLEMENTAR
+
+Hipótese de produto (Francisco decide):
+
+**Personalização** — uma área/aba única (ou equivalente) contendo:
+
+- Tema visual · Baralho · Música · Sons · Volume · modo musical · preview  
+
+Não assumir que esta é a solução final.
+
+### 13.4 Relação Theme ↔ Music (gap actual)
+
+Problema actual documentado:
+
+- cada theme pode ter música default  
+- essa relação é **pouco visível** para o utilizador  
+- músicas também podem ser seleccionadas **independentemente**  
+- sensação de **duas features separadas**  
+
+Futuro redesign deve escolher claramente:
+
+| Opção | Descrição |
+|-------|-----------|
+| **A** | Theme como experiência completa: visual + deck + music default |
+| **B** | Theme visual independente, Music na mesma área de personalização |
+| **C** | Modelo híbrido |
+
+**DECISION:** **OPEN**
+
+### 13.5 SFX
+
+Incluir SFX no futuro redesign.
+
+Actual: música tem settings próprios; SFX/mute estão separados.  
+Objectivo futuro: juntar conceptualmente **Themes / Music / Sounds** numa experiência coerente.
+
+**Sem alterar comportamento actual nesta fase.**
+
+### 13.6 Preview
+
+Possível requisito futuro:
+
+- preview do theme · preview do deck · preview de música · preview de SFX  
+
+**STATUS:** **OPEN / DESIGN PENDING**
+
+### 13.7 Não apagar arquitectura actual
+
+O redesign futuro deve **reutilizar** (não recomeçar do zero):
+
+- 30 themes · theme music mapping · 6 core tracks · 23 remote  
+- advanced music modes · `audioService` · deck selection architecture  
+
+### 13.8 Prioridade deste workstream
+
+| Classe | Itens |
+|--------|-------|
+| **DEFERRED / DESIGN** | Themes + Audio Experience redesign; unified customization UI; theme/music relationship (A/B/C); SFX na mesma área; previews |
+
+---
+
+*ROADMAP-REFINE-VISUAL-AUDIO-UX-01 · commit base `7fb89f1` · alterações de código nesta tarefa: ZERO*
