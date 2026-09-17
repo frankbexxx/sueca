@@ -1,24 +1,46 @@
 # ROADMAP REBASE — Setembro 2026
 
-**Modo:** READ-ONLY (este ficheiro é a única entrega)  
+**Modo:** DOCUMENTAÇÃO (actualização de estado; sem alterações de produto nesta revisão)  
 **Root:** `E:\SUECAO`  
-**Branch:** `v2-main` @ `5d49c0e`  
-**Data:** 2026-09-13  
-**Base:** `ROADMAP_GAMEPLAY_UX_2026.md` + audits 2026 + `docs/ASSETS.md` + git desde 2026-09-01
+**Branch:** `v2-main` @ `462315c` (`feat(audio): add advanced music settings`)  
+**Data de revisão:** 2026-09-17  
+**Revisão:** ROADMAP-ADD-DEDICATED-AI-01 (após ROADMAP-REFRESH-SEPTEMBER-2026)  
+**Base anterior:** rebase `03681f8` @ `5d49c0e` (2026-09-13) + commits até `462315c`
 
 ---
 
 ## 0. Executive summary
 
-Estamos num **produto jogável solo** nas quatro variantes, com **Phaser default**, **Vite**, **Capacitor 6**, baseline **OPPO Reno13 5G (Android 16)**, deck **Casino** e **backs por tema**.
+Produto **solo jogável** nas quatro variantes, **Phaser default**, **Vite**, **Capacitor 6**, baseline **OPPO Reno13 5G**, deck **Casino** + **CardMeister** disponível (ainda sem atribuição temática), **backs por tema**, **SFX de mesa**, e **música híbrida v1** (6 core + 23 remote R2 + modos avançados) validada em web + OPPO.
 
-O roadmap original (gameplay/UX → POC Phaser → Android → default Sueca) está **essencialmente cumprido** e em vários pontos **ultrapassado**: Phaser já cobre Spades/Hearts/King; CRA foi a Vite; temas/cartas avançaram fora do “fora de scope” inicial.
+Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing release, remoção Pixi/cards2, CardMeister deck, theme→deckId API, SFX round/game, core music, cache Android, R2 catalog completo, advanced music settings.
 
-**Fechado:** P0/P1 de regras A1–A14; UX baseline B1–B7; separação C1–C5; E/F/G; expansão Phaser às 4 variantes; Casino + theme backs; Firebase Android opcional.
+**Não há P0 técnico** para solo play no OPPO.
 
-**Ainda importa:** polish de mão/cartas no telefone; residual King UX se aparecer em jogo real; readiness de release Android (store/signing); limpeza de debt (Pixi archive, packs mortos); **não** Cap 7/8 nem MP agora.
+**Feature diferenciadora (produto):** **AI dedicada** (Game AI + Card Intelligence + eventual mini-modelo) — workstream próprio em §5; não confundir bots de partida com a camada de observação/métricas.
 
-**Próximo bloco recomendado:** polish visual de cartas/mão no Phaser (OPPO-first) — valor alto, risco baixo, sem misturar toolchain.
+**Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM.
+
+**Próximo bloco recomendado:** (1) gate Game AI King H16-OK smoke → (2) curadoria theme↔deck / release-licensing → (3) Card Intelligence produto opcional (P2) → (4) mini-LLM experimental **DEFERRED**.
+
+### Contagens desta revisão
+
+| Classe | N |
+|--------|---|
+| **DONE** | 90 |
+| **PARTIAL** | 16 |
+| **OPEN** | 12 |
+| **DEFERRED** | 10 |
+| **SUPERSEDED** | 13 |
+
+| Prioridade | N |
+|------------|---|
+| **P0** | 0 |
+| **P1** | 5 |
+| **P2** | 7 |
+| **P3** | 10 |
+
+*(Contagens agregam itens das secções 2–6 + §5 Dedicated AI; recalculadas de raiz nesta revisão.)*
 
 ---
 
@@ -26,300 +48,422 @@ O roadmap original (gameplay/UX → POC Phaser → Android → default Sueca) es
 
 | Fonte | Uso |
 |-------|-----|
-| `docs/plan/ROADMAP_GAMEPLAY_UX_2026.md` | roadmap original a reconciliar |
-| `docs/plan/DEPENDENCY_TOOLCHAIN_AUDIT_2026.md` | toolchain (parcialmente desactualizado pós-Vite) |
-| `docs/plan/CARD_ASSETS_RENDERER_AUDIT_2026.md` | assets/renderer (pré-Casino) |
-| `docs/plan/CARD_HAND_VISIBILITY_AUDIT_2026.md` | mão/geometria (pré-Casino faces) |
-| `docs/plan/SCREEN_VIEWPORT_ANDROID_AUDIT_2026.md` | viewport |
-| `docs/plan/ANDROID_OPPO_RENO13_BASELINE_2026.md` | device baseline |
-| `docs/ASSETS.md` | estado actual Casino + theme backs |
-| `CAPACITOR-TOOLCHAIN-AUDIT-01` (sessão 2026-09-13) | Cap 6 / SDK 34 / recomendação manter |
-| `git log --since=2026-09-01` | commits que moveram o roadmap |
-| Código actual (`resolveTableRenderer`, registry, CI) | verificação |
+| Este ficheiro (rebase 13 Set + refresh 17 Set) | baseline |
+| `docs/plan/ROADMAP_GAMEPLAY_UX_2026.md` | histórico A–H |
+| `docs/ASSETS.md` | Casino, CardMeister, music hybrid, R2 |
+| `docs/ANDROID_SIGNING.md` | signing release |
+| `docs/plan/ANDROID_OPPO_RENO13_BASELINE_2026.md` | device |
+| `docs/ai/active/ROADMAP_AI.md` | fases históricas CI |
+| `docs/ai/active/CARD_INTELLIGENCE_STATUS_REPORT.md` | inventário (Jun 2026; arquitectura ainda válida) |
+| `docs/ai/active/current-work/IMPLEMENTATION_15_*` / `16*` / `16_1*` | Hearts/King bot metrics |
+| `git log` até `462315c` | evidência |
+| Código `frontend/src/ai/**`, `frontend/src/cardIntelligence/**`, `services/aiClient.ts`, `config/features.ts` | verificação 2026-09-17 |
+| Testes: `vitest` `src/ai` + `src/cardIntelligence` + `aiClient` → **61 files / 388 tests** PASS | evidência |
 
 ---
 
-## 2. Roadmap original — estado por item
+## 2. Roadmap original A–H — estado (confirmado)
 
-Legenda: **DONE** · **PARTIAL** · **STILL OPEN** · **SUPERSEDED** · **NO LONGER RELEVANT**
+Legenda: **DONE** · **PARTIAL** · **OPEN** · **DEFERRED** · **SUPERSEDED**
 
-### 2.1 Fase A — Estabilização funcional
+### 2.1 Fase A — Regras
 
-| ID | Estado | Evidência |
-|----|--------|-----------|
-| A1 Capote Sueca | **DONE** | `7b30b56` |
-| A2 Pause adapters | **DONE** | `19c365a` |
-| A3 Bags Spades | **DONE** | `57457c5` |
-| A4 Modais Spades /4 | **DONE** | `79faf51` |
-| A5 King nulos sem trunfo | **DONE** | `e55a950` |
-| A6 K♥ primeira oportunidade | **DONE** | `2bcb24b` |
-| A7 4×3×3 history | **DONE** | `e389e43` |
-| A8 8 ou nulos gate | **DONE** | `64fbbf5` |
-| A9 Settlement positivo | **DONE** | `bc5959b` |
-| A10a Fallback copy | **DONE** | `96b1180` |
-| A10b Breakdown / null scores | **DONE** | `936ef25` |
-| A11 Hearts 1ª vaza | **DONE** | `0dc4e3a` |
-| A12 Moon modal | **DONE** | `01bf8d8` |
-| A13 Dealing direction | **DONE** | `c098b20` |
-| A14 Game-over race | **DONE** | `dc5dfaa` |
-| A15 Blind nil / King MP joiner | **STILL OPEN** | LATER de produto; MP Android off |
+| ID | Estado | Notas |
+|----|--------|-------|
+| A1–A14 | **DONE** | Quatro jogos; commits A1–A14 |
+| A15 Blind nil / King MP joiner | **OPEN** / **DEFERRED** produto | Não bloquear release solo |
 
 ### 2.2 Fase B — UX baseline
 
-| ID | Estado | Evidência |
-|----|--------|-----------|
-| B1 Active player | **DONE** | `1bd548d` (+ refinements renderer) |
-| B2 Legal/illegal | **DONE** | `98ff414` |
-| B3 Bags + broken Spades | **DONE** | `e66925c` |
-| B4 Hearts broken | **DONE** | `615f330` |
-| B5 Trump Sueca | **DONE** | `e8be329` |
-| B6 King festa actions | **DONE** | `4b1e8c5` (+ leilão/HUD King em Set) |
-| B7 Continue idle | **DONE** | `4cb6e5b` |
-| B8 Landscape deep | **STILL OPEN** | LATER; prioridade = portrait OPPO |
+| ID | Estado |
+|----|--------|
+| B1–B7 | **DONE** |
+| B8 Landscape deep | **OPEN** / **DEFERRED** (portrait-first OPPO) |
 
-### 2.3 Fase C — Separação architecture
+### 2.3 Fase C — Architecture
 
-| ID | Estado | Evidência |
-|----|--------|-----------|
-| C1 Single source adapters | **DONE** | `a2f4047` |
-| C2 Orchestration fora JSX | **DONE** | `adc0092` |
-| C3 Variant APIs adapter | **DONE** | `c3b6f3f` |
-| C4 Flow controllers | **DONE** | `737eb04` |
-| C5 Table renderer boundary | **DONE** | `26ebe26` |
+| ID | Estado |
+|----|--------|
+| C1–C5 (SoT, flow, VariantFlowApi, controllers, TableRenderModel) | **DONE** |
 
-### 2.4 Fase D — MP / storage / session
+### 2.4 Fase D — MP / storage
 
-| ID | Estado | Evidência |
-|----|--------|-----------|
-| D1 Extrair Firebase / host-joiner | **STILL OPEN** | MP flag-gated; não prioridade |
-| D2 Session save / continue / lifecycle | **PARTIAL** | Continue flows estáveis; lifecycle Android OK o suficiente; isolamento MP não feito |
-| D3 Preferences Capacitor | **STILL OPEN** | Dep instalada; runtime ainda `localStorage` |
+| ID | Estado | Notas |
+|----|--------|-------|
+| D1 Extrair Firebase / host-joiner | **DEFERRED** | MP flag-gated |
+| D2 Session / continue / lifecycle | **PARTIAL** | Continue + Android resume OK; isolamento MP não |
+| D3 Preferences Capacitor | **OPEN** | Dep presente; runtime ainda `localStorage` (`preferences.ts`) |
 
 ### 2.5 Fase E / F / G / H — Renderer
 
-| ID | Estado | Evidência |
-|----|--------|-----------|
-| E1 POC Phaser Sueca | **DONE** | `58c4594` — framing “POC” **SUPERSEDED** |
-| E2 Candidato mesa + “não default ainda” | **DONE** trabalho; cláusula “não default” **SUPERSEDED** | `3f28471` → `48f036d` |
-| Comparação Pixi | **DONE** / Pixi **SUPERSEDED** como candidato | `28e75cd`, `bb75c20`; só `?renderer=pixi-archive` |
-| F1 Web | **DONE** | docs + uso contínuo |
-| F2 Android real | **DONE** | `db076e9`, baseline OPPO |
-| G Phaser default Sueca | **DONE** | `48f036d`, `f1f9e89` |
-| “Spades/Hearts/King ficam DOM” (texto G) | **SUPERSEDED** | defaults Phaser |
-| H1 Spades Phaser | **DONE** (além do plano “flag only”) | `0d78c0a`, `252b403` |
-| H2 Hearts Phaser | **DONE** | `a59b508`, `7f378ed` |
-| H3 King Phaser | **DONE** | `ffa622f`, `af509f4` |
-| H “flag only / DOM default” | **SUPERSEDED BY CURRENT ARCHITECTURE** | `resolveTableRenderer` → Phaser p/ 4 variantes |
-
-### 2.6 Checkpoints originais
-
-| CP | Estado |
+| ID | Estado |
 |----|--------|
-| 1–8 | **DONE** (atingidos ou ultrapassados) |
+| E1–E2 Phaser | **DONE** (POC framing **SUPERSEDED**) |
+| Pixi como candidato | **SUPERSEDED** — removido do bundle (`db0b757`) |
+| F1 Web / F2 Android | **DONE** |
+| G Phaser default Sueca | **DONE** |
+| H1–H3 Spades/Hearts/King Phaser | **DONE** |
+| “DOM default Spades/Hearts/King” | **SUPERSEDED** |
+| DOM fallback | **DONE** (`?renderer=dom` / erro / MP) |
 
-### 2.7 “Fora de scope” original vs realidade
+### 2.6 Toolchain / “fora de scope” original
 
-| Item original | Estado |
-|---------------|--------|
-| AI / Card Intelligence | **STILL OPEN** (fora deste rebase de produto mesa; código CI existe) |
-| Godot/Unity/Kotlin | **NO LONGER RELEVANT** nesta fase |
-| Redesign / temas | **SUPERSEDED** — temas + backs por tema shipped |
-| Ads / IAP reais | **STILL OPEN** / NOT NOW |
-| Dual renderer produção | **SUPERSEDED** — Phaser default; DOM fallback só |
-| CRA como toolchain | **SUPERSEDED** — Vite (`4e0667f`) |
-| Deck Hazmat activo | **SUPERSEDED** — Casino `cards3` |
-
-### Contagens (itens discretos auditados acima)
-
-| Classe | N |
-|--------|---|
-| DONE | 38 |
-| PARTIAL | 1 |
-| STILL OPEN | 5 |
-| SUPERSEDED | 8 |
-| NO LONGER RELEVANT | 1 |
-
-*(A15, B8, D1, D3, AI-out-of-scope contam como OPEN de produto/fase; supersessions são cláusulas/arquitecturas substituídas.)*
+| Item | Estado |
+|------|--------|
+| CRA → Vite | **DONE** / CRA **SUPERSEDED** |
+| AI / Card Intelligence (bucket único “mesa”) | **SUPERSEDED** como item monolítico — ver **§5** |
+| Ads / IAP reais | **DEFERRED** |
+| Godot/Unity/Kotlin | **SUPERSEDED** nesta fase |
 
 ---
 
-## 3. Fotografia do estado real (Set 2026)
+## 3. Pós-rebase (13→17 Set) — estado real
 
-### Gameplay
-| Variante | Estado |
-|----------|--------|
-| Sueca | Estável; capote/dealing; Phaser default |
-| Spades | Bags/broken/modais 500; Phaser default |
-| Hearts | 1ª vaza/moon/broken; Phaser default |
-| King | Motor P0/P1 + leilão/HUD festa iterados em Set; Phaser default |
+### 3.1 Cards / themes
 
-### UX
-- HUD premium / seats / trick progress unificados (série `fix(ui|renderer)` Set)
-- Mão Phaser com geometria partilhada 10/13
-- Continue flows estabilizados
-- Modais React (sem native confirm)
-- Mobile **portrait-first**; landscape deep ainda aberto
-- **OPPO Reno13 5G** = device de referência documentado
+| Item | Estado | Evidência |
+|------|--------|-----------|
+| Casino deck (`cards3`) | **DONE** | runtime default |
+| Remoção cards1/cards2 | **DONE** | `89f337e`, cleanup package |
+| Theme → `backId` (30 temas) | **DONE** | `THEME_CARD_VISUALS` |
+| Theme → `deckId` architecture (API) | **DONE** | `resolveCardDeckForTheme`; sem decks alt. activos |
+| CardMeister second deck (assets + registry) | **DONE** | `0d78226`; `?deck=cardmeister` |
+| Atribuição CardMeister a themes | **OPEN** | nenhum `deckId: 'cardmeister'` em themes |
+| Card hand polish Phaser | **DONE** / residual **PARTIAL** | `e673f8a` + série hand; fine polish OK |
+| SmallCards em UI compacta/history | **OPEN** | catalogadas em ASSETS; não integradas |
+| Pixi archive no bundle | **SUPERSEDED** / **DONE** removed | `db0b757` |
 
-### Renderer
-- **Phaser** default: sueca / spades / hearts / king
-- **DOM** via `?renderer=dom` ou erro Phaser / MP
-- **Pixi** removido (`chore(renderer): remove archived pixi renderer`)
+### 3.2 Android / release
 
-### Cards
-- Faces: **Casino** global (`/assets/cards3`)
-- Back fallback: **Suecão navy**
-- Backs por tema: 30 temas → `backId` (`THEME_CARD_VISUALS`)
-- SmallCards Casino: catalogadas — **UI compacta futura**, não gameplay
-- Casino `cards3`: **único** deck runtime; `cards1`/`cards2` removidos do tree
+| Item | Estado | Evidência |
+|------|--------|-----------|
+| Capacitor 6 baseline | **DONE** | 6.2.x; SDK 34 |
+| Release signing local | **DONE** | `6d16569`, `docs/ANDROID_SIGNING.md` |
+| assembleRelease / bundleRelease | **DONE** | OPPO smokes recorrentes |
+| Package cleanup (maps, legacy packs, GIF, ambiance) | **DONE** | `c623bb4`…`d97f7fd` |
+| OPPO Reno13 baseline | **DONE** | doc + smokes |
+| Resume / background | **DONE** | smokes release |
+| Cap 7 / targetSdk 35+ | **DEFERRED** | janela dedicada |
+| Play Store listing / políticas | **OPEN** | não bloqueia solo |
 
-### Android
-- Capacitor **6.2.x**; compile/target **34**; minSdk **22**
-- Corre em Android **16 / API 36** (compatibility mode)
-- Firebase init **opcional** (`ebe44b9`) — APK android sem keys já não fica ecrã vazio
-- Viewport baseline OPPO documentada
+### 3.3 Audio SFX
 
-### Toolchain
-- **Vite 6** + Vitest + tsc no CI (Node 20)
-- Vercel frontend (histórico verde pós-lockfile)
-- Cap 7/8 auditados: **manter 6 agora**; próximo major planeado = 7, não 8
+| Item | Estado | Evidência |
+|------|--------|-----------|
+| Card play / shuffle / deal / trick collect | **DONE** | `c163cd0` |
+| Round start / end / win / lose | **DONE** | `a4201ee` |
+| Mute global (música+SFX) | **DONE** | `audioService` |
+| Resume / Off ≠ mute | **DONE** | advanced settings smoke OPPO |
+| Phaser `noAudio` mesa | **PARTIAL** | SFX via React/`audioService`; OK produto |
 
----
+### 3.4 Music hybrid v1
 
-## 4. Commits relevantes desde Setembro (agrupados)
+| Item | Estado | Evidência |
+|------|--------|-----------|
+| 6 core bundled | **DONE** | `ab16950`; `public/assets/music/core` |
+| Theme Default mapping 30/30 | **DONE** | `musicThemeMap` |
+| Mock remote catalog | **DONE** | `844c3c3` |
+| Android cache + SHA | **DONE** | `946c7cb` |
+| Hybrid playback | **DONE** | `bac3910` |
+| R2 real + smoke 2 tracks | **DONE** | `66c3720` |
+| Full remote catalog 23 | **DONE** | `8c441d3` |
+| Web stream / Android on-demand | **DONE** | OPPO smokes |
+| Fallback core | **DONE** | |
+| Off / Theme Default | **DONE** | |
+| Random / Random Streaming Safe / Family / Specific | **DONE** | `462315c` |
+| Content ID filter (3 tracks) | **DONE** | metadata + Random Safe |
+| Persistence settings | **DONE** | `sueca-music-settings` |
+| OPPO validation (catalog + modes) | **DONE** | 2026-09-17 |
+| Bulk download | **DONE** (ausente — correcto) | on-demand only |
+| Custom domain / sair de `r2.dev` | **OPEN** / **DEFERRED** | **não hoje** |
+| Prefetch / packs opcionais | **DEFERRED** | |
 
-Não é o log completo — só o que mudou o estado do roadmap.
+### 3.5 Licenças / música (registo)
 
-### Gameplay / King
-`7b30b56`…`c098b20` (A1–A14) · série King festa/auction/HUD (`c917d3e`…`ac1283b`)
+| Item | Estado |
+|------|--------|
+| StockTune Aztec Relic (`meso-aztec-relic`) | **DONE** — LICENSE OK (core) |
+| Ethiopic `ambient.mp3` | **SUPERSEDED** / **DONE** policy — REFERENCE ONLY / não ship |
+| `ethiopia-groove` | **DONE** — release-safe remote |
+| `mohenjo_dharo.mp3` | **DEFERRED** / **OPEN** policy — CONDITIONAL / DO NOT SHIP |
+| 3 remotes Content ID (`whiskey-jazz`, `northern-glow`, `hawaii-relax`) | **DONE** — permitidas em modos normais; excluídas de Streaming Safe |
+| Raw `_temp/_musicas` no repo público | **OPEN** hygiene — não trackear; `_temp/` gitignored |
+| Casino commercial license clarificação | **PARTIAL** / **OPEN** p/ distribuição loja |
 
-### UX
-`1bd548d`…`4cb6e5b` (B) · `e527a64` confirms · `1e9c511`/`3ff8215`/`e4a2bd8` HUD · `a6e3ed9` viewport
+### 3.6 Website / presença web
 
-### Renderer
-`58c4594` Phaser POC · `bb75c20` Pixi archive · `48f036d` Sueca default · `0d78c0a`/`a59b508`/`ffa622f` + defaults Spades/Hearts/King · premium layout `20d6143`…
-
-### Cards / themes
-`2a93f1e`/`b6cb119` Suecão back · `ba4ea3f` Casino faces · `11a8302`/`5d49c0e` backs por tema
-
-### Android
-`41968ee`/`db076e9` Phaser Android · `aac5b65` OPPO baseline · `ebe44b9` Firebase optional
-
-### Toolchain / CI / docs
-`4e0667f` CRA→Vite · `21d162c` deps audit · `2b9add1`/`22c6f6e` CI · audits cards/viewport/hand
-
----
-
-## 5. O que foi ultrapassado
-
-| Ideia do roadmap original | Estado |
-|---------------------------|--------|
-| Phaser como POC / flag-only Sueca | **SUPERSEDED BY CURRENT ARCHITECTURE** |
-| Decisão futura de renderer | **SUPERSEDED** — Phaser escolhido e default 4 jogos |
-| Spades/Hearts/King permanecem DOM após G | **SUPERSEDED** |
-| CRA / react-scripts como base | **SUPERSEDED** — Vite |
-| Hazmat `cards2` como deck activo | **REMOVED** — Casino `cards3` only |
-| “Sem temas / redesign” nesta fase | **SUPERSEDED** — N5 themes + backs |
-| Viewport tratado como browser-first | **SUPERSEDED** — Android/OPPO é referência |
-| Cap upgrade urgente para E2 | **SUPERSEDED** — Cap 6 suficiente agora |
-
----
-
-## 6. Open items reais
-
-### P0 — bloqueia estabilidade ou release
-**Nenhum P0 técnico aberto** para solo play no OPPO no estado actual.
-
-*(Release Play Store / signing não é P0 de gameplay; ver P1.)*
-
-### P1 — importante de produto
-1. **Polish cartas/mão Phaser no OPPO** (tamanho, contraste backs vs felt, fan/overlap) — audits hand/cards desactualizados pós-Casino  
-2. **Android release readiness** (signing, checklist store, targetSdk planeado via Cap 7 mais tarde)  
-3. **King UX residual** só se bugs reais em sessão (leilão/HUD já muito iterados)  
-4. **Licença Casino** clarificar antes de distribuição comercial  
-
-### P2 — polish / future-facing
-1. ~~Preparar `theme → deckId` **sem activar** decks alternativos~~ **DONE** (THEME-DECK-ID-01 — API pronta; todos → casino)  
-2. SmallCards em UI compacta (históricos / mini)  
-3. ~~Retirar Pixi archive do bundle~~ **DONE**
-4. Blind nil Spades (A15) — decisão de produto  
-5. Sons: serviço existe; Phaser `noAudio` — afinamento SFX de mesa  
-6. Preferences nativas Capacitor (D3)
-
-### P3 — nice-to-have / experimental
-1. Limpar `cards1` / staging duplicado  
-2. Landscape deep (B8)  
-3. Chips/dice Casino catalogados  
-4. IAP / ads  
-5. Card Intelligence / mini-LLM como prioridade de produto mesa  
+| Item | Estado |
+|------|--------|
+| Domínio principal OXS | **DEFERRED** |
+| Site OXS / página Suecão | **DEFERRED** |
+| Privacy / credits / download links no site | **DEFERRED** |
+| Ligação domínio → R2 `music.<domínio>` | **DEFERRED** (ver §4) |
 
 ---
 
-## 7. Candidatos a próximo bloco
+## 4. Music / infra — o que ainda falta
 
-| bloco | valor | risco | esforço | dependências |
-|-------|-------|-------|---------|--------------|
-| Polish cartas/mão Phaser (OPPO) | alto | baixo | S–M | baseline OPPO; Casino já in |
-| Prep `theme→deckId` (sem activar) | médio | baixo | S | **DONE** — `resolveCardDeckForTheme`; sem decks alt. |
-| Android release readiness | alto p/ store | médio | M | signing docs; Cap 6 ok |
-| King UX bugfix (só se repro) | médio | baixo | S | sessões reais |
-| Sons mesa (SFX on play/trick) | médio | baixo | S | `audioService` |
-| Pixi archive / dead assets cleanup | baixo | baixo | S | nenhum gameplay |
-| Cap 7 upgrade window | médio futuro | médio–alto | L | janela dedicada; OPPO após |
-| MP isolation / Online | alto futuro | alto | L | produto MP on |
+### 4.1 Custom domain / CDN — **OPEN / DEFERRED** (**NÃO fazer hoje**)
 
----
+1. Escolher domínio OXS/Suecão  
+2. Comprar/registar domínio  
+3. Adicionar domínio à Cloudflare  
+4. Subdomínio música (ex. `music.<domínio>`)  
+5. Ligar custom domain ao bucket R2  
+6. Substituir `*.r2.dev` em `VITE_MUSIC_REMOTE_BASE_URL`  
+7. Restringir CORS ao origin final quando aplicável  
+8. Revalidar web + Android  
 
-## 8. Ordem recomendada — Setembro (curta)
+**Nota:** `r2.dev` continua endpoint **dev/smoke** (`docs/ASSETS.md`).
 
-1. **Polish cartas/mão Phaser (OPPO-first)** — melhora o que o jogador vê agora; audits pedem isto; Casino/backs já estáveis.  
-2. ~~**Prep `theme→deckId` sem activar**~~ **DONE** (THEME-DECK-ID-01).  
-3. **Android release readiness** (signing/checklist) — quando quiserem loja; sem misturar Cap major.  
-4. **Cleanup opcional** packs mortos — reduz ruído (Pixi archive já removido).  
-5. **Sons de mesa** — polish perceptível, isolado.  
+### 4.2 Website / web presence — **DEFERRED**
 
-*(Cap 7 e MP ficam fora desta sequência.)*
+Separado do runtime do jogo. Não desenhar nem implementar nesta fase de produto mesa.
 
 ---
 
-## 9. NOT NOW
+## 5. DEDICATED AI / CARD INTELLIGENCE
 
-- Capacitor **7 / 8** (manter 6; ver audit toolchain)  
-- Multiplayer / Online como foco  
-- Activar **decks diferentes por tema**  
-- Chips / dice / jokers Casino  
-- Poker / novas variantes  
-- Rewrite renderer (Pixi/Godot/Unity)  
-- Landscape-first redesign  
-- Ads / IAP reais  
-- React 19 / Phaser 4 / TS 5+ “porque sim”  
-- Blind nil só por checklist  
+**Objectivo de produto:** AI dedicada como feature diferenciadora do Suecão — bots competentes *e* camada de inteligência observável/avaliável.
+
+### 5.0 Separação obrigatória
+
+| Camada | O quê | Onde |
+|--------|-------|------|
+| **GAME AI** | Decisão dos bots *durante* a partida | `frontend/src/ai/**` → `*Game.ts` (`choose*Card`) |
+| **CARD INTELLIGENCE** | Observação, métricas, encoder, evaluator, memória, Dev Lab, advisory | `frontend/src/cardIntelligence/**` |
+| **Dedicated / Mini-LLM** | Camada experimental sobre CI (advisory); não substitui Game AI | `cardIntelligence/llm/**`; futuro ONNX/WASM **DEFERRED** |
+
+Partilham infra (legal moves, estado, fixtures) mas **não são a mesma feature**.  
+**Não marcar “AI concluída”** só porque um jogo tem bots maduros.
+
+Flags (`frontend/src/config/features.ts`):
+
+| Flag | Default | Papel |
+|------|---------|-------|
+| `CARD_INTELLIGENCE_LOGGER_ENABLED` | **on** (off só com `=false`) | logger live no `GameBoard` |
+| `CARD_INTELLIGENCE_DEBUG` | dev / `VITE_…=true` | `__ci*` console |
+| `CARD_INTELLIGENCE_DEV_LAB` | **off** | cenários / seeded |
+| `CARD_INTELLIGENCE_LLM_ADVISORY` | **off** | mini-LLM advisory |
+| `USE_LOCAL_AI_ONLY` | Android / flag | bloqueia `aiClient` externo |
+
+### 5.1 Sequência de fases (actualizada)
+
+Histórico (`docs/ai/active/ROADMAP_AI.md`): metrics → logger → encoder → evaluator → memory → mini-LLM.
+
+**Sequência vigente (2026-09):**
+
+1. **Game AI core** (legal / fallback / difficulty / adapters) — **DONE**  
+2. **Métricas de bot** (heurísticas por jogo) — **PARTIAL** (Sueca madura; Hearts Impl15; King Impl16+16.1 smoke pendente; Spades ok mas menos “metrics ID”)  
+3. **Logger / history** — **DONE** (live)  
+4. **State encoder** — **DONE** (biblioteca; 4 variantes)  
+5. **Decision evaluator** — **DONE** (biblioteca + testes; **não** no loop de play)  
+6. **Memory / learning ingest** — **PARTIAL** (IDB + APIs; não ingest automático em produção)  
+7. **Dev Lab / report / export** — **DONE** (flag-gated)  
+8. **Mini-LLM / dedicated model** — **PARTIAL** advisory (mock/Ollama); **DEFERRED** ONNX/WASM  
+
+Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para “LLM cedo”.
+
+### 5.A AI Core (GAME AI)
+
+| ID | Item | Estado | Evidência / gaps |
+|----|------|--------|------------------|
+| DAI-A1 | Legal move filtering | **DONE** | `ai/core/LegalMoveFilter.ts` + tests |
+| DAI-A2 | Fallback selector | **DONE** | `ai/core/FallbackMoveSelector.ts` + tests |
+| DAI-A3 | Difficulty profiles (easy/medium/hard) | **DONE** | `ai/core/DifficultyProfile.ts` |
+| DAI-A4 | Shared strategy interfaces | **DONE** | `choose*Card` por variante; core partilhado |
+| DAI-A5 | Adapters por jogo (wiring) | **DONE** | `SuecaGame` / `SpadesGame` / `HeartsGame` / `King*Game` |
+
+### 5.B Card Intelligence
+
+| ID | Item | Estado | Evidência / gaps |
+|----|------|--------|------------------|
+| DAI-B1 | Logger | **DONE** | `playCardAndLogDecision` no `GameBoard`; flag on |
+| DAI-B2 | History / trick events | **DONE** | `history/**` + tests |
+| DAI-B3 | State encoder (4 jogos) | **DONE** | `encoder/**` (sueca/spades/hearts/king) |
+| DAI-B4 | Metrics inventory / taxonomy | **PARTIAL** | métricas em bots + CI; cobertura desigual entre jogos |
+| DAI-B5 | Scenario / report flow | **DONE** | `debug/reportFlow/**`, `devLab/scenarioReport*` — flag/dev |
+| DAI-B6 | Decision evaluator | **DONE** | `evaluator/**` + golden/synthetic tests; offline |
+| DAI-B7 | Warnings / risk map | **PARTIAL** | `mapLegalMoveRisks` etc.; não UX produto |
+
+### 5.C Memory / Learning
+
+| ID | Item | Estado | Evidência / gaps |
+|----|------|--------|------------------|
+| DAI-C1 | Played-card / evaluation memory | **DONE** | `memory/memoryStore*.ts` (IDB) |
+| DAI-C2 | Pattern / history persistence | **DONE** | store + debug `readMemory` |
+| DAI-C3 | Learning / evaluation ingest | **PARTIAL** | `ingestEvaluation` + tests; sem auto-wire play→memory |
+| DAI-C4 | Reset / versioning | **PARTIAL** | `clearDebugData`; versioning produto fraco |
+
+### 5.D Dev Lab / Diagnostics
+
+| ID | Item | Estado | Evidência / gaps |
+|----|------|--------|------------------|
+| DAI-D1 | Seeded scenarios | **DONE** | `devLab/**`; `VITE_CARD_INTELLIGENCE_DEV_LAB` |
+| DAI-D2 | Report export (JSON/human) | **DONE** | `reportFlow/exportReport*`, formatters |
+| DAI-D3 | External AI review workflow | **PARTIAL** | reports para revisão humana/LLM; não pipeline produto |
+| DAI-D4 | Reproducibility | **DONE** | `seededRandom` + scenario runners |
+
+### 5.E Mini-LLM / Dedicated Model
+
+| ID | Item | Estado | Evidência / gaps |
+|----|------|--------|------------------|
+| DAI-E1 | Mock advisory provider | **DONE** | `llm/mockProvider.ts`; flag off |
+| DAI-E2 | Ollama advisory provider | **PARTIAL** | `ollamaProvider`; endpoint local; flag off; sem hook play |
+| DAI-E3 | ONNX / WASM / modelo dedicado on-device | **DEFERRED** | desenho em docs Fase 7; **sem** código runtime |
+| DAI-E4 | External `aiClient` `/play` | **PARTIAL** | `services/aiClient.ts`; Android `USE_LOCAL_AI_ONLY`; fallback local Game AI |
+| DAI-E5 | Offline advisory behaviour | **PARTIAL** | mock offline; Ollama exige servidor |
+| DAI-E6 | Failure soft-fallback | **DONE** | `getMiniLLMAdvice` não quebra play |
+
+### 5.F Multi-game coverage (auditar separado)
+
+| Jogo | Game AI | Card Intelligence | Notas |
+|------|---------|-------------------|-------|
+| **Sueca** | **DONE** | **DONE** (lib) | Estratégia madura; `aiClient` legado Sueca-oriented |
+| **Spades** | **DONE** | **DONE** (lib) | Play strategy + tests; menos “Impl metrics ID” |
+| **Hearts** | **PARTIAL** | **DONE** (lib) | Impl 15; **H15-OK: Parcial** (smoke manual) |
+| **King** | **PARTIAL** | **DONE** (lib) | Impl 16 + hotfix 16.1; **H16-OK: Pendente** re-smoke |
+
+### 5.G Prioridade Dedicated AI (não P3 automático)
+
+| Fatia | Prioridade | Justificação |
+|-------|------------|--------------|
+| AI necessária para **jogar bem** (Game AI) | **P1** só o gap King H16-OK; resto **DONE** | Solo já jogável; smoke King é gate de qualidade |
+| Card Intelligence **avançada** (evaluator live, memória produto, UX warnings) | **P2** | Diferenciador; não bloqueia release solo |
+| Dev Lab / export polish | **P2** | Ferramenta interna |
+| Mini-LLM / ONNX experimental | **P3** / **DEFERRED** | Advisory existe; modelo dedicado não |
+
+### 5.H Gaps top (Dedicated AI)
+
+1. **King H16-OK** — re-smoke manual pós-16.1 (`no_tricks` / `no_hearts`)  
+2. **Hearts H15-OK** — fechar “Parcial” ou documentar aceite  
+3. **CI não no loop de decisão** — evaluator/memory offline; logger só observa  
+4. **Sem modelo dedicado on-device** (ONNX/WASM)  
+5. **Advisory LLM off + sem UX** — mock/Ollama não são produto mesa  
 
 ---
 
-## 10. Health check
+## 6. Open / deferred — reavaliação (sem itens mortos)
+
+| Item | Prioridade | Estado | Notas |
+|------|------------|--------|-------|
+| King Game AI H16-OK re-smoke | **P1** | **PARTIAL** | §5.F; hotfix 16.1 feito |
+| Theme ↔ CardMeister curation | P1 | **OPEN** | Deck shipped; falta curadoria temática |
+| SmallCards / history compact UI | P2 | **OPEN** | Assets catalogados |
+| Native Preferences (D3) | P2 | **OPEN** | Dep ok; wiring não |
+| Blind nil / regras opcionais (A15) | P3 | **DEFERRED** | Decisão produto |
+| Casino license clarificação | P1 | **PARTIAL** | Antes de loja comercial |
+| Cap 7 / SDK 35 | P3 | **DEFERRED** | Manter Cap 6 |
+| Landscape polish (B8) | P3 | **DEFERRED** | Portrait-first |
+| Chips / dice / visual extra | P3 | **DEFERRED** | Catalogados |
+| Ambiance/sons adicionais | P3 | **DEFERRED** | Music v1 fechada |
+| Docs stale (CRA/Hazmat audits) | P2 | **OPEN** | Housekeeping |
+| Play Store listing | P1 | **OPEN** | Signing já OK |
+| CI productization (evaluator/memory/UX) | **P2** | **PARTIAL** | §5.B–C |
+| Hearts metrics smoke H15 | **P2** | **PARTIAL** | §5.F |
+| Mini-LLM ONNX/WASM | **P3** | **DEFERRED** | §5.E |
+| MP Online focus | — | **DEFERRED** | |
+| Custom domain R2 | — | **DEFERRED** | §4 |
+| Site OXS/Suecão | — | **DEFERRED** | §4 |
+| cards1/Hazmat no tree | — | **SUPERSEDED** | Removidos |
+| Pixi no bundle | — | **SUPERSEDED** | Removido |
+| Ambiance single-file only | — | **SUPERSEDED** | Core+remote |
+| “AI mesa” como único DEFERRED | — | **SUPERSEDED** | Substituído por §5 |
+
+---
+
+## 7. Prioridades recalculadas
+
+### P0
+**Nenhum.** Solo OPPO + web estáveis; music v1 fechada.
+
+### P1 (5)
+1. **King Game AI — H16-OK re-smoke** (qualidade bots; não CI)  
+2. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
+3. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
+4. Play Store listing / políticas (quando for a loja)  
+5. Docs/roadmap housekeeping (esta revisão + stale audits)
+
+### P2 (7)
+1. Card Intelligence productization (evaluator/memory opcional; warnings)  
+2. Hearts H15-OK fecho / aceite documentado  
+3. SmallCards / history compact UI  
+4. Native Preferences adoption  
+5. Dev Lab / external review workflow polish  
+6. Residual hand/visual polish se sessões reais pedirem  
+7. Docs stale (CRA/Hazmat audits)
+
+### P3 / DEFERRED (10)
+1. Mini-LLM ONNX/WASM dedicated model  
+2. LLM advisory productizado (flags/UX)  
+3. Blind nil / optional rules  
+4. Landscape deep  
+5. Chips/dice  
+6. Cap 7 window  
+7. Custom domain + site OXS  
+8. MP Online  
+9. Extra music packs  
+10. Ads / IAP reais  
+
+---
+
+## 8. Ordem recomendada (curta e realista)
+
+1. **King H16-OK smoke** (Game AI gate) — curto  
+2. **Theme ↔ deck curation** (CardMeister)  
+3. **Release / licensing** (Casino + store checklist)  
+4. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
+5. **Domínio / site / CDN** — **DEFERRED, não hoje**  
+6. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
+7. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
+8. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
+9. **Final release readiness** (listing, políticas, CDN prod)
+
+---
+
+## 9. Health summary
 
 | Área | Estado | 1 linha |
 |------|--------|---------|
-| Gameplay | **GREEN** | Quatro variantes com P0/P1 de regras do roadmap fechados. |
-| UX | **GREEN** | HUD/mão/continue jogáveis; polish fino restante, não bloqueio. |
-| Android | **GREEN** | Cap 6 + OPPO baseline + Firebase opcional; store ainda não é o foco. |
-| Web | **GREEN** | Vite build/CI; Vercel path conhecido. |
-| Toolchain | **YELLOW** | Vite/CI verdes; Cap major e targetSdk 35+ adiados conscientemente. |
-| Assets | **GREEN** | Casino + backs por tema; licença Casino a clarificar p/ comercial. |
-| Docs | **YELLOW** | Muitos audits bons mas parcialmente stale (CRA/Hazmat/hand pré-Casino). |
-| Release readiness | **YELLOW** | Solo APK debug sólido; signing/store/targetSdk não fechados. |
+| Gameplay | **GREEN** | 4 variantes; P0/P1 regras do roadmap original fechados. |
+| UX | **GREEN** | HUD/mão/continue; landscape e fine polish não bloqueiam. |
+| Cards | **GREEN** | Casino + backs; CardMeister ready; curadoria theme↔deck OPEN. |
+| Audio SFX | **GREEN** | Mesa + round/game; mute/Off OK. |
+| Music | **GREEN** | Hybrid v1 + advanced modes + OPPO; CDN custom DEFERRED. |
+| Android | **GREEN** | Cap 6, signing, AAB/APK, OPPO smokes. |
+| Web | **GREEN** | Vite/CI; Vercel path conhecido. |
+| Infra/CDN | **YELLOW** | R2 funciona via `r2.dev` smoke; custom domain pendente. |
+| Licenses | **YELLOW** | Music policies claras; Casino comercial a fechar p/ loja. |
+| Release readiness | **YELLOW** | Artefactos assinados OK; store listing / CDN prod / casino license. |
+| **Game AI** | **YELLOW** | Core+4 jogos wired; Sueca/Spades sólidos; Hearts/King smoke parcial/pendente. |
+| **Card Intelligence** | **YELLOW** | Pipeline library madura + logger live; evaluator/memory/Dev Lab offline/flag. |
+| **Dedicated AI / Mini-LLM** | **RED** | Advisory mock/Ollama only; sem ONNX/WASM; flags off; não produto mesa. |
 
 ---
 
-## 11. Relação com o roadmap original
+## 10. O que foi ultrapassado (mantido)
 
-O documento `ROADMAP_GAMEPLAY_UX_2026.md` deve ler-se como **histórico cumprido**, não como fila activa.
-
-**Fila activa** = secções 6–8 deste rebase.
-
-Próxima actualização sugerida: após o bloco de polish de cartas/mão, ou se abrir janela Cap 7 / Play Store.
+| Ideia antiga | Estado |
+|--------------|--------|
+| Phaser POC / flag-only | **SUPERSEDED** |
+| Pixi candidato produção | **SUPERSEDED** |
+| CRA toolchain | **SUPERSEDED** |
+| Hazmat deck activo | **SUPERSEDED** |
+| Cap upgrade urgente | **SUPERSEDED** — Cap 6 suficiente |
+| Single ambiance.ogg como única música | **SUPERSEDED** — core + remote |
+| Advanced music “ainda pendente” | **SUPERSEDED** — `462315c` |
+| AI / Card Intelligence como único item DEFERRED | **SUPERSEDED** — expandido em §5 |
 
 ---
 
-*ROADMAP-REBASE-01 · Setembro 2026 · alterações de produto: ZERO*
+## 11. Relação com documentos
+
+- `ROADMAP_GAMEPLAY_UX_2026.md` = **histórico cumprido**, não fila activa.  
+- `docs/ai/active/ROADMAP_AI.md` + status/Impl reports = detalhe técnico AI; **fila de produto AI** = **§5** deste ficheiro.  
+- **Fila activa geral** = §6–§8 deste ficheiro.  
+- Workstream **música** = **fechado** (v1 + advanced); CDN/domínio permanece **DEFERRED**.  
+- Próxima actualização sugerida: após H16-OK ou theme↔deck curation, ou ao abrir CDN/domínio / Cap 7 / Play Store.
+
+---
+
+*ROADMAP-ADD-DEDICATED-AI-01 · commit base `462315c` · alterações de código nesta tarefa: ZERO*
