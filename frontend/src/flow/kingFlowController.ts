@@ -62,8 +62,12 @@ export function buildKingFestaSyncKey(king: KingPtVariantState): string {
   return [
     king.festaPhase,
     king.auctionTurnIndex,
+    king.currentBidder,
+    king.activeBidders?.length ?? 0,
+    king.passedBidders?.length ?? 0,
     king.bestBid?.bidderIndex,
     king.bestBid?.amount,
+    king.highestEquivalentValue,
     king.requestedBid?.amount,
     king.waitingForFallback,
     king.waitingForFestaSetup,

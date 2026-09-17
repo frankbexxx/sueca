@@ -1250,6 +1250,90 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return;
+    if (!gameAdapter || !kingCtrl || gameVariant !== 'king') return;
+    type KingSmoke = {
+      get: () => Record<string, unknown>;
+      bid: (seat: number, bidType: 'positive' | 'null', amount: number) => boolean;
+      pass: (seat: number) => boolean;
+      continue: () => boolean;
+      declareEightOrNulls: () => boolean;
+      respondEightOrNulls: (seat: number, offerEight: boolean) => boolean;
+      chooseFallback: (choice: string) => boolean;
+      refresh: () => void;
+    };
+    const refresh = () => setGameState(gameAdapter.getCurrentState());
+    const api: KingSmoke = {
+      refresh,
+      get: () => {
+        const k = kingCtrl.readPtState(gameAdapter.getCurrentState());
+        return {
+          festaPhase: k.festaPhase,
+          currentBidder: k.currentBidder,
+          activeBidders: [...k.activeBidders],
+          passedBidders: [...k.passedBidders],
+          standingBid: k.standingBid,
+          bestBid: k.bestBid,
+          highestEquivalentValue: k.highestEquivalentValue,
+          waitingForAuctionContinue: k.waitingForAuctionContinue,
+          eightOrNullsPending: k.eightOrNullsPending,
+          eightOrNullsTarget: k.eightOrNullsTarget,
+          waitingForFallback: k.waitingForFallback,
+          fallbackReason: k.fallbackReason,
+          auctionHistoryLen: k.auctionHistory.length
+        };
+      },
+      bid: (seat, bidType, amount) => {
+        kingCtrl.dispatchFestaAction({
+          type: 'auction_bid',
+          playerIndex: seat,
+          bidType,
+          amount
+        });
+        refresh();
+        return true;
+      },
+      pass: (seat) => {
+        kingCtrl.dispatchFestaAction({ type: 'auction_pass', playerIndex: seat });
+        refresh();
+        return true;
+      },
+      continue: () => {
+        kingCtrl.dispatchFestaAction({ type: 'auction_continue' });
+        refresh();
+        return true;
+      },
+      declareEightOrNulls: () => {
+        kingCtrl.dispatchFestaAction({ type: 'declare_eight_or_nulls' });
+        refresh();
+        return true;
+      },
+      respondEightOrNulls: (seat, offerEight) => {
+        kingCtrl.dispatchFestaAction({
+          type: 'respond_eight',
+          targetIndex: seat,
+          offerEight
+        });
+        refresh();
+        return true;
+      },
+      chooseFallback: (choice) => {
+        kingCtrl.dispatchFestaAction({
+          type: 'fallback',
+          choice: choice as 'trump' | 'no_trump' | 'nulos' | 'four_by_three'
+        });
+        refresh();
+        return true;
+      }
+    };
+    const w = window as unknown as { __kingFestaSmoke?: KingSmoke };
+    w.__kingFestaSmoke = api;
+    return () => {
+      if (w.__kingFestaSmoke === api) delete w.__kingFestaSmoke;
+    };
+  }, [gameAdapter, kingCtrl, gameVariant]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return;
     const id = usePhaserTable ? 'phaser' : 'dom';
     const w = window as unknown as { __suecaRenderer?: 'phaser' | 'dom' };
     w.__suecaRenderer = id;

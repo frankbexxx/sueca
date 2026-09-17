@@ -428,6 +428,7 @@ export class KingPtGame extends BaseGameAdapter {
 
     king.waitingForAuctionContinue = false;
     this.syncKing(king);
+    if (king.pauseFestaAiForDev) return;
     const current = this.getCurrentAuctionPlayer(king);
     if (current !== null && this.state.players[current]?.type === 'ai') {
       this.runOneAiFestaStep(getKingPtState(this.state));
