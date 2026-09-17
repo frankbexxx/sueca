@@ -373,6 +373,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Chips / dice / visual extra | P3 | **DEFERRED** | Catalogados |
 | Ambiance/sons adicionais | P3 | **DEFERRED** | Music v1 fechada |
 | Docs stale (CRA/Hazmat audits) | P2 | **OPEN** | Housekeeping |
+| DevLab console test timeouts (full suite load) | P3 | **OPEN** | Flaky sob carga (`devLabConsole` / `debugConsoleAlias`); PASS isolados — **não** blocker H16; estabilizar depois |
 | Play Store listing | P1 | **OPEN** | Signing já OK |
 | CI productization (evaluator/memory/UX) | **P2** | **PARTIAL** | §5.B–C |
 | Hearts metrics smoke H15 | **P2** | **PARTIAL** | §5.F |
@@ -415,7 +416,8 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 5. Native Preferences adoption  
 6. Dev Lab / external review workflow polish  
 7. Residual hand/visual polish se sessões reais pedirem (fora do gate formal §12)  
-8. Docs stale (CRA/Hazmat audits)
+8. Docs stale (CRA/Hazmat audits)  
+9. **Estabilizar timeouts flaky DevLab** (`devLabConsole` / `debugConsoleAlias` sob suite completa) — não blocker; PASS isolados (2026-09-17)
 
 ### P3 / DEFERRED (10 + Themes/Audio design)
 1. Mini-LLM ONNX/WASM dedicated model  
