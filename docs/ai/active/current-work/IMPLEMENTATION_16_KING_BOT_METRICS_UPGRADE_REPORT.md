@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE`  
 **Prompt:** [IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md](../../archive/implementation-prompts/IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_PROMPT.md) v1.1  
 **Data:** 2026-06-06  
-**Estado:** implementação concluída — smoke manual **FAIL** → hotfix [16.1](./IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md)
+**Estado:** implementação concluída — smoke FAIL → hotfix 16.1 → **H16-OK: OK — 2026-09-17**
 
 ---
 
@@ -20,7 +20,7 @@ Francisco testou `no_tricks` e `no_hearts`:
 
 **Correcção:** [IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md](./IMPLEMENTATION_16_1_KING_NEGATIVE_CONTRACT_FIX_REPORT.md)
 
-**H16-OK:** Pendente até smoke pós-16.1 (CI verde ≠ H16 OK).
+**H16-OK:** **OK — 2026-09-17** (fecho pós-16.1; ver KING-H16-OK-CLOSURE-01).
 
 ---
 
@@ -122,13 +122,13 @@ Deferido (§4.3 opcional). Fixtures K02/K03/K01 + `LAB_K02` disponíveis para te
 
 ## Checkpoints
 
-**H16-OK:** **Pendente** — smoke Impl 16 **FAIL**; hotfix 16.1 aplicado; aguarda re-smoke manual:
+**H16-OK:** **OK — 2026-09-17** (KING-H16-OK-CLOSURE-01)
 
-- [ ] `no_tricks` — unload altas em vazas perdidas
-- [ ] `no_hearts` — livrar copas em void perdedor
-- [ ] K♥ na 1.ª oportunidade (`no_king_hearts`)
-- [ ] Não puxa copas no lead
-- [ ] `no_last_two` sem regressão
+- [x] `no_tricks` / `no_hearts` / K♥ / `no_last_two` — full match 10 rondas + suites 16.1  
+- [x] Festas + auction multi-round (preference, watermark, pass, 8-or-nulls)  
+- [x] Soma global 0 · sem stalls  
+
+Smoke: `frontend/src/models/games/king/kingH16FullMatch.smoke.test.ts`
 
 ---
 
@@ -146,6 +146,6 @@ Deferido (§4.3 opcional). Fixtures K02/K03/K01 + `LAB_K02` disponíveis para te
 
 ## Próximos passos
 
-1. Smoke manual → assinar **H16-OK** (OK | Parcial).
-2. King Simplified / K10 / festa auction (v2).
+1. ~~Smoke manual → assinar **H16-OK**~~ — **DONE** 2026-09-17  
+2. King Simplified / K10 / festa auction polish (v2) se necessário.  
 3. Fechar gaps transversais (escola, cartas altas Hearts).

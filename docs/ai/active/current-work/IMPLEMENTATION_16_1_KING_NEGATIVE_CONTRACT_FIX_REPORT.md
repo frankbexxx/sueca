@@ -3,7 +3,7 @@
 **ID:** `IMPLEMENTATION_16.1_KING_NEGATIVE_CONTRACT_FIX`  
 **Parente:** [IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md](./IMPLEMENTATION_16_KING_BOT_METRICS_UPGRADE_REPORT.md)  
 **Data:** 2026-06-06  
-**Estado:** hotfix concluído — **H16-OK: Pendente** (smoke manual pós-16.1)
+**Estado:** hotfix concluído — **H16-OK: OK — 2026-09-17** (fecho KING-H16-OK-CLOSURE-01)
 
 ---
 
@@ -88,10 +88,10 @@ CI=true npm run build                                           # OK
 
 ## Checkpoint
 
-**H16-OK:** Pendente — re-smoke manual King PT Medium/Hard:
+**H16-OK:** **OK — 2026-09-17** — re-smoke King PT Medium (seeded full match + suites):
 
-- [ ] `no_tricks` — descarrega altas em vazas perdidas; não ganha vazas evitáveis
-- [ ] `no_hearts` — livra copas em void perdedor; não puxa copas no lead
-- [ ] K♥ / `no_last_two` sem regressão
+- [x] `no_tricks` / `no_hearts` / restantes negativos — full match 6/6 sem stall  
+- [x] Festas 4/4 + auction multi-round suites (preference, watermark, 8-or-nulls, pass permanente)  
+- [x] Soma global final = 0 · CI logger sem regressão  
 
-Assinar no relatório Impl 16 após smoke: `**H16-OK:** OK | Parcial — YYYY-MM-DD`
+Assinado no fecho **KING-H16-OK-CLOSURE-01** (`kingH16FullMatch.smoke.test.ts`).

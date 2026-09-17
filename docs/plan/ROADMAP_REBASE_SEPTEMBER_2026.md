@@ -25,14 +25,14 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 **Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM, redesign Themes/Audio/UI unificada.
 
-**Próximo bloco recomendado:** (1) gate Game AI King H16-OK smoke → (2) **Final Visual Pass por jogo** (release gate) → (3) curadoria theme↔deck / release-licensing → (4) Card Intelligence produto opcional (P2) → (5) Themes+Audio redesign (**DEFERRED**, só com decisão de desenho) → (6) mini-LLM experimental **DEFERRED**.
+**Próximo bloco recomendado:** (1) **Final Visual Pass por jogo** (release gate) → (2) curadoria theme↔deck / release-licensing → (3) Card Intelligence produto opcional (P2) → (4) Themes+Audio redesign (**DEFERRED**, só com decisão de desenho) → (5) mini-LLM experimental **DEFERRED**.
 
 ### Contagens desta revisão
 
 | Classe | N |
 |--------|---|
-| **DONE** | 90 |
-| **PARTIAL** | 16 |
+| **DONE** | 91 |
+| **PARTIAL** | 15 |
 | **OPEN** | 16 |
 | **DEFERRED** | 11 |
 | **SUPERSEDED** | 13 |
@@ -40,11 +40,11 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 | Prioridade | N |
 |------------|---|
 | **P0** | 0 |
-| **P1** | 6 |
+| **P1** | 5 |
 | **P2** | 8 |
 | **P3** | 10 |
 
-*(Contagens agregam itens das secções 2–6 + §5 Dedicated AI + §12 Visual Pass + §13 Themes/Audio; recalculadas nesta revisão. +4 OPEN visual passes; +1 DEFERRED Themes+Audio redesign; +1 P1 visual gate; +1 P2 tweaks do pass.)*
+*(Contagens: +1 DONE King H16-OK; −1 PARTIAL; −1 P1 (H16 gate fechado). Visual Pass + Themes/Audio da revisão anterior mantidos.)*
 
 ### Roadmap summary — visual / audio UX
 
@@ -336,24 +336,25 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | **Sueca** | **DONE** | **DONE** (lib) | Estratégia madura; `aiClient` legado Sueca-oriented |
 | **Spades** | **DONE** | **DONE** (lib) | Play strategy + tests; menos “Impl metrics ID” |
 | **Hearts** | **PARTIAL** | **DONE** (lib) | Impl 15; **H15-OK: Parcial** (smoke manual) |
-| **King** | **PARTIAL** | **DONE** (lib) | Impl 16 + hotfix 16.1; **H16-OK: Pendente** re-smoke |
+| **King** | **DONE** | **DONE** (lib) | Impl 16 + hotfix 16.1; **H16-OK: DONE** (2026-09-17, smoke seed + suites) |
 
 ### 5.G Prioridade Dedicated AI (não P3 automático)
 
 | Fatia | Prioridade | Justificação |
 |-------|------------|--------------|
-| AI necessária para **jogar bem** (Game AI) | **P1** só o gap King H16-OK; resto **DONE** | Solo já jogável; smoke King é gate de qualidade |
+| AI necessária para **jogar bem** (Game AI) | **DONE** (King H16-OK fechado 2026-09-17) | Solo jogável; gate H16 fechado |
 | Card Intelligence **avançada** (evaluator live, memória produto, UX warnings) | **P2** | Diferenciador; não bloqueia release solo |
 | Dev Lab / export polish | **P2** | Ferramenta interna |
 | Mini-LLM / ONNX experimental | **P3** / **DEFERRED** | Advisory existe; modelo dedicado não |
 
 ### 5.H Gaps top (Dedicated AI)
 
-1. **King H16-OK** — re-smoke manual pós-16.1 (`no_tricks` / `no_hearts`)  
-2. **Hearts H15-OK** — fechar “Parcial” ou documentar aceite  
-3. **CI não no loop de decisão** — evaluator/memory offline; logger só observa  
-4. **Sem modelo dedicado on-device** (ONNX/WASM)  
-5. **Advisory LLM off + sem UX** — mock/Ollama não são produto mesa  
+1. **Hearts H15-OK** — fechar “Parcial” ou documentar aceite  
+2. **CI não no loop de decisão** — evaluator/memory offline; logger só observa  
+3. **Sem modelo dedicado on-device** (ONNX/WASM)  
+4. **Advisory LLM off + sem UX** — mock/Ollama não são produto mesa  
+
+~~King H16-OK~~ — **DONE** 2026-09-17 (`kingH16FullMatch.smoke` + suites auction/AI/play).
 
 ---
 
@@ -361,7 +362,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 
 | Item | Prioridade | Estado | Notas |
 |------|------------|--------|-------|
-| King Game AI H16-OK re-smoke | **P1** | **PARTIAL** | §5.F; hotfix 16.1 feito |
+| King Game AI H16-OK re-smoke | — | **DONE** | 2026-09-17 — full match smoke + auction/AI suites |
 | Theme ↔ CardMeister curation | P1 | **OPEN** | Deck shipped; falta curadoria temática |
 | SmallCards / history compact UI | P2 | **OPEN** | Assets catalogados |
 | Native Preferences (D3) | P2 | **OPEN** | Dep ok; wiring não |
@@ -397,13 +398,14 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 ### P0
 **Nenhum.** Solo OPPO + web estáveis; music v1 fechada.
 
-### P1 (6)
-1. **King Game AI — H16-OK re-smoke** (qualidade bots; não CI)  
-2. **Final Visual Pass por jogo** (Sueca / Spades / Hearts / King) — **release gate** (§12)  
-3. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
-4. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
-5. Play Store listing / políticas (quando for a loja)  
-6. Docs/roadmap housekeeping (esta revisão + stale audits)
+### P1 (5)
+1. **Final Visual Pass por jogo** (Sueca / Spades / Hearts / King) — **release gate** (§12)  
+2. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
+3. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
+4. Play Store listing / políticas (quando for a loja)  
+5. Docs/roadmap housekeeping (stale audits)
+
+~~King Game AI — H16-OK~~ — **DONE** 2026-09-17
 
 ### P2 (8)
 1. **Tweaks do Final Visual Pass** (BUG / UX / POLISH em batches pequenos)  
@@ -440,17 +442,18 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 
 ## 8. Ordem recomendada (curta e realista)
 
-1. **King H16-OK smoke** (Game AI gate) — curto  
-2. **Final Visual Pass** por jogo (§12) — **antes de release**; smokes automáticos não fecham  
-3. **Theme ↔ deck curation** (CardMeister)  
-4. **Release / licensing** (Casino + store checklist)  
-5. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
-6. **Themes + Audio UX redesign** — **DEFERRED**; só após decisão de desenho (Francisco)  
-7. **Domínio / site / CDN** — **DEFERRED, não hoje**  
-8. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
-9. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
-10. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
-11. **Final release readiness** (listing, políticas, CDN prod, **visual gate PASS ×4**)
+1. **Final Visual Pass** por jogo (§12) — **antes de release**; smokes automáticos não fecham  
+2. **Theme ↔ deck curation** (CardMeister)  
+3. **Release / licensing** (Casino + store checklist)  
+4. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
+5. **Themes + Audio UX redesign** — **DEFERRED**; só após decisão de desenho (Francisco)  
+6. **Domínio / site / CDN** — **DEFERRED, não hoje**  
+7. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
+8. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
+9. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
+10. **Final release readiness** (listing, políticas, CDN prod, **visual gate PASS ×4**)
+
+~~King H16-OK smoke~~ — **DONE** 2026-09-17
 
 ---
 
@@ -470,7 +473,7 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 | Infra/CDN | **YELLOW** | R2 funciona via `r2.dev` smoke; custom domain pendente. |
 | Licenses | **YELLOW** | Music policies claras; Casino comercial a fechar p/ loja. |
 | Release readiness | **YELLOW** | Artefactos OK; falta visual gate ×4 + store/CDN/casino license. |
-| **Game AI** | **YELLOW** | Core+4 jogos wired; Sueca/Spades sólidos; Hearts/King smoke parcial/pendente. |
+| **Game AI** | **GREEN** | Core+4 jogos; King **H16-OK DONE** 2026-09-17; Hearts H15 ainda parcial. |
 | **Card Intelligence** | **YELLOW** | Pipeline library madura + logger live; evaluator/memory/Dev Lab offline/flag. |
 | **Dedicated AI / Mini-LLM** | **RED** | Advisory mock/Ollama only; sem ONNX/WASM; flags off; não produto mesa. |
 
@@ -497,7 +500,7 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 - `docs/ai/active/ROADMAP_AI.md` + status/Impl reports = detalhe técnico AI; **fila de produto AI** = **§5** deste ficheiro.  
 - **Fila activa geral** = §6–§8 + **§12** (visual) + **§13** (themes/audio design).  
 - Workstream **música runtime** = **fechado** (v1 + advanced); CDN/domínio permanece **DEFERRED**; **UX Theme↔Music** = **§13 DEFERRED / DESIGN PENDING**.  
-- Próxima actualização sugerida: após H16-OK, fecho de um Visual Pass por jogo, theme↔deck curation, ou decisão de desenho Themes+Audio / CDN / Cap 7 / Play Store.
+- Próxima actualização sugerida: fecho de um Visual Pass por jogo, theme↔deck curation, ou decisão de desenho Themes+Audio / CDN / Cap 7 / Play Store.
 
 ---
 
@@ -687,4 +690,4 @@ O redesign futuro deve **reutilizar** (não recomeçar do zero):
 
 ---
 
-*ROADMAP-REFINE-VISUAL-AUDIO-UX-01 · commit base `7fb89f1` · alterações de código nesta tarefa: ZERO*
+*ROADMAP-REFINE-VISUAL-AUDIO-UX-01 + KING-H16-OK-CLOSURE-01 · base `8843533` · H16 fechado nesta revisão*
