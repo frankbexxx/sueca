@@ -50,7 +50,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Sueca Visual Pass | **OPEN** |
+| Sueca Visual Pass | **TWEAKS OPEN** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
 | King Visual Pass | **OPEN** |
@@ -386,7 +386,7 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Pixi no bundle | — | **SUPERSEDED** | Removido |
 | Ambiance single-file only | — | **SUPERSEDED** | Core+remote |
 | “AI mesa” como único DEFERRED | — | **SUPERSEDED** | Substituído por §5 |
-| Final Visual Pass — Sueca | **P1** | **OPEN** | §12 — NOT REVIEWED |
+| Final Visual Pass — Sueca | **P1** | **TWEAKS OPEN** | §12.3 + `docs/plan/SUECA_FINAL_VISUAL_PASS.md` (2026-09-17) |
 | Final Visual Pass — Spades | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Final Visual Pass — Hearts | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Final Visual Pass — King | **P1** | **OPEN** | §12 — NOT REVIEWED |
@@ -467,7 +467,7 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 |------|--------|---------|
 | Gameplay | **GREEN** | 4 variantes; P0/P1 regras do roadmap original fechados. |
 | UX (baseline) | **GREEN** | HUD/mão/continue; landscape fine polish não bloqueia baseline. |
-| **Final Visual Pass** | **YELLOW** | 4 jogos **NOT REVIEWED**; gate de release §12. |
+| **Final Visual Pass** | **YELLOW** | Sueca **TWEAKS OPEN**; Spades/Hearts/King **NOT REVIEWED**; gate §12. |
 | Cards | **GREEN** | Casino + backs; CardMeister ready; curadoria theme↔deck OPEN. |
 | Audio SFX | **GREEN** | Mesa + round/game; mute/Off OK; redesign unificado **DEFERRED**. |
 | Music | **GREEN** | Hybrid v1 + advanced modes + OPPO; CDN custom DEFERRED; UX Theme↔Music gap §13. |
@@ -522,7 +522,7 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 
 | Jogo | Gate state |
 |------|------------|
-| Sueca | **NOT REVIEWED** |
+| Sueca | **TWEAKS OPEN** |
 | Spades | **NOT REVIEWED** |
 | Hearts | **NOT REVIEWED** |
 | King | **NOT REVIEWED** |
@@ -555,19 +555,17 @@ Prioridade ao criar tickets: **BUG** · **UX** · **POLISH**
 
 ### 12.3 Sueca — Final Visual Pass
 
-**STATUS:** **OPEN** · Gate: **NOT REVIEWED**
+**STATUS:** **TWEAKS OPEN** · Gate: **TWEAKS OPEN**  
+**Doc detalhado:** [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md)  
+**Screenshots:** `E:\SUECAO\_temp\sueca-visual-pass\` (OPPO portrait, 2026-09-17)  
+**Nota:** auditoria automática revista manualmente por Francisco; lista consolidada S1–S10 + globais.
 
-Rever manualmente:
+**Issues Sueca (todos OPEN, P2):** S1 HUD/Phaser overlap · S2 remove fallback label · S4 modal distribuição · S5 Pausa auto · S6 mão (sem +spacing cego) · S7 trick anchors · S9 artefactos faces  
 
-- mesa / gameplay  
-- bids / contract info se aplicável  
-- score  
-- trick / current player cues  
-- modals  
-- transitions  
-- mobile portrait  
-- spacing · typography · cards/overlap  
-- inconsistências visuais · pequenos bugs visíveis · oportunidades de melhoria  
+**Issues globais (via Sueca; cleanup transversal):** S3→GLOBAL-UI-01 · S8→GLOBAL-UI-02 · S10→GLOBAL-UI-03 · GLOBAL-CARDS-01  
+
+**Ordem provisória:** S1 → S4 → S5 → S9+GLOBAL-CARDS-01 → S6 → S7 → S2 → (S3/S8/S10 transversais).  
+**Nenhuma correcção DONE.**
 
 ### 12.4 Spades — Final Visual Pass
 
@@ -610,6 +608,19 @@ Rever **separadamente**:
 - contract display · score / history  
 - table / gameplay · mobile portrait  
 
+### 12.7 Global visual / UI cleanup (registo único)
+
+Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
+
+| ID | Título | PRIORITY | STATUS |
+|----|--------|----------|--------|
+| **GLOBAL-UI-01** | Legacy purple remnants | P2 | OPEN |
+| **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN |
+| **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN |
+| **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | OPEN |
+
+Detalhe e contexto Sueca: [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md).  
+Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mãos.
 ---
 
 ## 13. THEMES + AUDIO EXPERIENCE REDESIGN
