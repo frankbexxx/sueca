@@ -128,6 +128,8 @@ export interface TableZones {
 export interface PremiumTrickLayoutMetrics {
   cardWidth: number;
   cardHeight: number;
+  trickCardWidth?: number;
+  trickCardHeight?: number;
 }
 
 export interface PremiumTableLayoutInput {
@@ -413,27 +415,48 @@ export function premiumToPhaserTableLayout(premium: PremiumTableLayout) {
 }
 
 /**
- * Deterministic trick slot offsets (concept: N 0,-40 / E +42,0 / S 0,+38 / W -42,0),
- * scaled to card size so phone viewports stay coherent.
+ * Deterministic trick slot offsets — balanced N/S and slightly more open E/W
+ * so four faces stay readable without sprawling (S7).
+ * Scaled to trick card size when available.
  */
 export function premiumTrickOffset(
   compass: 'south' | 'west' | 'north' | 'east',
   layout: PremiumTrickLayoutMetrics
 ): PhaserPoint {
-  const dx = Math.round(layout.cardWidth * 0.72); // ~42 @ 58px
-  const dyN = Math.round(layout.cardHeight * 0.48); // ~40 @ 84
-  const dyS = Math.round(layout.cardHeight * 0.45); // ~38
+  const tw = layout.trickCardWidth ?? layout.cardWidth;
+  const th = layout.trickCardHeight ?? layout.cardHeight;
+  const dx = Math.round(tw * 0.8);
+  const dy = Math.round(th * 0.55);
   switch (compass) {
     case 'north':
-      return { x: 0, y: -dyN };
+      return { x: 0, y: -dy };
     case 'east':
       return { x: dx, y: 0 };
     case 'south':
-      return { x: 0, y: dyS };
+      return { x: 0, y: dy };
     case 'west':
       return { x: -dx, y: 0 };
     default:
       return { x: 0, y: 0 };
+  }
+}
+
+/** Paint order within a trick cross — south (local) stays most readable. */
+export function premiumTrickDepth(
+  compass: 'south' | 'west' | 'north' | 'east'
+): number {
+  const base = PREMIUM_TABLE.depthTrick;
+  switch (compass) {
+    case 'north':
+      return base;
+    case 'west':
+      return base + 0.1;
+    case 'east':
+      return base + 0.2;
+    case 'south':
+      return base + 0.3;
+    default:
+      return base;
   }
 }
 

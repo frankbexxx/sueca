@@ -1,9 +1,10 @@
 # Sueca — Final Visual Pass
 
 **Data:** 2026-09-17  
-**Estado:** `TWEAKS OPEN` — batch-01 DONE; cards polish (S9 DONE, GLOBAL-CARDS-01 PARTIAL)  
+**Estado:** `TWEAKS OPEN` — batch-01 DONE; cards polish (S9 DONE, GLOBAL-CARDS-01 PARTIAL); batch-02 (S6/S7) DONE  
 **Screenshots batch-01:** `E:\SUECAO\_temp\sueca-visual-batch-01\`  
 **Screenshots cards polish:** `E:\SUECAO\_temp\sueca-cards-render-polish-01\`  
+**Screenshots batch-02:** `E:\SUECAO\_temp\sueca-visual-batch-02\`  
 **Screenshots audit:** `E:\SUECAO\_temp\sueca-visual-pass\`  
 **Nota:** auditoria automática inicial revista manualmente por Francisco. Esta lista **substitui/refina** a interpretação automática.
 
@@ -142,16 +143,11 @@ Separar conceptualmente:
 |-------|--------|
 | TYPE | POLISH |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
 **DECISION:** A mão é compacta mas funcional. **Não** aumentar simplesmente spacing.
 
-Antes:
-- melhorar separação visual entre cartas;
-- verificar hit areas;
-- reforçar selecção/lift das cartas centrais.
-
-Reavaliar spacing depois. Ver também `GLOBAL-CARDS-01`.
+**Fix (SUECA-VISUAL-BATCH-02):** lift/scale de selecção reforçados; `depthSelected` na carta seleccionada; hover usa `handPresenceScale`; ilegal um pouco mais distinto. Fan spacing **inalterado**.
 
 ---
 
@@ -161,12 +157,11 @@ Reavaliar spacing depois. Ver também `GLOBAL-CARDS-01`.
 |-------|--------|
 | TYPE | POLISH |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
-**DECISION:** Funcional, mas anchors/overlap estão ligeiramente apertados e assimétricos.
+**DECISION:** Funcional, mas anchors/overlap ligeiramente apertados e assimétricos.
 
-Futuro ajuste fino: offsets; distância ao centro; leitura dos índices.  
-**Sem** redesign.
+**Fix (SUECA-VISUAL-BATCH-02):** offsets N/S unificados e ligeiramente mais abertos; E/W escalados ao tamanho do trick card; depth por compass (south por cima). Sem redesenhar a mesa.
 
 ---
 

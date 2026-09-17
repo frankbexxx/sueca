@@ -457,7 +457,7 @@ describe('phaserHandVisual UX-P1', () => {
       passSelectionEnabled: false,
       interactionEnabled: true
     });
-    expect(v.alpha).toBeGreaterThanOrEqual(0.85);
+    expect(v.alpha).toBeGreaterThanOrEqual(0.8);
     expect(v.alpha).toBeLessThan(1);
     expect(v.tint).not.toBe(HAND_VISUAL.legalTint);
     expect(v.interactive).toBe(false);

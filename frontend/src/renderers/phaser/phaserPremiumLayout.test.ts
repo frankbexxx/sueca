@@ -14,6 +14,7 @@ import {
 } from './phaserTableLayout';
 import { computeSeatPresentation } from './phaserSeatPresentation';
 import { DEFAULT_THEME, resolvePhaserThemeFromDom } from './phaserTheme';
+import { HAND_VISUAL } from './phaserHandVisual';
 
 describe('UX-P3.1 premium table layout', () => {
   const phones = [
@@ -106,11 +107,22 @@ describe('UX-P3.1 premium table layout', () => {
     const s = layoutTrickSlot('south', layout);
     const west = layoutTrickSlot('west', layout);
     const offN = premiumTrickOffset('north', layout);
+    const offS = premiumTrickOffset('south', layout);
     expect(n.y).toBe(layout.center.y + offN.y);
     expect(e.x).toBeGreaterThan(layout.center.x);
     expect(west.x).toBeLessThan(layout.center.x);
     expect(s.y).toBeGreaterThan(layout.center.y);
+    // S7 — N/S distance matched; E/W readable without sprawl
+    expect(Math.abs(offN.y)).toBe(Math.abs(offS.y));
     expect(Math.abs(e.x - layout.center.x)).toBeGreaterThanOrEqual(30);
+    expect(Math.abs(e.x - west.x)).toBeGreaterThan(Math.abs(n.y - s.y) * 0.85);
+  });
+
+  it('raises selected lift above resting hand without opening the fan', () => {
+    expect(HAND_VISUAL.selectedLift).toBeGreaterThanOrEqual(20);
+    expect(HAND_VISUAL.selectedLift).toBeLessThanOrEqual(28);
+    expect(HAND_VISUAL.selectedScale).toBeGreaterThan(1.04);
+    expect(HAND_VISUAL.selectedScale).toBeLessThanOrEqual(1.1);
   });
 
   it('preserves UX-P1 hand fan for same count across variants', () => {

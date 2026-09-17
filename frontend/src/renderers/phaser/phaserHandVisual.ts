@@ -10,17 +10,18 @@ export const HAND_VISUAL = {
   /** Fully readable face. */
   legalAlpha: 1 as number,
   /** Soft dim — face and suit stay clear (was 0.42 “black veil”). */
-  illegalAlpha: 0.9 as number,
+  illegalAlpha: 0.84 as number,
   /** Subtle resting dim for waiting hands. */
   inactiveAlpha: 0.94 as number,
   /** Mild cool darken for illegal (multiply tint). */
-  illegalTint: 0xd4d8e0 as number,
+  illegalTint: 0xc8ced8 as number,
   legalTint: 0xffffff as number,
   inactiveTint: 0xffffff as number,
-  selectedLift: 16,
-  hoverLift: 10,
-  selectedHoverLift: 18,
-  selectedScale: 1.05 as number,
+  /** S6 — clearer lift without opening the fan. */
+  selectedLift: 22,
+  hoverLift: 12,
+  selectedHoverLift: 26,
+  selectedScale: 1.07 as number,
   normalScale: 1 as number
 };
 
