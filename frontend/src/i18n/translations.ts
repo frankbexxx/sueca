@@ -300,6 +300,14 @@ export interface Translations {
     music: string;
     musicThemeDefault: string;
     musicOff: string;
+    musicRandom: string;
+    musicRandomSafe: string;
+    musicFamily: string;
+    musicSpecific: string;
+    musicFamilyLabel: string;
+    musicTrackLabel: string;
+    musicStreamingSafeHint: string;
+    musicContentIdBadge: string;
     language: string;
     editName: string;
     saveName: string;
@@ -559,6 +567,14 @@ export const translations: Record<Language, Translations> = {
       music: 'Música',
       musicThemeDefault: 'Tema por defeito',
       musicOff: 'Desligada',
+      musicRandom: 'Aleatória',
+      musicRandomSafe: 'Aleatória (Streaming Safe)',
+      musicFamily: 'Família',
+      musicSpecific: 'Faixa específica',
+      musicFamilyLabel: 'Família musical',
+      musicTrackLabel: 'Faixa',
+      musicStreamingSafeHint: 'Exclui faixas com Content ID.',
+      musicContentIdBadge: 'Content ID',
       language: 'Idioma',
       editName: 'Editar nome',
       saveName: 'Guardar',
@@ -912,6 +928,14 @@ export const translations: Record<Language, Translations> = {
       music: 'Music',
       musicThemeDefault: 'Theme default',
       musicOff: 'Off',
+      musicRandom: 'Random',
+      musicRandomSafe: 'Random (Streaming Safe)',
+      musicFamily: 'Family',
+      musicSpecific: 'Specific track',
+      musicFamilyLabel: 'Music family',
+      musicTrackLabel: 'Track',
+      musicStreamingSafeHint: 'Excludes tracks with Content ID.',
+      musicContentIdBadge: 'Content ID',
       language: 'Language',
       editName: 'Edit name',
       saveName: 'Save',

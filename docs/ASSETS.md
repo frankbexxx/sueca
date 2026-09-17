@@ -210,12 +210,13 @@ Arquitectura: **D — HYBRID** — 6 core bundled + **23 remote R2**; Android ca
 ### Catálogo remoto + cache + playback
 
 - **6** core bundled + **23** remote RELEASE OK no R2 (`catalogVersion` 1).
-- Content ID = SIM (3): `whiskey-jazz`, `northern-glow`, `hawaii-relax` — metadata só; UI Streaming Safe depois.
+- Content ID = SIM (3): `whiskey-jazz`, `northern-glow`, `hawaii-relax` — metadata + exclusão em **Random Streaming Safe**; UI badge em faixa específica.
+- Advanced settings: Theme Default / Off / Random / Random Streaming Safe / Family / Specific Track.
 - Disponibilidade: `AVAILABLE_LOCAL_CORE` \| `AVAILABLE_LOCAL_CACHE` \| `REMOTE_AVAILABLE` \| `UNAVAILABLE`.
 - Theme Default: preferred pode ser core ou remote; fallback sempre core.
 - `VITE_MUSIC_REMOTE_BASE_URL` (dev/android); falha de fetch → core-only, sem retry loop, sem prefetch.
 - **CDN produção / custom domain:** ainda pendente — `r2.dev` é endpoint temporário de smoke/dev.
-- Advanced settings (Random / Family / Specific / Streaming Safe): ainda pendentes.
+- **Advanced settings:** Theme Default / Off / Random / Random Streaming Safe / Family / Specific Track — activos.
 
 Preparação / proveniência: `_temp/_musicas/` (gitignored).
 

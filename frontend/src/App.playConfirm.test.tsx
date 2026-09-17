@@ -50,7 +50,8 @@ vi.mock('./services/audioService', () => ({
   preloadMusic: vi.fn(),
   preloadSfx: vi.fn(),
   playMusic: vi.fn(),
-  syncMusicToTheme: vi.fn()
+  syncMusicToTheme: vi.fn(),
+  applyMusicFromSettings: vi.fn()
 }));
 
 vi.mock('./navigation/useShellBrowserBack', () => ({

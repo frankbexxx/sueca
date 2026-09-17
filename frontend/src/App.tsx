@@ -21,6 +21,7 @@ import { consumeLandingReturnFlag } from './services/appLifecycle';
 import { getActiveTheme, ThemeId } from './services/billingService';
 import { useLanguage } from './i18n/useLanguage';
 import {
+  applyMusicFromSettings,
   playMusic,
   playUiClick,
   preloadMusic,
@@ -58,7 +59,7 @@ function App() {
   useEffect(() => {
     preloadSfx();
     preloadMusic();
-    syncMusicToTheme(getActiveTheme());
+    void applyMusicFromSettings();
     const onClick = (event: MouseEvent) => {
       playMusic();
       const target = (event.target as Element | null)?.closest(UI_CLICK_SELECTOR);

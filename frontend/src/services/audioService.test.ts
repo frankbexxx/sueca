@@ -92,6 +92,7 @@ describe('audioService', () => {
     setMusicMode('off');
     expect(getMusicMode()).toBe('off');
     expect(localStorage.getItem('sueca-music-mode')).toBe('off');
+    expect(localStorage.getItem('sueca-music-settings')).toContain('"off"');
   });
 
   it('playSfx does not throw when sound is disabled', () => {

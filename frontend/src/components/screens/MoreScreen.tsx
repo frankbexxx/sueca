@@ -11,7 +11,8 @@ import {
   TrumpPosition
 } from '../../constants/handPreferences';
 import { loadAutoPauseTrick, saveAutoPauseTrick } from '../../utils/trickAutoContinue';
-import { getMusicMode, isSoundEnabled, MusicMode, setMusicMode, setSoundEnabled } from '../../services/audioService';
+import { isSoundEnabled, setSoundEnabled } from '../../services/audioService';
+import { MusicSettingsControls } from './MusicSettingsControls';
 import './MoreScreen.css';
 
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -39,7 +40,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
   const [showCredits, setShowCredits] = useState(false);
   const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
   const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
-  const [musicMode, setMusicModeState] = useState<MusicMode>(() => getMusicMode());
   const [handPrefs, setHandPrefs] = useState(() => loadHandPreferences());
   const [autoPauseTrick, setAutoPauseTrick] = useState(() => loadAutoPauseTrick());
 
@@ -61,11 +61,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
     const next = !soundEnabled;
     setSoundEnabledState(next);
     setSoundEnabled(next);
-  };
-
-  const changeMusicMode = (mode: MusicMode) => {
-    setMusicModeState(mode);
-    setMusicMode(mode);
   };
 
   const updateHandPrefs = (patch: Parameters<typeof saveHandPreferences>[0]) => {
@@ -111,25 +106,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
           <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
           <span>{t.moreScreen.sound}</span>
         </label>
-        <div className="more-lang" role="group" aria-label={t.moreScreen.music}>
-          <span>{t.moreScreen.music}</span>
-          <div className="language-selector">
-            <button
-              type="button"
-              className={`lang-btn ${musicMode === 'theme-default' ? 'active' : ''}`}
-              onClick={() => changeMusicMode('theme-default')}
-            >
-              {t.moreScreen.musicThemeDefault}
-            </button>
-            <button
-              type="button"
-              className={`lang-btn ${musicMode === 'off' ? 'active' : ''}`}
-              onClick={() => changeMusicMode('off')}
-            >
-              {t.moreScreen.musicOff}
-            </button>
-          </div>
-        </div>
+        <MusicSettingsControls />
         <label className="more-toggle">
           <input
             type="checkbox"

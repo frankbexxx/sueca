@@ -8,6 +8,7 @@ import {
   isMusicTrackId
 } from '../constants/musicCatalog';
 import { initMusicCache } from '../audio/musicCacheService';
+import { resolveAdvancedTrackId } from '../audio/musicCatalogPool';
 import {
   ResolvedMusicTrack,
   resolveMusicTrack,
@@ -17,17 +18,23 @@ import { ensureRemotePlayable } from '../audio/musicRemotePrepare';
 import { bootstrapMusicRemoteAtStartup } from '../audio/musicRemoteBootstrap';
 import { getRemoteMusicTrack } from '../audio/remoteMusicCatalog';
 import {
+  loadMusicSettings,
+  MusicMode,
+  MusicSettings,
+  patchMusicSettings,
+  saveMusicSettings
+} from '../audio/musicSettings';
+import {
   FAMILY_CORE_TRACK,
   getThemeMusicPreference
 } from '../constants/musicThemeMap';
 import type { ThemeId } from './billingService';
 import { getActiveTheme } from './billingService';
 
-const SOUND_ENABLED_KEY = 'sueca-sound-enabled';
-const MUSIC_MODE_KEY = 'sueca-music-mode';
-const FADE_MS = 450;
+export type { MusicMode, MusicSettings };
 
-export type MusicMode = 'theme-default' | 'off';
+const SOUND_ENABLED_KEY = 'sueca-sound-enabled';
+const FADE_MS = 450;
 
 const DEFAULT_VOLUMES: Record<SfxId, number> = {
   cardPlay1: 0.55,
@@ -55,39 +62,92 @@ let fadeTimer: ReturnType<typeof setInterval> | null = null;
 let switchToken = 0;
 /** Prevents infinite fallback loops on error (max 1 remote→core per switch). */
 let fallbackUsedForToken = -1;
+let endedHandlerAttached = false;
 
 export function isSoundEnabled(): boolean {
   if (typeof window === 'undefined') return false;
   return localStorage.getItem(SOUND_ENABLED_KEY) !== 'false';
 }
 
+export function getMusicSettings(): MusicSettings {
+  return loadMusicSettings();
+}
+
 export function getMusicMode(): MusicMode {
-  if (typeof window === 'undefined') return 'theme-default';
-  return localStorage.getItem(MUSIC_MODE_KEY) === 'off' ? 'off' : 'theme-default';
+  return loadMusicSettings().mode;
+}
+
+function isMusicDesired(): boolean {
+  return isSoundEnabled() && getMusicMode() !== 'off';
+}
+
+function usesLoopingBed(mode: MusicMode): boolean {
+  return mode === 'theme-default' || mode === 'specific';
+}
+
+function isAdvancedRotateMode(mode: MusicMode): boolean {
+  return (
+    mode === 'random' ||
+    mode === 'random-streaming-safe' ||
+    mode === 'family'
+  );
+}
+
+export function setMusicSettings(next: MusicSettings): void {
+  if (typeof window === 'undefined') return;
+  saveMusicSettings(next);
+  void applyMusicFromSettings();
+}
+
+export function updateMusicSettings(patch: Partial<MusicSettings>): void {
+  if (typeof window === 'undefined') return;
+  patchMusicSettings(patch);
+  void applyMusicFromSettings();
 }
 
 export function setMusicMode(mode: MusicMode): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(MUSIC_MODE_KEY, mode);
-  if (mode === 'off' || !isSoundEnabled()) {
-    stopMusic();
-  } else {
-    syncMusicToTheme(getActiveTheme());
-    playMusic();
-  }
+  const current = loadMusicSettings();
+  saveMusicSettings({ ...current, mode });
+  void applyMusicFromSettings();
 }
 
 export function setSoundEnabled(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
   if (enabled) {
-    if (getMusicMode() === 'theme-default') {
-      syncMusicToTheme(getActiveTheme());
-      playMusic();
-    }
+    void applyMusicFromSettings();
   } else {
     stopMusic();
   }
+}
+
+/**
+ * Apply persisted music settings (Theme Default / Random / Family / Specific / Off).
+ * Never throws; remotes stay on-demand via setMusicTrack.
+ */
+export async function applyMusicFromSettings(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  const settings = loadMusicSettings();
+
+  if (settings.mode === 'off' || !isSoundEnabled()) {
+    stopMusic();
+    return;
+  }
+
+  if (settings.mode === 'theme-default') {
+    syncMusicToTheme(getActiveTheme());
+    playMusic();
+    return;
+  }
+
+  const { trackId } = resolveAdvancedTrackId(
+    settings.mode,
+    settings,
+    currentTrackId
+  );
+  await setMusicTrack(trackId, { forceRestart: true });
+  playMusic();
 }
 
 function clearFade(): void {
@@ -132,7 +192,27 @@ function ensureMusicAudio(): HTMLAudioElement {
       void handleMusicPlaybackError();
     });
   }
+  if (!endedHandlerAttached && musicAudio) {
+    endedHandlerAttached = true;
+    musicAudio.addEventListener('ended', () => {
+      void handleMusicEnded();
+    });
+  }
   return musicAudio;
+}
+
+async function handleMusicEnded(): Promise<void> {
+  if (!isMusicDesired()) return;
+  const settings = loadMusicSettings();
+  if (!isAdvancedRotateMode(settings.mode)) return;
+
+  const { trackId } = resolveAdvancedTrackId(
+    settings.mode,
+    settings,
+    currentTrackId
+  );
+  await setMusicTrack(trackId, { forceRestart: true });
+  playMusic();
 }
 
 async function handleMusicPlaybackError(): Promise<void> {
@@ -174,7 +254,6 @@ async function resolvePlayableTarget(
     };
   }
 
-  // One remote prepare attempt per call.
   const prepared = await ensureRemotePlayable(resolved.id);
   if (prepared.ok) {
     return {
@@ -202,12 +281,9 @@ function applySrcToAudio(
   if (token !== switchToken) return;
   currentTrackId = nextId;
   audio.src = nextUrl;
-  audio.loop = true;
+  audio.loop = usesLoopingBed(getMusicMode());
   audio.load();
-  if (
-    wasPlaying ||
-    (isSoundEnabled() && getMusicMode() === 'theme-default' && musicPlaying)
-  ) {
+  if (wasPlaying || (isMusicDesired() && musicPlaying)) {
     audio.volume = 0;
     void audio
       .play()
@@ -240,10 +316,7 @@ async function applyCoreTrack(
   }
   const audio = ensureMusicAudio();
   const wasPlaying =
-    musicPlaying &&
-    !audio.paused &&
-    isSoundEnabled() &&
-    getMusicMode() === 'theme-default';
+    musicPlaying && !audio.paused && isMusicDesired();
   const url = options?.playableUrl ?? getMusicTrackUrl(next);
 
   const apply = () => applySrcToAudio(audio, token, next, url, wasPlaying);
@@ -268,7 +341,7 @@ export async function playResolvedMusic(
   options?: { forceRestart?: boolean }
 ): Promise<void> {
   if (typeof window === 'undefined') return;
-  if (getMusicMode() === 'off' || !isSoundEnabled()) {
+  if (!isMusicDesired()) {
     if (resolved.source === 'core' && resolved.id === currentTrackId) return;
   }
 
@@ -284,16 +357,12 @@ export async function playResolvedMusic(
   fallbackUsedForToken = -1;
   const audio = ensureMusicAudio();
   const wasPlaying =
-    musicPlaying &&
-    !audio.paused &&
-    isSoundEnabled() &&
-    getMusicMode() === 'theme-default';
+    musicPlaying && !audio.paused && isMusicDesired();
 
   let nextId = resolved.id;
   let nextUrl = resolved.playableUrl;
 
   if (resolved.source === 'remote') {
-    // Keep current audio playing while preparing remote.
     const prepared = await ensureRemotePlayable(resolved.id);
     if (token !== switchToken) return;
     if (prepared.ok) {
@@ -311,7 +380,6 @@ export async function playResolvedMusic(
   }
 
   if (nextId === currentTrackId && !options?.forceRestart && audio.src) {
-    // Same bed already playing (e.g. remote failed → same core as current).
     return;
   }
 
@@ -347,19 +415,29 @@ export async function setMusicTrack(
   await playResolvedMusic(resolved, options);
 }
 
+/** Theme Default only — ignored in Random / Family / Specific / Off. */
 export function syncMusicToTheme(themeId: ThemeId): void {
+  if (getMusicMode() !== 'theme-default') return;
   const resolved = resolveThemeMusic(themeId);
   void playResolvedMusic(resolved);
 }
 
 export function preloadMusic(): void {
   if (typeof window === 'undefined') return;
-  const resolved = resolveThemeMusic(getActiveTheme());
-  currentTrackId =
-    resolved.source === 'core' ? resolved.id : resolved.fallbackTrackId;
+  const settings = loadMusicSettings();
+  if (settings.mode === 'theme-default') {
+    const resolved = resolveThemeMusic(getActiveTheme());
+    currentTrackId =
+      resolved.source === 'core' ? resolved.id : resolved.fallbackTrackId;
+  }
   ensureMusicAudio();
   void initMusicCache();
-  void bootstrapMusicRemoteAtStartup();
+  void bootstrapMusicRemoteAtStartup().then(() => {
+    // Remotes may have just become available — refresh advanced pools.
+    if (isAdvancedRotateMode(getMusicMode()) || getMusicMode() === 'specific') {
+      void applyMusicFromSettings();
+    }
+  });
 }
 
 /** @deprecated Use preloadMusic */
@@ -368,7 +446,7 @@ export function preloadAmbiance(): void {
 }
 
 export function playMusic(): void {
-  if (typeof window === 'undefined' || !isSoundEnabled() || getMusicMode() === 'off') {
+  if (typeof window === 'undefined' || !isMusicDesired()) {
     return;
   }
 
@@ -495,9 +573,15 @@ export function resetAudioServiceForTests(): void {
   preloaded = false;
   switchToken = 0;
   fallbackUsedForToken = -1;
+  endedHandlerAttached = false;
 }
 
 /** Exposed for tests — resolve playable target with one remote attempt. */
 export async function __resolvePlayableTargetForTests(trackId: string) {
   return resolvePlayableTarget(trackId);
+}
+
+/** Test helper — fire ended handler. */
+export async function __handleMusicEndedForTests(): Promise<void> {
+  await handleMusicEnded();
 }
