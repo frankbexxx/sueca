@@ -55,8 +55,11 @@ describe('InGameBar icon command bar', () => {
     });
   }
 
-  it('renders only three permanent icon controls', () => {
+  it('renders vertical rail with three permanent icon controls', () => {
     renderBar();
+    const bar = container.querySelector('[data-testid="in-game-bar"]');
+    expect(bar?.getAttribute('data-layout')).toBe('vertical-rail');
+    expect(bar?.getAttribute('aria-orientation')).toBe('vertical');
     expect(container.querySelectorAll('.in-game-bar-icon-btn')).toHaveLength(3);
     expect(container.querySelector('[data-testid="in-game-pause"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="in-game-pin"]')).toBeTruthy();
@@ -64,6 +67,10 @@ describe('InGameBar icon command bar', () => {
     expect(container.querySelector('.in-game-bar-title')).toBeNull();
     expect(container.querySelector('.in-game-bar-player')).toBeNull();
     expect(container.querySelector('.in-game-bar-meta')).toBeNull();
+    const order = Array.from(container.querySelectorAll('.in-game-bar-icon-btn')).map((el) =>
+      el.getAttribute('data-testid')
+    );
+    expect(order).toEqual(['in-game-pause', 'in-game-pin', 'in-game-more']);
   });
 
   it('does not expose Novo/Sair until overflow opens', () => {

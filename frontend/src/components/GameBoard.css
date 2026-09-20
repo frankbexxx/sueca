@@ -56,6 +56,49 @@
   margin-bottom: 6px;
 }
 
+/* GLOBAL-UI-02 Batch 2 — HUD row + vertical command rail */
+.in-game-hud-chrome {
+  position: relative;
+  z-index: 1100;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 4px 6px 6px;
+  padding-top: max(4px, env(safe-area-inset-top));
+}
+
+.in-game-hud-chrome__scores {
+  min-width: 0;
+}
+
+.in-game-hud-chrome .top-strip {
+  padding: 4px 4px 4px 2px;
+}
+
+.in-game-hud-chrome .top-strip--teams {
+  grid-template-columns: minmax(0, 1fr) minmax(72px, 0.95fr) minmax(0, 1fr);
+  gap: 4px;
+  padding: 4px 2px 4px 2px;
+  margin-bottom: 0;
+}
+
+.in-game-hud-chrome .top-strip--unified {
+  padding: 3px 4px 3px 2px;
+}
+
+.game-board--team-table .in-game-hud-chrome {
+  margin-bottom: 6px;
+}
+
+.game-board--team-table .in-game-hud-chrome .top-strip--teams {
+  margin-bottom: 0;
+  padding-bottom: 4px;
+}
+
 /* Keep Phaser inside its flex slot — centered 70vh canvas was painting over the HUD. */
 .game-board--team-table .sueca-phaser-root {
   flex: 1 1 auto;

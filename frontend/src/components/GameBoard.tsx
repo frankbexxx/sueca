@@ -1435,16 +1435,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             : formatDevKingNegBadge(devKingNegContract!)}
         </div>
       ) : null}
-      <InGameBar
-        isPaused={gameState.isPaused}
-        onPause={handlePause}
-        onResume={handleResume}
-        onNewGame={handleNewGame}
-        onPinGame={handlePinGame}
-        onExit={handleLeaveScreen}
-        onOpenRules={() => setRulesOpen(true)}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
+      <div className="in-game-hud-chrome" data-testid="in-game-hud-chrome">
+        <div className="in-game-hud-chrome__scores">
+          <ScoreStrip
+            gameState={gameState}
+            variant={gameVariant}
+            usTeam={usTeam}
+            themTeam={themTeam}
+            rulesPresetId={rulesPresetId}
+          />
+        </div>
+        <InGameBar
+          isPaused={gameState.isPaused}
+          onPause={handlePause}
+          onResume={handleResume}
+          onNewGame={handleNewGame}
+          onPinGame={handlePinGame}
+          onExit={handleLeaveScreen}
+          onOpenRules={() => setRulesOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+      </div>
 
       {rulesOpen ? (
         <RulesSheet
@@ -1457,13 +1468,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {settingsOpen ? (
         <InGameSettingsOverlay onClose={() => setSettingsOpen(false)} />
       ) : null}
-      <ScoreStrip
-        gameState={gameState}
-        variant={gameVariant}
-        usTeam={usTeam}
-        themTeam={themTeam}
-        rulesPresetId={rulesPresetId}
-      />
 
       {usePhaserTable ? (
         <React.Suspense
