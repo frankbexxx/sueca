@@ -16,7 +16,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(
+    135deg,
+    var(--sc-canvas-from, #1a2438) 0%,
+    var(--sc-canvas-to, #121820) 100%
+  );
   /* Fill visual viewport; avoid body padding + 100dvh child double-counting. */
   min-height: 100%;
   min-height: 100dvh;

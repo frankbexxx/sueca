@@ -1,0 +1,48 @@
+/**
+ * ErrorBoundary recovery UI — must work outside themed app-shell.
+ * Uses Theme Contract emergency defaults from :root (brass), which
+ * cascade from design-tokens.css loaded before the boundary mounts.
+ * Never hardcode Classic purple.
+ */
+
+.error-boundary {
+  padding: 24px;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+  max-width: 400px;
+  margin: 40px auto;
+  color: var(--sc-text, #e9eef7);
+}
+
+.error-boundary__title {
+  font-size: 1.25rem;
+  color: var(--sc-text-title, #e8e0d0);
+}
+
+.error-boundary__body {
+  color: var(--sc-text-muted, rgba(233, 238, 247, 0.65));
+}
+
+.error-boundary__reload {
+  margin-top: 16px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--sc-accent-rgb, 197, 164, 91), 0.65);
+  background: rgba(var(--sc-accent-rgb, 197, 164, 91), 0.45);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.error-boundary__reload:focus-visible {
+  outline: 2px solid var(--sc-focus-ring, rgba(255, 255, 255, 0.5));
+  outline-offset: 2px;
+}
+
+.error-boundary__reload:hover {
+  background: rgba(var(--sc-accent-rgb, 197, 164, 91), 0.58);
+  border-color: rgba(var(--sc-accent-rgb, 197, 164, 91), 0.8);
+}

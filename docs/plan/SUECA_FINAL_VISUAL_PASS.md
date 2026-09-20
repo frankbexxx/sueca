@@ -225,9 +225,9 @@ Detalhe canónico também em `ROADMAP_REBASE_SEPTEMBER_2026.md` §12.7.
 |-------|--------|
 | TYPE | GLOBAL UI |
 | PRIORITY | P2 |
-| STATUS | OPEN |
+| STATUS | DONE |
 
-Roxo legado em CTAs / faixas / chrome — transversal aos 4 jogos.
+Fechado na Theme Architecture Etapa 7 — ver [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md).
 
 ### GLOBAL-UI-02 — In-game top bar density
 

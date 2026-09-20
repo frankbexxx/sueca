@@ -3,18 +3,19 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--sc-surface-modal);
+  border: 1px solid var(--sc-surface-border);
   border-radius: 12px;
   margin-bottom: 20px;
+  color: var(--sc-text);
 }
 
 .game-selector__title {
   margin: 0;
-  color: white;
+  color: var(--sc-text-title);
   font-size: 24px;
   font-weight: bold;
   text-align: center;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .game-selector__grid {
@@ -28,31 +29,31 @@
   flex-direction: column;
   gap: 8px;
   padding: 15px;
-  background: white;
-  border: 3px solid transparent;
+  background: var(--sc-surface);
+  border: 2px solid var(--sc-surface-border);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
   text-align: center;
   font-size: 14px;
+  color: var(--sc-text);
+  font-family: inherit;
 }
 
 .game-selector__item:hover:not(:disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  border-color: #667eea;
+  background: rgba(var(--sc-accent-rgb), 0.12);
+  border-color: rgba(var(--sc-accent-rgb), 0.45);
 }
 
 .game-selector__item--active {
-  background: #667eea;
-  color: white;
-  border-color: #764ba2;
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  color: #fff;
+  border-color: rgba(var(--sc-accent-rgb), 0.65);
   font-weight: bold;
 }
 
 .game-selector__item--placeholder {
   opacity: 0.7;
-  background: #f0f0f0;
 }
 
 .game-selector__name {
@@ -63,7 +64,7 @@
 
 .game-selector__status {
   font-size: 12px;
-  color: #ff6b6b;
+  color: var(--sc-danger, #dc3545);
   font-weight: bold;
 }
 
@@ -79,12 +80,7 @@
   opacity: 0.5;
 }
 
-@media (max-width: 768px) {
-  .game-selector__grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-
-  .game-selector__title {
-    font-size: 18px;
-  }
+.game-selector__item:focus-visible {
+  outline: 2px solid var(--sc-focus-ring, rgba(255, 255, 255, 0.5));
+  outline-offset: 2px;
 }

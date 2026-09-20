@@ -52,7 +52,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–6 DONE · **Etapa 7 Legacy Purple Cleanup** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–7 DONE · **GLOBAL-UI-01 DONE** · **Etapa 8 Game-specific DOM Migration** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
 | Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
@@ -569,9 +569,9 @@ Prioridade ao criar tickets: **BUG** · **UX** · **POLISH**
 
 **Issues Sueca locais DONE:** S1 · S2 · S4 · S5 · S6 · S7 · S9  
 
-**Issues globais ainda pendentes:** S3→GLOBAL-UI-01 · S8→GLOBAL-UI-02 · S10→GLOBAL-UI-03 · GLOBAL-CARDS-01 (PARTIAL)  
+**Issues globais ainda pendentes:** ~~S3→GLOBAL-UI-01~~ · S8→GLOBAL-UI-02 · S10→GLOBAL-UI-03 · GLOBAL-CARDS-01 (PARTIAL)  
 
-**Próximo (transversal):** GLOBAL-UI-01/02/03 + fecho GLOBAL-CARDS-01 em Hearts/King.
+**Próximo (transversal):** GLOBAL-UI-02/03 + fecho GLOBAL-CARDS-01 em Hearts/King.
 
 ### 12.4 Spades — Final Visual Pass
 
@@ -620,7 +620,7 @@ Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
 
 | ID | Título | PRIORITY | STATUS |
 |----|--------|----------|--------|
-| **GLOBAL-UI-01** | Legacy purple remnants | P2 | OPEN |
+| **GLOBAL-UI-01** | Legacy purple remnants | P2 | **DONE** (Theme Architecture Etapa 7) |
 | **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN |
 | **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN |
 | **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | PARTIAL |
@@ -630,7 +630,7 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
-**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–6 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **Landing + App Shell + Shared Components themed** · **current = Etapa 7 Legacy Purple Cleanup**  
+**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–7 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **current = Etapa 8 Game-specific DOM Migration**  
 **Plano canónico:** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)  
 **Baseline Stage 0:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Contract Stage 1:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)  
@@ -640,7 +640,7 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 **Shell/Landing Stage 5:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md)
 
 Foundation de tokens / theming React/DOM **antes** de retomar Final Visual Passes (master plan Etapa 13 = `BLOCKED` até foundation).  
-`GLOBAL-UI-01` (legacy purple) é absorvido pela Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.
+`GLOBAL-UI-01` (legacy purple) → **DONE** na Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.
 
 ---
 

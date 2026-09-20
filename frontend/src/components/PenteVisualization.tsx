@@ -15,6 +15,9 @@ interface PenteVisualizationProps {
  * Simple visualization of games (victories) score
  * Shows only text-based score tracking - no complex SVG structure
  * Compatible with mobile/Android
+ *
+ * Team colours are game-semantic Us/Them (fixed), not theme accent /
+ * legacy purple.
  */
 export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
   team1Score,
@@ -34,14 +37,14 @@ export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
       {/* Current Games Score */}
       <div className="pente-score-section">
         <div className="pente-score-item">
-          <span className="pente-team-label" style={{ color: '#6c5ce7' }}>{team1Name}:</span>
-          <span className="pente-score-value" style={{ color: '#6c5ce7' }}>
+          <span className="pente-team-label pente-team--us">{team1Name}:</span>
+          <span className="pente-score-value pente-team--us">
             {team1Score}/4
           </span>
         </div>
         <div className="pente-score-item">
-          <span className="pente-team-label" style={{ color: '#ff6b6b' }}>{team2Name}:</span>
-          <span className="pente-score-value" style={{ color: '#ff6b6b' }}>
+          <span className="pente-team-label pente-team--them">{team2Name}:</span>
+          <span className="pente-score-value pente-team--them">
             {team2Score}/4
           </span>
         </div>
@@ -53,14 +56,14 @@ export const PenteVisualization: React.FC<PenteVisualizationProps> = ({
           <div className="pente-total-label">{t.pente.totalVictories}</div>
           <div className="pente-total-scores">
             <div className="pente-total-item">
-              <span className="pente-team-label" style={{ color: '#6c5ce7' }}>{team1Name}:</span>
-              <span className="pente-total-value" style={{ color: '#6c5ce7' }}>
+              <span className="pente-team-label pente-team--us">{team1Name}:</span>
+              <span className="pente-total-value pente-team--us">
                 {totalTeam1Victories}
               </span>
             </div>
             <div className="pente-total-item">
-              <span className="pente-team-label" style={{ color: '#ff6b6b' }}>{team2Name}:</span>
-              <span className="pente-total-value" style={{ color: '#ff6b6b' }}>
+              <span className="pente-team-label pente-team--them">{team2Name}:</span>
+              <span className="pente-total-value pente-team--them">
                 {totalTeam2Victories}
               </span>
             </div>

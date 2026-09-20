@@ -187,7 +187,7 @@
 
 
 .player-seat.player-seat--bidding:not(.player-seat--active) .player-info {
-  outline: 2px solid rgba(196, 181, 253, 0.75);
+  outline: 2px solid rgba(var(--sc-accent-rgb), 0.75);
   outline-offset: 1px;
 }
 
@@ -212,16 +212,16 @@
 }
 
 .local-player-dock--bidding:not(.local-player-dock--active) .player-info {
-  outline: 2px solid rgba(196, 181, 253, 0.75);
+  outline: 2px solid rgba(var(--sc-accent-rgb), 0.75);
   outline-offset: 1px;
 }
 
 .local-player-dock--bidding .player-name-line-2 {
-  color: #e9d5ff;
+  color: var(--sc-accent);
 }
 
 .player-seat.player-seat--bidding .player-name-line-2 {
-  color: #e9d5ff;
+  color: var(--sc-accent);
 }
 
 /* Active turn seat — outline + soft ring (theme token); badge reinforces */
@@ -1158,8 +1158,8 @@
   font-size: 0.62rem;
   font-weight: 700;
   line-height: 1.2;
-  background: rgba(196, 181, 253, 0.22);
-  color: #e9d5ff;
+  background: rgba(var(--sc-accent-rgb), 0.22);
+  color: var(--sc-accent);
   white-space: nowrap;
 }
 

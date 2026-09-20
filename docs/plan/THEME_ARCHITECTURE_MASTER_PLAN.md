@@ -14,6 +14,7 @@
 **Stage 4 custom parity:** [`THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md`](./THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md) — **DONE**  
 **Stage 5 shell + landing:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md) — **DONE**  
 **Stage 6 shared components:** [`THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md`](./THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md) — **DONE**  
+**Stage 7 purple cleanup:** [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -31,19 +32,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 7 (Etapa 0–6) |
+| **DONE** | 8 (Etapa 0–7) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 6 |
+| **NOT STARTED** | 5 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 7 — Legacy Purple Cleanup |
-| **Next stage** | Etapa 8 — Game-specific DOM migration (**só após** Exit Criteria da Etapa 7) |
+| **Current stage** | Etapa 8 — Game-specific DOM Migration |
+| **Next stage** | Etapa 9 — Responsive theme pass (**só após** Exit Criteria da Etapa 8) |
 | **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 6 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · Landing + shell + shared components on contract |
+| **Current commit** | *(Stage 7 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · shared UI clean · **GLOBAL-UI-01 DONE** |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -292,16 +293,18 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current stage)* |
-| **Objectivo** | Remover o antigo roxo enquanto fallback **acidental** |
+| **STATUS** | `DONE` |
+| **Implementation** | [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md) |
+| **Closes** | `GLOBAL-UI-01` |
 
-**Auditar / migrar (exemplos):** `#6c5ce7` · `#5a4fd6` · `#7c5cbf` · `108,92,231` · lavender · gradients · borders · radios · toggle-on · continue CTA · highlights de round/game result.
+### Delivered
 
-**Distinguir:** legacy accidental vs intentional visual choice.
+- Accidental purple/lavender removed (ErrorBoundary, Pente, GameBoard bidding, GameSelector, body canvas, Credits body)  
+- Classic intentional purple preserved and scoped  
+- Alias bridge does not leak Classic purple outside Classic  
+- Stage 7 tests enforce forbidden-literal absence  
 
-**Exit criteria:** nenhum componente fica roxo **apenas** porque escapou ao theme.
-
-**Nota:** alinha e absorve o cleanup transversal `GLOBAL-UI-01` / S3 quando executado nesta etapa.
+**Exit criteria:** met — nenhum componente fica roxo **apenas** porque escapou ao theme. **GLOBAL-UI-01 CLOSED.**
 
 ---
 
@@ -309,7 +312,7 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current stage)* |
 
 **Ordem:**
 
@@ -467,7 +470,7 @@ Gaps confirmados / refinados na Etapa 0:
 - Shared components still partially alias/dobo-driven → ~~Etapa 6~~ → **DONE** (aliases retained; paint unified)  
 - ~~`classic` sem bloco CSS~~ → **DONE** Etapa 3  
 - ~~Themes não rebindam `--sueca-rgb-primary`~~ → **DONE** (alias bridge Stage 3)  
-- Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` (PARTIAL) — **GLOBAL-UI-01 → Etapa 7**  
+- Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` — ~~GLOBAL-UI-01 DONE Etapa 7~~; 02/03 + CARDS-01 remain  
 - Matriz de screenshots criada; **captures físicos** ainda por executar  
 
 ---
@@ -485,6 +488,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 4 → `DONE`; custom generator token-driven (same 16 `--sc-*`); current → Etapa 5 App Shell + Landing | 4, 5 | THEME-ARCHITECTURE-STAGE-4 |
 | 2026-09-20 | Etapa 5 → `DONE`; Landing + App Shell on `--sc-*`; current → Etapa 6 Shared Component System | 5, 6 | THEME-ARCHITECTURE-STAGE-5 |
 | 2026-09-20 | Etapa 6 → `DONE`; shared buttons/modals/controls on `--sc-*`; Dobo=alias; current → Etapa 7 Legacy Purple Cleanup | 6, 7 | THEME-ARCHITECTURE-STAGE-6 |
+| 2026-09-20 | Etapa 7 → `DONE`; GLOBAL-UI-01 closed; current → Etapa 8 Game-specific DOM Migration | 7, 8 | THEME-ARCHITECTURE-STAGE-7 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

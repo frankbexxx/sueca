@@ -38,6 +38,15 @@
   font-size: 1.2rem;
 }
 
+/* Game-semantic Us/Them — fixed, not theme accent / legacy purple */
+.pente-team--us {
+  color: var(--sc-game-us, #3484ea);
+}
+
+.pente-team--them {
+  color: var(--sc-game-them, #e25c5c);
+}
+
 .pente-total-section {
   display: flex;
   flex-direction: column;
