@@ -52,7 +52,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–8 DONE · **Etapa 9 Responsive Theme Pass** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–9 DONE · **Etapa 10 DESIGN PENDING / DEFERRED** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
 | Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
@@ -630,17 +630,22 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
-**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–8 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **game DOM migrated** · **current = Etapa 9 Responsive Theme Pass**  
+**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–9 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **game DOM migrated** · **responsive hardened** · **current = Etapa 10 Theme ↔ Deck ↔ Music ↔ SFX UX (`DESIGN PENDING` / `DEFERRED` — não implementar sem decisão de produto)**  
 **Plano canónico:** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)  
 **Baseline Stage 0:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Contract Stage 1:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)  
 **Foundation Stage 2:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md)  
 **Built-in Stage 3:** [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md)  
 **Custom Stage 4:** [`THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md`](./THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md)  
-**Shell/Landing Stage 5:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md)
+**Shell/Landing Stage 5:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md)  
+**Shared Stage 6:** [`THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md`](./THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md)  
+**Purple Stage 7:** [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md)  
+**Game DOM Stage 8:** [`THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md`](./THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md)  
+**Responsive Stage 9:** [`THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md`](./THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md)  
 
 Foundation de tokens / theming React/DOM **antes** de retomar Final Visual Passes (master plan Etapa 13 = `BLOCKED` até foundation).  
-`GLOBAL-UI-01` (legacy purple) → **DONE** na Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.
+`GLOBAL-UI-01` (legacy purple) → **DONE** na Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.  
+Etapa 10 (Theme ↔ Music UX) permanece **DEFERRED** — ver §13.
 
 ---
 

@@ -79,6 +79,8 @@
   color: var(--sc-text);
   padding: 8px 12px;
   font-family: inherit;
+  /* ≥16px avoids iOS focus zoom */
+  font-size: 1rem;
 }
 
 .more-select:focus-visible,

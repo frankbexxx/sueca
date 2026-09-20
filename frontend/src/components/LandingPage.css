@@ -47,7 +47,8 @@
 .landing-card {
   max-width: 880px;
   width: 100%;
-  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* Parent .landing-content already applies safe-area padding — do not subtract insets again */
+  max-height: 100%;
   overflow: hidden;
   background: color-mix(in srgb, var(--sc-surface-modal) 88%, transparent);
   border-radius: 20px;
@@ -220,7 +221,7 @@
 
 @media (min-width: 769px) {
   .landing-content {
-    padding: 24px 18px;
+    padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
     align-items: center;
   }
 

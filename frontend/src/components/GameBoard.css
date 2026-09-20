@@ -5,7 +5,7 @@
   --card-h: 71px; /* 70% of 101px */
   --hand-row-h: 76px; /* 70% of 108px */
   --button-min-w: 126px; /* 70% of 180px */
-  max-width: 100vw;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0;
   box-sizing: border-box;
@@ -1745,8 +1745,9 @@
   max-width: 100%;
   border-radius: 12px 12px 0 0;
   max-height: 82vh;
+  max-height: 82dvh;
   overflow-y: auto;
-  padding: 20px 16px 24px;
+  padding: 20px 16px max(24px, env(safe-area-inset-bottom, 0px));
 }
 
 
