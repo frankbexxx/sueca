@@ -214,7 +214,7 @@ function App() {
 
   if (screen === 'landing') {
     return (
-      <div className="App App--full">
+      <div className="App app-shell app-shell--landing" data-theme={activeTheme}>
         <LandingPage onStart={enterShell} />
       </div>
     );

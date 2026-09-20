@@ -26,12 +26,12 @@
 .screen-title {
   margin: 0;
   font-size: 1.75rem;
-  color: var(--sc-text-title, var(--sueca-color-text));
+  color: var(--sc-text-title);
 }
 
 .screen-subtitle {
   margin: 8px 0 0;
-  color: var(--sc-text-muted, rgba(233, 238, 247, 0.75));
+  color: var(--sc-text-muted);
 }
 
 .dashboard-profile-btn {
@@ -48,9 +48,10 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(var(--sueca-rgb-primary), 0.35);
+  background: rgba(var(--sc-accent-rgb), 0.35);
   font-weight: 700;
   font-size: 1rem;
+  color: var(--sc-text-title);
 }
 
 .dashboard-profile-label {
@@ -69,7 +70,7 @@
 .dashboard-section-title {
   margin: 0 0 12px;
   font-size: 1rem;
-  color: var(--sc-text-title, var(--sueca-color-text));
+  color: var(--sc-text-title);
 }
 
 .dashboard-game-rows {
@@ -88,20 +89,20 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--sueca-radius-md, 10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
 }
 
 .dashboard-game-row--active {
-  border-color: rgba(var(--sueca-rgb-primary), 0.55);
-  background: rgba(var(--sueca-rgb-primary), 0.12);
+  border-color: rgba(var(--sc-accent-rgb), 0.55);
+  background: rgba(var(--sc-accent-rgb), 0.12);
 }
 
 .dashboard-game-row-name {
   flex: 1;
   min-width: 0;
   font-weight: 600;
-  color: var(--sueca-color-text);
+  color: var(--sc-text);
   font-size: 0.95rem;
 }
 
@@ -117,14 +118,14 @@
   padding: 14px 12px;
   border-radius: var(--sueca-radius-md, 12px);
   margin-bottom: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
 }
 
 .dashboard-subsection-title {
   margin: 16px 0 8px;
   font-size: 0.85rem;
-  color: rgba(233, 238, 247, 0.85);
+  color: var(--sc-text-muted);
   font-weight: 600;
 }
 
@@ -144,12 +145,12 @@
 .dashboard-stat-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--sc-text-title);
 }
 
 .dashboard-stat-label {
   font-size: 0.72rem;
-  color: rgba(233, 238, 247, 0.7);
+  color: var(--sc-text-muted);
   text-align: center;
 }
 
@@ -168,7 +169,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.8rem;
-  color: rgba(233, 238, 247, 0.85);
+  color: var(--sc-text);
 }
 
 .dashboard-per-game-name {
@@ -176,13 +177,13 @@
 }
 
 .dashboard-per-game-counts {
-  opacity: 0.75;
+  color: var(--sc-text-muted);
   white-space: nowrap;
 }
 
 .dashboard-last-played {
   font-size: 0.8rem;
-  color: rgba(233, 238, 247, 0.5);
+  color: var(--sc-text-muted);
   text-align: center;
   margin: 8px 0 0;
 }

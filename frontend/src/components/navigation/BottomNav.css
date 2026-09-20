@@ -9,9 +9,11 @@
   align-items: stretch;
   min-height: var(--sueca-bottom-nav-height, 56px);
   padding-bottom: env(safe-area-inset-bottom, 0);
-  background: rgba(20, 28, 40, 0.96);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  /* Stage 5: themed bar surface (not fixed dark-slate) */
+  background: color-mix(in srgb, var(--sc-surface-modal) 92%, transparent);
+  border-top: 1px solid var(--sc-surface-border);
   backdrop-filter: blur(8px);
+  color: var(--sc-text);
 }
 
 .bottom-nav--compact {
@@ -30,15 +32,15 @@
   padding: 4px 2px;
   border: none;
   background: transparent;
-  color: rgba(233, 238, 247, 0.65);
+  color: var(--sc-text-muted);
   cursor: pointer;
   transition: color 0.2s, background 0.2s;
   position: relative;
 }
 
 .bottom-nav-item.active {
-  color: var(--sc-text-title, #fff);
-  background: rgba(var(--sueca-rgb-primary), 0.2);
+  color: var(--sc-text-title);
+  background: rgba(var(--sc-accent-rgb), 0.2);
 }
 
 .bottom-nav-icon {
@@ -55,14 +57,14 @@
   transform: translateX(-50%);
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(15, 20, 30, 0.95);
-  color: var(--sueca-color-text);
+  background: color-mix(in srgb, var(--sc-surface-modal) 95%, transparent);
+  color: var(--sc-text);
   font-size: 0.65rem;
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
   z-index: 2;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--sc-surface-border);
 }
 
 @media (max-width: 360px) {

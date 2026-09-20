@@ -30,13 +30,13 @@
   width: 100%;
   display: flex;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: inherit;
+  border: 1px solid var(--sc-surface-border);
+  color: var(--sc-text);
 }
 
 .themes-card--active {
-  border-color: rgba(var(--sueca-rgb-primary), 0.55);
-  background: rgba(var(--sueca-rgb-primary), 0.12);
+  border-color: rgba(var(--sc-accent-rgb), 0.55);
+  background: rgba(var(--sc-accent-rgb), 0.12);
 }
 
 .themes-card-select {
@@ -70,8 +70,8 @@
   height: 36px;
   margin-right: 8px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
   color: inherit;
   font-size: 0.85rem;
   cursor: pointer;
