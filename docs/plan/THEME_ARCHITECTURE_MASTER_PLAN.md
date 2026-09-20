@@ -6,8 +6,9 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** `402f20b`  
-**Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)
+**Current commit:** `84362f3`  
+**Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
+**Stage 1 proposal:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)
 
 **Inputs:**
 - pack Repomix: `docs/ai/repo-review/packs/generated/theme-architecture-audit-context.md`
@@ -26,15 +27,16 @@
 | **Total stages** | 15 (Etapas 0–14) |
 | **DONE** | 1 (Etapa 0) |
 | **IN PROGRESS** | 0 |
+| **AUDIT** | 1 (Etapa 1 — Theme Contract proposal) |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 12 |
+| **NOT STARTED** | 11 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
-| **PARTIAL / AUDIT / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 1 — Definir Theme Contract |
-| **Next stage** | Etapa 2 — Token foundation (**só após** Theme Contract aprovado) |
-| **Blockers** | Theme Contract por aprovar; Etapa 13 bloqueada por foundation |
+| **PARTIAL / READY / SUPERSEDED** | 0 |
+| **Current stage** | Etapa 1 — Theme Contract (`AUDIT`) |
+| **Next stage** | Etapa 2 — Token foundation (**só após** aprovação Francisco do Contract) |
+| **Blockers** | P1–P5 product decisions no proposal §16; Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | `402f20b` |
+| **Current commit** | `84362f3` |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -151,34 +153,31 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `AUDIT` |
 | **Objectivo** | Definir o contrato semântico mínimo **final** antes de implementar |
+| **Proposal** | [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) |
+| **Proposed theme-controlled tokens** | **16** (`--sc-*`) |
+| **Exit criteria** | Theme Contract **aprovado por Francisco** — **ainda NÃO** |
 
-**Não** aceitar automaticamente os “14 tokens” sugeridos pelo audit externo — auditar necessidade real.
+**Não** aceitar automaticamente os “14 tokens” do audit externo — proposta derivada do baseline + consumers.
 
-**Categorias a avaliar:**
+**Resumo da proposta:**
 
-### Surfaces
-canvas/background · panel · panel border · raised · modal · chrome · overlay  
+- 16 theme-controlled · 11 intentional globals · 3 game-semantic (`us`/`them`/`danger`)  
+- Custom parity com 5 inputs via derivação  
+- Classic: recomendação arquitectónica **Option B** (bloco explícito)  
+- Premium HUD: global intencional  
+- Phaser felt: fora do contract  
 
-### Typography
-primary · secondary/muted · inverse  
+**Aguarda Francisco (proposal §16):** P1 Classic A/B · P2 `--sc-game-bg` · P3 Premium HUD · P4 emergency accent · P5 custom turn derive  
 
-### Accent / actions
-accent · accent RGB · primary action · secondary action · selected · focus  
+**Gaps novos nesta etapa:**
 
-### State
-danger · success · warning  
+- Necessidade explícita de `--sc-game-bg` (valores independentes de felt no Stage 0)  
+- Turn/seat ausentes no custom generator actual → derivação obrigatória no contract  
+- Success/warning omitidos do mínimo (sem consumers sistemáticos)  
 
-### Game DOM
-player box · active player · HUD · status surface  
-
-### Table-related bridge
-apenas o que fizer sentido **fora** da estética Phaser.
-
-**Decisões a fechar:** nomes finais · defaults · intentional globals.
-
-**Exit criteria:** Theme Contract **aprovado** antes de migrar componentes.
+**Não** marcar Etapa 1 `DONE`. **Não** iniciar Etapa 2.
 
 ---
 
@@ -480,6 +479,7 @@ Gaps confirmados / refinados na Etapa 0:
 |------|--------|----------------|--------|
 | 2026-09-20 | Documento canónico criado (`THEME-ARCHITECTURE-MASTER-PLAN-01`) | all (0–14) | Plano vivo da migração temática global; roadmap aponta ACTIVE WORKSTREAM |
 | 2026-09-20 | Etapa 0 → `DONE`; baseline `THEME_ARCHITECTURE_STAGE_0_BASELINE.md`; current → Etapa 1 | 0, 1 | Inventário técnico completo antes do Theme Contract |
+| 2026-09-20 | Etapa 1 → `AUDIT`; proposal `THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md` (16 `--sc-*`) | 1 | Contrato semântico proposto; aguarda aprovação Francisco |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 
