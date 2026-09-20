@@ -24,7 +24,7 @@
 **Theme Architecture Foundation:** **COMPLETE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens  
 
-**Final note:** Architectural workstream **closed**. Future UX (Stage 10, GLOBAL-UI-02/03, GLOBAL-CARDS-01, iconized top bar) is **separate product-design work** — not architecture debt.
+**Final note:** Architectural workstream **closed**. Future UX (Stage 10, GLOBAL-UI-02/03, GLOBAL-CARDS-01, iconized top bar) is **separate product-design work** — not architecture debt. Canonical product UX direction: [`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md).
 
 **Inputs:**
 - pack Repomix: `docs/ai/repo-review/packs/generated/theme-architecture-audit-context.md`

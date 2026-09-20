@@ -21,7 +21,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 **Release gate visual (§12):** cada jogo (Sueca / Spades / Hearts / King) precisa de um **Final Visual Pass** manual próprio — **não** um único item genérico “UX polish”. Automação sozinha **não** fecha este gate.
 
-**Theme Architecture Foundation:** **COMPLETE** — [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) · gate [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md). Stages 0–9 + 11–14 DONE; Stage 10 **DEFERRED**. Residual UX (GLOBAL-UI-02/03, GLOBAL-CARDS-01, King density, OPPO physical) = product work, not architecture blockers.
+**Theme Architecture Foundation:** **COMPLETE** — [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) · gate [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md). Stages 0–9 + 11–14 DONE; Stage 10 **DEFERRED**. Residual UX (GLOBAL-UI-02/03, GLOBAL-CARDS-01, King density, OPPO physical) = product work, not architecture blockers. Product UX directions: [`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md).
 
 **Themes + Audio UX (§13):** redesign futuro da personalização (Theme ↔ Music ↔ SFX) — **DEFERRED / DESIGN PENDING**; Francisco decide o desenho; **não** confundir com a foundation de tokens/UI (§ Theme Architecture).
 
@@ -53,6 +53,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 | Área | Estado |
 |------|--------|
 | Theme Architecture Foundation | **COMPLETE** — Stage 0–9 + 11–14 DONE · Stage 10 **DEFERRED** · gate **PASS** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) · [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md) |
+| Post-Architecture UX Direction | **APPROVED FOR FUTURE IMPLEMENTATION** · [`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md) |
 | Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** (S3 superseded; S8/S10 + UI-02/03/CARDS-01 OPEN) |
 | Spades Visual Pass | **OPEN** (Stage 13 reviewed; residual P2 globals) |
 | Hearts Visual Pass | **OPEN** (Stage 13 reviewed; residual P2 globals) |
@@ -618,12 +619,13 @@ Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
 | ID | Título | PRIORITY | STATUS |
 |----|--------|----------|--------|
 | **GLOBAL-UI-01** | Legacy purple remnants | P2 | **DONE** (Theme Architecture Etapa 7) |
-| **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN |
-| **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN |
-| **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | PARTIAL |
+| **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
+| **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
+| **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | PARTIAL / OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
 
 Detalhe e contexto Sueca: [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md).  
 Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mãos.
+Direcção UX pós-arquitectura (top bar, overflow, touch, cards, King density, personalização): [`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md).
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
