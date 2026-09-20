@@ -6,7 +6,7 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** *(Stage 13 — see Change Log / git)*  
+**Current commit:** *(Stage 14 — see Change Log / git)*  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
 **Stage 2 foundation:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) — **DONE**  
@@ -20,7 +20,11 @@
 **Stage 11 CSS cleanup:** [`THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md) — **DONE**  
 **Stage 12 global validation:** [`THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md`](./THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md) — **DONE**  
 **Stage 13 final visual passes:** [`THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md`](./THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md) — **DONE**  
-**Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
+**Stage 14 release gate:** [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md) — **DONE / PASS**  
+**Theme Architecture Foundation:** **COMPLETE**  
+**Theme Contract v1:** **16** theme-controlled `--sc-*` tokens  
+
+**Final note:** Architectural workstream **closed**. Future UX (Stage 10, GLOBAL-UI-02/03, GLOBAL-CARDS-01, iconized top bar) is **separate product-design work** — not architecture debt.
 
 **Inputs:**
 - pack Repomix: `docs/ai/repo-review/packs/generated/theme-architecture-audit-context.md`
@@ -28,7 +32,7 @@
 - `docs/plan/ROADMAP_REBASE_SEPTEMBER_2026.md`
 - `docs/plan/SUECA_FINAL_VISUAL_PASS.md`
 
-**Roadmap pointer:** `Theme Architecture Foundation — ACTIVE WORKSTREAM` (ver rebase § Theme Architecture).
+**Roadmap pointer:** `Theme Architecture Foundation — COMPLETE` (ver rebase § Theme Architecture).
 
 ---
 
@@ -37,19 +41,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 13 (Etapa 0–9 + 11–13; Etapa 10 deferred) |
+| **DONE** | 14 (Etapa 0–9 + 11–14; Etapa 10 deferred) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 0 |
-| **NOT STARTED** | 1 |
+| **NOT STARTED** | 0 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 14 — Final Release Gate |
-| **Next stage** | Release gate / polish residual P2 (GLOBAL-UI-02/03, CARDS-01) |
-| **Blockers** | Etapa 10 aguarda decisão de produto; GLOBAL-UI-02/03/CARDS-01 OPEN (P2) |
+| **Current stage** | — *(Theme Architecture Foundation **COMPLETE**)* |
+| **Next stage** | Product UX / polish (Stage 10 design; GLOBAL-UI-02/03; GLOBAL-CARDS-01) — **fora** deste workstream |
+| **Blockers** | Nenhum blocker arquitectural; Etapa 10 + P2 UX são product-design |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 13 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · visual passes reviewed · Stage 10 deferred |
+| **Current commit** | *(Stage 14 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · **COMPLETE** · Stage 10 deferred |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -416,25 +420,30 @@ Sueca / Hearts / Spades / King revistos. Locais Sueca revalidated. Sem P1. GLOBA
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current executable stage)* |
+| **STATUS** | `DONE` / **PASS** |
+| **Report** | [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md) |
 
-Theme architecture pode fechar quando:
+Theme Architecture Foundation **COMPLETE**. Stage 10 permanece DESIGN PENDING / DEFERRED.
 
-- [ ] Theme Contract final implementado  
-- [ ] Landing themed  
-- [ ] 30 built-ins migrados  
-- [ ] custom theme parity  
-- [ ] shared components migrated  
-- [ ] legacy purple accidental = zero  
-- [ ] 4 games DOM migrated  
-- [ ] responsive pass  
-- [ ] no major legacy design-system leakage  
-- [ ] visual passes 4/4 PASS  
-- [ ] automated tests PASS  
-- [ ] web build PASS  
-- [ ] Android PASS  
-- [ ] OPPO smoke PASS  
-- [ ] docs actualizadas  
+Checklist arquitectural (gate Stage 14):
+
+- [x] Theme Contract final implementado  
+- [x] Landing themed  
+- [x] 30 built-ins migrados  
+- [x] custom theme parity  
+- [x] shared components migrated  
+- [x] legacy purple accidental = zero (GLOBAL-UI-01)  
+- [x] 4 games DOM migrated  
+- [x] responsive pass  
+- [x] no major legacy design-system leakage  
+- [x] visual passes 4/4 reviewed (Stage 13; P2 globals OPEN OK)  
+- [x] automated tests PASS  
+- [x] web build PASS  
+- [ ] Android PASS — *fora do gate arquitectural*  
+- [ ] OPPO smoke PASS — *pending physical; não falha este gate*  
+- [x] docs actualizadas  
+
+**Final note:** architectural workstream closed; future UX work is separate product-design work.
 
 ---
 
@@ -486,6 +495,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 11 → `DONE` (Stage 10 skipped as deferred); dead CSS/aliases/bridge removed; Phaser on `--sc-*`; current → Etapa 12 Global Visual Validation | 10, 11, 12 | THEME-ARCHITECTURE-STAGE-11 |
 | 2026-09-20 | Etapa 12 → `DONE`; global theme architecture validated; no P0/P1; current → Etapa 13 Final Visual Passes; Stage 10 still DEFERRED | 12, 13 | THEME-ARCHITECTURE-STAGE-12 |
 | 2026-09-20 | Etapa 13 → `DONE`; four games visually reviewed; no P1 fixes; GLOBAL-UI-02/03/CARDS-01 remain OPEN; current → Etapa 14 Final Release Gate | 13, 14 | THEME-ARCHITECTURE-STAGE-13 |
+| 2026-09-20 | Etapa 14 → `DONE` / **PASS**; Theme Architecture Foundation **COMPLETE**; Stage 10 remains DEFERRED; residual P2 are product UX | 14 | THEME-ARCHITECTURE-STAGE-14 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 
