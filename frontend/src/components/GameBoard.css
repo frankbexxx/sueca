@@ -960,30 +960,39 @@
 .continue-button {
   padding: 11px 22px;
   font-size: 0.95em;
-  border: none;
+  border: 1px solid rgba(var(--sc-accent-rgb), 0.65);
   border-radius: 10px;
   font-weight: bold;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
   min-width: var(--button-min-w);
   min-height: var(--sueca-touch-min);
-  color: white;
-  font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+  color: #fff;
+  font-family: inherit;
+  /* Stage 6: shared primary-action paint; geometry stays local */
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  cursor: pointer;
 }
 
-.continue-button.enabled { 
-  background: linear-gradient(135deg, var(--sueca-color-primary) 0%, var(--sueca-color-primary-dark) 100%); 
+.continue-button.enabled {
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  border-color: rgba(var(--sc-accent-rgb), 0.65);
 }
-.continue-button.disabled { 
-  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); 
-  cursor: not-allowed; 
-  opacity: 0.7; 
+
+.continue-button.disabled {
+  background: rgba(158, 158, 158, 0.45);
+  border-color: rgba(158, 158, 158, 0.55);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
+
 .continue-button.enabled:hover:not(:disabled) {
-  filter: brightness(1.08);
+  background: rgba(var(--sc-accent-rgb), 0.58);
+  border-color: rgba(var(--sc-accent-rgb), 0.8);
 }
+
 .continue-button.enabled:focus-visible {
-  outline: 3px solid #fff;
+  outline: 2px solid var(--sc-focus-ring, #fff);
   outline-offset: 2px;
 }
 
@@ -1756,7 +1765,7 @@
 }
 
 .hearts-modal-score-row--you {
-  border: 1px solid rgba(var(--sueca-rgb-primary), 0.45);
+  border: 1px solid rgba(var(--sc-accent-rgb), 0.45);
 }
 
 .hearts-modal-score-row--winner {
@@ -1770,8 +1779,9 @@
 
 /* Modal container */
 .modal-container {
-  background-color: #2a3a52;
-  color: var(--sueca-color-text);
+  background-color: var(--sc-surface-modal);
+  color: var(--sc-text);
+  border: 1px solid var(--sc-surface-border);
   border-radius: 15px;
   text-align: center;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
@@ -1789,7 +1799,7 @@
 
 /* Modal title */
 .modal-title {
-  color: var(--sueca-color-text);
+  color: var(--sc-text-title);
   margin-bottom: 20px;
   font-size: 28px;
 }
@@ -1802,7 +1812,7 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 30px;
-  color: var(--theme-turn-indicator);
+  color: var(--sc-turn);
 }
 
 /* Modal content sections */
@@ -1831,8 +1841,9 @@
 }
 
 .modal-score-us {
-  background-color: rgba(var(--sueca-rgb-primary), 0.2);
-  border: 1px solid rgba(var(--sueca-rgb-primary), 0.4);
+  /* Game-semantic Us (fixed) — not theme accent */
+  background-color: rgba(var(--sueca-rgb-us), 0.2);
+  border: 1px solid rgba(var(--sueca-rgb-us), 0.4);
 }
 
 .modal-score-them {
@@ -1842,22 +1853,22 @@
 
 .modal-score-label {
   font-size: 16px;
-  color: var(--sueca-color-primary);
+  color: var(--sc-text);
 }
 
 .modal-score-us .modal-score-label {
-  color: var(--sueca-color-primary);
+  color: var(--sc-game-us);
 }
 
 .modal-score-them .modal-score-label {
-  color: var(--sueca-color-them);
+  color: var(--sc-game-them);
 }
 
 .modal-score-value {
   font-size: 24px;
   margin: 10px 0;
   font-weight: bold;
-  color: var(--sueca-color-text);
+  color: var(--sc-text);
 }
 
 /* Games section */
@@ -1883,15 +1894,15 @@
 .modal-trump-card {
   width: 150px;
   height: auto;
-  border: 3px solid var(--sueca-color-primary);
+  border: 3px solid var(--sc-accent);
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(var(--sueca-rgb-primary), 0.4);
+  box-shadow: 0 4px 12px rgba(var(--sc-accent-rgb), 0.4);
 }
 
 .modal-trump-suit {
   margin-top: 10px;
   font-size: 16px;
-  color: var(--sueca-color-text);
+  color: var(--sc-text);
 }
 
 .modal-trump-note {
@@ -1907,7 +1918,7 @@
 }
 
 .modal-dealer-info strong {
-  color: var(--sueca-color-text);
+  color: var(--sc-text);
 }
 
 /* Buttons */
@@ -1924,20 +1935,23 @@
 }
 
 .modal-button-primary {
-  background: linear-gradient(135deg, var(--sueca-color-primary) 0%, var(--sueca-color-primary-dark) 100%);
+  /* Paint from .sueca-btn--primary when co-present; fallback shared recipe */
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  border: 1px solid rgba(var(--sc-accent-rgb), 0.65);
 }
 
 .modal-button-primary.modal-button-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(var(--sueca-rgb-primary), 0.5);
+  box-shadow: 0 6px 16px rgba(var(--sc-accent-rgb), 0.5);
 }
 
 .modal-button-new-game {
   padding: 15px 40px;
   font-size: 20px;
-  background-color: #2196F3;
-  color: white;
-  border: none;
+  /* Shared primary paint — was hardcoded Material blue */
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  border: 1px solid rgba(var(--sc-accent-rgb), 0.65);
+  color: #fff;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
@@ -2001,7 +2015,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--sc-overlay-scrim, rgba(0, 0, 0, 0.55));
   backdrop-filter: blur(4px);
 }
 
@@ -2011,8 +2025,8 @@
   align-items: center;
   gap: 16px;
   padding: 32px 40px;
-  background: var(--theme-panel-bg, #1a1a2e);
-  border: 1px solid var(--theme-panel-border, rgba(255,255,255,0.12));
+  background: var(--sc-surface-modal);
+  border: 1px solid var(--sc-surface-border);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
@@ -2020,7 +2034,7 @@
 .multiplayer-host-wait-content p {
   margin: 0;
   font-size: 1.1rem;
-  color: var(--theme-text, #e0e0e0);
+  color: var(--sc-text);
   font-weight: 500;
 }
 
@@ -2029,7 +2043,7 @@
   width: 36px;
   height: 36px;
   border: 3px solid rgba(255, 255, 255, 0.15);
-  border-top-color: var(--theme-accent, #7c4dff);
+  border-top-color: var(--sc-accent);
   border-radius: 50%;
   animation: host-wait-spin 0.8s linear infinite;
 }

@@ -13,6 +13,7 @@
 **Stage 3 built-in themes:** [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md) — **DONE**  
 **Stage 4 custom parity:** [`THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md`](./THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md) — **DONE**  
 **Stage 5 shell + landing:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md) — **DONE**  
+**Stage 6 shared components:** [`THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md`](./THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -30,19 +31,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 6 (Etapa 0–5) |
+| **DONE** | 7 (Etapa 0–6) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 7 |
+| **NOT STARTED** | 6 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 6 — Shared Component System |
-| **Next stage** | Etapa 7 — Legacy purple / GLOBAL-UI cleanup (**só após** Exit Criteria da Etapa 6) |
+| **Current stage** | Etapa 7 — Legacy Purple Cleanup |
+| **Next stage** | Etapa 8 — Game-specific DOM migration (**só após** Exit Criteria da Etapa 7) |
 | **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 5 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · Landing + shell in theme scope |
+| **Current commit** | *(Stage 6 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · Landing + shell + shared components on contract |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -271,24 +272,19 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current stage)* |
-| **Objectivo** | Eliminar mini-design systems paralelos |
+| **STATUS** | `DONE` |
+| **Implementation** | [`THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md`](./THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md) |
 
-### Buttons
-`.sueca-btn` · `.dobo-btn` · `.variant-modal-primary` · `.continue-button`
+### Delivered
 
-### Modal shells
-`.shell-panel` · `.variant-modal` · `.modal-container` · `.dobo-panel`
+- Single primary-action recipe (`rgba(var(--sc-accent-rgb), α)`) on `.sueca-btn--primary`  
+- `.dobo-btn` / `.variant-modal-primary` = Strategy B aliases (not independent design language)  
+- `.continue-button` + modal primary/new-game → shared paint  
+- Modal shells (`.variant-modal`, `.dobo-panel`, `.modal-container`, RulesSheet, Credits) → `--sc-surface-modal`  
+- Forms/controls/toggles/selected → semantic tokens  
+- Component CSS legacy primary-token consumers → **0**  
 
-### Controls
-radio · select · toggle · input · focus state
-
-### Shared status
-pills · badges · action bars · overlays
-
-**Não** apagar legacy classes antes de confirmar referências.
-
-**Exit criteria:** uma primary action tem **uma** semântica visual independentemente do componente/jogo.
+**Exit criteria:** met — uma primary action tem **uma** semântica visual partilhada.
 
 ---
 
@@ -296,7 +292,7 @@ pills · badges · action bars · overlays
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current stage)* |
 | **Objectivo** | Remover o antigo roxo enquanto fallback **acidental** |
 
 **Auditar / migrar (exemplos):** `#6c5ce7` · `#5a4fd6` · `#7c5cbf` · `108,92,231` · lavender · gradients · borders · radios · toggle-on · continue CTA · highlights de round/game result.
@@ -468,10 +464,10 @@ Gaps confirmados / refinados na Etapa 0:
 - Inventário exacto documentado em Stage 0 baseline  
 - Superfícies fora de `.app-shell[data-theme]` → ~~Landing~~ → **DONE** Etapa 5  
 - Divergência built-in vs custom → ~~NOT SAME CONTRACT~~ → **DONE** Etapa 4 (same CSS shape; content curation still separate)  
-- Shared components still partially alias/dobo-driven → **Etapa 6**  
+- Shared components still partially alias/dobo-driven → ~~Etapa 6~~ → **DONE** (aliases retained; paint unified)  
 - ~~`classic` sem bloco CSS~~ → **DONE** Etapa 3  
 - ~~Themes não rebindam `--sueca-rgb-primary`~~ → **DONE** (alias bridge Stage 3)  
-- Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` (PARTIAL)  
+- Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` (PARTIAL) — **GLOBAL-UI-01 → Etapa 7**  
 - Matriz de screenshots criada; **captures físicos** ainda por executar  
 
 ---
@@ -488,6 +484,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 3 → `DONE`; 30/30 token themes + Classic explicit; current → Etapa 4 Custom themes parity | 3, 4 | THEME-ARCHITECTURE-STAGE-3 |
 | 2026-09-20 | Etapa 4 → `DONE`; custom generator token-driven (same 16 `--sc-*`); current → Etapa 5 App Shell + Landing | 4, 5 | THEME-ARCHITECTURE-STAGE-4 |
 | 2026-09-20 | Etapa 5 → `DONE`; Landing + App Shell on `--sc-*`; current → Etapa 6 Shared Component System | 5, 6 | THEME-ARCHITECTURE-STAGE-5 |
+| 2026-09-20 | Etapa 6 → `DONE`; shared buttons/modals/controls on `--sc-*`; Dobo=alias; current → Etapa 7 Legacy Purple Cleanup | 6, 7 | THEME-ARCHITECTURE-STAGE-6 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

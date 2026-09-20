@@ -90,8 +90,8 @@
 
 .themes-card-info--open {
   opacity: 1;
-  background: rgba(var(--sueca-rgb-primary), 0.2);
-  border-color: rgba(var(--sueca-rgb-primary), 0.5);
+  background: rgba(var(--sc-accent-rgb), 0.2);
+  border-color: rgba(var(--sc-accent-rgb), 0.5);
 }
 
 .themes-card-lore {
@@ -101,7 +101,7 @@
   line-height: 1.6;
   font-style: italic;
   opacity: 0.75;
-  border-left: 2px solid rgba(var(--sueca-rgb-primary), 0.4);
+  border-left: 2px solid rgba(var(--sc-accent-rgb), 0.4);
   margin-left: 4px;
   margin-right: 4px;
   margin-top: 2px;

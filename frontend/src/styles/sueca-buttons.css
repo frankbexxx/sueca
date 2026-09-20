@@ -1,4 +1,4 @@
-/* Unified button system — matches InGameBar Pausar/Sair style */
+/* Unified button system — Theme Contract v1 (Stage 6) */
 
 .sueca-btn {
   display: inline-flex;
@@ -7,10 +7,10 @@
   gap: 6px;
   min-height: var(--sueca-touch-min, 48px);
   padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--sc-surface-border, rgba(255, 255, 255, 0.2));
   border-radius: var(--sueca-radius-md, 8px);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: var(--sc-surface, rgba(255, 255, 255, 0.08));
+  color: var(--sc-text, #fff);
   font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
@@ -22,12 +22,12 @@
 }
 
 .sueca-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(var(--sc-accent-rgb), 0.12);
+  border-color: rgba(var(--sc-accent-rgb), 0.35);
 }
 
 .sueca-btn:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--sc-accent-rgb), 0.08);
 }
 
 .sueca-btn:disabled,
@@ -37,48 +37,52 @@
 }
 
 .sueca-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid var(--sc-focus-ring, rgba(255, 255, 255, 0.5));
   outline-offset: 2px;
 }
 
+/* Primary action — single semantic recipe for the app */
 .sueca-btn--primary {
-  background: rgba(var(--sueca-rgb-primary), 0.45);
-  border-color: rgba(var(--sueca-rgb-primary), 0.65);
+  background: rgba(var(--sc-accent-rgb), 0.45);
+  border-color: rgba(var(--sc-accent-rgb), 0.65);
+  color: #fff;
 }
 
 .sueca-btn--primary:hover:not(:disabled) {
-  background: rgba(var(--sueca-rgb-primary), 0.58);
-  border-color: rgba(var(--sueca-rgb-primary), 0.8);
+  background: rgba(var(--sc-accent-rgb), 0.58);
+  border-color: rgba(var(--sc-accent-rgb), 0.8);
 }
 
 .sueca-btn--danger {
-  background: rgba(var(--sueca-rgb-danger), 0.35);
-  border-color: rgba(var(--sueca-rgb-danger), 0.5);
+  background: rgba(var(--sc-danger-rgb), 0.35);
+  border-color: rgba(var(--sc-danger-rgb), 0.5);
 }
 
 .sueca-btn--danger:hover:not(:disabled) {
-  background: rgba(var(--sueca-rgb-danger), 0.48);
-  border-color: rgba(var(--sueca-rgb-danger), 0.65);
+  background: rgba(var(--sc-danger-rgb), 0.48);
+  border-color: rgba(var(--sc-danger-rgb), 0.65);
 }
 
 .sueca-btn--secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--sc-surface);
+  border-color: var(--sc-surface-border);
 }
 
 .sueca-btn--ghost {
   background: transparent;
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--sc-surface-border);
   font-weight: 500;
+  color: var(--sc-text);
 }
 
 .sueca-btn--ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--sc-accent-rgb), 0.1);
 }
 
 .sueca-btn--toggle-on {
-  background: rgba(var(--sueca-rgb-primary), 0.35);
-  border-color: rgba(var(--sueca-rgb-primary), 0.55);
+  background: rgba(var(--sc-accent-rgb), 0.35);
+  border-color: rgba(var(--sc-accent-rgb), 0.55);
+  color: var(--sc-text-title, #fff);
 }
 
 .sueca-btn--compact {

@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--sc-overlay-scrim, rgba(0, 0, 0, 0.55));
   padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
     max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   box-sizing: border-box;
@@ -45,8 +45,9 @@
 }
 
 .variant-modal {
-  background: var(--theme-panel-modal, #2a3a52);
-  color: var(--color-text, #f5f5f5);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
+  border: 1px solid var(--sc-surface-border);
   border-radius: 12px;
   padding: 1.25rem;
   max-width: 360px;
@@ -109,7 +110,7 @@
   width: 18px;
   height: 18px;
   margin: 0;
-  accent-color: var(--sueca-color-primary, #7c5cbf);
+  accent-color: var(--sc-accent);
 }
 
 /* Beat `.variant-modal label` / `input` (column + tall text-field chrome). */
@@ -132,7 +133,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  accent-color: var(--sueca-color-primary, #7c5cbf);
+  accent-color: var(--sc-accent);
 }
 
 .dealing-modal-start {
@@ -153,12 +154,12 @@
 .variant-modal-hint {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--sueca-color-text);
+  color: var(--sc-text-muted);
 }
 
 .king-auction-current-bid {
   font-weight: 700;
-  color: #c4b5fd;
+  color: var(--sc-accent);
   font-size: 0.72rem;
   line-height: 1.25;
 }
@@ -197,7 +198,7 @@
 
 .hearts-pass-hint--primary {
   font-weight: 700;
-  color: #c4b5fd;
+  color: var(--sc-accent);
 }
 
 .variant-modal--spades-bid {
@@ -256,7 +257,7 @@
 
 .spades-bid-hint--primary {
   font-weight: 700;
-  color: #c4b5fd;
+  color: var(--sc-accent);
 }
 
 .spades-bid-control {
@@ -448,11 +449,11 @@
 }
 
 .king-festa-choice-btn--selected {
-  border-color: rgba(250, 214, 140, 0.95);
-  background: rgba(var(--sueca-rgb-primary), 0.55);
+  border-color: rgba(var(--sc-accent-rgb), 0.85);
+  background: rgba(var(--sc-accent-rgb), 0.55);
   color: #fff;
   box-shadow:
-    0 0 0 1px rgba(250, 214, 140, 0.55),
+    0 0 0 1px rgba(var(--sc-accent-rgb), 0.45),
     inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   font-weight: 700;
 }
@@ -478,9 +479,9 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.4rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
 }
 
 .king-festa-setup-hint {
@@ -507,15 +508,15 @@
   font-size: 1rem;
   padding: 0.5rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
 }
 
 .variant-modal select option,
 .king-auction-bid-form select option {
-  background: #2a3a52;
-  color: #fff;
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
 }
 
 .variant-modal label {
@@ -523,7 +524,7 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.9rem;
-  color: var(--sueca-color-text);
+  color: var(--sc-text);
 }
 
 .variant-modal input {
@@ -531,23 +532,17 @@
   font-size: 1rem;
   padding: 0.5rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
 }
 
-.variant-modal-primary {
-  min-height: 48px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(var(--sueca-rgb-primary), 0.45);
-  color: #fff;
-  cursor: pointer;
-}
-
+/*
+ * .variant-modal-primary paint lives in dobo-ui.css (shared primary alias).
+ * Keep only disabled opacity tweak if specificity needed — prefer shared rules.
+ */
 .variant-modal-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 

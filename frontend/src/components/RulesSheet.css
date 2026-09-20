@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 1500;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--sc-overlay-scrim, rgba(0, 0, 0, 0.55));
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -11,8 +11,9 @@
 }
 
 .rules-sheet {
-  background: var(--theme-panel-modal, #2a3a52);
-  color: var(--color-text, #fff);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
+  border: 1px solid var(--sc-surface-border);
   width: 100%;
   max-width: 480px;
   max-height: 70vh;

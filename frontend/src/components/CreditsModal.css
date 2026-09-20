@@ -71,7 +71,9 @@
 }
 
 .credits-modal-card {
-  background: rgba(10, 10, 30, 0.95);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
+  border: 1px solid var(--sc-surface-border);
   border-radius: 20px;
   box-shadow:
     0 18px 50px rgba(0, 0, 0, 0.6),
