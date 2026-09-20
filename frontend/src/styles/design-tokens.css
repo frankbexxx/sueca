@@ -1,50 +1,116 @@
+/**
+ * Theme Contract v1 — semantic foundation (Stage 2).
+ *
+ * Runtime source of truth: this CSS file (`:root`).
+ * `design-tokens.json` is partial metadata / documentation alignment only
+ * (not a build-time codegen input today).
+ *
+ * `--sc-*` = approved theme-controlled semantic tokens (emergency defaults).
+ * Legacy `--sueca-*` / `--theme-*` / `--color-*` alias into `--sc-*` where safe.
+ * Game Us/Them/Danger stay fixed. Premium HUD untouched.
+ *
+ * Classic identity is NOT these defaults — Classic gets an explicit block in Stage 3.
+ */
+
 :root {
-  /* Base colours */
-  --sueca-color-primary: #6c5ce7;
-  --sueca-color-primary-dark: #5a4fd6;
+  /* ================================================================
+     Theme Contract v1 — 16 theme-controlled tokens (emergency defaults)
+     Neutral / brass-gold. NOT Classic identity. NOT purple.
+     ================================================================ */
+
+  /* Canvas */
+  --sc-canvas-from: #1a2438;
+  --sc-canvas-to: #121820;
+
+  /* Surfaces */
+  --sc-surface: rgba(255, 255, 255, 0.06);
+  --sc-surface-border: rgba(255, 255, 255, 0.15);
+  --sc-surface-modal: #243044;
+
+  /* Typography */
+  --sc-text: #e9eef7;
+  --sc-text-muted: rgba(233, 238, 247, 0.65);
+  --sc-text-title: #e8e0d0;
+
+  /* Accent (P4: emergency brass/gold — fallback infrastructure only) */
+  --sc-accent: #c5a45b;
+  --sc-accent-rgb: 197, 164, 91;
+
+  /* Game DOM chrome (theme-controlled; Phaser felt ignores these) */
+  --sc-turn: #e8c56a;
+  --sc-seat: rgba(0, 0, 0, 0.25);
+  --sc-felt: #173c3b;
+  --sc-felt-dark: #10191b;
+  --sc-rail: #c5a45b;
+  --sc-game-bg: #152820;
+
+  /* ================================================================
+     Transitional legacy aliases → semantic layer
+     ================================================================ */
+
+  --sueca-color-primary: var(--sc-accent);
+  --sueca-rgb-primary: var(--sc-accent-rgb);
+  /* Companion hover darken — not a contract token; brass-dark, not purple */
+  --sueca-color-primary-dark: #9a7d32;
+
+  --sueca-color-text: var(--sc-text);
+  --sueca-rgb-text: 233, 238, 247;
+  --sueca-color-surface: var(--sc-surface);
+
+  --color-primary: var(--sc-accent);
+  --color-text: var(--sc-text);
+  --color-surface: var(--sc-surface);
+
+  --theme-panel-modal: var(--sc-surface-modal);
+  --theme-panel-shell: var(--sc-surface);
+  --theme-turn-indicator: var(--sc-turn);
+  --theme-player-box: var(--sc-seat);
+  --theme-table-felt: var(--sc-felt);
+  --theme-table-felt-dark: var(--sc-felt-dark);
+  --theme-table-rail: var(--sc-rail);
+  --theme-bg-game: var(--sc-game-bg);
+
+  /*
+   * Deferred aliases (not forced onto --sc-* in Stage 2):
+   * --theme-bg-game-alt / --theme-bg-game-mid — GameBoard gradient companions, not
+   *   contract tokens. Kept as literals (green-neutral; purple-era wash removed).
+   *   Full derive from --sc-game-bg → Stage 3/8.
+   */
+  --theme-bg-game-alt: #1c3428;
+  --theme-bg-game-mid: #182c24;
+
+  /* ================================================================
+     Game-semantic globals (fixed — NOT theme-varying)
+     ================================================================ */
+
   --sueca-color-us: #3484ea;
   --sueca-color-them: #e25c5c;
   --sueca-color-danger: #dc3545;
-  --sueca-color-surface: rgba(255, 255, 255, 0.08);
-  --sueca-color-text: #e9eef7;
-
-  /* RGB channels — use with rgba(var(--sueca-rgb-*), alpha) */
-  --sueca-rgb-primary: 108, 92, 231;
   --sueca-rgb-us: 52, 132, 234;
   --sueca-rgb-them: 226, 92, 92;
   --sueca-rgb-danger: 220, 53, 69;
-  --sueca-rgb-text: 233, 238, 247;
 
-  /* Aliases expected by legacy VariantModals/RulesSheet */
-  --color-surface: rgba(255, 255, 255, 0.06);
-  --color-text: #e9eef7;
-  --color-primary: #6c5ce7;
+  /* Optional sc-game aliases (same fixed values) */
+  --sc-game-us: var(--sueca-color-us);
+  --sc-game-them: var(--sueca-color-them);
+  --sc-danger: var(--sueca-color-danger);
+  --sc-danger-rgb: var(--sueca-rgb-danger);
 
-  /* Panel defaults — overridden per theme */
-  --theme-panel-modal: #2a3a52;
-  --theme-panel-shell: rgba(255, 255, 255, 0.06);
+  /* ================================================================
+     UX-P3.3 Premium HUD — intentional global (contract v1) — DO NOT theme
+     ================================================================ */
 
-  /* Table (game board) defaults — overridden per theme */
-  /* UX-P3.1 Premium Classic Table */
-  --theme-table-felt: #173C3B;
-  --theme-table-felt-dark: #10191B;
-  --theme-table-rail: #C5A45B;
-  --theme-bg-game: #5a6ba8;
-  --theme-bg-game-alt: #6f5f98;
-  --theme-bg-game-mid: #58679d;
-
-  /* HUD defaults — overridden per theme */
-  --theme-player-box: rgba(0, 0, 0, 0.25);
-  --theme-turn-indicator: #ffd700;
-
-  /* UX-P3.3 Premium HUD (game board only) */
   --premium-hud-panel: rgba(16, 25, 27, 0.72);
   --premium-hud-panel-strong: rgba(16, 25, 27, 0.82);
   --premium-hud-border: rgba(197, 164, 91, 0.22);
   --premium-hud-text: #e8e0d0;
   --premium-font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
 
-  /* Spacing & shape */
+  /* Intentional globals — focus / overlay (contract v1) */
+  --sc-overlay-scrim: rgba(0, 0, 0, 0.55);
+  --sc-focus-ring: rgba(255, 255, 255, 0.5);
+
+  /* Spacing & shape (intentional globals) */
   --sueca-radius-md: 10px;
   --sueca-radius-lg: 12px;
   --sueca-space-sm: 6px;

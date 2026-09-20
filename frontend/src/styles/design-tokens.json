@@ -1,11 +1,35 @@
 {
   "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Partial metadata aligned with Theme Contract v1. Runtime source of truth is design-tokens.css (:root). This JSON is NOT consumed by a codegen pipeline today.",
+  "semantic": {
+    "canvasFrom": { "value": "#1a2438", "css": "--sc-canvas-from" },
+    "canvasTo": { "value": "#121820", "css": "--sc-canvas-to" },
+    "surface": { "value": "rgba(255, 255, 255, 0.06)", "css": "--sc-surface" },
+    "surfaceBorder": { "value": "rgba(255, 255, 255, 0.15)", "css": "--sc-surface-border" },
+    "surfaceModal": { "value": "#243044", "css": "--sc-surface-modal" },
+    "text": { "value": "#e9eef7", "css": "--sc-text" },
+    "textMuted": { "value": "rgba(233, 238, 247, 0.65)", "css": "--sc-text-muted" },
+    "textTitle": { "value": "#e8e0d0", "css": "--sc-text-title" },
+    "accent": { "value": "#c5a45b", "css": "--sc-accent" },
+    "accentRgb": { "value": "197, 164, 91", "css": "--sc-accent-rgb" },
+    "turn": { "value": "#e8c56a", "css": "--sc-turn" },
+    "seat": { "value": "rgba(0, 0, 0, 0.25)", "css": "--sc-seat" },
+    "felt": { "value": "#173c3b", "css": "--sc-felt" },
+    "feltDark": { "value": "#10191b", "css": "--sc-felt-dark" },
+    "rail": { "value": "#c5a45b", "css": "--sc-rail" },
+    "gameBg": { "value": "#152820", "css": "--sc-game-bg" }
+  },
+  "gameSemantic": {
+    "us": { "value": "#3484ea", "css": "--sueca-color-us" },
+    "them": { "value": "#e25c5c", "css": "--sueca-color-them" },
+    "danger": { "value": "#dc3545", "css": "--sueca-color-danger" }
+  },
   "color": {
-    "primary": { "value": "#6c5ce7" },
-    "primaryDark": { "value": "#5a4fd6" },
+    "primary": { "value": "#c5a45b", "$comment": "Legacy key; maps to --sc-accent (emergency brass, not purple)" },
+    "primaryDark": { "value": "#9a7d32" },
     "us": { "value": "#3484ea" },
     "them": { "value": "#e25c5c" },
-    "surface": { "value": "rgba(255, 255, 255, 0.08)" },
+    "surface": { "value": "rgba(255, 255, 255, 0.06)" },
     "text": { "value": "#e9eef7" }
   },
   "radius": {

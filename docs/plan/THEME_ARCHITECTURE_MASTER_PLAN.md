@@ -6,9 +6,10 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** `cda7166`  
+**Current commit:** *(Stage 2 commit — see Change Log)*  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
+**Stage 2 foundation:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -26,19 +27,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 2 (Etapa 0, Etapa 1) |
+| **DONE** | 3 (Etapa 0, Etapa 1, Etapa 2) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 11 |
+| **NOT STARTED** | 10 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 2 — Token Foundation |
-| **Next stage** | Etapa 3 — Built-in themes migration (**só após** Exit Criteria da Etapa 2) |
+| **Current stage** | Etapa 3 — Built-in themes migration |
+| **Next stage** | Etapa 4 — Custom themes parity (**só após** Exit Criteria da Etapa 3) |
 | **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | `cda7166` |
-| **Theme Contract** | **16** `--sc-*` theme-controlled — **APPROVED** |
+| **Current commit** | *(Stage 2 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` theme-controlled — **APPROVED** · foundation in CSS |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -179,23 +180,23 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(next — current stage)* |
+| **STATUS** | `DONE` |
 | **Objectivo** | Implementar semantic tokens no design system **sem** alterar ainda toda a UI |
+| **Implementation** | [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) |
 
-**Contract input:** 16 `--sc-*` aprovados + globals + game-semantic + aliases transitórios (ver Stage 1 doc).
+**Delivered:**
 
-**Scope possível:** `design-tokens.json` · `design-tokens.css`
+- 16 `--sc-*` emergency defaults on `:root` (neutral canvas/surfaces; brass/gold accent — **not** Classic identity)  
+- Transitional legacy aliases → `--sc-*` where safe (`--sueca-*` / `--color-*` / `--theme-panel-*` / game chrome)  
+- Deferred: `--theme-bg-game-alt` / `--theme-bg-game-mid` (literals green-neutral; not forced to contract)  
+- Game Us/Them/Danger fixed; optional `--sc-game-*` / `--sc-danger*` aliases  
+- Premium HUD untouched  
+- `design-tokens.json` aligned as **partial metadata**; CSS = runtime SoT  
+- Focused tests: `designTokens.foundation.test.ts`  
 
-**Regras:**
+**Not in scope (correctly deferred):** `themes.css`, `useCustomThemeCSS`, Landing, components, `.dobo-*` removal, Phaser.
 
-- defaults neutros/coerentes (emergency brass/gold accent — **not** Classic identity)  
-- eliminar purple como fallback acidental  
-- preservar compatibilidade temporária (legacy aliases)  
-- Classic assignment explícito (Option B) pode começar aqui ou na Etapa 3 — preferir tokens + emergency `:root` nesta etapa  
-
-**Tests:** token generation · CSS validity · sem mudança comportamental inesperada.
-
-**Exit criteria:** componentes **podem** consumir semantic tokens independentemente do theme concreto.
+**Exit criteria:** met — componentes **podem** consumir `--sc-*`; themes/components ainda não migrados.
 
 ---
 
@@ -203,7 +204,7 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current stage)* |
 | **Objectivo** | Migrar os **30** built-in themes de selector-driven para token-driven |
 
 | Antes | Depois |
@@ -483,6 +484,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 0 → `DONE`; baseline `THEME_ARCHITECTURE_STAGE_0_BASELINE.md`; current → Etapa 1 | 0, 1 | Inventário técnico completo antes do Theme Contract |
 | 2026-09-20 | Etapa 1 → `AUDIT`; proposal `THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md` (16 `--sc-*`) | 1 | Contrato semântico proposto; aguarda aprovação Francisco |
 | 2026-09-20 | Etapa 1 → `DONE` (P1–P5 approved); current → Etapa 2 Token Foundation | 1, 2 | THEME-ARCHITECTURE-STAGE-1-CLOSE |
+| 2026-09-20 | Etapa 2 → `DONE`; 16 `--sc-*` + alias layer in `design-tokens.css`; current → Etapa 3 Built-in themes migration | 2, 3 | THEME-ARCHITECTURE-STAGE-2 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 
