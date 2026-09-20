@@ -7,6 +7,8 @@
  *
  * `--sc-*` = approved theme-controlled semantic tokens (emergency defaults).
  * Legacy `--sueca-*` / `--theme-*` / `--color-*` alias into `--sc-*` where safe.
+ * Stage 3: the same aliases are rebound on `.app-shell[data-theme]` in themes.css
+ * so theme-scoped `--sc-*` values flow to consumers ( :root alone would bake emergency).
  * Game Us/Them/Danger stay fixed. Premium HUD untouched.
  *
  * Classic identity is NOT these defaults — Classic gets an explicit block in Stage 3.

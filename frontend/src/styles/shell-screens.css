@@ -26,15 +26,16 @@
   padding: 14px 12px;
   border-radius: var(--sueca-radius-md, 12px);
   margin-bottom: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  /* Stage 3 compatibility: surface tokens (replaces per-theme .shell-panel overrides) */
+  border: 1px solid var(--sc-surface-border, rgba(255, 255, 255, 0.12));
+  background: var(--sc-surface, rgba(255, 255, 255, 0.06));
 }
 
 .shell-section-title {
   margin: 0 0 10px;
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--sueca-color-text);
+  color: var(--sc-text-title, var(--sueca-color-text));
 }
 
 .shell-list {
@@ -87,7 +88,7 @@
   border-radius: var(--sueca-radius-md, 12px);
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  color: var(--sueca-color-text);
+  color: var(--sc-text-title, var(--sueca-color-text));
   text-align: left;
   transition: background 0.2s;
 }

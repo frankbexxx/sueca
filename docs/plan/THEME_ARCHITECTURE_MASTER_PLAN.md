@@ -6,10 +6,11 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** *(Stage 2 commit — see Change Log)*  
+**Current commit:** *(Stage 3 — see Change Log / git)*  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
 **Stage 2 foundation:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) — **DONE**  
+**Stage 3 built-in themes:** [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -27,19 +28,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 3 (Etapa 0, Etapa 1, Etapa 2) |
+| **DONE** | 4 (Etapa 0, Etapa 1, Etapa 2, Etapa 3) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 10 |
+| **NOT STARTED** | 9 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 3 — Built-in themes migration |
-| **Next stage** | Etapa 4 — Custom themes parity (**só após** Exit Criteria da Etapa 3) |
+| **Current stage** | Etapa 4 — Custom themes parity |
+| **Next stage** | Etapa 5 — App Shell + Landing (**só após** Exit Criteria da Etapa 4) |
 | **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 2 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` theme-controlled — **APPROVED** · foundation in CSS |
+| **Current commit** | *(Stage 3 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · foundation + **30/30 built-in** explicit |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -204,24 +205,21 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current stage)* |
+| **STATUS** | `DONE` |
 | **Objectivo** | Migrar os **30** built-in themes de selector-driven para token-driven |
+| **Implementation** | [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md) |
 
-| Antes | Depois |
-|-------|--------|
-| cada theme estiliza componentes específicos | cada theme define o contrato semântico |
+**Delivered:**
 
-**Tasks:**
+- 30/30 explicit `.app-shell[data-theme]` blocks with identical 16-token shape  
+- `classic` explicit (intentional purple accent in-block only; `:root` stays emergency brass)  
+- `themes.css` ~100% token-driven (0 component selectors; + alias bridge)  
+- Identity preserved via extraction from prior selectors  
+- Minimal shell compatibility (`app-shell` / `shell-screens` / dashboard / BottomNav)  
+- Alias bridge so Stage 2 legacy vars resolve against theme-scoped `--sc-*`  
+- Card-back + music mappings unchanged; Phaser untouched; custom generator unchanged  
 
-- [ ] definir tokens por theme  
-- [ ] manter identidade visual dos 30 themes  
-- [ ] reduzir selector duplication  
-- [ ] verificar missing tokens  
-- [ ] verificar drift entre themes  
-- [ ] preservar card-back mappings  
-- [ ] preservar music mappings  
-
-**Exit criteria:** um novo componente semanticamente correcto **não** exige editar 30 theme blocks.
+**Exit criteria:** met — novo componente semântico não precisa editar 30 theme blocks (consome `--sc-*` / aliases).
 
 ---
 
@@ -229,7 +227,7 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current stage)* |
 | **Objectivo** | Custom themes obedecem ao **mesmo** Theme Contract |
 
 **Auditar modelo actual de 5 cores:** `bgTop` · `bgBottom` · `accent` · `textTitle` · `felt`
@@ -466,13 +464,12 @@ Theme architecture pode fechar quando:
 Gaps confirmados / refinados na Etapa 0:
 
 - Inventário exacto documentado em Stage 0 baseline  
-- Superfícies fora de `.app-shell[data-theme]` → **Landing** (HIGH)  
-- Divergência built-in vs custom → **NOT SAME CONTRACT**  
-- `classic` sem bloco CSS  
-- Themes não rebindam `--sueca-rgb-primary` (purple leakage)  
+- Superfícies fora de `.app-shell[data-theme]` → **Landing** (HIGH) — Etapa 5  
+- Divergência built-in vs custom → **NOT SAME CONTRACT** — Etapa 4  
+- ~~`classic` sem bloco CSS~~ → **DONE** Etapa 3  
+- ~~Themes não rebindam `--sueca-rgb-primary`~~ → **DONE** (alias bridge Stage 3)  
 - Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` (PARTIAL)  
 - Matriz de screenshots criada; **captures físicos** ainda por executar  
-- Open Questions §19 do baseline → input da Etapa 1  
 
 ---
 
@@ -485,6 +482,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 1 → `AUDIT`; proposal `THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md` (16 `--sc-*`) | 1 | Contrato semântico proposto; aguarda aprovação Francisco |
 | 2026-09-20 | Etapa 1 → `DONE` (P1–P5 approved); current → Etapa 2 Token Foundation | 1, 2 | THEME-ARCHITECTURE-STAGE-1-CLOSE |
 | 2026-09-20 | Etapa 2 → `DONE`; 16 `--sc-*` + alias layer in `design-tokens.css`; current → Etapa 3 Built-in themes migration | 2, 3 | THEME-ARCHITECTURE-STAGE-2 |
+| 2026-09-20 | Etapa 3 → `DONE`; 30/30 token themes + Classic explicit; current → Etapa 4 Custom themes parity | 3, 4 | THEME-ARCHITECTURE-STAGE-3 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

@@ -4,8 +4,9 @@
   min-height: 100%;
   min-height: 100dvh;
   height: 100%;
-  background: linear-gradient(160deg, #1a2332 0%, #0f1419 100%);
-  color: #e9eef7;
+  /* Stage 3 compatibility: canvas from semantic tokens (themes set --sc-canvas-*). */
+  background: linear-gradient(160deg, var(--sc-canvas-from) 0%, var(--sc-canvas-to) 100%);
+  color: var(--sc-text, #e9eef7);
   /* Shell screens (not in-game) own the notch/home-indicator insets. */
   padding-top: env(safe-area-inset-top, 0px);
   padding-left: env(safe-area-inset-left, 0px);
@@ -41,9 +42,10 @@
 .screen-play .screen-title,
 .screen-rules .screen-title,
 .screen-more .screen-title {
-  color: #e9eef7;
+  /* Stage 3 compatibility: title colour from theme contract */
+  color: var(--sc-text-title, var(--sc-text, #e9eef7));
 }
 
 .screen-subtitle {
-  color: rgba(233, 238, 247, 0.75);
+  color: var(--sc-text-muted, rgba(233, 238, 247, 0.75));
 }

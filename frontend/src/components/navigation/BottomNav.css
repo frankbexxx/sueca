@@ -37,7 +37,7 @@
 }
 
 .bottom-nav-item.active {
-  color: #fff;
+  color: var(--sc-text-title, #fff);
   background: rgba(var(--sueca-rgb-primary), 0.2);
 }
 
