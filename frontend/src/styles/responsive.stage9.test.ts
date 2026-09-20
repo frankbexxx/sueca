@@ -89,7 +89,7 @@ describe('Stage 9 responsive theme hardening', () => {
     expect(gameBoard).not.toMatch(/\.game-board\s*\{[\s\S]*?max-width:\s*100vw/);
   });
 
-  it('InGameBar keeps top safe-area; landscape game board rule remains', () => {
+  it('InGameBar / HUD chrome keeps top safe-area; landscape game board rule remains', () => {
     expect(inGameBar).toMatch(/safe-area-inset-top/);
     expect(gameBoard).toMatch(/orientation:\s*landscape[\s\S]*?max-height:\s*500px/);
   });

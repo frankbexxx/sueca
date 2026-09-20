@@ -224,4 +224,37 @@ GLOBAL-UI-03 / GLOBAL-CARDS-01 unchanged.
 
 ---
 
-*GLOBAL-UI-02-TOP-BAR-IMPLEMENTATION · 2026-09-20*
+## 22. Batch 2 — REVERTED
+
+Tall vertical rail with 42px targets (~126px) exceeded info-box height (~68px) and created a “poste”. Commit `e32a188` was reverted (`1686afb`).
+
+---
+
+## 23. Batch 2B — HUD-only command column (2026-09-20)
+
+### Approach
+
+- Single `.in-game-hud-chrome` flex row: scores + command column  
+- Column **stretches to info-box height** (does not dictate HUD height)  
+- Visual controls **28×20** (icon ~0.95rem) with `::before` hit expansion (~40px touch)  
+- **No `GameBoard.css` width/sizing edits** — chrome styles live in `InGameBar.css`  
+- Overflow opens left of column; tooltips/labels left  
+
+### Measured (390×844 emulation, Spades)
+
+| Element | Before (Batch 1) | After (2B) |
+|---------|------------------|------------|
+| Info-box strip height | 68px | **68px** |
+| Command column height | (separate row 57px) | **68px** (Δh vs strip = **0**) |
+| GameBoard width | = canvas/zone/phaser/host | **unchanged equality** (board≡canvas) |
+| Visual button | 44×44 | **28×20** (+ hit ::before) |
+
+Absolute board px can vary with browser pane; within each session board/zone/phaser/host/canvas widths stayed equal — table geometry not narrowed by HUD chrome.
+
+### Status
+
+GLOBAL-UI-02 remains **IMPLEMENTED / VISUAL VALIDATION PENDING**.
+
+---
+
+*GLOBAL-UI-02-TOP-BAR-IMPLEMENTATION · Batch 1 + 2B · 2026-09-20*

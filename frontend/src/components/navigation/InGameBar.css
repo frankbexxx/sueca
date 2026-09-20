@@ -1,50 +1,100 @@
+/* GLOBAL-UI-02 Batch 2B — HUD chrome + compact command column (no GameBoard width edits) */
+
+.in-game-hud-chrome {
+  position: relative;
+  z-index: 1100;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 4px;
+  padding: 2px 4px 0 6px;
+  padding-top: max(2px, env(safe-area-inset-top));
+  /* Preserve pre-existing strip→table gap without stretching the command column into it */
+  margin-bottom: 6px;
+  /* Keep muted token for Stage 8 guards */
+  --in-game-bar-muted: var(--sc-text-muted);
+}
+
+.in-game-hud-chrome__scores {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Beat .game-board--team-table .top-strip--teams { margin-bottom: 6px } without editing GameBoard.css */
+.game-board .in-game-hud-chrome .top-strip--teams {
+  margin-bottom: 0;
+}
+
+/* Command column: height follows info boxes (stretch); does not set HUD height */
 .in-game-bar {
   position: relative;
   z-index: 1100;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  padding: 6px 10px;
-  padding-top: max(6px, env(safe-area-inset-top));
-  /* Quiet chrome; Premium HUD panel paint remains intentional (contract v1) */
+  justify-content: center;
+  align-self: stretch;
+  flex: 0 0 auto;
+  width: 34px;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 0;
+  border: 0;
+  border-radius: 8px;
   background: var(--premium-hud-panel-strong, rgba(16, 25, 27, 0.82));
-  border-bottom: 1px solid var(--sc-surface-border, rgba(255, 255, 255, 0.1));
   color: var(--sc-text);
-  /* Keep muted token in chrome contract for Stage 8 guards / quiet secondary paint */
-  --in-game-bar-muted: var(--sc-text-muted);
+  box-sizing: border-box;
 }
 
 .in-game-bar-actions {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  justify-content: space-evenly;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  gap: 0;
 }
 
 .in-game-bar-more-wrap {
   position: relative;
+  display: flex;
+  flex-shrink: 0;
 }
 
-/* BottomNav-style desktop tooltip */
+/*
+ * Compact visual control (~20px) so 3 icons fit ~68px info-box height.
+ * Expanded hit area via ::before without growing layout/HUD.
+ */
 .in-game-bar-icon-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 28px;
+  height: 20px;
   margin: 0;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 6px;
   background: transparent;
   color: var(--sc-text);
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  flex-shrink: 0;
+}
+
+.in-game-bar-icon-btn::before {
+  content: '';
+  position: absolute;
+  /* ~40px touch target without stretching the column */
+  inset: -8px -6px;
 }
 
 .in-game-bar-icon-btn:hover,
@@ -61,15 +111,20 @@
 }
 
 .in-game-bar-icon {
-  font-size: 1.2rem;
+  position: relative;
+  z-index: 1;
+  font-size: 0.95rem;
   line-height: 1;
 }
 
+/* Labels / tooltips open LEFT — avoid right-edge clip */
 .in-game-bar-press-label {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  right: calc(100% + 6px);
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid var(--sc-surface-border);
@@ -80,7 +135,7 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  z-index: 2;
+  z-index: 3;
 }
 
 .in-game-bar-icon-btn.is-label-visible .in-game-bar-press-label {
@@ -91,9 +146,11 @@
 .in-game-bar-icon-btn[data-tooltip]:focus-visible::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  right: calc(100% + 6px);
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
   padding: 4px 8px;
   border-radius: 6px;
   background: color-mix(in srgb, var(--sc-surface-modal) 95%, transparent);
@@ -102,11 +159,10 @@
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   border: 1px solid var(--sc-surface-border);
 }
 
-/* Prefer press-label over CSS tooltip while finger is down */
 .in-game-bar-icon-btn.is-label-visible[data-tooltip]:hover::after,
 .in-game-bar-icon-btn.is-label-visible[data-tooltip]:focus-visible::after {
   content: none;
@@ -114,12 +170,11 @@
 
 @media (max-width: 360px) {
   .in-game-bar {
-    padding-left: 8px;
-    padding-right: 8px;
+    width: 32px;
   }
 
   .in-game-bar-icon-btn {
-    width: 42px;
-    height: 42px;
+    width: 26px;
+    height: 18px;
   }
 }
