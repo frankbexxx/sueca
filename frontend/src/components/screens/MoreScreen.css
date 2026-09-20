@@ -8,6 +8,8 @@
   padding: 16px;
   border-radius: var(--sueca-radius-md, 12px);
   margin-bottom: 12px;
+  background-color: var(--sc-surface-modal);
+  color: var(--sc-text);
 }
 
 .more-section-title {

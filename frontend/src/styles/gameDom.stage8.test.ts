@@ -95,7 +95,7 @@ describe('Stage 8 game DOM semantic theming', () => {
   it('shared modal/button systems remain the paint path', () => {
     expect(variantModals).toMatch(/--sc-surface-modal/);
     expect(gameBoard).toMatch(/\.modal-container\s*\{[\s\S]*?--sc-surface-modal/);
-    expect(gameBoard).toMatch(/\.continue-button[\s\S]*?--sc-accent-rgb/);
+    expect(gameBoard).not.toMatch(/\.continue-button\b/);
   });
 
   it('game-semantic danger/us tokens stay fixed on :root (not theme-varying)', () => {

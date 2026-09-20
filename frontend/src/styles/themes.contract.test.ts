@@ -155,14 +155,13 @@ describe('Stage 3 built-in themes → semantic contract', () => {
     }
   });
 
-  it('is predominantly token-driven (theme roots + one alias bridge)', () => {
+  it('is predominantly token-driven (30 theme roots; alias bridge removed Stage 11)', () => {
     const metrics = countRules(css);
-    // 1 alias bridge (.app-shell[data-theme]) + 30 theme token blocks
-    expect(metrics.total).toBe(31);
-    expect(metrics.tokenOnly).toBe(31);
+    expect(metrics.total).toBe(30);
+    expect(metrics.tokenOnly).toBe(30);
     expect(metrics.selectorDriven).toBe(0);
-    expect(css).toMatch(/\.app-shell\[data-theme\]\s*\{/);
-    expect(css).toMatch(/--sueca-color-primary:\s*var\(--sc-accent\)/);
+    expect(css).not.toMatch(/\.app-shell\[data-theme\]\s*\{/);
+    expect(css).not.toMatch(/--sueca-color-primary:/);
   });
 
   it('preserves theme→card-back mappings for all built-ins', () => {

@@ -22,7 +22,7 @@ export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, presetId, onClo
   return (
     <div className="rules-sheet-overlay" onClick={onClose} role="presentation">
       <div
-        className="rules-sheet dobo-panel rules-sheet-scroll"
+        className="rules-sheet rules-sheet-scroll"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="rules-title"
@@ -48,7 +48,7 @@ export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, presetId, onClo
             ))}
           </ul>
         )}
-        <button type="button" className="rules-sheet-close dobo-btn" onClick={onClose}>
+        <button type="button" className="rules-sheet-close sueca-btn" onClick={onClose}>
           Close
         </button>
       </div>

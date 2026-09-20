@@ -8,8 +8,8 @@
   /* UX-P3.1 exterior — React HUD sits above; canvas paints felt */
   background: linear-gradient(
     180deg,
-    var(--theme-table-felt-dark, #141f22) 0%,
-    var(--theme-table-felt-dark, #10191b) 100%
+    var(--sc-felt-dark, #141f22) 0%,
+    var(--sc-felt-dark, #10191b) 100%
   );
 }
 

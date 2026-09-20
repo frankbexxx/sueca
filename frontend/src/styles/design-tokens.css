@@ -1,17 +1,16 @@
 /**
- * Theme Contract v1 — semantic foundation (Stage 2).
+ * Theme Contract v1 — semantic foundation (Stage 2 + Stage 11 cleanup).
  *
  * Runtime source of truth: this CSS file (`:root`).
  * `design-tokens.json` is partial metadata / documentation alignment only
  * (not a build-time codegen input today).
  *
  * `--sc-*` = approved theme-controlled semantic tokens (emergency defaults).
- * Legacy `--sueca-*` / `--theme-*` / `--color-*` alias into `--sc-*` where safe.
- * Stage 3: the same aliases are rebound on `.app-shell[data-theme]` in themes.css
- * so theme-scoped `--sc-*` values flow to consumers ( :root alone would bake emergency).
+ * Legacy `--sueca-*` / `--theme-*` / `--color-*` paint aliases removed where
+ * zero runtime consumers remained (Stage 11). Phaser reads `--sc-*` directly.
  * Game Us/Them/Danger stay fixed. Premium HUD untouched.
  *
- * Classic identity is NOT these defaults — Classic gets an explicit block in Stage 3.
+ * Classic identity is NOT these defaults — Classic gets an explicit block in themes.css.
  */
 
 :root {
@@ -46,37 +45,9 @@
   --sc-rail: #c5a45b;
   --sc-game-bg: #152820;
 
-  /* ================================================================
-     Transitional legacy aliases → semantic layer
-     ================================================================ */
-
-  --sueca-color-primary: var(--sc-accent);
-  --sueca-rgb-primary: var(--sc-accent-rgb);
-  /* Companion hover darken — not a contract token; brass-dark, not purple */
-  --sueca-color-primary-dark: #9a7d32;
-
-  --sueca-color-text: var(--sc-text);
-  --sueca-rgb-text: 233, 238, 247;
-  --sueca-color-surface: var(--sc-surface);
-
-  --color-primary: var(--sc-accent);
-  --color-text: var(--sc-text);
-  --color-surface: var(--sc-surface);
-
-  --theme-panel-modal: var(--sc-surface-modal);
-  --theme-panel-shell: var(--sc-surface);
-  --theme-turn-indicator: var(--sc-turn);
-  --theme-player-box: var(--sc-seat);
-  --theme-table-felt: var(--sc-felt);
-  --theme-table-felt-dark: var(--sc-felt-dark);
-  --theme-table-rail: var(--sc-rail);
-  --theme-bg-game: var(--sc-game-bg);
-
   /*
-   * Deferred aliases (not forced onto --sc-* in Stage 2):
-   * --theme-bg-game-alt / --theme-bg-game-mid — GameBoard gradient companions, not
-   *   contract tokens. Kept as literals (green-neutral; purple-era wash removed).
-   *   Full derive from --sc-game-bg → Stage 3/8.
+   * GameBoard gradient companions (not contract tokens).
+   * Per-theme overrides live in themes.css / custom generator.
    */
   --theme-bg-game-alt: #1c3428;
   --theme-bg-game-mid: #182c24;

@@ -104,12 +104,12 @@ describe('Stage 4 custom theme contract parity', () => {
     for (const token of CUSTOM_THEME_CONTRACT_TOKENS) {
       expect(css).toContain(`${token}:`);
     }
-    // Only contract + 3 companions
+    // Only contract + 2 GameBoard companions
     const decls = declsInCss(css);
     expect(decls.filter((d) => d.startsWith('--sc-'))).toHaveLength(16);
     expect(decls).toContain('--theme-bg-game-alt');
     expect(decls).toContain('--theme-bg-game-mid');
-    expect(decls).toContain('--sueca-color-primary-dark');
+    expect(decls).not.toContain('--sueca-color-primary-dark');
   });
 
   it('matches built-in contract token key set', () => {

@@ -1704,7 +1704,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         gameState.waitingForRoundStart &&
         !gameState.isGameOver && !isJoiner && (
           <div className="variant-modal-overlay">
-            <div className="variant-modal dobo-panel">
+            <div className="variant-modal">
               <h2>
                 King simplificado — Jogo {gameState.round}/10 (
                 {kingCtrl?.readSimplifiedHandType(gameState) || '…'}
@@ -1712,7 +1712,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               </h2>
               <button
                 type="button"
-                className="variant-modal-primary dobo-btn"
+                className="sueca-btn sueca-btn--primary"
                 onClick={() => {
                   if (!gameAdapter) return;
                   gameAdapter.startRound(gameAdapter.getCurrentState());

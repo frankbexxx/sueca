@@ -6,7 +6,7 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** *(Stage 9 — see Change Log / git)*  
+**Current commit:** *(Stage 11 — see Change Log / git)*  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
 **Stage 2 foundation:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) — **DONE**  
@@ -17,6 +17,7 @@
 **Stage 7 purple cleanup:** [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md) — **DONE**  
 **Stage 8 game DOM:** [`THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md`](./THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md) — **DONE**  
 **Stage 9 responsive:** [`THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md`](./THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md) — **DONE**  
+**Stage 11 CSS cleanup:** [`THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -34,19 +35,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 10 (Etapa 0–9) |
+| **DONE** | 11 (Etapa 0–9 + 11; Etapa 10 skipped as deferred) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 3 |
+| **NOT STARTED** | 2 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX (**DESIGN PENDING / DEFERRED**) |
-| **Next stage** | Etapa 11 — Legacy Cleanup (**após** decisão Stage 10 *ou* skip explícito) |
-| **Blockers** | Etapa 13 bloqueada por foundation; Etapa 10 aguarda decisão de produto |
+| **Current stage** | Etapa 12 — Global Visual Validation |
+| **Next stage** | Etapa 13 — Final Visual Passes (**após** Exit Criteria da Etapa 12) |
+| **Blockers** | Etapa 13 bloqueada por foundation validation; Etapa 10 aguarda decisão de produto |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 9 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · responsive hardened · Stage 10 deferred |
+| **Current commit** | *(Stage 11 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · bridge removed · Stage 10 deferred |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -367,20 +368,19 @@ Arquitectura runtime actual deve ser **preservada**.
 
 **Pointer:** roadmap §13 (Themes + Audio Experience Redesign).
 
-**Nota:** current stage pointer aponta aqui apenas como *próximo slot de produto*; cleanup (Etapa 11) pode avançar se Stage 10 for skip explícito.
+**Nota:** Etapa 11 avançou com Stage 10 **explicitamente skipped** (permanece DESIGN PENDING / DEFERRED — sem implementação).
 ---
 
 ## 15. Etapa 11 — Dead / superseded CSS cleanup
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `DONE` |
+| **Report** | [`THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md) |
 
-Só **depois** das migrações.
+Alias bridge removido; Phaser em `--sc-*`; Dobo / continue / variant-modal-primary limpos; 30 themes intactos.
 
-Auditar/remover quando comprovadamente sem uso: aliases CRA · `.dobo-*` · old modal classes · unused CSS · duplicated selectors · dead variables.
-
-**Nunca** apagar antes de migration completa.
+**Exit criteria:** met — cleanup proven safe; Stage 10 permanece DEFERRED.
 
 ---
 
@@ -388,7 +388,7 @@ Auditar/remover quando comprovadamente sem uso: aliases CRA · `.dobo-*` · old 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current executable stage)* |
 
 Validar themes **representativos** (não é obrigatório 30 × todos os ecrãs).
 
@@ -488,6 +488,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 7 → `DONE`; GLOBAL-UI-01 closed; current → Etapa 8 Game-specific DOM Migration | 7, 8 | THEME-ARCHITECTURE-STAGE-7 |
 | 2026-09-20 | Etapa 8 → `DONE`; game DOM Sueca/Hearts/Spades/King on `--sc-*`; current → Etapa 9 Responsive Theme Pass | 8, 9 | THEME-ARCHITECTURE-STAGE-8 |
 | 2026-09-20 | Etapa 9 → `DONE`; responsive hardening (safe-area, dvh, ≥16px inputs, overflow); current → Etapa 10 **DESIGN PENDING / DEFERRED** | 9, 10 | THEME-ARCHITECTURE-STAGE-9 |
+| 2026-09-20 | Etapa 11 → `DONE` (Stage 10 skipped as deferred); dead CSS/aliases/bridge removed; Phaser on `--sc-*`; current → Etapa 12 Global Visual Validation | 10, 11, 12 | THEME-ARCHITECTURE-STAGE-11 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

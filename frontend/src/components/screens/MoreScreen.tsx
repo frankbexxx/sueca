@@ -79,7 +79,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
         <h1 className="screen-title">{t.moreScreen.title}</h1>
       </header>
 
-      <section className="more-section dobo-panel">
+      <section className="more-section">
         <h2 className="more-section-title">{t.moreScreen.profile}</h2>
         <label className="more-name-label" htmlFor="more-player-name">
           {t.moreScreen.editName}
@@ -100,7 +100,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
         </div>
       </section>
 
-      <section className="more-section dobo-panel">
+      <section className="more-section">
         <h2 className="more-section-title">{t.moreScreen.settings}</h2>
         <label className="more-toggle">
           <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
@@ -140,7 +140,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
         </div>
       </section>
 
-      <section className="more-section dobo-panel">
+      <section className="more-section">
         <h2 className="more-section-title">{t.moreScreen.handSort}</h2>
         <label className="more-toggle">
           <input
@@ -184,7 +184,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
         </label>
       </section>
 
-      <section className="more-section dobo-panel">
+      <section className="more-section">
         <button type="button" className="sueca-btn sueca-btn--secondary sueca-btn--block more-link-btn" onClick={() => setShowCredits(true)}>
           {t.moreScreen.credits}
         </button>

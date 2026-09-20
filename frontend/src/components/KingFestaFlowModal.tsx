@@ -20,7 +20,7 @@ const FestaSheet: React.FC<{
 }> = ({ children, compact = false, setup = false }) => (
   <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet">
     <div
-      className={`variant-modal variant-modal--bottom-sheet dobo-panel${
+      className={`variant-modal variant-modal--bottom-sheet${
         compact ? ' variant-modal--festa-compact' : ''
       }${setup ? ' variant-modal--festa-setup' : ''}`}
     >
@@ -54,7 +54,7 @@ const FestaActionButton: React.FC<FestaActionButtonProps> = ({
   <div className={`king-festa-action-wrap${!enabled ? ' king-festa-action-wrap--disabled' : ''}`}>
     <button
       type="button"
-      className={`dobo-btn${primary ? ' variant-modal-primary' : ''}${
+      className={`sueca-btn${primary ? ' sueca-btn--primary' : ''}${
         !enabled ? ' king-festa-action--disabled' : ''
       }`}
       disabled={!enabled}

@@ -72,15 +72,11 @@ export function resolvePhaserThemeFromDom(
   }
   const cs = window.getComputedStyle(root as Element);
   const text =
-    cs.getPropertyValue('--sueca-color-text').trim() ||
-    cs.getPropertyValue('--color-text').trim() ||
-    DEFAULT_THEME.text;
+    cs.getPropertyValue('--sc-text').trim() || DEFAULT_THEME.text;
   const active =
-    cs.getPropertyValue('--theme-turn-indicator').trim() || DEFAULT_THEME.active;
+    cs.getPropertyValue('--sc-turn').trim() || DEFAULT_THEME.active;
   const accent =
-    cs.getPropertyValue('--sueca-color-primary').trim() ||
-    cs.getPropertyValue('--color-primary').trim() ||
-    DEFAULT_THEME.accent;
+    cs.getPropertyValue('--sc-accent').trim() || DEFAULT_THEME.accent;
 
   // UX-P3.1: keep Premium Classic felt/exterior as the table identity.
   // Accents/text may still follow the active app theme.

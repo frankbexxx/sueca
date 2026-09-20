@@ -21,7 +21,7 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
 
   return (
     <div className="variant-modal-overlay">
-      <div className="variant-modal dobo-panel king-score-modal variant-modal-wide">
+      <div className="variant-modal king-score-modal variant-modal-wide">
         <h2>Pontuação · jogo {king.gameIndex + 1}/10</h2>
         {king.activeContract && (
           <p className="variant-modal-hint">
@@ -62,11 +62,11 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
           </tbody>
         </table>
         <div className="king-score-actions">
-          <button type="button" className="dobo-btn" onClick={onDismiss}>
+          <button type="button" className="sueca-btn" onClick={onDismiss}>
             OK
           </button>
           {showContinue && onContinue && (
-            <button type="button" className="variant-modal-primary dobo-btn" onClick={onContinue}>
+            <button type="button" className="sueca-btn sueca-btn--primary" onClick={onContinue}>
               Próximo jogo
             </button>
           )}

@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import './styles/design-tokens.css';
 import './styles/sueca-buttons.css';
-import './styles/dobo-ui.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CARD_INTELLIGENCE_DEBUG, CARD_INTELLIGENCE_DEV_LAB } from './config/features';

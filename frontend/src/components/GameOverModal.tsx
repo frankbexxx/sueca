@@ -52,7 +52,7 @@ function IndividualGameOverModal({
 }) {
   return (
     <div className="modal-overlay modal-overlay-game-over">
-      <div className="modal-container modal-container-large dobo-panel">
+      <div className="modal-container modal-container-large">
         <h2 className="modal-title modal-title-large">{title}</h2>
         <p className="modal-winner-text">{winnerName}</p>
         {showLoser && <p className="modal-section-title">{loserName}</p>}
@@ -153,7 +153,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   return (
     <div className="modal-overlay modal-overlay-game-over">
-      <div className="modal-container modal-container-large dobo-panel">
+      <div className="modal-container modal-container-large">
         <h2 className="modal-title modal-title-large">
           {isSpades ? t.modals.heartsFinalScores : t.modals.gamesComplete}
         </h2>

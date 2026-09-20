@@ -1,5 +1,6 @@
 /**
  * Stage 6 — Shared Component System: buttons, modals, forms on `--sc-*`.
+ * Stage 11: Dobo / continue-button / variant-modal-primary aliases removed.
  */
 
 import { readFileSync } from 'node:fs';
@@ -14,14 +15,8 @@ function read(rel: string): string {
   return readFileSync(join(root, rel), 'utf8');
 }
 
-const PRIMARY_RECIPE =
-  /background:\s*rgba\(var\(--sc-accent-rgb\),\s*0\.45\)/;
-const PRIMARY_BORDER =
-  /border(?:-color)?:\s*(?:1px solid\s+)?rgba\(var\(--sc-accent-rgb\),\s*0\.65\)/;
-
 describe('Stage 6 shared component theming', () => {
   const buttons = read('styles/sueca-buttons.css');
-  const dobo = read('styles/dobo-ui.css');
   const variantModals = read('components/VariantModals.css');
   const gameBoard = read('components/GameBoard.css');
   const playSetup = read('components/screens/PlaySetup.css');
@@ -39,36 +34,23 @@ describe('Stage 6 shared component theming', () => {
     expect(buttons).toMatch(/var\(--sc-focus-ring/);
   });
 
-  it('Dobo / variant-modal-primary are aliases of the shared primary recipe', () => {
-    expect(dobo).toMatch(/\.dobo-btn,\s*\n\.variant-modal-primary\s*\{/);
-    expect(dobo).toMatch(PRIMARY_RECIPE);
-    expect(dobo).toMatch(PRIMARY_BORDER);
-    expect(dobo).toMatch(/\.dobo-btn:disabled,\s*\n\.variant-modal-primary:disabled/);
-    expect(dobo).toMatch(/\.dobo-btn:focus-visible,\s*\n\.variant-modal-primary:focus-visible/);
-    expect(dobo).toMatch(/\.dobo-panel\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
-    // No independent gradient / legacy purple paint language
-    expect(dobo).not.toMatch(/linear-gradient|#6c5ce7|sueca-color-primary/i);
+  it('legacy Dobo / variant-modal-primary / continue-button paths are gone', () => {
+    expect(variantModals).not.toMatch(/\.variant-modal-primary\b/);
+    expect(variantModals).not.toMatch(/\.dobo-btn\b|\.dobo-panel\b/);
+    expect(gameBoard).not.toMatch(/\.continue-button\b/);
+    expect(more).toMatch(/\.more-section\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
   });
 
-  it('variant-modal primary paint is not redeclared (lives in dobo-ui)', () => {
-    expect(variantModals).not.toMatch(
-      /\.variant-modal-primary\s*\{[\s\S]*?background:\s*(?!inherit)/
-    );
+  it('variant-modal shells use semantic surface + overlay tokens', () => {
     expect(variantModals).toMatch(/accent-color:\s*var\(--sc-accent\)/);
     expect(variantModals).toMatch(/\.variant-modal\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
     expect(variantModals).toMatch(/var\(--sc-overlay-scrim/);
   });
 
-  it('continue-button uses shared primary paint + local geometry', () => {
-    const continueBlock = gameBoard.match(
-      /\.continue-button\s*\{[^}]+\}/
-    )?.[0];
-    expect(continueBlock).toBeTruthy();
-    expect(continueBlock).toMatch(/rgba\(var\(--sc-accent-rgb\),\s*0\.45\)/);
-    expect(continueBlock).not.toMatch(/linear-gradient|sueca-color-primary/);
-    expect(gameBoard).toMatch(/\.continue-button\.enabled[\s\S]*?rgba\(var\(--sc-accent-rgb\)/);
-    expect(gameBoard).toMatch(/\.continue-button\.disabled/);
-    expect(gameBoard).toMatch(/\.continue-button\.enabled:focus-visible/);
+  it('Continue actions use shared sueca-btn primary (GameActions)', () => {
+    const actions = read('components/GameActions.tsx');
+    expect(actions).toMatch(/sueca-btn sueca-btn--primary[\s\S]*?action-continue-btn/);
+    expect(actions).not.toMatch(/continue-button/);
   });
 
   it('toggle-on and selected states use theme accent', () => {
@@ -83,7 +65,6 @@ describe('Stage 6 shared component theming', () => {
   it('modal shells consume semantic surface tokens', () => {
     expect(gameBoard).toMatch(/\.modal-container\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
     expect(gameBoard).toMatch(/\.modal-container\s*\{[\s\S]*?var\(--sc-surface-border\)/);
-    expect(dobo).toMatch(/\.dobo-panel\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
     expect(rulesSheet).toMatch(/\.rules-sheet\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
     expect(credits).toMatch(/\.credits-modal-card\s*\{[\s\S]*?var\(--sc-surface-modal\)/);
   });
@@ -102,7 +83,6 @@ describe('Stage 6 shared component theming', () => {
   it('shared component CSS has no direct legacy purple literals', () => {
     for (const [name, css] of [
       ['sueca-buttons', buttons],
-      ['dobo-ui', dobo],
       ['PlaySetup', playSetup],
       ['MoreScreen', more],
       ['ThemesScreen', themes],
@@ -114,7 +94,7 @@ describe('Stage 6 shared component theming', () => {
   });
 
   it('does not introduce theme-specific component selectors', () => {
-    for (const css of [buttons, dobo, variantModals, playSetup, more, themes, rulesSheet]) {
+    for (const css of [buttons, variantModals, playSetup, more, themes, rulesSheet]) {
       expect(css).not.toMatch(/\[data-theme="/);
     }
   });

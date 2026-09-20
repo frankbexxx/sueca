@@ -39,7 +39,7 @@ import './styles/app-shell.css';
 import './styles/shell-screens.css';
 import './styles/themes.css';
 
-const UI_CLICK_SELECTOR = '.sueca-btn, .dobo-btn, .lang-btn';
+const UI_CLICK_SELECTOR = '.sueca-btn, .lang-btn';
 
 function App() {
   const { t } = useLanguage();

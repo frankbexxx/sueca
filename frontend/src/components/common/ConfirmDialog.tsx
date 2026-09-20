@@ -58,7 +58,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       data-testid="confirm-dialog-overlay"
     >
       <div
-        className="variant-modal dobo-panel"
+        className="variant-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}

@@ -1,8 +1,8 @@
 /**
- * Custom theme CSS — Theme Contract v1 (Stage 4).
+ * Custom theme CSS — Theme Contract v1 (Stage 4 + Stage 11 cleanup).
  *
- * Emits the same 16 `--sc-*` tokens as built-in themes. Consumers resolve via
- * the Stage 3 `.app-shell[data-theme]` alias bridge + shell compatibility.
+ * Emits the same 16 `--sc-*` tokens as built-in themes, plus GameBoard
+ * gradient companions. Consumers resolve `--sc-*` directly (alias bridge removed).
  * No per-component selector overrides.
  *
  * User inputs (unchanged): bgTop, bgBottom, accent, textTitle, felt.
@@ -40,7 +40,6 @@ export type DerivedCustomThemeTokens = Record<CustomThemeContractToken, string> 
   /** Transitional GameBoard companions (not contract; same as built-ins). */
   '--theme-bg-game-alt': string;
   '--theme-bg-game-mid': string;
-  '--sueca-color-primary-dark': string;
 };
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -106,7 +105,6 @@ export function isSafeCustomThemeId(themeId: string): boolean {
  * - rail ← lighten(felt, 0.2)
  * - game-bg ← darken(felt, 0.1) (distinct from felt; prior custom behaviour)
  * - game-bg-alt/mid ← darken(felt, 0.05) / darken(felt, 0.15)
- * - primary-dark ← darken(accent, 0.18)
  */
 export function deriveCustomThemeTokens(colors: CustomThemeColors): DerivedCustomThemeTokens {
   const bgTop = normalizeHex(colors.bgTop);
@@ -135,8 +133,7 @@ export function deriveCustomThemeTokens(colors: CustomThemeColors): DerivedCusto
     '--sc-rail': lighten(felt, 0.2),
     '--sc-game-bg': gameBg,
     '--theme-bg-game-alt': darken(felt, 0.05),
-    '--theme-bg-game-mid': darken(felt, 0.15),
-    '--sueca-color-primary-dark': darken(accent, 0.18)
+    '--theme-bg-game-mid': darken(felt, 0.15)
   };
 }
 
@@ -153,8 +150,7 @@ export function generateCSS(themeId: string, colors: CustomThemeColors): string 
   const lines = [
     ...CUSTOM_THEME_CONTRACT_TOKENS.map((k) => `  ${k}: ${tokens[k]};`),
     `  --theme-bg-game-alt: ${tokens['--theme-bg-game-alt']};`,
-    `  --theme-bg-game-mid: ${tokens['--theme-bg-game-mid']};`,
-    `  --sueca-color-primary-dark: ${tokens['--sueca-color-primary-dark']};`
+    `  --theme-bg-game-mid: ${tokens['--theme-bg-game-mid']};`
   ];
 
   return `.app-shell[data-theme="${themeId}"] {\n${lines.join('\n')}\n}`;

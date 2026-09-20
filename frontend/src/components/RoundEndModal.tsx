@@ -61,7 +61,7 @@ function IndividualRoundEndModal({
 
   return (
     <div className="modal-overlay modal-overlay-round-end">
-      <div className="modal-container modal-container-large dobo-panel">
+      <div className="modal-container modal-container-large">
         <h2 className="modal-title">{title}</h2>
         {roundSectionTitle && (
           <>
@@ -166,7 +166,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
 
   return (
     <div className="modal-overlay modal-overlay-round-end">
-      <div className="modal-container modal-container-large dobo-panel">
+      <div className="modal-container modal-container-large">
         <h2 className="modal-title">{tReplace('modals.roundComplete', { round: gameState.round })}</h2>
 
         <p className="modal-section-title">{t.modals.gamePoints}</p>

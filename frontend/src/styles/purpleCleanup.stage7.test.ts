@@ -63,8 +63,7 @@ describe('Stage 7 legacy purple cleanup (GLOBAL-UI-01)', () => {
   it('emergency :root accent is brass/gold — not Classic purple', () => {
     expect(tokens).toMatch(/--sc-accent:\s*#c5a45b/);
     expect(tokens).not.toMatch(/--sc-accent:\s*#6c5ce7/i);
-    expect(tokens).toMatch(/--sueca-color-primary-dark:\s*#9a7d32/);
-    expect(tokens).not.toMatch(/--sueca-color-primary-dark:\s*#5a4fd6/i);
+    expect(tokens).not.toMatch(/--sueca-color-primary-dark:/);
   });
 
   it('Classic theme block retains approved intentional purple', () => {
@@ -74,7 +73,7 @@ describe('Stage 7 legacy purple cleanup (GLOBAL-UI-01)', () => {
     expect(classic).toBeTruthy();
     expect(classic!).toMatch(/--sc-accent:\s*#6c5ce7/);
     expect(classic!).toMatch(/--sc-accent-rgb:\s*108,\s*92,\s*231/);
-    expect(classic!).toMatch(/--sueca-color-primary-dark:\s*#5a4fd6/);
+    expect(classic!).not.toMatch(/--sueca-color-primary-dark:/);
   });
 
   it('themes.css outside Classic has no Classic legacy purple literals', () => {
@@ -84,18 +83,15 @@ describe('Stage 7 legacy purple cleanup (GLOBAL-UI-01)', () => {
     expect(rest).not.toMatch(/108,\s*92,\s*231/);
   });
 
-  it('aliases on :root and theme bridge point at --sc-accent (no purple literal)', () => {
-    expect(tokens).toMatch(/--sueca-color-primary:\s*var\(--sc-accent\)/);
-    expect(tokens).toMatch(/--sueca-rgb-primary:\s*var\(--sc-accent-rgb\)/);
-    expect(tokens).toMatch(/--color-primary:\s*var\(--sc-accent\)/);
-    expect(themes).toMatch(
-      /\.app-shell\[data-theme\]\s*\{[\s\S]*?--sueca-color-primary:\s*var\(--sc-accent\)/
-    );
+  it('legacy primary paint aliases and theme bridge are removed (Stage 11)', () => {
+    expect(tokens).not.toMatch(/--sueca-color-primary:/);
+    expect(tokens).not.toMatch(/--sueca-rgb-primary:/);
+    expect(tokens).not.toMatch(/--color-primary:/);
+    expect(themes).not.toMatch(/\.app-shell\[data-theme\]\s*\{/);
   });
 
-  it('custom theme primary-dark is derived from accent, not fixed purple', () => {
-    expect(customHook).toMatch(/primary-dark.*darken\(accent/i);
-    expect(customHook).toMatch(/'--sueca-color-primary-dark':\s*darken\(accent/);
+  it('custom themes do not emit superseded primary-dark companion', () => {
+    expect(customHook).not.toMatch(/--sueca-color-primary-dark/);
     expect(customHook).not.toMatch(/#5a4fd6|#6c5ce7/i);
   });
 

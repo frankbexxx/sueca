@@ -542,13 +542,9 @@
 }
 
 /*
- * .variant-modal-primary paint lives in dobo-ui.css (shared primary alias).
- * Keep only disabled opacity tweak if specificity needed — prefer shared rules.
+ * Primary actions use `.sueca-btn.sueca-btn--primary` (Stage 11).
+ * Geometry-only tweaks for King Festa stay below.
  */
-.variant-modal-primary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 
 .pass-card-grid {
   display: flex;
@@ -601,12 +597,12 @@
   max-width: 100%;
 }
 
-.king-festa-action-wrap .dobo-btn {
+.king-festa-action-wrap .sueca-btn {
   min-height: 44px;
 }
 
-.dobo-btn.king-festa-action--disabled,
-.dobo-btn:disabled {
+.sueca-btn.king-festa-action--disabled,
+.king-festa-action-wrap .sueca-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   filter: grayscale(0.35);
@@ -615,8 +611,8 @@
   transform: none;
 }
 
-.dobo-btn.king-festa-action--disabled:hover,
-.dobo-btn:disabled:hover {
+.sueca-btn.king-festa-action--disabled:hover,
+.king-festa-action-wrap .sueca-btn:disabled:hover {
   transform: none;
   filter: grayscale(0.35);
   opacity: 0.45;
@@ -761,6 +757,8 @@
   border-radius: 0 0 12px 12px;
   border-top: none;
   box-sizing: border-box;
+  background-color: var(--sc-surface-modal);
+  color: var(--sc-text);
 }
 
 .king-koh-controls h2 {
@@ -775,8 +773,7 @@
   line-height: 1.2;
 }
 
-.king-koh-controls .variant-modal-primary,
-.king-koh-controls .dobo-btn {
+.king-koh-controls .sueca-btn {
   margin-top: 0.1rem;
   min-height: 36px;
   padding: 0.4rem 0.85rem;

@@ -26,7 +26,7 @@ export const CreditsModal: React.FC<CreditsModalProps> = ({ onClose }) => {
           ×
         </button>
 
-        <div className="credits-modal-card dobo-panel">
+        <div className="credits-modal-card">
           <main className="credits-main">
             <div className="credits-title-block">
               <h1 className="credits-title">{t.credits.title}</h1>

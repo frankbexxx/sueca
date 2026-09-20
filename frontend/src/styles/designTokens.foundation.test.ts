@@ -1,6 +1,7 @@
 /**
  * Stage 2 — Theme Contract v1 foundation checks (static file assertions).
  * Runtime source: design-tokens.css. JSON is metadata only.
+ * Stage 11: transitional paint aliases removed; companions retained.
  */
 
 import { readFileSync } from 'node:fs';
@@ -31,22 +32,23 @@ const APPROVED_SC_TOKENS = [
   '--sc-game-bg'
 ] as const;
 
-const REQUIRED_ALIASES: Record<string, string> = {
-  '--sueca-color-primary': 'var(--sc-accent)',
-  '--sueca-rgb-primary': 'var(--sc-accent-rgb)',
-  '--color-primary': 'var(--sc-accent)',
-  '--sueca-color-text': 'var(--sc-text)',
-  '--color-text': 'var(--sc-text)',
-  '--color-surface': 'var(--sc-surface)',
-  '--theme-panel-modal': 'var(--sc-surface-modal)',
-  '--theme-panel-shell': 'var(--sc-surface)',
-  '--theme-turn-indicator': 'var(--sc-turn)',
-  '--theme-player-box': 'var(--sc-seat)',
-  '--theme-table-felt': 'var(--sc-felt)',
-  '--theme-table-felt-dark': 'var(--sc-felt-dark)',
-  '--theme-table-rail': 'var(--sc-rail)',
-  '--theme-bg-game': 'var(--sc-game-bg)'
-};
+const REMOVED_LEGACY_ALIASES = [
+  '--sueca-color-primary',
+  '--sueca-rgb-primary',
+  '--sueca-color-primary-dark',
+  '--color-primary',
+  '--sueca-color-text',
+  '--color-text',
+  '--color-surface',
+  '--theme-panel-modal',
+  '--theme-panel-shell',
+  '--theme-turn-indicator',
+  '--theme-player-box',
+  '--theme-table-felt',
+  '--theme-table-felt-dark',
+  '--theme-table-rail',
+  '--theme-bg-game'
+] as const;
 
 function declValue(css: string, prop: string): string | null {
   const re = new RegExp(`${prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*([^;]+);`);
@@ -76,13 +78,11 @@ describe('Theme Contract v1 foundation (design-tokens.css)', () => {
     expect(declValue(css, '--sc-accent-rgb')).toBe('197, 164, 91');
     expect(css).not.toMatch(/--sc-accent:\s*#6c5ce7/i);
     expect(css).not.toMatch(/--sc-accent-rgb:\s*108,\s*92,\s*231/);
-    expect(declValue(css, '--sueca-color-primary')).toBe('var(--sc-accent)');
-    expect(declValue(css, '--sueca-rgb-primary')).toBe('var(--sc-accent-rgb)');
   });
 
-  it('maps required legacy aliases to semantic tokens', () => {
-    for (const [legacy, target] of Object.entries(REQUIRED_ALIASES)) {
-      expect(declValue(css, legacy), legacy).toBe(target);
+  it('does not declare removed transitional paint aliases', () => {
+    for (const legacy of REMOVED_LEGACY_ALIASES) {
+      expect(declValue(css, legacy), legacy).toBeNull();
     }
   });
 

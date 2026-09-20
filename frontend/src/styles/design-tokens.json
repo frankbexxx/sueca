@@ -26,7 +26,7 @@
   },
   "color": {
     "primary": { "value": "#c5a45b", "$comment": "Legacy key; maps to --sc-accent (emergency brass, not purple)" },
-    "primaryDark": { "value": "#9a7d32" },
+    "primaryDark": { "value": "#9a7d32", "$comment": "Historical metadata only — runtime companion removed Stage 11" },
     "us": { "value": "#3484ea" },
     "them": { "value": "#e25c5c" },
     "surface": { "value": "rgba(255, 255, 255, 0.06)" },

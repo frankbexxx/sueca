@@ -84,7 +84,7 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
           </div>
         </div>
 
-        <button type="button" className="variant-modal-primary dobo-btn dealing-modal-start" onClick={onConfirm}>
+        <button type="button" className="sueca-btn sueca-btn--primary dealing-modal-start" onClick={onConfirm}>
           {t.modals.startGame}
         </button>
       </div>

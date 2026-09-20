@@ -50,7 +50,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           </main>
 
           <div className="landing-cta">
-            <button type="button" className="landing-enter-btn dobo-btn" onClick={onStart}>
+            <button type="button" className="landing-enter-btn sueca-btn sueca-btn--primary" onClick={onStart}>
               {t.landing.tapHint}
             </button>
           </div>

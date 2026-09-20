@@ -72,7 +72,7 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
         })}
       </div>
 
-      <div className="king-koh-controls dobo-panel">
+      <div className="king-koh-controls">
         <h2>Viragem do Rei de Copas</h2>
         {!dealing && !isLast && (
           <p className="variant-modal-hint">
@@ -90,12 +90,12 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
           </p>
         )}
         {!dealing && !isLast && (
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={() => setDealing(true)}>
+          <button type="button" className="sueca-btn sueca-btn--primary" onClick={() => setDealing(true)}>
             Iniciar viragem
           </button>
         )}
         {isLast && (
-          <button type="button" className="variant-modal-primary dobo-btn" onClick={onConfirm}>
+          <button type="button" className="sueca-btn sueca-btn--primary" onClick={onConfirm}>
             Começar partida
           </button>
         )}

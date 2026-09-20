@@ -12,7 +12,7 @@ export const EarlyRoundEndModal: React.FC<EarlyRoundEndModalProps> = ({ onAccept
 
   return (
     <div className="variant-modal-overlay">
-      <div className="variant-modal dobo-panel">
+      <div className="variant-modal">
         <h2>{t.earlyRoundEnd.title}</h2>
         <p className="variant-modal-hint">{t.earlyRoundEnd.body}</p>
         <div className="king-festa-actions">

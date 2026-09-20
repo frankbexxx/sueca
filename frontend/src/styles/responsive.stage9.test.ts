@@ -20,7 +20,6 @@ describe('Stage 9 responsive theme hardening', () => {
   const shell = read('styles/app-shell.css');
   const bottomNav = read('components/navigation/BottomNav.css');
   const buttons = read('styles/sueca-buttons.css');
-  const dobo = read('styles/dobo-ui.css');
   const variantModals = read('components/VariantModals.css');
   const rulesSheet = read('components/RulesSheet.css');
   const credits = read('components/CreditsModal.css');
@@ -40,7 +39,6 @@ describe('Stage 9 responsive theme hardening', () => {
 
   it('shared buttons keep touch-min targets', () => {
     expect(buttons).toMatch(/min-height:\s*var\(--sueca-touch-min/);
-    expect(dobo).toMatch(/min-height:\s*var\(--sueca-touch-min/);
   });
 
   it('Landing avoids double-counting safe-area in card max-height', () => {
