@@ -21,11 +21,13 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 **Release gate visual (§12):** cada jogo (Sueca / Spades / Hearts / King) precisa de um **Final Visual Pass** manual próprio — **não** um único item genérico “UX polish”. Automação sozinha **não** fecha este gate.
 
-**Themes + Audio (§13):** redesign futuro da personalização (Theme ↔ Music ↔ SFX) — **DEFERRED / DESIGN PENDING**; Francisco decide o desenho; **não** é blocker imediato.
+**Theme Architecture Foundation:** **ACTIVE WORKSTREAM** — plano vivo [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md). Migração temática global React/DOM (tokens → components); Landing segue o theme activo; Phaser aesthetics ficam em Premium Classic.
 
-**Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM, redesign Themes/Audio/UI unificada.
+**Themes + Audio UX (§13):** redesign futuro da personalização (Theme ↔ Music ↔ SFX) — **DEFERRED / DESIGN PENDING**; Francisco decide o desenho; **não** confundir com a foundation de tokens/UI (§ Theme Architecture).
 
-**Próximo bloco recomendado:** (1) **Final Visual Pass por jogo** (release gate) → (2) curadoria theme↔deck / release-licensing → (3) Card Intelligence produto opcional (P2) → (4) Themes+Audio redesign (**DEFERRED**, só com decisão de desenho) → (5) mini-LLM experimental **DEFERRED**.
+**Não fazer hoje:** custom domain / CDN R2, site OXS/Suecão, Cap 7, ONNX/WASM mini-LLM, redesign Themes/Audio unificada (§13) antes de decisão de desenho.
+
+**Próximo bloco recomendado:** (1) **Theme Architecture Foundation** (Etapa 0+) → (2) Final Visual Passes restantes / revalidation Sueca após foundation → (3) curadoria theme↔deck / release-licensing → (4) Card Intelligence produto opcional (P2) → (5) Themes+Audio UX redesign (**DEFERRED**) → (6) mini-LLM experimental **DEFERRED**.
 
 ### Contagens desta revisão
 
@@ -40,7 +42,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 | Prioridade | N |
 |------------|---|
 | **P0** | 0 |
-| **P1** | 5 |
+| **P1** | 6 |
 | **P2** | 7 |
 | **P3** | 10 |
 
@@ -50,11 +52,12 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Sueca Visual Pass | **TWEAKS OPEN** |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
 | King Visual Pass | **OPEN** |
-| Themes + Audio UX | **DEFERRED / DESIGN PENDING** |
+| Themes + Audio UX | **DEFERRED / DESIGN PENDING** (§13) |
 
 ---
 
@@ -391,7 +394,8 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 | Final Visual Pass — Hearts | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Final Visual Pass — King | **P1** | **OPEN** | §12 — NOT REVIEWED |
 | Visual tweaks (BUG/UX/POLISH) do Final Pass | **P2** | **OPEN** | Criados após review; batches pequenos |
-| Themes + Audio Experience Redesign | — | **DEFERRED** / DESIGN PENDING | §13 — não blocker imediato |
+| Theme Architecture Foundation | **P1** | **ACTIVE WORKSTREAM** | [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) — 2026-09-20 |
+| Themes + Audio Experience Redesign | — | **DEFERRED** / DESIGN PENDING | §13 — não blocker imediato; distinto da foundation |
 
 ---
 
@@ -400,12 +404,13 @@ Dev Lab ficou *antes* de um modelo dedicado — correcto; não reordenar para �
 ### P0
 **Nenhum.** Solo OPPO + web estáveis; music v1 fechada.
 
-### P1 (5)
-1. **Final Visual Pass por jogo** (Sueca / Spades / Hearts / King) — **release gate** (§12)  
-2. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
-3. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
-4. Play Store listing / políticas (quando for a loja)  
-5. Docs/roadmap housekeeping (stale audits)
+### P1 (6)
+1. **Theme Architecture Foundation** — workstream activo ([`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md))  
+2. **Final Visual Pass por jogo** (Sueca / Spades / Hearts / King) — **release gate** (§12); Sueca revalidation após foundation  
+3. Release/licensing cleanup (Casino clarificação; checklist Play se for a loja)  
+4. Theme ↔ deck curation (activar CardMeister onde fizer sentido)  
+5. Play Store listing / políticas (quando for a loja)  
+6. Docs/roadmap housekeeping (stale audits)
 
 ~~King Game AI — H16-OK~~ — **DONE** 2026-09-17
 
@@ -446,16 +451,17 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 
 ## 8. Ordem recomendada (curta e realista)
 
-1. **Final Visual Pass** por jogo (§12) — **antes de release**; smokes automáticos não fecham  
-2. **Theme ↔ deck curation** (CardMeister)  
-3. **Release / licensing** (Casino + store checklist)  
-4. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
-5. **Themes + Audio UX redesign** — **DEFERRED**; só após decisão de desenho (Francisco)  
-6. **Domínio / site / CDN** — **DEFERRED, não hoje**  
-7. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
-8. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
-9. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
-10. **Final release readiness** (listing, políticas, CDN prod, **visual gate PASS ×4**)
+1. **Theme Architecture Foundation** — **ACTIVE WORKSTREAM** ([`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md))  
+2. **Final Visual Passes** — retomar só depois da foundation estabilizar (§12; Sueca revalidation)  
+3. **Theme ↔ deck curation** (CardMeister)  
+4. **Release / licensing** (Casino + store checklist)  
+5. **Card Intelligence P2** (só com decisão explícita de diferenciador)  
+6. **Themes + Audio UX redesign** — **DEFERRED**; só após decisão de desenho (Francisco)  
+7. **Domínio / site / CDN** — **DEFERRED, não hoje**  
+8. **Optional gameplay** (blind nil, etc.) só com decisão explícita  
+9. **Mini-LLM / ONNX** — janela experimental própria (**DEFERRED**)  
+10. **Future Capacitor 7** — janela dedicada + re-smoke OPPO  
+11. **Final release readiness** (listing, políticas, CDN prod, **visual gate PASS ×4**)
 
 ~~King H16-OK smoke~~ — **DONE** 2026-09-17
 
@@ -502,9 +508,10 @@ Não transformar o redesign Themes/Audio em blocker enquanto o desenho não esti
 
 - `ROADMAP_GAMEPLAY_UX_2026.md` = **histórico cumprido**, não fila activa.  
 - `docs/ai/active/ROADMAP_AI.md` + status/Impl reports = detalhe técnico AI; **fila de produto AI** = **§5** deste ficheiro.  
-- **Fila activa geral** = §6–§8 + **§12** (visual) + **§13** (themes/audio design).  
+- `THEME_ARCHITECTURE_MASTER_PLAN.md` = **plano vivo** da foundation temática React/DOM — **ACTIVE WORKSTREAM** (§12.8).  
+- **Fila activa geral** = §6–§8 + **§12** (visual) + **§12.8 Theme Architecture** + **§13** (themes/audio design, DEFERRED).  
 - Workstream **música runtime** = **fechado** (v1 + advanced); CDN/domínio permanece **DEFERRED**; **UX Theme↔Music** = **§13 DEFERRED / DESIGN PENDING**.  
-- Próxima actualização sugerida: fecho de um Visual Pass por jogo, theme↔deck curation, ou decisão de desenho Themes+Audio / CDN / Cap 7 / Play Store.
+- Próxima actualização sugerida: Etapa 0+ do Theme Architecture Master Plan; depois Visual Passes / theme↔deck / decisão Themes+Audio / CDN / Cap 7 / Play Store.
 
 ---
 
@@ -620,12 +627,22 @@ Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
 
 Detalhe e contexto Sueca: [`SUECA_FINAL_VISUAL_PASS.md`](./SUECA_FINAL_VISUAL_PASS.md).  
 Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mãos.
+
+### 12.8 Theme Architecture Foundation (ponte)
+
+**STATUS:** **ACTIVE WORKSTREAM**  
+**Plano canónico (não duplicar aqui):** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)
+
+Foundation de tokens / theming React/DOM **antes** de retomar Final Visual Passes (master plan Etapa 13 = `BLOCKED` até foundation).  
+`GLOBAL-UI-01` (legacy purple) é absorvido pela Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.
+
 ---
 
 ## 13. THEMES + AUDIO EXPERIENCE REDESIGN
 
 **STATUS:** **DEFERRED / DESIGN PENDING**  
-**Prioridade:** não é P1/P2 de implementação imediata — **DESIGN** até Francisco decidir.
+**Prioridade:** não é P1/P2 de implementação imediata — **DESIGN** até Francisco decidir.  
+**Distinto de:** Theme Architecture Foundation (tokens/UI DOM) — §12.8 / master plan.
 
 ### 13.1 Motivo
 
@@ -704,4 +721,5 @@ O redesign futuro deve **reutilizar** (não recomeçar do zero):
 
 ---
 
-*ROADMAP + KING-H16-OK-CLOSURE-01 + HEARTS-H15-OK-CLOSURE-01 · H15/H16 fechados 2026-09-17*
+*ROADMAP + KING-H16-OK-CLOSURE-01 + HEARTS-H15-OK-CLOSURE-01 · H15/H16 fechados 2026-09-17*  
+*THEME-ARCHITECTURE-MASTER-PLAN-01 · 2026-09-20 — Theme Architecture Foundation = ACTIVE WORKSTREAM*
