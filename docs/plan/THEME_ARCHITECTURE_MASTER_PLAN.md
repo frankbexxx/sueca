@@ -6,7 +6,8 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** `ed85e15`
+**Current commit:** `402f20b`  
+**Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)
 
 **Inputs:**
 - pack Repomix: `docs/ai/repo-review/packs/generated/theme-architecture-audit-context.md`
@@ -23,17 +24,17 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 0 |
+| **DONE** | 1 (Etapa 0) |
 | **IN PROGRESS** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 13 |
+| **NOT STARTED** | 12 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / AUDIT / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 0 — Baseline / inventário |
-| **Next stage** | Etapa 1 — Theme Contract (após Exit Criteria da 0) |
-| **Blockers** | nenhum técnico imediato; Etapa 13 bloqueada por foundation |
+| **Current stage** | Etapa 1 — Definir Theme Contract |
+| **Next stage** | Etapa 2 — Token foundation (**só após** Theme Contract aprovado) |
+| **Blockers** | Theme Contract por aprovar; Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | `ed85e15` |
+| **Current commit** | `402f20b` |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -113,27 +114,36 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `DONE` |
 | **Objectivo** | Confirmar o estado técnico real antes da migração |
+| **Deliverable** | [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md) |
 
 **Tasks:**
 
-- [ ] listar todos os theme tokens actuais  
-- [ ] listar aliases legacy  
-- [ ] listar selectors repetidos nos 30 themes  
-- [ ] listar componentes que consomem tokens  
-- [ ] listar componentes que usam hardcoded colours  
-- [ ] listar `.dobo-*`  
-- [ ] listar `.variant-modal-*`  
-- [ ] listar `.continue-button`  
-- [ ] listar inline colour styles  
-- [ ] listar surfaces fora de `.app-shell[data-theme]`  
-- [ ] confirmar import/cascade CSS real  
-- [ ] confirmar built-in vs custom divergence  
-- [ ] criar baseline screenshots representativas  
+- [x] listar todos os theme tokens actuais  
+- [x] listar aliases legacy  
+- [x] listar selectors repetidos nos 30 themes  
+- [x] listar componentes que consomem tokens  
+- [x] listar componentes que usam hardcoded colours  
+- [x] listar `.dobo-*`  
+- [x] listar `.variant-modal-*`  
+- [x] listar `.continue-button`  
+- [x] listar inline colour styles  
+- [x] listar surfaces fora de `.app-shell[data-theme]`  
+- [x] confirmar import/cascade CSS real  
+- [x] confirmar built-in vs custom divergence  
+- [x] criar baseline screenshots representativas (**matriz/plan** em §17 do baseline; captures físicos = follow-up de validação)
 
-**Deliverable:** audit de impacto exacto **antes** de código.  
-**Exit criteria:** sabemos exactamente quem será afectado pela mudança de contrato.
+**Key findings (resumo):**
+
+- ~**88%** selector-driven vs ~**12%** token-only em `themes.css`  
+- **30** built-ins TS; **29** blocos CSS; **`classic` sem bloco**  
+- `--sueca-rgb-primary` / primary defaults = **legacy purple**; themes não rebindam a var  
+- Custom (5 cores) ≠ contrato built-in (faltam turn/player-box/primary tokens; backs/music fallback)  
+- Landing **fora** de `data-theme`  
+- Phaser felt = Premium Classic; lê text/accent/turn + card back  
+
+**Exit criteria:** sabíamos exactamente quem será afectado — **cumprido** (ver Impact + Risk maps no baseline).
 
 ---
 
@@ -451,13 +461,16 @@ Theme architecture pode fechar quando:
 
 ## 20. Open gaps / backlog do plano
 
-Gaps iniciais a validar na Etapa 0 (expandir conforme factos):
+Gaps confirmados / refinados na Etapa 0:
 
-- Inventário exacto de tokens / aliases / hardcoded  
-- Superfícies fora de `.app-shell[data-theme]`  
-- Divergência built-in vs custom  
+- Inventário exacto documentado em Stage 0 baseline  
+- Superfícies fora de `.app-shell[data-theme]` → **Landing** (HIGH)  
+- Divergência built-in vs custom → **NOT SAME CONTRACT**  
+- `classic` sem bloco CSS  
+- Themes não rebindam `--sueca-rgb-primary` (purple leakage)  
 - Relação com `GLOBAL-UI-01/02/03` e `GLOBAL-CARDS-01` (PARTIAL)  
-- Matriz representativa de themes para validação (Etapa 12)  
+- Matriz de screenshots criada; **captures físicos** ainda por executar  
+- Open Questions §19 do baseline → input da Etapa 1  
 
 ---
 
@@ -466,6 +479,7 @@ Gaps iniciais a validar na Etapa 0 (expandir conforme factos):
 | Date | Change | Stage affected | Reason |
 |------|--------|----------------|--------|
 | 2026-09-20 | Documento canónico criado (`THEME-ARCHITECTURE-MASTER-PLAN-01`) | all (0–14) | Plano vivo da migração temática global; roadmap aponta ACTIVE WORKSTREAM |
+| 2026-09-20 | Etapa 0 → `DONE`; baseline `THEME_ARCHITECTURE_STAGE_0_BASELINE.md`; current → Etapa 1 | 0, 1 | Inventário técnico completo antes do Theme Contract |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 
