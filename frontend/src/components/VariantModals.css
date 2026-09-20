@@ -279,9 +279,9 @@
   font-size: 0.68rem;
   padding: 0.2rem 0.3rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
 }
 
 .spades-bid-special {
@@ -373,9 +373,9 @@
   font-size: 0.72rem;
   padding: 0.3rem 0.35rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
 }
 
 .king-auction-toolbar__amount-input {
@@ -386,9 +386,9 @@
   font-size: 0.78rem;
   padding: 0.2rem 0.25rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 22, 35, 0.92);
-  color: #f5f5f5;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
   box-sizing: border-box;
   text-align: center;
 }
@@ -557,15 +557,15 @@
   min-width: 48px;
   min-height: 48px;
   border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid var(--sc-surface-border);
+  background: var(--sc-surface);
   color: inherit;
   cursor: pointer;
 }
 
 .pass-card-btn.selected {
-  border-color: #6fcf97;
-  background: rgba(111, 207, 151, 0.25);
+  border-color: rgba(var(--sc-accent-rgb), 0.85);
+  background: rgba(var(--sc-accent-rgb), 0.28);
 }
 
 .king-festa-actions {
@@ -688,8 +688,12 @@
   /* ~20% taller than prior 176px / 48vw / 22vh — width unchanged */
   height: min(58vw, 212px);
   max-height: 26vh;
-  background: radial-gradient(circle at 50% 40%, var(--theme-table-felt, #2f6d2f), var(--theme-table-felt-dark, #1f4f1f) 70%);
-  border: 5px solid var(--theme-table-rail, #7a5736);
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--sc-felt, #2f6d2f),
+    var(--sc-felt-dark, #1f4f1f) 70%
+  );
+  border: 5px solid var(--sc-rail, #7a5736);
   border-bottom-width: 3px;
   border-radius: 12px 12px 0 0;
   flex-shrink: 0;

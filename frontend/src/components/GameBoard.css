@@ -12,15 +12,21 @@
   overflow-x: hidden;
   overscroll-behavior: none;
   font-family: var(--premium-font, 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif);
-  color: #333;
+  color: var(--sc-text);
   /* Fill the game shell (100dvh) — do not re-assert another 100vh/dvh min-height. */
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
   max-height: 100%;
+  /* Primary stop: contract --sc-game-bg. Alt/mid remain theme companion washes (set per theme). */
   background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 40%),
               radial-gradient(circle at 80% 0%, rgba(255,255,255,0.04), transparent 32%),
-              linear-gradient(135deg, var(--theme-bg-game) 0%, var(--theme-bg-game-alt) 45%, var(--theme-bg-game-mid) 100%);
+              linear-gradient(
+                135deg,
+                var(--sc-game-bg) 0%,
+                var(--theme-bg-game-alt, var(--sc-game-bg)) 45%,
+                var(--theme-bg-game-mid, var(--sc-felt-dark)) 100%
+              );
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -229,7 +235,7 @@
 .local-player-dock--active .player-info,
 .player-info--active {
   position: relative;
-  outline: 2px solid var(--theme-turn-indicator);
+  outline: 2px solid var(--sc-turn);
   outline-offset: 2px;
 }
 
@@ -238,7 +244,7 @@
   position: absolute;
   inset: -4px;
   border-radius: 10px;
-  border: 1px solid var(--theme-turn-indicator);
+  border: 1px solid var(--sc-turn);
   opacity: 0.4;
   pointer-events: none;
   animation: player-active-ring 2.4s ease-in-out infinite;
@@ -260,8 +266,8 @@
   line-height: 1.1;
   padding: 1px 4px;
   border-radius: 999px;
-  color: var(--theme-turn-indicator);
-  border: 1px solid var(--theme-turn-indicator);
+  color: var(--sc-turn);
+  border: 1px solid var(--sc-turn);
   background: transparent;
   white-space: nowrap;
 }
@@ -862,8 +868,8 @@
   position: relative;
   width: var(--table-size);
   height: var(--table-size);
-  background: radial-gradient(circle at 50% 40%, var(--theme-table-felt), var(--theme-table-felt-dark) 70%);
-  border: 10px solid var(--theme-table-rail); /* 70% of 14px */
+  background: radial-gradient(circle at 50% 40%, var(--sc-felt), var(--sc-felt-dark) 70%);
+  border: 10px solid var(--sc-rail); /* 70% of 14px */
   border-radius: 11px; /* 70% of 16px */
   box-shadow: 0 7px 17px rgba(0,0,0,0.28), inset 0 0 15px rgba(0,0,0,0.2); /* 70% scaling */
   overflow: visible;
@@ -1081,7 +1087,7 @@
 
 .player-info {
   text-align: center;
-  background: var(--theme-player-box);
+  background: var(--sc-seat);
   color: white;
   padding: 6px 10px;
   border-radius: 8px;
@@ -1131,12 +1137,12 @@
 
 .player-seat.team-us .player-name-line-2,
 .local-player-dock.team-us .player-name-line-2 {
-  color: #b3d9ff; /* Pale blue for US/NÓS */
+  color: var(--sc-game-us);
 }
 
 .player-seat.team-them .player-name-line-2,
 .local-player-dock.team-them .player-name-line-2 {
-  color: #ffcccc; /* Pale pink/red for THEM/ELES */
+  color: var(--sc-game-them);
 }
 
 .player-seat.player-seat--individual .player-name-line-2,
@@ -1199,13 +1205,13 @@
 
 .player-seat.team-us .team-badge { 
   background: rgba(var(--sueca-rgb-us), 0.25); 
-  color: #b3d9ff;
+  color: var(--sc-game-us);
   border: 1px solid rgba(var(--sueca-rgb-us), 0.4);
 }
 
 .player-seat.team-them .team-badge { 
   background: rgba(var(--sueca-rgb-them), 0.25); 
-  color: #ffcccc;
+  color: var(--sc-game-them);
   border: 1px solid rgba(var(--sueca-rgb-them), 0.4);
 }
 
@@ -1215,7 +1221,7 @@
 
 .turn-indicator {
   font-size: 0.85em;
-  color: var(--theme-turn-indicator);
+  color: var(--sc-turn);
   animation: pulse-glow 1.5s ease-in-out infinite;
   text-shadow: 0 0 6px currentColor;
   margin-left: 0;
@@ -1313,13 +1319,13 @@
 }
 
 .card-hand.selected {
-  outline: 3px solid #4caf50;
+  outline: 3px solid var(--sc-accent);
   box-shadow: 0 5px 10px rgba(0,0,0,0.48);
   z-index: 1000;
 }
 
 .card-hand--pass-selected {
-  outline: 3px solid #6fcf97;
+  outline: 3px solid rgba(var(--sc-accent-rgb), 0.85);
   outline-offset: 2px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.48);
   transform: translateY(-8px);
@@ -1381,7 +1387,7 @@
 }
 
 .hand-back-stack {
-  background: var(--theme-player-box);
+  background: var(--sc-seat);
   padding: 6px 10px;
   border-radius: 8px;
   color: white;
@@ -1824,7 +1830,7 @@
   font-size: 18px;
   margin-bottom: 15px;
   font-weight: bold;
-  color: #cfdffc;
+  color: var(--sc-text);
 }
 
 /* Score boxes */
@@ -1908,13 +1914,13 @@
 .modal-trump-note {
   margin-top: 10px;
   font-size: 14px;
-  color: #9aa5b5;
+  color: var(--sc-text-muted);
   font-style: italic;
 }
 
 .modal-dealer-info {
   margin: 20px 0;
-  color: #cfdffc;
+  color: var(--sc-text);
 }
 
 .modal-dealer-info strong {

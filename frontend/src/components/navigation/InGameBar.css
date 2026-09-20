@@ -5,9 +5,11 @@
   gap: 8px;
   padding: 8px 12px;
   padding-top: max(8px, env(safe-area-inset-top));
-  background: rgba(15, 20, 30, 0.92);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  /* Intentional in-game chrome density (GLOBAL-UI-02 separate); paint from Premium HUD global */
+  background: var(--premium-hud-panel-strong, rgba(16, 25, 27, 0.82));
+  border-bottom: 1px solid var(--sc-surface-border, rgba(255, 255, 255, 0.1));
   z-index: 100;
+  color: var(--sc-text);
 }
 
 .in-game-bar-left {
@@ -25,19 +27,19 @@
 
 .in-game-bar-meta {
   font-size: 0.65rem;
-  color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.5);
+  color: var(--sc-text-muted);
   font-weight: 500;
 }
 
 .in-game-bar-title {
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--sueca-color-text, #e9eef7);
+  color: var(--sc-text-title, var(--sc-text));
 }
 
 .in-game-bar-player {
   font-size: 0.75rem;
-  color: rgba(var(--sueca-rgb-text, 233, 238, 247), 0.65);
+  color: var(--sc-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

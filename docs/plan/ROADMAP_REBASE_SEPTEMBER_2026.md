@@ -52,7 +52,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–7 DONE · **GLOBAL-UI-01 DONE** · **Etapa 8 Game-specific DOM Migration** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–8 DONE · **Etapa 9 Responsive Theme Pass** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
 | Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
@@ -630,7 +630,7 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
-**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–7 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **current = Etapa 8 Game-specific DOM Migration**  
+**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–8 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **game DOM migrated** · **current = Etapa 9 Responsive Theme Pass**  
 **Plano canónico:** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)  
 **Baseline Stage 0:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Contract Stage 1:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)  

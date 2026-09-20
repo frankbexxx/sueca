@@ -15,6 +15,7 @@
 **Stage 5 shell + landing:** [`THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md`](./THEME_ARCHITECTURE_STAGE_5_SHELL_LANDING.md) — **DONE**  
 **Stage 6 shared components:** [`THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md`](./THEME_ARCHITECTURE_STAGE_6_SHARED_COMPONENTS.md) — **DONE**  
 **Stage 7 purple cleanup:** [`THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_7_PURPLE_CLEANUP.md) — **DONE**  
+**Stage 8 game DOM:** [`THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md`](./THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -32,19 +33,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 8 (Etapa 0–7) |
+| **DONE** | 9 (Etapa 0–8) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
-| **NOT STARTED** | 5 |
+| **NOT STARTED** | 4 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 8 — Game-specific DOM Migration |
-| **Next stage** | Etapa 9 — Responsive theme pass (**só após** Exit Criteria da Etapa 8) |
+| **Current stage** | Etapa 9 — Responsive Theme Pass |
+| **Next stage** | Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX (**após** Exit Criteria da Etapa 9; Etapa 10 permanece DEFERRED/DESIGN até decisão) |
 | **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 7 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · shared UI clean · **GLOBAL-UI-01 DONE** |
+| **Current commit** | *(Stage 8 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · game DOM migrated · **GLOBAL-UI-01 DONE** |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -312,25 +313,17 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current stage)* |
+| **STATUS** | `DONE` |
+| **Implementation** | [`THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md`](./THEME_ARCHITECTURE_STAGE_8_GAME_DOM.md) |
 
-**Ordem:**
+### Delivered
 
-### 8.1 Sueca
-dealing/setup · HUD DOM · actions · round/game states  
+- Sueca / Hearts / Spades / King DOM → `--sc-*` (turn, seat, felt/rail, game-bg, selection accent)  
+- InGameBar text/surface semantic; Premium HUD status panel retained  
+- Us/Them/Danger fixed; Phaser Premium Classic unchanged  
+- Behaviour suites (H15 / H16 / Spades HUD / flows) green  
 
-### 8.2 Hearts
-passing · broken/status · moon/results · action sheets  
-
-### 8.3 Spades
-bidding · nil · bags/status · selects  
-
-### 8.4 King
-negatives setup · festa auction · timeline · negotiation · counter-offer · 8-or-nulls · 4×3×3 · contract setup · score modals  
-
-**IMPORTANTE:** estética Phaser continua **fora**.
-
-**Exit criteria:** todos os estados React/DOM de cada jogo obedecem ao Theme Contract.
+**Exit criteria:** met — DOM de jogo nos quatro títulos usa arquitectura semântica.
 
 ---
 
@@ -338,7 +331,7 @@ negatives setup · festa auction · timeline · negotiation · counter-offer · 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current stage)* |
 
 **Auditar:** mobile portrait · narrow mobile · landscape · desktop.
 
@@ -489,6 +482,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 5 → `DONE`; Landing + App Shell on `--sc-*`; current → Etapa 6 Shared Component System | 5, 6 | THEME-ARCHITECTURE-STAGE-5 |
 | 2026-09-20 | Etapa 6 → `DONE`; shared buttons/modals/controls on `--sc-*`; Dobo=alias; current → Etapa 7 Legacy Purple Cleanup | 6, 7 | THEME-ARCHITECTURE-STAGE-6 |
 | 2026-09-20 | Etapa 7 → `DONE`; GLOBAL-UI-01 closed; current → Etapa 8 Game-specific DOM Migration | 7, 8 | THEME-ARCHITECTURE-STAGE-7 |
+| 2026-09-20 | Etapa 8 → `DONE`; game DOM Sueca/Hearts/Spades/King on `--sc-*`; current → Etapa 9 Responsive Theme Pass | 8, 9 | THEME-ARCHITECTURE-STAGE-8 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 
