@@ -150,9 +150,9 @@ For `⋯`: tap opens textual menu directly.
 
 **GLOBAL-UI-02** = current in-game top-bar density.
 
-**Status:** **IMPLEMENTED / VISUAL VALIDATION PENDING** (Batch 1 icon bar + Batch 2 vertical HUD rail).
+**Status:** **IMPLEMENTED / VISUAL VALIDATION PENDING** (Batch 1).
 
-**Structural direction:** icon-oriented commands as a **vertical rail** beside HUD/info boxes (not a separate empty top row).
+**Structural direction:** icon-oriented top bar + overflow menu.
 
 **Audit / plan:** [`GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md`](./GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md)  
 **Implementation:** [`GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md`](./GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md)

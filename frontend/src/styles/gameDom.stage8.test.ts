@@ -85,13 +85,6 @@ describe('Stage 8 game DOM semantic theming', () => {
     expect(variantModals).toMatch(/\.king-auction-toolbar__select\s*\{[\s\S]*?--sc-text/);
   });
 
-  it('command rail uses vertical column layout (Batch 2)', () => {
-    expect(inGameBar).toMatch(/\.in-game-bar-actions\s*\{[\s\S]*?flex-direction:\s*column/);
-    expect(inGameBar).not.toMatch(
-      /\.in-game-bar-actions\s*\{[^}]*flex-direction:\s*row/
-    );
-  });
-
   it('InGameBar consumes semantic text/surface (not sueca-color-text)', () => {
     expect(inGameBar).toMatch(/var\(--sc-text/);
     expect(inGameBar).toMatch(/var\(--sc-text-muted\)/);

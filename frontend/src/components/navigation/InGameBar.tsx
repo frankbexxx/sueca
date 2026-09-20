@@ -187,14 +187,7 @@ export const InGameBar: React.FC<InGameBarProps> = ({
   const pauseLabel = isPaused ? t.gameMenu.resume : t.gameMenu.pause;
 
   return (
-    <div
-      className="in-game-bar in-game-bar--rail"
-      data-testid="in-game-bar"
-      data-layout="vertical-rail"
-      role="toolbar"
-      aria-orientation="vertical"
-      aria-label={t.gameMenu.gameControls}
-    >
+    <div className="in-game-bar" data-testid="in-game-bar">
       <div className="in-game-bar-actions">
         <InGameIconControl
           testId="in-game-pause"
@@ -222,23 +215,22 @@ export const InGameBar: React.FC<InGameBarProps> = ({
             buttonRef={moreRef}
             onActivate={() => setMenuOpen((open) => !open)}
           />
+          <InGameOverflowMenu
+            open={menuOpen}
+            menuId={menuDomId}
+            menuLabel={t.inGame.more}
+            anchorRef={moreRef}
+            labels={{
+              rules: t.nav.rules,
+              settings: t.moreScreen.settings,
+              newGame: t.inGame.newGame,
+              exit: t.inGame.exitGame
+            }}
+            onAction={handleOverflowAction}
+            onClose={closeMenu}
+          />
         </div>
       </div>
-
-      <InGameOverflowMenu
-        open={menuOpen}
-        menuId={menuDomId}
-        menuLabel={t.inGame.more}
-        anchorRef={moreRef}
-        labels={{
-          rules: t.nav.rules,
-          settings: t.moreScreen.settings,
-          newGame: t.inGame.newGame,
-          exit: t.inGame.exitGame
-        }}
-        onAction={handleOverflowAction}
-        onClose={closeMenu}
-      />
 
       <ConfirmDialog
         open={pending === 'newGame'}

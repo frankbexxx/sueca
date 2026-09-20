@@ -1,14 +1,10 @@
 .in-game-overflow-menu {
   position: absolute;
-  top: 0;
-  bottom: auto;
-  right: calc(100% + 6px);
-  left: auto;
+  top: calc(100% + 6px);
+  right: 0;
   z-index: 1400;
   min-width: 11.5rem;
-  max-width: min(16rem, calc(100vw - 56px));
-  max-height: min(70vh, calc(100dvh - 12px));
-  overflow-y: auto;
+  max-width: min(16rem, calc(100vw - 24px));
   padding: 6px;
   border-radius: 10px;
   border: 1px solid var(--sc-surface-border);

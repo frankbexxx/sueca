@@ -27,6 +27,7 @@ describe('Stage 9 responsive theme hardening', () => {
   const playSetup = read('components/screens/PlaySetup.css');
   const gameBoard = read('components/GameBoard.css');
   const tokens = read('styles/design-tokens.css');
+  const inGameBar = read('components/navigation/InGameBar.css');
 
   it('defines touch-min and shell reserves bottom-nav + safe-area space', () => {
     expect(tokens).toMatch(/--sueca-touch-min:\s*48px/);
@@ -88,8 +89,8 @@ describe('Stage 9 responsive theme hardening', () => {
     expect(gameBoard).not.toMatch(/\.game-board\s*\{[\s\S]*?max-width:\s*100vw/);
   });
 
-  it('HUD chrome keeps top safe-area; landscape game board rule remains', () => {
-    expect(gameBoard).toMatch(/\.in-game-hud-chrome[\s\S]*?safe-area-inset-top/);
+  it('InGameBar keeps top safe-area; landscape game board rule remains', () => {
+    expect(inGameBar).toMatch(/safe-area-inset-top/);
     expect(gameBoard).toMatch(/orientation:\s*landscape[\s\S]*?max-height:\s*500px/);
   });
 
