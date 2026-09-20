@@ -339,6 +339,7 @@ export interface Translations {
 
   inGame: {
     exit: string;
+    exitGame: string;
     exitConfirm: string;
     newGame: string;
     leaveConfirm: string;
@@ -346,6 +347,7 @@ export interface Translations {
     pinGame: string;
     pinConfirm: string;
     pinnedToast: string;
+    more: string;
   };
   
   // Game Menu
@@ -604,13 +606,15 @@ export const translations: Record<Language, Translations> = {
     },
     inGame: {
       exit: 'Sair',
+      exitGame: 'Sair do jogo',
       exitConfirm: 'Abandonar a partida actual?',
       newGame: 'Novo jogo',
       leaveConfirm: 'Voltar ao início? A partida fica guardada.',
       newGameConfirm: 'Abandonar a partida actual e começar uma nova?',
       pinGame: 'Fixar',
       pinConfirm: 'Fixar esta partida no histórico?',
-      pinnedToast: 'Partida fixada.'
+      pinnedToast: 'Partida fixada.',
+      more: 'Mais'
     },
     startMenu: {
       title: '🃏 Sueca',
@@ -974,13 +978,15 @@ export const translations: Record<Language, Translations> = {
     },
     inGame: {
       exit: 'Exit',
+      exitGame: 'Exit game',
       exitConfirm: 'Leave the current game?',
       newGame: 'New game',
       leaveConfirm: 'Return to home? Your game will be saved.',
       newGameConfirm: 'Abandon the current game and start a new one?',
       pinGame: 'Pin',
       pinConfirm: 'Pin this game to history?',
-      pinnedToast: 'Game pinned.'
+      pinnedToast: 'Game pinned.',
+      more: 'More'
     },
     startMenu: {
       title: '🃏 Sueca',

@@ -619,7 +619,7 @@ Workstream transversal ao Final Visual Pass. **Não duplicar** por jogo.
 | ID | Título | PRIORITY | STATUS |
 |----|--------|----------|--------|
 | **GLOBAL-UI-01** | Legacy purple remnants | P2 | **DONE** (Theme Architecture Etapa 7) |
-| **GLOBAL-UI-02** | In-game top bar density | P2 | OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
+| **GLOBAL-UI-02** | In-game top bar density | P2 | **IMPLEMENTED / VISUAL VALIDATION PENDING** ([`GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md`](./GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md)) |
 | **GLOBAL-UI-03** | Active player cue consistency | P2 | OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
 | **GLOBAL-CARDS-01** | Card separation (bordo/contraste lateral em fan) | P2 | PARTIAL / OPEN — direction approved ([`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md)) |
 

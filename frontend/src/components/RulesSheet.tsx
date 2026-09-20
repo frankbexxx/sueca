@@ -12,7 +12,7 @@ interface RulesSheetProps {
 }
 
 export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, presetId, onClose }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const resolvedId = resolvePresetId(variant, presetId ?? getDefaultPresetId(variant));
   const resolved = getPreset(resolvedId);
   const title = language === 'pt' ? resolved.namePt : resolved.name;
@@ -49,7 +49,7 @@ export const RulesSheet: React.FC<RulesSheetProps> = ({ variant, presetId, onClo
           </ul>
         )}
         <button type="button" className="rules-sheet-close sueca-btn" onClick={onClose}>
-          Close
+          {t.credits.close}
         </button>
       </div>
     </div>

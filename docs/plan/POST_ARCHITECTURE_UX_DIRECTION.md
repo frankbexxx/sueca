@@ -150,13 +150,14 @@ For `⋯`: tap opens textual menu directly.
 
 **GLOBAL-UI-02** = current in-game top-bar density.
 
-**Status:** APPROVED FUTURE SOLUTION DIRECTION.
+**Status:** **IMPLEMENTED / VISUAL VALIDATION PENDING** (Batch 1).
 
 **Structural direction:** icon-oriented top bar + overflow menu.
 
-**Audit / plan:** [`GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md`](./GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md)
+**Audit / plan:** [`GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md`](./GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md)  
+**Implementation:** [`GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md`](./GLOBAL_UI_02_TOP_BAR_IMPLEMENTATION.md)
 
-Do **not** mark final visual implementation DONE until implemented and visually validated.
+Do **not** mark final visual implementation DONE until OPPO / device visual validation completes.
 
 ---
 
@@ -363,7 +364,7 @@ No future item should be considered visually DONE solely because tests pass.
 
 | Item | Status |
 |------|--------|
-| GLOBAL-UI-02 | OPEN — direction approved |
+| GLOBAL-UI-02 | IMPLEMENTED / VISUAL VALIDATION PENDING — Batch 1 shipped |
 | GLOBAL-UI-03 | OPEN — direction approved |
 | GLOBAL-CARDS-01 | PARTIAL / OPEN — direction approved |
 | King density | P2 — direction approved |

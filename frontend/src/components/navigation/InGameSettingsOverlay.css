@@ -1,0 +1,43 @@
+.in-game-settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  background: var(--sc-overlay-scrim, rgba(0, 0, 0, 0.55));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.in-game-settings-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 78vh;
+  max-height: 78dvh;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface-modal);
+  color: var(--sc-text);
+  padding: 1.1rem 1.15rem;
+  padding-bottom: max(1.15rem, env(safe-area-inset-bottom, 0px));
+}
+
+.in-game-settings-header h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: var(--sc-text-title, var(--sc-text));
+}
+
+.in-game-settings-section {
+  margin-bottom: 0.85rem;
+}
+
+.in-game-settings-section .more-section-title {
+  margin-top: 0;
+}
+
+.in-game-settings-close {
+  margin-top: 0.5rem;
+}

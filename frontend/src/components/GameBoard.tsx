@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { GameState, Card, Suit } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
+import { InGameSettingsOverlay } from './navigation/InGameSettingsOverlay';
+import { RulesSheet } from './RulesSheet';
 import { RoundEndModal } from './RoundEndModal';
 import { GameOverModal } from './GameOverModal';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -72,7 +74,6 @@ import { fetchSessionState, subscribeToActions } from '../services/multiplayerCl
 import { applyHostAction } from '../multiplayer/applyHostAction';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
 import { mpLog, mpWarn } from '../utils/mpDebug';
-import { getAvailableGames } from '../constants/gameMetadata';
 import {
   saveGameSession,
   clearGameSession,
@@ -181,6 +182,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [selectedCard, setSelectedCard] = useState<number | null>(null); // Index of selected card in player's hand
   const [phaserInitFailed, setPhaserInitFailed] = useState(false);
   const [pinConfirmOpen, setPinConfirmOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const {
     playCardSound,
     playDealSound,
@@ -411,9 +414,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     flowOverlayActive,
     festaSheetActive
   } = boardFlow;
-
-  const gameLabel =
-    getAvailableGames().find((g) => g.variant === gameVariant)?.name ?? gameVariant;
 
   useEffect(() => {
     let cancelled = false;
@@ -1409,6 +1409,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       className={boardClassName}
       data-table-renderer={usePhaserTable ? 'phaser' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
+      data-ai-source={isDevMode() ? aiSource : undefined}
     >
       {(devKingFestaJump || devKingNegContract) ? (
         <div
@@ -1435,23 +1436,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         </div>
       ) : null}
       <InGameBar
-        playerName={playerNames[localPlayerIndex] || 'Player 1'}
-        gameLabel={gameLabel}
-        metaLabel={
-          isDevMode()
-            ? aiSource === 'external'
-              ? t.gameBoard.aiExternal
-              : t.gameBoard.aiLocal
-            : undefined
-        }
         isPaused={gameState.isPaused}
         onPause={handlePause}
         onResume={handleResume}
         onNewGame={handleNewGame}
         onPinGame={handlePinGame}
         onExit={handleLeaveScreen}
+        onOpenRules={() => setRulesOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
+      {rulesOpen ? (
+        <RulesSheet
+          variant={gameVariant}
+          presetId={rulesPresetId}
+          onClose={() => setRulesOpen(false)}
+        />
+      ) : null}
+
+      {settingsOpen ? (
+        <InGameSettingsOverlay onClose={() => setSettingsOpen(false)} />
+      ) : null}
       <ScoreStrip
         gameState={gameState}
         variant={gameVariant}
