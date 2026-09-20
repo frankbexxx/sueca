@@ -154,6 +154,8 @@ For `⋯`: tap opens textual menu directly.
 
 **Structural direction:** icon-oriented top bar + overflow menu.
 
+**Audit / plan:** [`GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md`](./GLOBAL_UI_02_TOP_BAR_AUDIT_PLAN.md)
+
 Do **not** mark final visual implementation DONE until implemented and visually validated.
 
 ---
