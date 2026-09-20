@@ -6,9 +6,10 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** `84362f3`  
+**Current commit:** `cda7166`  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
-**Stage 1 proposal:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)
+**Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
+**Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
 - pack Repomix: `docs/ai/repo-review/packs/generated/theme-architecture-audit-context.md`
@@ -25,18 +26,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 1 (Etapa 0) |
+| **DONE** | 2 (Etapa 0, Etapa 1) |
 | **IN PROGRESS** | 0 |
-| **AUDIT** | 1 (Etapa 1 — Theme Contract proposal) |
+| **AUDIT** | 0 |
 | **BLOCKED** | 1 (Etapa 13 — Final Visual Passes, até foundation) |
 | **NOT STARTED** | 11 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 1 — Theme Contract (`AUDIT`) |
-| **Next stage** | Etapa 2 — Token foundation (**só após** aprovação Francisco do Contract) |
-| **Blockers** | P1–P5 product decisions no proposal §16; Etapa 13 bloqueada por foundation |
+| **Current stage** | Etapa 2 — Token Foundation |
+| **Next stage** | Etapa 3 — Built-in themes migration (**só após** Exit Criteria da Etapa 2) |
+| **Blockers** | Etapa 13 bloqueada por foundation |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | `84362f3` |
+| **Current commit** | `cda7166` |
+| **Theme Contract** | **16** `--sc-*` theme-controlled — **APPROVED** |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -153,31 +155,23 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `AUDIT` |
+| **STATUS** | `DONE` |
 | **Objectivo** | Definir o contrato semântico mínimo **final** antes de implementar |
-| **Proposal** | [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) |
-| **Proposed theme-controlled tokens** | **16** (`--sc-*`) |
-| **Exit criteria** | Theme Contract **aprovado por Francisco** — **ainda NÃO** |
+| **Contract doc** | [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) |
+| **Final Theme Contract** | **16** theme-controlled `--sc-*` tokens (**APPROVED** 2026-09-20) |
+| **Exit criteria** | Theme Contract aprovado por Francisco — **cumprido** |
 
-**Não** aceitar automaticamente os “14 tokens” do audit externo — proposta derivada do baseline + consumers.
+**Approved package:**
 
-**Resumo da proposta:**
+- **16** theme-controlled `--sc-*` (incl. `--sc-game-bg` REQUIRED)  
+- intentional globals (Premium HUD, space/radius/touch, focus, scrim, …)  
+- game-semantic fixed: Us / Them / Danger  
+- custom: same contract via 5 inputs + derivation (turn from accent)  
+- Classic: Option B explicit assignment; `:root` neutral emergency only  
+- Phaser felt/rail: Premium Classic, outside contract  
+- transitional legacy aliases until Etapas 6–11  
 
-- 16 theme-controlled · 11 intentional globals · 3 game-semantic (`us`/`them`/`danger`)  
-- Custom parity com 5 inputs via derivação  
-- Classic: recomendação arquitectónica **Option B** (bloco explícito)  
-- Premium HUD: global intencional  
-- Phaser felt: fora do contract  
-
-**Aguarda Francisco (proposal §16):** P1 Classic A/B · P2 `--sc-game-bg` · P3 Premium HUD · P4 emergency accent · P5 custom turn derive  
-
-**Gaps novos nesta etapa:**
-
-- Necessidade explícita de `--sc-game-bg` (valores independentes de felt no Stage 0)  
-- Turn/seat ausentes no custom generator actual → derivação obrigatória no contract  
-- Success/warning omitidos do mínimo (sem consumers sistemáticos)  
-
-**Não** marcar Etapa 1 `DONE`. **Não** iniciar Etapa 2.
+**P1–P5:** ver Decision Log.
 
 ---
 
@@ -185,21 +179,23 @@ O plano **pode evoluir**: novas etapas, gaps e decisões entram no Decision Log 
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(next — current stage)* |
 | **Objectivo** | Implementar semantic tokens no design system **sem** alterar ainda toda a UI |
+
+**Contract input:** 16 `--sc-*` aprovados + globals + game-semantic + aliases transitórios (ver Stage 1 doc).
 
 **Scope possível:** `design-tokens.json` · `design-tokens.css`
 
 **Regras:**
 
-- defaults neutros/coerentes  
-- eliminar dependência **conceptual** do antigo purple como fallback  
-- preservar compatibilidade temporária quando necessário  
-- aliases legacy podem continuar **transitoriamente**  
+- defaults neutros/coerentes (emergency brass/gold accent — **not** Classic identity)  
+- eliminar purple como fallback acidental  
+- preservar compatibilidade temporária (legacy aliases)  
+- Classic assignment explícito (Option B) pode começar aqui ou na Etapa 3 — preferir tokens + emergency `:root` nesta etapa  
 
 **Tests:** token generation · CSS validity · sem mudança comportamental inesperada.
 
-**Exit criteria:** componentes podem consumir semantic tokens independentemente do theme concreto.
+**Exit criteria:** componentes **podem** consumir semantic tokens independentemente do theme concreto.
 
 ---
 
@@ -454,7 +450,13 @@ Theme architecture pode fechar quando:
 
 | Date | Decision | Reason | Impact |
 |------|----------|--------|--------|
-| 2026-09-20 | **Suecão is a theme-first application.** All appropriate React/DOM surfaces, **including Landing Page**, must follow the active theme. **Phaser table aesthetics remain intentionally Premium Classic.** | Audit externo + princípio de produto; evita migração felt Phaser e fecha isolamento da Landing | Scope = React/DOM + bridge; Etapa 5 inclui Landing; Etapa 13/Phaser canvas fora |
+| 2026-09-20 | **Suecão is a theme-first application.** All appropriate React/DOM surfaces, **including Landing Page**, must follow the active theme. **Phaser table aesthetics remain intentionally Premium Classic.** | Audit externo + princípio de produto | Scope = React/DOM + bridge; Etapa 5 Landing; Phaser canvas fora |
+| 2026-09-20 | **P1 — Classic Option B.** Explicit semantic theme assignment. `:root` = neutral emergency fallback only. | Consistency, missing-token detection, avoid classic≡purple defaults | Etapas 2–3 |
+| 2026-09-20 | **P2 — `--sc-game-bg` REQUIRED.** Theme-controlled contract = **16** tokens. | Stage 0: game-bg independent of felt | Token foundation + built-in/custom maps |
+| 2026-09-20 | **P3 — Premium HUD intentional global** (contract v1). | UX-P3.3 identity ≠ app chrome tint | No `--sc-*` mapping for premium-hud in v1 |
+| 2026-09-20 | **P4 — Emergency accent = neutral brass/gold.** Fallback infrastructure only; **not** Classic identity. | Remove purple accident without inventing a fake “classic” | `:root` defaults |
+| 2026-09-20 | **P5 — Custom turn derived from accent** (v1). No editor field. | Same contract; keep 5 inputs | `useCustomThemeCSS` derivation in Etapa 4 |
+| 2026-09-20 | Custom keeps 5 inputs; derived values must match built-in semantic contract; Us/Them/Danger fixed; Phaser felt/rail out; legacy aliases until scheduled stages | Approval package Stage 1-CLOSE | Etapas 2–11 |
 
 ---
 
@@ -480,6 +482,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Documento canónico criado (`THEME-ARCHITECTURE-MASTER-PLAN-01`) | all (0–14) | Plano vivo da migração temática global; roadmap aponta ACTIVE WORKSTREAM |
 | 2026-09-20 | Etapa 0 → `DONE`; baseline `THEME_ARCHITECTURE_STAGE_0_BASELINE.md`; current → Etapa 1 | 0, 1 | Inventário técnico completo antes do Theme Contract |
 | 2026-09-20 | Etapa 1 → `AUDIT`; proposal `THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md` (16 `--sc-*`) | 1 | Contrato semântico proposto; aguarda aprovação Francisco |
+| 2026-09-20 | Etapa 1 → `DONE` (P1–P5 approved); current → Etapa 2 Token Foundation | 1, 2 | THEME-ARCHITECTURE-STAGE-1-CLOSE |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

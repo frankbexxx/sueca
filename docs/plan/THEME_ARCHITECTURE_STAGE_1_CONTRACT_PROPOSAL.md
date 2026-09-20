@@ -2,29 +2,36 @@
 
 **ID:** `THEME-ARCHITECTURE-STAGE-1-A`  
 **Date:** 2026-09-20  
-**Status:** `AUDIT` — awaiting Francisco approval  
+**Status:** `DONE` — approved by Francisco 2026-09-20  
 **Branch:** `v2-main`  
 **Inputs:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md) · código real · master plan  
-**Mode:** architecture / documentation only — **não implementado**
+**Mode:** architecture / documentation only — **não implementado** (Etapa 2+)
 
 ---
 
 ## 1. Executive Summary
 
+**Theme Contract v1 — APPROVED.**
+
 Proposta de **Minimum Semantic Theme Contract** derivada dos consumidores reais (Etapa 0), **não** copiada dos “14 tokens” do audit externo.
 
 | Contagem | N |
 |----------|---|
-| **Proposed semantic tokens (theme-controlled)** | **15** |
+| **Approved semantic tokens (theme-controlled)** | **16** (inclui `--sc-game-bg` **REQUIRED**) |
 | **Intentional globals** (design-system / layout / Premium HUD) | **11** |
 | **Game-semantic globals** | **3** (`us`, `them`, `danger`) |
 | **Explicitly component/local (fora do contract)** | **layout vars, card faces, Phaser PREMIUM_TABLE felt** |
-| **Total named contract surface** | **15 + 11 + 3 = 29** slots (só **15** variam por theme) |
+| **Total named contract surface** | **16 + 11 + 3 = 30** slots (só **16** variam por theme) |
 
-**Recomendação arquitectónica (Cursor):** `classic` deve ter **bloco semântico explícito** (Option B).  
-**Product decisions** ficam na §16 — não decididas aqui.
+**Classic (P1 APPROVED):** Option **B** — bloco/assignment semântico explícito. `:root` = **neutral emergency fallback only** (não identidade Classic).
 
-**Compatibilidade:** custom themes com os **5 inputs actuais** conseguem satisfazer o mesmo contrato via mapeamento + derivação (sem redesenhar o editor).
+**Emergency accent (P4 APPROVED):** neutral brass/gold — infrastructure fallback only, **not** Classic identity.
+
+**Custom (P5 APPROVED):** turn cue derived from accent; 5 user inputs unchanged; same semantic contract as built-ins.
+
+**Premium HUD (P3 APPROVED):** intentional global for contract v1.
+
+**Also approved:** Us/Them/Danger fixed; Phaser felt/rail Premium Classic out of contract; transitional legacy aliases until scheduled stages.
 
 ---
 
@@ -77,7 +84,7 @@ Prefixo proposto: `--sc-*` (*Suecão Contract*). Aliases legacy `--sueca-*` / `-
 
 | Class | Count of roles in this proposal |
 |-------|----------------------------------|
-| A Theme-controlled tokens | **15** |
+| A Theme-controlled tokens | **16** (approved; includes `--sc-game-bg`) |
 | B Intentional global | **11** (scrim, focus, secondary neutrals pattern, space×3, radius×2, touch, font, premium-hud set as one bundle counted in globals table) |
 | C Game-semantic | **3** |
 | D Component/local / out | layout CSS vars, card faces, Phaser felt |
@@ -117,7 +124,9 @@ Prefixo proposto: `--sc-*` (*Suecão Contract*). Aliases legacy `--sueca-*` / `-
 
 ## 5. Proposed Minimum Theme Contract
 
-### 5.1 Theme-controlled — **15 tokens**
+### 5.1 Theme-controlled — **16 tokens (APPROVED)**
+
+Includes required `--sc-game-bg` (P2).
 
 | Proposed token | Meaning | Default (neutral, non-purple) | Theme varies? | Built-in source today | Custom derivation | Consumers |
 |----------------|---------|-------------------------------|---------------|----------------------|-------------------|-----------|
@@ -136,30 +145,22 @@ Prefixo proposto: `--sc-*` (*Suecão Contract*). Aliases legacy `--sueca-*` / `-
 | `--sc-felt` | DOM table felt | `#173C3B` | YES | `--theme-table-felt` | `felt` | GameBoard DOM / host |
 | `--sc-felt-dark` | DOM felt dark / exterior chrome | `#10191B` | YES | `--theme-table-felt-dark` | `darken(felt)` | GameBoard, phaser host css |
 | `--sc-rail` | DOM rail accent | `#C5A45B` | YES | `--theme-table-rail` | `lighten(felt)` | GameBoard DOM |
+| `--sc-game-bg` | in-game board/chrome backdrop | darken(felt) / `#152820` | YES | `--theme-bg-game` | `darken(felt, 0.05–0.1)` | GameBoard |
 
 **Explicitly not separate tokens (derive in components):**
 
 - primary hover/pressed → `rgba(var(--sc-accent-rgb), 0.58/0.8)` (padrão actual)  
 - selected row/card → accent alpha (0.12/0.55)  
-- `--theme-bg-game*` → `--sc-game-bg` **opcional**: se necessário na implementação, alias de `--sc-felt` / darken; **não** no mínimo 15 se `felt` bastar — ver coverage §6.
+- `--theme-bg-game-alt` / `mid` → derive from `--sc-game-bg` / felt in components (not extra contract tokens)
 
-**Revision after coverage test:** in-game `GameBoard` still references `--theme-bg-game`. Add as **16th** only if felt≠game-bg in practice (Stage 0 shows they often differ).  
+#### Final approved count
 
-**Amended minimum:** keep **15** + document `--sc-game-bg` as **optional extension token** (recommended include → **16** if we refuse silent aliasing).
+| Package | Count | Status |
+|---------|-------|--------|
+| **Theme-controlled `--sc-*`** | **16** | **APPROVED** (P2: `--sc-game-bg` REQUIRED) |
+| Includes | canvas×2, surface×3, text×3, accent×2, turn, seat, felt×2, rail, game-bg | |
 
-#### Final proposed count for approval
-
-| Package | Count |
-|---------|-------|
-| **Core theme-controlled (required)** | **15** |
-| **Optional theme-controlled** `--sc-game-bg` | **+1** (recommended YES — Stage 0 shows independent values) |
-| **Approval target** | **16 theme-controlled** |
-
-Including optional:
-
-| `--sc-game-bg` | in-game board/chrome backdrop | darken(felt) | YES | `--theme-bg-game` | `darken(felt, 0.05–0.1)` | GameBoard |
-
-**Proposed semantic token count (theme-controlled): 16.**
+**Approved semantic token count (theme-controlled): 16.**
 
 ### 5.2 Intentional globals — **11**
 
@@ -249,9 +250,10 @@ Success/warning: **not in minimum contract** (no consistent consumer system).
 | Detect missing tokens | hard | **easy** |
 | Accidental legacy fallback | **high** | lower |
 
-### RECOMMENDATION (architectural — Francisco approval)
+### RECOMMENDATION → **APPROVED (P1)**
 
-**Option B — explicit `classic` semantic theme block** (or equivalent token map entry), with `:root` holding **neutral emergency defaults** only (non-purple).
+**Option B — explicit `classic` semantic theme assignment.**  
+`:root` holds **neutral emergency defaults only** (non-purple brass/gold accent infrastructure — P4). Classic identity is **not** whatever sits in `:root`.
 
 ---
 
@@ -406,17 +408,23 @@ Theme defines --sc-*
 
 ---
 
-## 16. Product Decisions Required (Francisco)
+## 16. Product Decisions — APPROVED 2026-09-20
 
-| # | Decision | Options | Notes |
-|---|----------|---------|-------|
-| P1 | Classic architecture | **A** `:root`=classic · **B** explicit classic block | Cursor recommends **B** |
-| P2 | Include `--sc-game-bg` in required 16 vs derive-from-felt only | Required · Derive | Cursor recommends **Required** (Stage 0 independence) |
-| P3 | Premium HUD | Keep global · Allow theme tint later | Cursor recommends **Keep global** for v1 |
-| P4 | Default emergency accent (non-purple) | Brass/gold · Teal · Other | Affects unloaded/`classic` fallback aesthetics |
-| P5 | Custom turn cue | Always derive from accent · Later user control | v1 = derive |
+| # | Decision | Resolution |
+|---|----------|------------|
+| **P1** | Classic architecture | **APPROVED — Option B.** Explicit semantic theme assignment. `:root` = neutral emergency fallback only. |
+| **P2** | `--sc-game-bg` | **APPROVED — REQUIRED.** Final theme-controlled contract = **16** tokens. |
+| **P3** | Premium HUD | **APPROVED — keep intentional global** for contract v1. |
+| **P4** | Emergency accent | **APPROVED — neutral brass/gold.** Fallback infrastructure only; **not** Classic identity. |
+| **P5** | Custom turn cue | **APPROVED — derive from custom accent** for v1. No extra Theme Editor field. |
 
-**Not listed:** Landing themed (already decided). Phaser Premium Classic (already decided).
+**Also approved:**
+
+- custom themes keep current **5** user inputs  
+- derived values must satisfy the **same** semantic contract as built-ins  
+- Us / Them / Danger remain **fixed** game-semantic globals  
+- Phaser felt/rail remain **Premium Classic** and outside theme contract  
+- transitional legacy aliases remain until scheduled migration/removal stages  
 
 ---
 
@@ -424,11 +432,11 @@ Theme defines --sc-*
 
 | Risk | Level |
 |------|-------|
-| Under-tokenizing game-bg → GameBoard mismatch | MED (mitigated by `--sc-game-bg`) |
+| Under-tokenizing game-bg → GameBoard mismatch | mitigated (P2 required) |
 | Over-deriving muted text → poor contrast on some customs | MED — editor checks |
 | Teams confuse Premium HUD with app theme | LOW if docs clear |
 | Alias layer lives too long → dual system | MED — Etapa 11 deadline |
-| Francisco delays P1/P4 → Stage 2 blocked | — process |
+| Classic vs `:root` confusion during Etapa 2–3 | LOW if P1/P4 documented in implementation |
 
 ---
 
@@ -436,15 +444,18 @@ Theme defines --sc-*
 
 Before Etapa 1 → `DONE` / Etapa 2 starts:
 
-- [ ] Francisco approves **16** theme-controlled tokens (or annotated cut)  
-- [ ] Francisco decides **P1 Classic A/B**  
-- [ ] Francisco decides **P3 Premium HUD**  
-- [ ] Francisco decides **P4 emergency accent**  
-- [ ] Confirm custom 5-field derivation accepted  
-- [ ] Confirm Phaser felt exclusion  
-- [ ] Confirm Us/Them/Danger fixed  
-- [ ] No CSS/TS implementation until approval  
+- [x] Francisco approves **16** theme-controlled tokens  
+- [x] Francisco decides **P1 Classic A/B** → **B**  
+- [x] Francisco decides **P3 Premium HUD** → global v1  
+- [x] Francisco decides **P4 emergency accent** → brass/gold fallback only  
+- [x] Confirm custom 5-field derivation accepted (+ P5 turn derive)  
+- [x] Confirm Phaser felt exclusion  
+- [x] Confirm Us/Them/Danger fixed  
+- [x] No CSS/TS implementation until approval → **approved; Etapa 2 next**
+
+**Stage 1 status: `DONE`.**
 
 ---
 
-*THEME-ARCHITECTURE-STAGE-1-A · 2026-09-20 · documentation only · NOT DONE*
+*THEME-ARCHITECTURE-STAGE-1-A · proposal 2026-09-20*  
+*THEME-ARCHITECTURE-STAGE-1-CLOSE · approved 2026-09-20 · documentation only*
