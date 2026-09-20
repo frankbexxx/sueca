@@ -6,7 +6,7 @@
 **Branch:** `v2-main`  
 **Criado:** 2026-09-20  
 **Last updated:** 2026-09-20  
-**Current commit:** *(Stage 12 — see Change Log / git)*  
+**Current commit:** *(Stage 13 — see Change Log / git)*  
 **Stage 0 baseline:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Stage 1 contract:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md) — **DONE / APPROVED**  
 **Stage 2 foundation:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md) — **DONE**  
@@ -19,6 +19,7 @@
 **Stage 9 responsive:** [`THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md`](./THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md) — **DONE**  
 **Stage 11 CSS cleanup:** [`THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md) — **DONE**  
 **Stage 12 global validation:** [`THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md`](./THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md) — **DONE**  
+**Stage 13 final visual passes:** [`THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md`](./THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md) — **DONE**  
 **Theme Contract v1:** **16** theme-controlled `--sc-*` tokens
 
 **Inputs:**
@@ -36,19 +37,19 @@
 | Campo | Valor |
 |-------|--------|
 | **Total stages** | 15 (Etapas 0–14) |
-| **DONE** | 12 (Etapa 0–9 + 11–12; Etapa 10 deferred) |
+| **DONE** | 13 (Etapa 0–9 + 11–13; Etapa 10 deferred) |
 | **IN PROGRESS** | 0 |
 | **AUDIT** | 0 |
 | **BLOCKED** | 0 |
-| **NOT STARTED** | 2 |
+| **NOT STARTED** | 1 |
 | **DEFERRED** | 1 (Etapa 10 — Theme ↔ Deck ↔ Music ↔ SFX UX) |
 | **PARTIAL / READY / SUPERSEDED** | 0 |
-| **Current stage** | Etapa 13 — Retomar Final Visual Passes |
-| **Next stage** | Sueca / Spades / Hearts / King Final Visual Passes (product polish) |
-| **Blockers** | Etapa 10 aguarda decisão de produto (não bloqueia Final Visual Passes) |
+| **Current stage** | Etapa 14 — Final Release Gate |
+| **Next stage** | Release gate / polish residual P2 (GLOBAL-UI-02/03, CARDS-01) |
+| **Blockers** | Etapa 10 aguarda decisão de produto; GLOBAL-UI-02/03/CARDS-01 OPEN (P2) |
 | **Last updated** | 2026-09-20 |
-| **Current commit** | *(Stage 12 — see Change Log / git)* |
-| **Theme Contract** | **16** `--sc-*` · foundation validated · Stage 10 deferred |
+| **Current commit** | *(Stage 13 — see Change Log / git)* |
+| **Theme Contract** | **16** `--sc-*` · visual passes reviewed · Stage 10 deferred |
 
 Actualizar esta tabela em **cada** batch futuro.
 
@@ -402,18 +403,12 @@ Foundation validada (built-ins · Classic · custom · continuity · games · Ph
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` *(current executable stage)* |
+| **STATUS** | `DONE` |
+| **Report** | [`THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md`](./THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md) |
 
-Foundation temática **validada** (Etapa 12). Retomar polish visual por jogo:
+Sueca / Hearts / Spades / King revistos. Locais Sueca revalidated. Sem P1. GLOBAL-UI-02/03 + GLOBAL-CARDS-01 permanecem OPEN (futuro UX). Stage 10 DEFERRED.
 
-1. Sueca — revalidation  
-2. Hearts — full visual pass  
-3. Spades — full visual pass  
-4. King — full visual pass  
-
-**Sueca actual:** `LOCAL PASS — GLOBAL CLEANUP PENDING` (`docs/plan/SUECA_FINAL_VISUAL_PASS.md`).
-
-**Não** repetir trabalho local já fechado salvo regressão.
+**Exit criteria:** met — Etapa 14 desbloqueada.
 
 ---
 
@@ -421,7 +416,7 @@ Foundation temática **validada** (Etapa 12). Retomar polish visual por jogo:
 
 | Campo | Valor |
 |-------|--------|
-| **STATUS** | `NOT STARTED` |
+| **STATUS** | `NOT STARTED` *(current executable stage)* |
 
 Theme architecture pode fechar quando:
 
@@ -490,6 +485,7 @@ Gaps confirmados / refinados na Etapa 0:
 | 2026-09-20 | Etapa 9 → `DONE`; responsive hardening (safe-area, dvh, ≥16px inputs, overflow); current → Etapa 10 **DESIGN PENDING / DEFERRED** | 9, 10 | THEME-ARCHITECTURE-STAGE-9 |
 | 2026-09-20 | Etapa 11 → `DONE` (Stage 10 skipped as deferred); dead CSS/aliases/bridge removed; Phaser on `--sc-*`; current → Etapa 12 Global Visual Validation | 10, 11, 12 | THEME-ARCHITECTURE-STAGE-11 |
 | 2026-09-20 | Etapa 12 → `DONE`; global theme architecture validated; no P0/P1; current → Etapa 13 Final Visual Passes; Stage 10 still DEFERRED | 12, 13 | THEME-ARCHITECTURE-STAGE-12 |
+| 2026-09-20 | Etapa 13 → `DONE`; four games visually reviewed; no P1 fixes; GLOBAL-UI-02/03/CARDS-01 remain OPEN; current → Etapa 14 Final Release Gate | 13, 14 | THEME-ARCHITECTURE-STAGE-13 |
 
 O plano pode evoluir. A versão inicial **não** é imutável — registar todas as alterações futuras nesta tabela.
 

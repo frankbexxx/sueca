@@ -1,12 +1,13 @@
 # Sueca — Final Visual Pass
 
-**Data:** 2026-09-17  
-**Estado:** `LOCAL PASS — GLOBAL CLEANUP PENDING` — issues locais S1/S2/S4/S5/S6/S7/S9 DONE; restam globais S3/S8/S10 + GLOBAL-CARDS-01 PARTIAL  
+**Data:** 2026-09-20 (reconcile pós Theme Architecture Stages 0–12 / Stage 13)  
+**Estado:** `LOCAL PASS — GLOBAL CLEANUP PENDING` — locais S1/S2/S4/S5/S6/S7/S9 **DONE** (reverified Stage 13); S3 **SUPERSEDED** (GLOBAL-UI-01 DONE); restam S8/S10 + GLOBAL-UI-02/03 OPEN + GLOBAL-CARDS-01 PARTIAL  
+**Stage 13 report:** [`THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md`](./THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md)  
 **Screenshots batch-01:** `E:\SUECAO\_temp\sueca-visual-batch-01\`  
 **Screenshots cards polish:** `E:\SUECAO\_temp\sueca-cards-render-polish-01\`  
 **Screenshots batch-02:** `E:\SUECAO\_temp\sueca-visual-batch-02\`  
 **Screenshots audit:** `E:\SUECAO\_temp\sueca-visual-pass\`  
-**Nota:** auditoria automática inicial revista manualmente por Francisco. Esta lista **substitui/refina** a interpretação automática.
+**Nota:** auditoria automática inicial revista manualmente por Francisco. Lista refinada; Stage 13 revalidou runtime após Theme Contract.
 
 **Roadmap:** `docs/plan/ROADMAP_REBASE_SEPTEMBER_2026.md` §12.3  
 
@@ -75,13 +76,11 @@
 |-------|--------|
 | TYPE | GLOBAL UI |
 | PRIORITY | P2 |
-| STATUS | OPEN / GLOBAL |
+| STATUS | SUPERSEDED / DONE (via GLOBAL-UI-01) |
 
-**DECISION:** O roxo é legado da linguagem visual anterior e ainda aparece em CTAs, faixas, estados intermédios e chrome.
+**DECISION:** Tratado na Theme Architecture Etapa 7. Classic purple permanece **apenas** no bloco Classic explícito.
 
-É transversal aos jogos. **Não** corrigir isoladamente na Sueca.
-
-**Referência:** `GLOBAL-UI-01 — Legacy purple remnants`
+**Referência:** `GLOBAL-UI-01 — Legacy purple remnants` → **DONE**
 
 ---
 
@@ -276,11 +275,13 @@ Cue de jogador activo subtil; alinhar Premium Classic Table em todos os jogos.
 7. S2  
 8. S3 / S8 / S10 → cleanup transversal posterior  
 
-**Locais DONE:** S1, S2, S4, S5, S6, S7, S9.  
-**Pendentes (globais):** S3 / S8 / S10 + GLOBAL-CARDS-01 (PARTIAL).  
-**Não** marcar Final Visual Pass Sueca como release PASS absoluto enquanto globais estiverem abertos.
+**Locais DONE:** S1, S2, S4, S5, S6, S7, S9 (reverified Stage 13).  
+**S3:** SUPERSEDED → GLOBAL-UI-01 DONE.  
+**Pendentes (globais):** S8 / S10 + GLOBAL-UI-02 / GLOBAL-UI-03 + GLOBAL-CARDS-01 (PARTIAL).  
+**Não** marcar Final Visual Pass Sueca como release PASS absoluto enquanto globais de UX estiverem abertos.
 
 ---
 
 *SUECA-VISUAL-PASS-REGISTER-01 · 2026-09-17 · documentação*  
-*SUECA-VISUAL-S2-CLOSE-01 · 2026-09-17 · S2 DONE → LOCAL PASS / GLOBAL CLEANUP PENDING*
+*SUECA-VISUAL-S2-CLOSE-01 · 2026-09-17 · S2 DONE → LOCAL PASS / GLOBAL CLEANUP PENDING*  
+*THEME-ARCHITECTURE-STAGE-13 · 2026-09-20 · reconcile + reverificação runtime*

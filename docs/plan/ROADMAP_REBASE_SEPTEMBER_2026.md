@@ -52,8 +52,8 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–9 + 11–12 DONE · Stage 10 **DEFERRED** · **current = Etapa 13 Final Visual Passes** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
-| Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–9 + 11–13 DONE · Stage 10 **DEFERRED** · **current = Etapa 14 Final Release Gate** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** (S3 superseded; S8/S10 + UI-02/03/CARDS-01 OPEN) |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
 | King Visual Pass | **OPEN** |
@@ -630,7 +630,7 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
-**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–9 + 11–12 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **foundation validated** · **Stage 10 = `DESIGN PENDING` / `DEFERRED`** · **current executable = Etapa 13 Resume Final Visual Passes**  
+**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–9 + 11–13 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **GLOBAL-UI-01 CLOSED** · **four-game visual review DONE** · **Stage 10 = `DESIGN PENDING` / `DEFERRED`** · **current executable = Etapa 14 Final Release Gate**  
 **Plano canónico:** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)  
 **Baseline Stage 0:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Contract Stage 1:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)  
@@ -644,10 +644,10 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 **Responsive Stage 9:** [`THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md`](./THEME_ARCHITECTURE_STAGE_9_RESPONSIVE.md)  
 **CSS Cleanup Stage 11:** [`THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md`](./THEME_ARCHITECTURE_STAGE_11_CSS_CLEANUP.md)  
 **Global Validation Stage 12:** [`THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md`](./THEME_ARCHITECTURE_STAGE_12_GLOBAL_VALIDATION.md)  
+**Final Visual Passes Stage 13:** [`THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md`](./THEME_ARCHITECTURE_STAGE_13_FINAL_VISUAL_PASSES.md)  
 
-Foundation de tokens / theming React/DOM **completa e validada** — Final Visual Passes (master plan Etapa 13) **desbloqueadas**.  
-`GLOBAL-UI-01` (legacy purple) → **DONE**; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem OPEN no cleanup transversal / Final Visual Passes.  
-Etapa 10 (Theme ↔ Music UX) permanece **DEFERRED** — ver §13.
+Foundation + visual review dos quatro jogos **completos**. Residual P2: `GLOBAL-UI-02/03`, `GLOBAL-CARDS-01` (futuro UX / iconized top bar).  
+`GLOBAL-UI-01` → **DONE**. Etapa 10 (Theme ↔ Music UX) permanece **DEFERRED** — ver §13.
 
 ---
 
