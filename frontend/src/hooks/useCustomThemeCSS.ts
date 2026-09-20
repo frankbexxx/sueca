@@ -1,11 +1,50 @@
+/**
+ * Custom theme CSS — Theme Contract v1 (Stage 4).
+ *
+ * Emits the same 16 `--sc-*` tokens as built-in themes. Consumers resolve via
+ * the Stage 3 `.app-shell[data-theme]` alias bridge + shell compatibility.
+ * No per-component selector overrides.
+ *
+ * User inputs (unchanged): bgTop, bgBottom, accent, textTitle, felt.
+ */
+
 import { useEffect } from 'react';
 import { getCustomTheme } from '../services/customThemeStorage';
 import { CustomThemeColors } from '../types/theme';
 
 const STYLE_ID = 'suecao-custom-theme-css';
 
+/** Exact Theme Contract v1 token names (must match built-in themes.css). */
+export const CUSTOM_THEME_CONTRACT_TOKENS = [
+  '--sc-canvas-from',
+  '--sc-canvas-to',
+  '--sc-surface',
+  '--sc-surface-border',
+  '--sc-surface-modal',
+  '--sc-text',
+  '--sc-text-muted',
+  '--sc-text-title',
+  '--sc-accent',
+  '--sc-accent-rgb',
+  '--sc-turn',
+  '--sc-seat',
+  '--sc-felt',
+  '--sc-felt-dark',
+  '--sc-rail',
+  '--sc-game-bg'
+] as const;
+
+export type CustomThemeContractToken = (typeof CUSTOM_THEME_CONTRACT_TOKENS)[number];
+
+export type DerivedCustomThemeTokens = Record<CustomThemeContractToken, string> & {
+  /** Transitional GameBoard companions (not contract; same as built-ins). */
+  '--theme-bg-game-alt': string;
+  '--theme-bg-game-mid': string;
+  '--sueca-color-primary-dark': string;
+};
+
 function hexToRgb(hex: string): [number, number, number] {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
   return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [0, 0, 0];
 }
 
@@ -14,67 +53,111 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function hexToRgbChannels(hex: string): string {
+  const [r, g, b] = hexToRgb(hex);
+  return `${r}, ${g}, ${b}`;
+}
+
 function clamp(v: number): number {
   return Math.min(255, Math.max(0, Math.round(v)));
+}
+
+function toHex(r: number, g: number, b: number): string {
+  return `#${[r, g, b].map((c) => clamp(c).toString(16).padStart(2, '0')).join('')}`;
 }
 
 function darken(hex: string, amount: number): string {
   const [r, g, b] = hexToRgb(hex);
   const f = 1 - amount;
-  return `#${[r, g, b].map((c) => clamp(c * f).toString(16).padStart(2, '0')).join('')}`;
+  return toHex(r * f, g * f, b * f);
 }
 
 function lighten(hex: string, amount: number): string {
   const [r, g, b] = hexToRgb(hex);
-  return `#${[r, g, b].map((c) => clamp(c + (255 - c) * amount).toString(16).padStart(2, '0')).join('')}`;
+  return toHex(r + (255 - r) * amount, g + (255 - g) * amount, b + (255 - b) * amount);
 }
 
-function generateCSS(themeId: string, colors: CustomThemeColors): string {
-  const { bgTop, bgBottom, accent, textTitle, felt } = colors;
-  const sel = `.app-shell[data-theme="${themeId}"]`;
-  return `
-${sel} {
-  background: linear-gradient(160deg, ${bgTop} 0%, ${bgBottom} 100%);
-  --theme-panel-modal: ${darken(bgTop, 0.2)};
+function normalizeHex(hex: string): string {
+  const [r, g, b] = hexToRgb(hex);
+  return toHex(r, g, b);
 }
-${sel} .shell-panel {
-  background: ${hexToRgba(accent, 0.06)};
-  border-color: ${hexToRgba(accent, 0.15)};
+
+/**
+ * Safe custom theme id for CSS attribute selectors.
+ * Accepts existing `custom_${Date.now()}` and rejects anything else.
+ */
+export function isSafeCustomThemeId(themeId: string): boolean {
+  return /^custom_[A-Za-z0-9_-]+$/.test(themeId);
 }
-${sel} .shell-section-title,
-${sel} .screen-title,
-${sel} .dashboard-section-title,
-${sel} .shell-hub-item {
-  color: ${textTitle};
+
+/**
+ * Derive the full Theme Contract v1 token map from the 5 user fields.
+ *
+ * Mapping:
+ * - canvas-from/to ← bgTop / bgBottom
+ * - accent / accent-rgb ← accent
+ * - text-title ← textTitle; text ← textTitle; muted ← textTitle @ 0.65
+ * - felt ← felt
+ * - surface / border ← accent @ 0.06 / 0.15 (prior custom panel tint)
+ * - surface-modal ← darken(bgTop, 0.2) (prior --theme-panel-modal)
+ * - turn ← lighten(accent, 0.35) (P5: derived from accent)
+ * - seat ← darken(felt, 0.4) @ 0.45 alpha
+ * - felt-dark ← darken(felt, 0.3)
+ * - rail ← lighten(felt, 0.2)
+ * - game-bg ← darken(felt, 0.1) (distinct from felt; prior custom behaviour)
+ * - game-bg-alt/mid ← darken(felt, 0.05) / darken(felt, 0.15)
+ * - primary-dark ← darken(accent, 0.18)
+ */
+export function deriveCustomThemeTokens(colors: CustomThemeColors): DerivedCustomThemeTokens {
+  const bgTop = normalizeHex(colors.bgTop);
+  const bgBottom = normalizeHex(colors.bgBottom);
+  const accent = normalizeHex(colors.accent);
+  const textTitle = normalizeHex(colors.textTitle);
+  const felt = normalizeHex(colors.felt);
+
+  const gameBg = darken(felt, 0.1);
+
+  return {
+    '--sc-canvas-from': bgTop,
+    '--sc-canvas-to': bgBottom,
+    '--sc-surface': hexToRgba(accent, 0.06),
+    '--sc-surface-border': hexToRgba(accent, 0.15),
+    '--sc-surface-modal': darken(bgTop, 0.2),
+    '--sc-text': textTitle,
+    '--sc-text-muted': hexToRgba(textTitle, 0.65),
+    '--sc-text-title': textTitle,
+    '--sc-accent': accent,
+    '--sc-accent-rgb': hexToRgbChannels(accent),
+    '--sc-turn': lighten(accent, 0.35),
+    '--sc-seat': hexToRgba(darken(felt, 0.4), 0.45),
+    '--sc-felt': felt,
+    '--sc-felt-dark': darken(felt, 0.3),
+    '--sc-rail': lighten(felt, 0.2),
+    '--sc-game-bg': gameBg,
+    '--theme-bg-game-alt': darken(felt, 0.05),
+    '--theme-bg-game-mid': darken(felt, 0.15),
+    '--sueca-color-primary-dark': darken(accent, 0.18)
+  };
 }
-${sel} .bottom-nav-item.active {
-  background: ${hexToRgba(accent, 0.2)};
-  color: ${textTitle};
-}
-${sel} .sueca-btn--primary {
-  background: ${hexToRgba(accent, 0.45)};
-  border-color: ${hexToRgba(accent, 0.65)};
-}
-${sel} .sueca-btn--primary:hover:not(:disabled) {
-  background: ${hexToRgba(accent, 0.58)};
-  border-color: ${hexToRgba(accent, 0.8)};
-}
-${sel} .themes-card--active {
-  border-color: ${hexToRgba(accent, 0.55)};
-  background: ${hexToRgba(accent, 0.12)};
-}
-${sel} .dashboard-game-row--active {
-  border-color: ${hexToRgba(accent, 0.55)};
-  background: ${hexToRgba(accent, 0.12)};
-}
-${sel} .game-board {
-  --theme-table-felt: ${felt};
-  --theme-table-felt-dark: ${darken(felt, 0.3)};
-  --theme-table-rail: ${lighten(felt, 0.2)};
-  --theme-bg-game: ${darken(felt, 0.1)};
-  --theme-bg-game-alt: ${darken(felt, 0.05)};
-}
-`.trim();
+
+/**
+ * Generate token-only CSS for a custom theme id.
+ * Throws if themeId is not a safe `custom_*` selector fragment.
+ */
+export function generateCSS(themeId: string, colors: CustomThemeColors): string {
+  if (!isSafeCustomThemeId(themeId)) {
+    throw new Error(`Unsafe custom theme id for CSS: ${themeId}`);
+  }
+
+  const tokens = deriveCustomThemeTokens(colors);
+  const lines = [
+    ...CUSTOM_THEME_CONTRACT_TOKENS.map((k) => `  ${k}: ${tokens[k]};`),
+    `  --theme-bg-game-alt: ${tokens['--theme-bg-game-alt']};`,
+    `  --theme-bg-game-mid: ${tokens['--theme-bg-game-mid']};`,
+    `  --sueca-color-primary-dark: ${tokens['--sueca-color-primary-dark']};`
+  ];
+
+  return `.app-shell[data-theme="${themeId}"] {\n${lines.join('\n')}\n}`;
 }
 
 function getOrCreateStyleTag(): HTMLStyleElement {
@@ -94,6 +177,10 @@ export function useCustomThemeCSS(activeTheme: string): void {
       style.textContent = '';
       return;
     }
+    if (!isSafeCustomThemeId(activeTheme)) {
+      style.textContent = '';
+      return;
+    }
     const data = getCustomTheme(activeTheme);
     if (!data) {
       style.textContent = '';
@@ -102,5 +189,3 @@ export function useCustomThemeCSS(activeTheme: string): void {
     style.textContent = generateCSS(activeTheme, data.colors);
   }, [activeTheme]);
 }
-
-export { generateCSS };

@@ -52,7 +52,7 @@ Desde o rebase de 13 Set, fecharam-se: limpeza de package Android, signing relea
 
 | Área | Estado |
 |------|--------|
-| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–3 DONE · **Etapa 4 Custom themes parity** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
+| Theme Architecture Foundation | **ACTIVE WORKSTREAM** — Stage 0–4 DONE · **Etapa 5 App Shell + Landing** · [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) |
 | Sueca Visual Pass | **LOCAL PASS / GLOBAL CLEANUP PENDING** |
 | Spades Visual Pass | **OPEN** |
 | Hearts Visual Pass | **OPEN** |
@@ -630,12 +630,13 @@ Testar GLOBAL-CARDS-01 **antes** de aumentar significativamente spacing das mão
 
 ### 12.8 Theme Architecture Foundation (ponte)
 
-**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–3 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **Built-in themes migration DONE** · **current = Etapa 4 Custom themes parity**  
+**STATUS:** **ACTIVE WORKSTREAM** — **Stage 0–4 DONE** · **Theme Contract APPROVED (16 `--sc-*`)** · **Custom themes parity DONE** · **current = Etapa 5 App Shell + Landing**  
 **Plano canónico:** [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md)  
 **Baseline Stage 0:** [`THEME_ARCHITECTURE_STAGE_0_BASELINE.md`](./THEME_ARCHITECTURE_STAGE_0_BASELINE.md)  
 **Contract Stage 1:** [`THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md`](./THEME_ARCHITECTURE_STAGE_1_CONTRACT_PROPOSAL.md)  
 **Foundation Stage 2:** [`THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md`](./THEME_ARCHITECTURE_STAGE_2_IMPLEMENTATION.md)  
-**Built-in Stage 3:** [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md)
+**Built-in Stage 3:** [`THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md`](./THEME_ARCHITECTURE_STAGE_3_BUILTIN_THEMES.md)  
+**Custom Stage 4:** [`THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md`](./THEME_ARCHITECTURE_STAGE_4_CUSTOM_PARITY.md)
 
 Foundation de tokens / theming React/DOM **antes** de retomar Final Visual Passes (master plan Etapa 13 = `BLOCKED` até foundation).  
 `GLOBAL-UI-01` (legacy purple) é absorvido pela Etapa 7 do master plan; `GLOBAL-UI-02/03` e `GLOBAL-CARDS-01` permanecem no cleanup transversal.
