@@ -96,9 +96,9 @@ export function tryPlayK02(
   ledSuit: Suit | null,
   king: KingPtVariantState
 ): number | null {
-  const khIdx = valid.findIndex((i) => isKingHearts(hand[i]));
-  if (khIdx >= 0 && mustPlayKingOfHearts(player, ledSuit, king)) {
-    return khIdx;
+  const posInValid = valid.findIndex((i) => isKingHearts(hand[i]));
+  if (posInValid >= 0 && mustPlayKingOfHearts(player, ledSuit, king)) {
+    return valid[posInValid];
   }
   return null;
 }

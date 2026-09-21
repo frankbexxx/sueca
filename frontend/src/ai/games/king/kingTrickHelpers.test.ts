@@ -59,6 +59,36 @@ describe('kingTrickHelpers', () => {
       const idx = tryPlayK02(valid, hand, player, null, makeKing('no_king_hearts'));
       expect(idx).toBe(0);
     });
+
+    it('returns hand index of K♥ when it is not at hand index 0', () => {
+      // Engine-style `valid`: only K♥ is legal; hand index 2 ≠ position in valid (0).
+      const hand = [
+        makeCard('2', 'hearts'),
+        makeCard('3', 'spades'),
+        makeCard('K', 'hearts')
+      ];
+      const valid = [2];
+      const player = { hand } as { hand: Card[] };
+      const idx = tryPlayK02(valid, hand, player, 'clubs', makeKing('no_king_hearts'));
+      expect(idx).toBe(2);
+      expect(isKingHearts(hand[idx!])).toBe(true);
+    });
+
+    it('maps through filtered valid when K♥ is not the first entry in valid', () => {
+      // Hearts-only + K♥ obligation; filtered list positions ≠ hand indices.
+      const hand = [
+        makeCard('2', 'hearts'),
+        makeCard('3', 'hearts'),
+        makeCard('4', 'hearts'),
+        makeCard('K', 'hearts')
+      ];
+      const valid = [1, 3];
+      const player = { hand } as { hand: Card[] };
+      const idx = tryPlayK02(valid, hand, player, null, makeKing('no_king_hearts'));
+      expect(idx).toBe(3);
+      expect(idx).not.toBe(1);
+      expect(isKingHearts(hand[idx!])).toBe(true);
+    });
   });
 
   describe('cardWouldWinTrickKing', () => {
