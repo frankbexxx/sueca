@@ -551,6 +551,7 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(view.showTrumpSymbol).toBe(false);
     expect(view.seats.find((s) => s.isDealer)?.seatIndex).toBe(1);
     expect(view.seats[0].showActiveHighlight).toBe(true);
+    expect(view.seats[0].turnCueLabel).toBeNull();
     // Team lives in HUD score strip — seat chrome keeps name + D only.
     expect(view.opponents[0].teamLabel).toBeTruthy();
     expect(view.opponents[0].labelText).not.toMatch(/Nós|Eles/i);
@@ -558,6 +559,22 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(view.opponents[0].labelText).not.toMatch(/\b\d+\b/);
     expect(view.opponents[0].handCount).toBeGreaterThan(0);
     expect(view.layout.opponentCardWidth / view.layout.cardWidth).toBeGreaterThanOrEqual(0.7);
+  });
+
+  it('attaches A JOGAR cue to exactly one active seat (GLOBAL-UI-03)', () => {
+    const model = minimalModel();
+    const view = mapTableModelToPhaserView({
+      model,
+      width: 390,
+      height: 844,
+      activeTurnLabel: 'A JOGAR',
+      getTeamName: (t) => (t === 1 ? 'NÓS' : 'ELES')
+    });
+    const withCue = view.seats.filter((s) => s.turnCueLabel);
+    expect(withCue).toHaveLength(1);
+    expect(withCue[0].showActiveHighlight).toBe(true);
+    expect(withCue[0].turnCueLabel).toBe('A JOGAR');
+    expect(view.seats.filter((s) => s.showActiveHighlight)).toHaveLength(1);
   });
 
   it('marks illegal vs inactive visual states', () => {

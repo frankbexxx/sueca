@@ -23,6 +23,8 @@ export interface PhaserThemeView {
   text: string;
   textMuted: string;
   active: string;
+  /** Numeric --sc-turn for Phaser Graphics strokes/fills. */
+  activeHex: number;
   accent: string;
   seatBg: string;
   illegalAlpha: number;
@@ -31,6 +33,33 @@ export interface PhaserThemeView {
   cardBackId: string;
   /** Relative public path including extension. */
   cardBackPath: string;
+}
+
+const DEFAULT_ACTIVE_HEX = 0xe8c56a;
+
+/** Parse CSS color (#rrggbb / rgb) to Phaser hex int. */
+export function cssColorToHex(
+  color: string | null | undefined,
+  fallback = DEFAULT_ACTIVE_HEX
+): number {
+  if (!color) return fallback;
+  const trimmed = color.trim();
+  const hex = trimmed.match(/^#([0-9a-fA-F]{6})$/);
+  if (hex) return parseInt(hex[1], 16);
+  const short = trimmed.match(/^#([0-9a-fA-F]{3})$/);
+  if (short) {
+    const [r, g, b] = short[1].split('');
+    return parseInt(`${r}${r}${g}${g}${b}${b}`, 16);
+  }
+  const rgb = trimmed.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgb) {
+    return (
+      ((Number(rgb[1]) & 255) << 16) +
+      ((Number(rgb[2]) & 255) << 8) +
+      (Number(rgb[3]) & 255)
+    );
+  }
+  return fallback;
 }
 
 const DEFAULT_THEME: PhaserThemeView = {
@@ -43,7 +72,8 @@ const DEFAULT_THEME: PhaserThemeView = {
   brass: PREMIUM_TABLE.brass,
   text: '#f5f5f0',
   textMuted: '#c8c8c0',
-  active: '#C5A45B',
+  active: '#e8c56a',
+  activeHex: DEFAULT_ACTIVE_HEX,
   accent: '#C5A45B',
   seatBg: '#182426ee',
   /** Kept for theme parity; scene uses `phaserHandVisual` as source of truth. */
@@ -84,6 +114,7 @@ export function resolvePhaserThemeFromDom(
     ...DEFAULT_THEME,
     text,
     active,
+    activeHex: cssColorToHex(active, DEFAULT_ACTIVE_HEX),
     accent,
     cardBackId: back.id,
     cardBackPath
@@ -98,6 +129,7 @@ export function themesEqual(a: PhaserThemeView, b: PhaserThemeView): boolean {
     a.exterior === b.exterior &&
     a.text === b.text &&
     a.active === b.active &&
+    a.activeHex === b.activeHex &&
     a.accent === b.accent &&
     a.cardBackId === b.cardBackId &&
     a.cardBackPath === b.cardBackPath

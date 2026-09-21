@@ -29,6 +29,21 @@ export interface PlayerInfoBoxProps {
   isActiveTurn?: boolean;
 }
 
+/** Shared active-turn cue — DOM path (Phaser mirrors via seat chrome). */
+export function ActiveTurnCue({ label }: { label: string }) {
+  return (
+    <span
+      className="turn-now-badge"
+      data-testid="active-turn-cue"
+      data-active-turn="true"
+      aria-label={label}
+    >
+      <span className="turn-now-dot" aria-hidden="true" />
+      <span className="turn-now-label">{label}</span>
+    </span>
+  );
+}
+
 export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   gameState,
   playerIndex,
@@ -45,6 +60,8 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   layoutSnapshot,
   isActiveTurn = false
 }) => {
+  void forceMobileLayout;
+  void layoutSnapshot;
   const { t } = useLanguage();
   const player = gameState.players[playerIndex];
   const useMobileLayout = true;
@@ -82,14 +99,7 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
 
   const renderTurnCue = () => {
     if (!isActiveTurn || compactSeats) return null;
-    return (
-      <span className="turn-now-badge" aria-label={t.gameBoard.nowPlaying}>
-        <span className="turn-indicator" aria-hidden="true">
-          ⚡
-        </span>
-        <span className="turn-now-label">{t.gameBoard.nowPlaying}</span>
-      </span>
-    );
+    return <ActiveTurnCue label={t.gameBoard.nowPlaying} />;
   };
 
   return (
@@ -97,6 +107,7 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
       className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}${
         isActiveTurn ? ' player-info--active' : ''
       }`}
+      data-active-turn={isActiveTurn ? 'true' : undefined}
     >
       {useMobileLayout || spadesBidPhase ? (
         <>

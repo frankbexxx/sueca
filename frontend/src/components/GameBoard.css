@@ -231,62 +231,44 @@
   color: var(--sc-accent);
 }
 
-/* Active turn seat — outline + soft ring (theme token); badge reinforces */
+/* GLOBAL-UI-03 — active turn cue: --sc-turn border + dot + label (no pulse/glow) */
 .player-seat--active .player-info,
 .local-player-dock--active .player-info,
 .player-info--active {
   position: relative;
-  outline: 2px solid var(--sc-turn);
-  outline-offset: 2px;
-}
-
-.player-info--active::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 10px;
-  border: 1px solid var(--sc-turn);
-  opacity: 0.4;
-  pointer-events: none;
-  animation: player-active-ring 2.4s ease-in-out infinite;
+  outline: 1px solid var(--sc-turn, var(--sc-accent));
+  outline-offset: 1px;
 }
 
 .turn-now-badge {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  margin-left: 3px;
+  gap: 4px;
+  margin-left: 2px;
   max-width: 100%;
   vertical-align: middle;
 }
 
+.turn-now-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--sc-turn, var(--sc-accent));
+}
+
 .turn-now-label {
-  font-size: 0.72em;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   line-height: 1.1;
-  padding: 1px 4px;
-  border-radius: 999px;
-  color: var(--sc-turn);
-  border: 1px solid var(--sc-turn);
-  background: transparent;
+  text-transform: uppercase;
+  color: var(--sc-turn, var(--sc-accent));
   white-space: nowrap;
 }
 
 .player-info.mobile-layout .turn-now-label {
-  font-size: 0.62em;
-  padding: 0 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .player-info--active::after {
-    animation: none;
-    opacity: 0.45;
-  }
-
-  .turn-indicator {
-    animation: none;
-  }
+  font-size: 0.55rem;
 }
 
 .spades-info__partial {
@@ -1141,11 +1123,6 @@
   margin-left: 2px;
 }
 
-.player-info.mobile-layout .turn-indicator {
-  font-size: 0.75em;
-  margin-left: 0;
-}
-
 .player-name {
   margin: 0;
   font-size: 0.95em;
@@ -1179,38 +1156,6 @@
 
 .dealer-badge {
   font-size: 0.8em;
-}
-
-.turn-indicator {
-  font-size: 0.85em;
-  color: var(--sc-turn);
-  animation: pulse-glow 1.5s ease-in-out infinite;
-  text-shadow: 0 0 6px currentColor;
-  margin-left: 0;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.12);
-  }
-}
-
-@keyframes player-active-ring {
-  0%, 100% {
-    opacity: 0.28;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.55;
-    transform: scale(1.03);
-  }
 }
 
 .hand-row {

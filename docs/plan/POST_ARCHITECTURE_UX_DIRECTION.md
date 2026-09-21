@@ -163,6 +163,8 @@ Do **not** mark final visual implementation DONE until OPPO / device visual vali
 
 ## 9. Active player — GLOBAL-UI-03
 
+**Status:** `IMPLEMENTED / VISUAL VALIDATION PENDING`
+
 **Approved direction:** Active player cue lives in HUD / table / player seat.
 
 **NOT** in the top bar.
@@ -186,7 +188,15 @@ Active player gets:
 - same semantic pattern across Sueca / Hearts / Spades / King  
 - game/team semantics must remain distinct from theme decoration  
 
-**GLOBAL-UI-03** remains **OPEN** until implemented + visually validated.
+**Implementation (shipped):**
+
+- Shared state: `isActiveTurnSeat` → DOM `PlayerInfoBox` / Phaser `showActiveHighlight` + `turnCueLabel`
+- DOM: `.turn-now-dot` + `.turn-now-label` (`t.gameBoard.nowPlaying` = `A JOGAR` / `PLAYING`), outline via `--sc-turn`
+- Phaser: seat panel stroke/fill uses `theme.active` (`--sc-turn`); cue row under name
+- Suppressed: Hearts pass, King Festa sheet, trick-end / round waits (no active-turn concept)
+- Spades bid: cue on current bidder (same semantic; bidding outline only when not active)
+
+**GLOBAL-UI-03** visual device validation still required before final DONE.
 
 ---
 
@@ -364,8 +374,8 @@ No future item should be considered visually DONE solely because tests pass.
 
 | Item | Status |
 |------|--------|
-| GLOBAL-UI-02 | IMPLEMENTED / VISUAL VALIDATION PENDING — Batch 1 shipped |
-| GLOBAL-UI-03 | OPEN — direction approved |
+| GLOBAL-UI-02 | IMPLEMENTED / VISUAL VALIDATION PENDING — Batch 2B HUD column + board width fix |
+| GLOBAL-UI-03 | IMPLEMENTED / VISUAL VALIDATION PENDING |
 | GLOBAL-CARDS-01 | PARTIAL / OPEN — direction approved |
 | King density | P2 — direction approved |
 | Stage 10 | DESIGN PENDING / DEFERRED |

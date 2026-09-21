@@ -16,6 +16,8 @@ export interface SeatPresentationInput {
   /** Bid / auction / Lic|Ben — one optional secondary token. */
   secondaryBadge: string | null;
   showActiveHighlight: boolean;
+  /** Localized active-turn label (e.g. A JOGAR); only drawn when highlight is on. */
+  activeTurnLabel?: string | null;
   aspect: PhaserAspectMode;
   /** Narrow portrait west/east — shorter name truncation. */
   compactSide?: boolean;
@@ -39,6 +41,8 @@ export interface SeatPresentation {
   showDealerMark: boolean;
   /** When true, Phaser must not draw a monogram circle. */
   showMonogram: boolean;
+  /** GLOBAL-UI-03 cue text when this seat is active; null otherwise. */
+  turnCueLabel: string | null;
 }
 
 /** First letter / digit for seat presence marker (unused on felt; kept for helpers). */
@@ -87,6 +91,10 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
     monogram: '',
     showMonogram: false,
     showActiveRing: input.showActiveHighlight,
-    showDealerMark: input.isDealer
+    showDealerMark: input.isDealer,
+    turnCueLabel:
+      input.showActiveHighlight && input.activeTurnLabel
+        ? input.activeTurnLabel.trim() || null
+        : null
   };
 }

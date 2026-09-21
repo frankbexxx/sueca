@@ -10,6 +10,7 @@ import type {
   TableRenderModel,
   TableRendererEvents
 } from '../../table/tableRenderModel';
+import { useLanguage } from '../../i18n/useLanguage';
 import { SuecaTableScene, SUECA_TABLE_SCENE_KEY } from './SuecaTableScene';
 import { resolvePhaserThemeFromDom } from './phaserTheme';
 import './SuecaPhaserRenderer.css';
@@ -34,6 +35,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   selectedCardIndex = null,
   onInitError
 }) => {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const sceneRef = useRef<SuecaTableScene | null>(null);
@@ -42,6 +44,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   const selectedRef = useRef(selectedCardIndex);
   const getCardImageRef = useRef(getCardImage);
   const getTeamNameRef = useRef(getTeamName);
+  const activeTurnLabelRef = useRef(t.gameBoard.nowPlaying);
   const onInitErrorRef = useRef(onInitError);
 
   eventsRef.current = events;
@@ -49,6 +52,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   selectedRef.current = selectedCardIndex;
   getCardImageRef.current = getCardImage;
   getTeamNameRef.current = getTeamName;
+  activeTurnLabelRef.current = t.gameBoard.nowPlaying;
   onInitErrorRef.current = onInitError;
 
   const buildHost = () => ({
@@ -57,6 +61,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     },
     getCardImage: (card: Card) => getCardImageRef.current(card),
     getTeamName: (team: 1 | 2) => getTeamNameRef.current(team),
+    getActiveTurnLabel: () => activeTurnLabelRef.current,
     isLocalCardPlayable: (cardIndex: number) =>
       playableRef.current ? playableRef.current(cardIndex) : true,
     getSelectedCardIndex: () => selectedRef.current ?? null
@@ -130,7 +135,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     scene.setHost(buildHost());
     scene.applyModel(model);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, selectedCardIndex, isLocalCardPlayable, getTeamName]);
+  }, [model, selectedCardIndex, isLocalCardPlayable, getTeamName, t.gameBoard.nowPlaying]);
 
   return (
     <div className="sueca-phaser-root" data-testid="sueca-phaser-table">

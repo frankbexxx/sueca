@@ -47,10 +47,25 @@ describe('UX seat/HUD polish — annotated screenshot pass', () => {
       teamLabel: 'Nós',
       secondaryBadge: null,
       showActiveHighlight: true,
+      activeTurnLabel: 'A JOGAR',
       aspect: 'portrait'
     });
     expect(local.labelText).toBe('Player 1');
     expect(local.showActiveRing).toBe(true);
+    expect(local.turnCueLabel).toBe('A JOGAR');
+
+    const inactive = computeSeatPresentation({
+      name: 'Player 2',
+      handCount: 10,
+      isLocal: false,
+      isDealer: false,
+      teamLabel: null,
+      secondaryBadge: null,
+      showActiveHighlight: false,
+      activeTurnLabel: 'A JOGAR',
+      aspect: 'portrait'
+    });
+    expect(inactive.turnCueLabel).toBeNull();
   });
 
   it('keeps compact side seats as Player N without P# / team / counts', () => {

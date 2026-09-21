@@ -185,13 +185,16 @@ describe('mapTableModelToPhaserView — Spades', () => {
       model,
       width: 390,
       height: 740,
-      isLocalCardPlayable: () => true
+      isLocalCardPlayable: () => true,
+      activeTurnLabel: 'A JOGAR'
     });
     expect(view.spadesBidPhase).toBe(true);
     expect(view.interactionEnabled).toBe(false);
     expect(view.localIsActive).toBe(false);
     expect(view.localHand.every((c) => c.canDrag === false)).toBe(true);
     expect(view.seats[1].showActiveHighlight).toBe(true);
+    expect(view.seats[1].turnCueLabel).toBe('A JOGAR');
+    expect(view.seats.filter((s) => s.turnCueLabel)).toHaveLength(1);
     expect(view.seats[0].bidLabel).toBe('3');
     expect(view.seats[1].bidLabel).toBeNull();
     expect(view.seats[0].labelText).toContain('3');

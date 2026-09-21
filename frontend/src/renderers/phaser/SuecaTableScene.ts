@@ -40,6 +40,8 @@ export interface SuecaTableSceneHost {
   onLocalCardClick?: (cardIndex: number) => void;
   getCardImage: SuecaPhaserCardUrlResolver;
   getTeamName?: (team: 1 | 2) => string;
+  /** Localized active-turn cue (GLOBAL-UI-03). */
+  getActiveTurnLabel?: () => string;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   getSelectedCardIndex?: () => number | null;
 }
@@ -53,6 +55,8 @@ export class SuecaTableScene extends Phaser.Scene {
   private trickSprites = new Map<string, Phaser.GameObjects.Image>();
   private opponentBacks: Phaser.GameObjects.GameObject[] = [];
   private seatLabels = new Map<number, Phaser.GameObjects.Text>();
+  private seatTurnCues = new Map<number, Phaser.GameObjects.Text>();
+  private seatTurnDots = new Map<number, Phaser.GameObjects.Graphics>();
   private seatMonograms = new Map<number, Phaser.GameObjects.Text>();
   private seatPanels = new Map<number, Phaser.GameObjects.Graphics>();
   private seatRings = new Map<number, Phaser.GameObjects.Ellipse>();
@@ -251,6 +255,7 @@ export class SuecaTableScene extends Phaser.Scene {
       selectedCardIndex: selected,
       isLocalCardPlayable: this.host.isLocalCardPlayable,
       getTeamName: this.host.getTeamName,
+      activeTurnLabel: this.host.getActiveTurnLabel?.() ?? null,
       orientationReference: resolveOrientationReference(
         this.scale.width,
         this.scale.height
@@ -377,6 +382,8 @@ export class SuecaTableScene extends Phaser.Scene {
   private redrawSeatChrome(view: PhaserTableViewModel): void {
     const keep = new Set<number>();
     let activeSeatIndex: number | null = null;
+    const turnColor = this.theme.activeHex;
+    const turnColorCss = this.theme.active;
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
       const text = seat.labelText;
@@ -389,6 +396,8 @@ export class SuecaTableScene extends Phaser.Scene {
           : compactSide
             ? '11px'
             : '12px';
+      const cueText = seat.turnCueLabel;
+      const showCue = Boolean(cueText);
 
       let label = this.seatLabels.get(seat.seatIndex);
       if (!label) {
@@ -411,21 +420,75 @@ export class SuecaTableScene extends Phaser.Scene {
       label.setColor(this.theme.text);
       label.setBackgroundColor('rgba(0,0,0,0)');
 
+      let cueLabel = this.seatTurnCues.get(seat.seatIndex);
+      if (showCue) {
+        if (!cueLabel) {
+          cueLabel = this.add
+            .text(0, 0, cueText!, {
+              fontFamily: PREMIUM_TABLE.fontFamily,
+              fontSize: compactSide ? '9px' : '10px',
+              color: turnColorCss,
+              fontStyle: '600'
+            })
+            .setOrigin(0, 0.5)
+            .setDepth(PREMIUM_TABLE.depthSeats + 2);
+          this.seatTurnCues.set(seat.seatIndex, cueLabel);
+        } else {
+          cueLabel.setText(cueText!);
+          cueLabel.setFontSize(compactSide ? '9px' : '10px');
+          cueLabel.setColor(turnColorCss);
+          cueLabel.setVisible(true);
+        }
+      } else if (cueLabel) {
+        cueLabel.setVisible(false);
+      }
+
+      let cueDot = this.seatTurnDots.get(seat.seatIndex);
+      if (showCue) {
+        if (!cueDot) {
+          cueDot = this.add.graphics().setDepth(PREMIUM_TABLE.depthSeats + 2);
+          this.seatTurnDots.set(seat.seatIndex, cueDot);
+        }
+        cueDot.clear();
+        cueDot.fillStyle(turnColor, 1);
+        cueDot.setVisible(true);
+      } else if (cueDot) {
+        cueDot.clear();
+        cueDot.setVisible(false);
+      }
+
       // Seat-number monograms removed (annotated screenshots) — hide any leftovers.
       const mono = this.seatMonograms.get(seat.seatIndex);
       if (mono) mono.setVisible(false);
 
       const padX = compactSide ? 7 : 9;
       const padY = compactSide ? 4 : 5;
-      const pw = label.width + padX * 2;
-      const ph = Math.max(22, label.height + padY * 2);
+      const cueGap = 3;
+      const cueRowH = showCue ? (compactSide ? 11 : 12) : 0;
+      const nameW = label.width;
+      const cueW = showCue && cueLabel ? 6 + 4 + cueLabel.width : 0;
+      const contentW = Math.max(nameW, cueW);
+      const pw = contentW + padX * 2;
+      const ph = Math.max(22, label.height + (showCue ? cueGap + cueRowH : 0) + padY * 2);
       const px = seat.labelPosition.x - pw / 2;
       const py = seat.labelPosition.y - ph / 2;
       const radius = 8;
       const active = seat.showActiveHighlight;
       if (active) activeSeatIndex = seat.seatIndex;
 
-      label.setPosition(seat.labelPosition.x, seat.labelPosition.y);
+      const nameY = showCue
+        ? py + padY + label.height / 2
+        : seat.labelPosition.y;
+      label.setPosition(seat.labelPosition.x, nameY);
+
+      if (showCue && cueLabel && cueDot) {
+        const cueY = py + ph - padY - cueRowH / 2;
+        const rowStartX = seat.labelPosition.x - cueW / 2;
+        cueDot.clear();
+        cueDot.fillStyle(turnColor, 1);
+        cueDot.fillCircle(rowStartX + 3, cueY, 3);
+        cueLabel.setPosition(rowStartX + 6 + 4, cueY);
+      }
 
       let panel = this.seatPanels.get(seat.seatIndex);
       if (!panel) {
@@ -436,15 +499,15 @@ export class SuecaTableScene extends Phaser.Scene {
       panel.fillStyle(PREMIUM_TABLE.shadow, 0.18);
       panel.fillRoundedRect(px + 1, py + 1.5, pw, ph, radius);
       if (active) {
-        panel.fillStyle(this.theme.brass, 0.08);
+        panel.fillStyle(turnColor, 0.1);
         panel.fillRoundedRect(px, py, pw, ph, radius);
       }
       panel.fillStyle(this.theme.seatPanel, active ? 0.82 : 0.68);
       panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(
-        active ? 1.75 : 1,
-        this.theme.brass,
-        active ? 0.78 : seat.isDealer ? 0.38 : 0.2
+        active ? 1.5 : 1,
+        active ? turnColor : this.theme.brass,
+        active ? 0.9 : seat.isDealer ? 0.38 : 0.2
       );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
 
@@ -475,6 +538,10 @@ export class SuecaTableScene extends Phaser.Scene {
       if (!keep.has(idx)) {
         this.seatLabels.get(idx)?.destroy();
         this.seatLabels.delete(idx);
+        this.seatTurnCues.get(idx)?.destroy();
+        this.seatTurnCues.delete(idx);
+        this.seatTurnDots.get(idx)?.destroy();
+        this.seatTurnDots.delete(idx);
         this.seatMonograms.get(idx)?.destroy();
         this.seatMonograms.delete(idx);
         this.seatPanels.get(idx)?.destroy();

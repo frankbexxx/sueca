@@ -60,6 +60,8 @@ export interface PhaserSeatEntity {
   isActive: boolean;
   isDealer: boolean;
   showActiveHighlight: boolean;
+  /** GLOBAL-UI-03 — localized cue when active (null when inactive). */
+  turnCueLabel: string | null;
   backPositions: PhaserPoint[];
   labelPosition: PhaserPoint;
 }
@@ -163,6 +165,8 @@ export function mapTableModelToPhaserView(options: {
   selectedCardIndex?: number | null;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   getTeamName?: (team: 1 | 2) => string;
+  /** Localized active-turn cue (GLOBAL-UI-03), e.g. A JOGAR. */
+  activeTurnLabel?: string | null;
   /** Window/host size for aspect classification (sheet-safe). */
   orientationReference?: { width?: number; height?: number } | null;
 }): PhaserTableViewModel {
@@ -173,6 +177,7 @@ export function mapTableModelToPhaserView(options: {
     selectedCardIndex = null,
     isLocalCardPlayable,
     getTeamName,
+    activeTurnLabel = null,
     orientationReference = null
   } = options;
   const local = model.localPlayerIndex;
@@ -300,6 +305,7 @@ export function mapTableModelToPhaserView(options: {
       teamLabel,
       secondaryBadge: bidLabel,
       showActiveHighlight,
+      activeTurnLabel,
       aspect: layout.aspect,
       compactSide: layout.compactSideSeats && (compass === 'west' || compass === 'east'),
       // Top seat: identity only — team already in score strip for Sueca.
@@ -319,6 +325,7 @@ export function mapTableModelToPhaserView(options: {
       isActive: seat.isActive,
       isDealer: seat.isDealer,
       showActiveHighlight: presentation.showActiveRing,
+      turnCueLabel: presentation.turnCueLabel,
       backPositions: seat.isLocal
         ? []
         : layoutOpponentBackPositions(seat.handCount, compass, layout),
