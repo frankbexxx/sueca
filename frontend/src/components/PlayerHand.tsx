@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameState, Card } from '../types/game';
-import { SELECTED_CARD_Z_INDEX } from '../constants/gameConstants';
 import { useHandLayout } from '../hooks/useMobileLayout';
 import { LayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { handleCardImageError } from '../utils/cardImageError';
@@ -22,8 +21,8 @@ interface PlayerHandProps {
 }
 
 /**
- * Generic player hand component that displays player's cards
- * Adapts based on game variant and player state
+ * Generic player hand component that displays player's cards.
+ * Spacing follows GLOBAL-CARDS-01 shared adaptive expose curve.
  */
 export const PlayerHand: React.FC<PlayerHandProps> = ({
   gameState,
@@ -38,7 +37,27 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 }) => {
   const player = gameState.players[localPlayerIndex];
   const cardCount = player?.hand.length ?? 0;
-  const { isNarrow, cardSpacing, useScrollLayout } = useHandLayout(cardCount, layoutSnapshot);
+  const barRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const update = () => {
+      const w = el.clientWidth;
+      if (w > 0) setAvailableWidth(w);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const { isNarrow, cardSpacing, useScrollLayout } = useHandLayout(
+    cardCount,
+    layoutSnapshot,
+    availableWidth
+  );
   if (!player) return null;
 
   const playableFlags = player.hand.map((_, cardIndex) => !readOnly && canPlayCard(cardIndex));
@@ -46,6 +65,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 
   return (
     <div
+      ref={barRef}
       className={`player-hand-bar ${isNarrow ? 'player-hand-bar--narrow' : ''}${
         handHasPlayable && !readOnly ? '' : ' player-hand-bar--inactive'
       }`}
@@ -67,7 +87,10 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
           if (!useScrollLayout) {
             const centerOffset = ((Math.max(cardCount, 1) - 1) * cardSpacing) / 2;
             const cardPosition = cardIndex * cardSpacing;
-            fixedTransform = `translateX(${cardPosition - centerOffset}px)`;
+            const lift = isSelected || isPassSelected ? ' translateY(-16px)' : '';
+            fixedTransform = `translateX(${cardPosition - centerOffset}px)${lift}`;
+          } else if (isSelected || isPassSelected) {
+            fixedTransform = 'translateY(-16px)';
           }
 
           return (
@@ -80,7 +103,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               }`}
               style={{
                 transform: fixedTransform,
-                zIndex: isSelected ? SELECTED_CARD_Z_INDEX : cardIndex + 1
+                zIndex: cardIndex + 1
               }}
               onClick={readOnly ? undefined : () => onCardClick(cardIndex)}
               role={readOnly ? 'presentation' : 'button'}

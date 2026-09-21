@@ -695,9 +695,8 @@ export class SuecaTableScene extends Phaser.Scene {
       duration: 140,
       ease: 'Cubic.easeOut',
       onComplete: () => {
-        sprite.setDepth(
-          entity.selected ? PREMIUM_TABLE.depthSelected : entity.position.depth
-        );
+        // Restore fan stacking — never leave selected at foreground depth.
+        sprite.setDepth(entity.position.depth);
       }
     });
   };
@@ -748,10 +747,8 @@ export class SuecaTableScene extends Phaser.Scene {
       const dh = cardHeight * displayScale;
       const targetX = entity.position.x;
       const targetY = entity.position.y + visual.yOffset;
-      // S6 — selected card paints above neighbours so lift/index stay readable.
-      const cardDepth = entity.selected
-        ? PREMIUM_TABLE.depthSelected
-        : entity.position.depth;
+      // GLOBAL-CARDS-01 — selected cards lift on Y only; keep fan depth by index.
+      const cardDepth = entity.position.depth;
 
       const shadow = this.add
         .ellipse(
@@ -760,7 +757,7 @@ export class SuecaTableScene extends Phaser.Scene {
           dw * 0.92,
           dh * 0.24,
           PREMIUM_TABLE.shadow,
-          entity.selected ? 0.48 : 0.32
+          entity.selected ? 0.4 : 0.32
         )
         .setDepth(Math.max(PREMIUM_TABLE.depthHand - 1, cardDepth - 1));
       this.handShadows.push(shadow);

@@ -190,8 +190,8 @@ describe('phaserTableLayout E2', () => {
       const expose = spacing / displayW;
       // Dense 13 stays in the readable expose band; looser counts open up.
       if (n === 13) {
-        expect(expose).toBeGreaterThanOrEqual(0.28);
-        expect(expose).toBeLessThanOrEqual(0.38);
+        expect(expose).toBeGreaterThanOrEqual(0.32);
+        expect(expose).toBeLessThanOrEqual(0.42);
       }
       // Hand stays centered and inside canvas
       const left = slots[0].x - displayW / 2;
@@ -206,20 +206,22 @@ describe('phaserTableLayout E2', () => {
     for (let i = 1; i < spacings.length; i++) {
       expect(spacings[i]).toBeGreaterThanOrEqual(spacings[i - 1] - 1e-6);
     }
-    // No abrupt tier cliff around 8→7 / 5→4
+    // No abrupt tier cliff around 8→7 / 5→4 (GLOBAL-CARDS-01 opens mid counts smoothly)
     const s8 = computeLocalHandLayout({ ...phone, cardCount: 8 }).slots;
     const s7 = computeLocalHandLayout({ ...phone, cardCount: 7 }).slots;
     const s5 = computeLocalHandLayout({ ...phone, cardCount: 5 }).slots;
     const s4 = computeLocalHandLayout({ ...phone, cardCount: 4 }).slots;
     const d87 = (s7[1].x - s7[0].x) - (s8[1].x - s8[0].x);
     const d54 = (s4[1].x - s4[0].x) - (s5[1].x - s5[0].x);
-    expect(d87).toBeLessThan(4);
-    expect(d54).toBeLessThan(4);
+    expect(d87).toBeGreaterThanOrEqual(0);
+    expect(d54).toBeGreaterThanOrEqual(0);
+    expect(d87).toBeLessThan(8);
+    expect(d54).toBeLessThan(8);
   });
 
-  it('exposes ~30–35% at 13 and opens by 10 without discrete tiers', () => {
-    expect(HAND_LAYOUT.exposeAt13).toBeGreaterThanOrEqual(0.3);
-    expect(HAND_LAYOUT.exposeAt13).toBeLessThanOrEqual(0.35);
+  it('exposes ~35–40% at 13 and opens by mid counts without discrete tiers', () => {
+    expect(HAND_LAYOUT.exposeAt13).toBeGreaterThanOrEqual(0.35);
+    expect(HAND_LAYOUT.exposeAt13).toBeLessThanOrEqual(0.42);
     expect(handExposedFraction(13)).toBeCloseTo(HAND_LAYOUT.exposeAt13, 5);
     expect(handExposedFraction(10)).toBeGreaterThan(handExposedFraction(13));
     expect(handExposedFraction(7)).toBeGreaterThan(handExposedFraction(8));
@@ -492,7 +494,8 @@ describe('phaserHandVisual UX-P1', () => {
       interactionEnabled: true
     });
     expect(selected.yOffset).toBeLessThan(0);
-    expect(selected.scale).toBeGreaterThan(other.scale);
+    expect(selected.scale).toBe(other.scale);
+    expect(selected.scale).toBe(HAND_VISUAL.normalScale);
     expect(other.alpha).toBe(1);
   });
 

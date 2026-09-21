@@ -121,8 +121,8 @@ describe('UX-P3.1 premium table layout', () => {
   it('raises selected lift above resting hand without opening the fan', () => {
     expect(HAND_VISUAL.selectedLift).toBeGreaterThanOrEqual(20);
     expect(HAND_VISUAL.selectedLift).toBeLessThanOrEqual(28);
-    expect(HAND_VISUAL.selectedScale).toBeGreaterThan(1.04);
-    expect(HAND_VISUAL.selectedScale).toBeLessThanOrEqual(1.1);
+    expect(HAND_VISUAL.selectedScale).toBe(1);
+    expect(HAND_VISUAL.selectedScale).toBe(HAND_VISUAL.normalScale);
   });
 
   it('preserves UX-P1 hand fan for same count across variants', () => {

@@ -1191,15 +1191,24 @@
   box-sizing: border-box;
 }
 
-.hand-row--scroll .card-hand,
-.player-hand-bar--narrow .card-hand {
+.hand-row--scroll .card-hand {
   position: relative;
-  transform: none !important;
+  transform: none;
   flex-shrink: 0;
   margin-right: 4px;
   min-width: calc(var(--card-w) * 0.92);
   min-height: calc(var(--card-h) * 0.93);
   object-fit: contain;
+}
+
+.hand-row--scroll .card-hand.selected,
+.hand-row--scroll .card-hand--pass-selected {
+  transform: translateY(-16px);
+}
+
+/* Narrow bar may still use absolute fan when adaptive spacing fits. */
+.player-hand-bar--narrow .hand-row:not(.hand-row--scroll) .card-hand {
+  position: absolute;
 }
 
 .card-hand {
@@ -1226,17 +1235,15 @@
 }
 
 .card-hand.selected {
-  outline: 3px solid var(--sc-accent);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.48);
-  z-index: 1000;
+  outline: 2px solid var(--sc-accent, var(--sc-turn));
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+  /* GLOBAL-CARDS-01 — lift via transform only; keep fan z-order by index. */
 }
 
 .card-hand--pass-selected {
-  outline: 3px solid rgba(var(--sc-accent-rgb), 0.85);
-  outline-offset: 2px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.48);
-  transform: translateY(-8px);
-  z-index: 1000;
+  outline: 2px solid rgba(var(--sc-accent-rgb), 0.85);
+  outline-offset: 1px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Legal cards — full clarity + interactive cue */

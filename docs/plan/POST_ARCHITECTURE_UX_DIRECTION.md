@@ -202,6 +202,8 @@ Active player gets:
 
 ## 10. Card presentation — GLOBAL-CARDS-01
 
+**Status:** `IMPLEMENTED / VISUAL VALIDATION PENDING`
+
 **Approved direction for HUMAN hand:**
 
 - keep compact fan  
@@ -225,7 +227,16 @@ Active player gets:
 
 Same principle across all four games.
 
-**GLOBAL-CARDS-01** remains **PARTIAL / OPEN** until implemented + visually validated.
+**Implementation (shipped):**
+
+- Shared helper: `frontend/src/table/localHandLayout.ts` (`computeHumanHandLayout` / `handExposedFraction`)
+- Phaser: `layoutLocalHandPositions` consumes shared spacing; near-zero fan angle; selected lift via `HAND_VISUAL` (26px Y-only — no scale / no depth promotion)
+- DOM: `PlayerHand` / `useMobileLayout` use same expose curve vs available width; selected lift via `translateY` (fan z-order by index)
+- Expose curve: **0.38 @ 13** → **0.92 @ 2** (continuous ease-out)
+- Opponents unchanged (`layoutOpponentBackPositions`)
+- Selected cue: vertical elevation + accent outline only (GLOBAL-CARDS-01 depth fix)
+
+See [`GLOBAL_CARDS_01_HAND_FAN.md`](./GLOBAL_CARDS_01_HAND_FAN.md).
 
 ---
 
@@ -376,7 +387,7 @@ No future item should be considered visually DONE solely because tests pass.
 |------|--------|
 | GLOBAL-UI-02 | IMPLEMENTED / VISUAL VALIDATION PENDING — Batch 2B HUD column + board width fix |
 | GLOBAL-UI-03 | IMPLEMENTED / VISUAL VALIDATION PENDING |
-| GLOBAL-CARDS-01 | PARTIAL / OPEN — direction approved |
+| GLOBAL-CARDS-01 | IMPLEMENTED / VISUAL VALIDATION PENDING |
 | King density | P2 — direction approved |
 | Stage 10 | DESIGN PENDING / DEFERRED |
 | Theme Architecture Foundation | COMPLETE |

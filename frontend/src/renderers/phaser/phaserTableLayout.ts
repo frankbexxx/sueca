@@ -7,9 +7,15 @@
  * only differ by count-driven spacing).
  *
  * UX-P3.1: seats / trick / felt zones come from `computePremiumTableLayout`;
- * hand fan knobs (`HAND_LAYOUT`) stay UX-P1.
+ * hand fan knobs live in `table/localHandLayout` (GLOBAL-CARDS-01).
  */
 
+import {
+  computeHumanHandLayout,
+  HAND_LAYOUT,
+  handExposedFraction,
+  type HumanHandSlot
+} from '../../table/localHandLayout';
 import {
   PREMIUM_TABLE,
   computePremiumTableLayout,
@@ -59,46 +65,13 @@ export interface PhaserTableLayout {
   compactSideSeats: boolean;
 }
 
-/**
- * Shared hand fan knobs — not variant-specific.
- * Spacing uses a continuous expose curve (no discrete tiers).
- * `expose*` = fraction of *display* card width between card centers
- * (≈ left strip of each covered card that stays visible).
- */
-export const HAND_LAYOUT = {
-  /** ~13 cards: dense but rank/suit readable (~30–35% expose). */
-  exposeAt13: 0.33,
-  /** ~2 cards: open fan. */
-  exposeAt2: 0.72,
-  referenceCountHigh: 13,
-  referenceCountLow: 2,
-  portraitArc: 1.15,
-  landscapeArc: 1.5,
-  portraitFanDeg: 2.0,
-  landscapeFanDeg: 1.3
-} as const;
-
-/**
- * Continuous visible-width fraction for local-hand spacing.
- * Higher count → more compressed; no step at 8→7 or 5→4.
- */
-export function handExposedFraction(count: number): number {
-  if (count <= 1) return 1;
-  const hi = HAND_LAYOUT.referenceCountHigh;
-  const lo = HAND_LAYOUT.referenceCountLow;
-  const t = Math.max(0, Math.min(1, (hi - count) / (hi - lo)));
-  // Ease-out: mid counts open a bit before linear would.
-  const eased = 1 - (1 - t) * (1 - t);
-  return (
-    HAND_LAYOUT.exposeAt13 +
-    eased * (HAND_LAYOUT.exposeAt2 - HAND_LAYOUT.exposeAt13)
-  );
-}
+export { HAND_LAYOUT, handExposedFraction };
 
 /** Display width of a local hand card (layout width × presence). */
 export function localHandDisplayWidth(layout: Pick<PhaserTableLayout, 'cardWidth'>): number {
   return layout.cardWidth * PREMIUM_TABLE.handPresenceScale;
 }
+
 
 export interface PhaserLayoutOptions {
   /** Lift hand / south seat above React bottom-sheet chrome. */
@@ -160,38 +133,32 @@ export function buildPhaserTableLayout(
 }
 
 /**
- * Fan positions for the local hand.
+ * Fan positions for the local hand (GLOBAL-CARDS-01 shared spacing).
  * Depends only on card count + layout metrics (viewport-derived), not variant.
+ * Selected lift is applied later via `HAND_VISUAL` (not here).
  */
 export function layoutLocalHandPositions(
   count: number,
   layout: PhaserTableLayout
 ): PhaserHandSlot[] {
   if (count <= 0) return [];
-  const { handY, handSpreadMax } = layout;
   const displayW = localHandDisplayWidth(layout);
-  const expose = handExposedFraction(count);
-  const spacing = Math.min(
-    displayW * expose,
-    handSpreadMax / Math.max(count, 1)
-  );
-  const total = spacing * (count - 1);
-  const startX = layout.width / 2 - total / 2;
-  const mid = (count - 1) / 2;
-  const isLandscape = layout.aspect === 'landscape';
-  const arcK = isLandscape ? HAND_LAYOUT.landscapeArc : HAND_LAYOUT.portraitArc;
-  const fanDeg = isLandscape ? HAND_LAYOUT.landscapeFanDeg : HAND_LAYOUT.portraitFanDeg;
-  return Array.from({ length: count }, (_, i) => {
-    const t = i - mid;
-    const arc = Math.abs(t) * arcK;
-    return {
-      x: startX + i * spacing,
-      y: handY + arc,
-      rotationDeg: t * fanDeg,
-      // Rightmost on top — preserves left-edge rank visibility under overlap.
-      depth: PREMIUM_TABLE.depthHand + i
-    };
+  const { slots } = computeHumanHandLayout({
+    cardCount: count,
+    cardDisplayWidth: displayW,
+    availableWidth: layout.handSpreadMax,
+    centerX: layout.width / 2,
+    baselineY: layout.handY,
+    selectedIndex: null,
+    selectedLift: 0,
+    aspect: layout.aspect
   });
+  return slots.map((slot: HumanHandSlot, i) => ({
+    x: slot.x,
+    y: slot.y,
+    rotationDeg: slot.rotationDeg,
+    depth: PREMIUM_TABLE.depthHand + i
+  }));
 }
 
 /**

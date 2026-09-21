@@ -17,11 +17,12 @@ export const HAND_VISUAL = {
   illegalTint: 0xc8ced8 as number,
   legalTint: 0xffffff as number,
   inactiveTint: 0xffffff as number,
-  /** S6 — clearer lift without opening the fan. */
-  selectedLift: 22,
-  hoverLift: 12,
-  selectedHoverLift: 26,
-  selectedScale: 1.07 as number,
+  /** S6 / GLOBAL-CARDS-01 — Y-axis lift only (no scale / no Z promotion). */
+  selectedLift: 26,
+  hoverLift: 10,
+  selectedHoverLift: 30,
+  /** Selected uses normal scale — elevation is the cue. */
+  selectedScale: 1 as number,
   normalScale: 1 as number
 };
 
@@ -70,7 +71,7 @@ export function getHandCardVisualPresentation(
   else if (selected) yOffset = -HAND_VISUAL.selectedLift;
   else if (hovered && visualState === 'legal') yOffset = -HAND_VISUAL.hoverLift;
 
-  const scale = selected ? HAND_VISUAL.selectedScale : HAND_VISUAL.normalScale;
+  const scale = HAND_VISUAL.normalScale;
 
   const interactive =
     visualState === 'legal' &&
