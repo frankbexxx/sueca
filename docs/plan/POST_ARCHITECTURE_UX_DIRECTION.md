@@ -279,7 +279,16 @@ Passar
 - Full King score table: on-demand / when contextually relevant  
 - Festa: context first, choices dominant, secondary summary below  
 
-**King density** remains **P2** until implemented and visually reviewed.
+**King density** status: **IMPLEMENTED / VISUAL VALIDATION PENDING**
+
+See [`KING_DENSITY_REFINEMENT.md`](./KING_DENSITY_REFINEMENT.md).
+
+**Shipped behaviour (summary):**
+
+- Auction history collapsed by default (`Histórico do leilão`)
+- Full score table via `Ver tabela` during play (HUD stays compact)
+- Unavailable Festa actions hidden (not disabled clutter)
+- Festa sheet: context → dominant choices → secondary disclosure
 
 **Mandatory:** visual validation after implementation. Adjust if information becomes too hidden or still too dense.
 
@@ -388,7 +397,7 @@ No future item should be considered visually DONE solely because tests pass.
 | GLOBAL-UI-02 | IMPLEMENTED / VISUAL VALIDATION PENDING — Batch 2B HUD column + board width fix |
 | GLOBAL-UI-03 | IMPLEMENTED / VISUAL VALIDATION PENDING |
 | GLOBAL-CARDS-01 | IMPLEMENTED / VISUAL VALIDATION PENDING |
-| King density | P2 — direction approved |
+| King density | IMPLEMENTED / VISUAL VALIDATION PENDING |
 | Stage 10 | DESIGN PENDING / DEFERRED |
 | Theme Architecture Foundation | COMPLETE |
 

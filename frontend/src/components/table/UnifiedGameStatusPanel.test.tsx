@@ -173,4 +173,32 @@ describe('UnifiedGameStatusPanel King festa_play contract', () => {
     expect(container.textContent).toContain('Nulos');
     expect(container.textContent).toContain('1.º jogador: Player 3');
   });
+
+  it('keeps full score table hidden by default and opens on Ver tabela', () => {
+    renderFestaPlay({
+      noTrump: false,
+      trump: 'hearts',
+      festaMode: 'positive',
+      firstPlayerIndex: 0
+    });
+    expect(container.querySelector('[data-testid="king-ver-tabela"]')).not.toBeNull();
+    expect(container.querySelector('.king-score-sheet')).toBeNull();
+
+    const toggle = container.querySelector(
+      '[data-testid="king-ver-tabela"]'
+    ) as HTMLButtonElement;
+    act(() => {
+      toggle.click();
+    });
+    expect(container.querySelector('.king-score-sheet')).not.toBeNull();
+    expect(container.querySelector('.top-strip--unified')).not.toBeNull();
+
+    const ok = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'OK'
+    ) as HTMLButtonElement;
+    act(() => {
+      ok.click();
+    });
+    expect(container.querySelector('.king-score-sheet')).toBeNull();
+  });
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, GameState, GameVariant } from '../../types/game';
 import { useLanguage } from '../../i18n/useLanguage';
 import { getKingPtState } from '../../models/games/KingPtGame';
@@ -21,6 +21,7 @@ import { getHeartsState } from '../../models/games/HeartsGame';
 import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
 import { SuitBrokenBadge } from './SuitBrokenBadge';
+import { KingScoreSheetModal } from '../KingScoreSheetModal';
 
 export interface UnifiedGameStatusPanelProps {
   gameState: GameState;
@@ -46,6 +47,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   const { language, t } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
   const isPt = locale === 'pt';
+  const [scoreTableOpen, setScoreTableOpen] = useState(false);
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
   const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
@@ -263,9 +265,29 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
               </div>
             )}
             {showNullNote && <div className="king-null-start-note">{showNullNote}</div>}
+            {showKingPtExtras && kingPtState && !kingPtState.showScorePopup ? (
+              <div className="king-score-peek">
+                <button
+                  type="button"
+                  className="sueca-btn sueca-btn--secondary sueca-btn--compact king-score-peek__toggle"
+                  data-testid="king-ver-tabela"
+                  aria-expanded={scoreTableOpen}
+                  onClick={() => setScoreTableOpen(true)}
+                >
+                  {isPt ? 'Ver tabela' : 'View table'}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+      {scoreTableOpen && showKingPtExtras ? (
+        <KingScoreSheetModal
+          gameState={gameState}
+          onDismiss={() => setScoreTableOpen(false)}
+          showContinue={false}
+        />
+      ) : null}
     </div>
   );
 };

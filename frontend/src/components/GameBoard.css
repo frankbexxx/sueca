@@ -89,6 +89,11 @@
   margin-bottom: calc(8dvh + 4px);
 }
 
+/* King festa: sheet docks under the table — drop the large felt spacer under the canvas. */
+.game-board--festa-sheet .sueca-phaser-root {
+  margin-bottom: 20px;
+}
+
 /* Spades bidding: dock sits tight under the canvas — no large dead band. */
 .game-board--spades-bid .sueca-phaser-root {
   position: relative;
@@ -564,16 +569,29 @@
   line-height: 1.2;
 }
 
-.game-status-panel__col--contract .king-history-panel {
+.game-status-panel__col--contract .king-history-panel,
+.game-status-panel__col--contract .king-score-peek {
   margin-top: 6px;
+}
+
+.king-score-peek__toggle {
+  font-size: 0.62rem;
+  padding: 4px 8px;
+  min-height: 32px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .game-board--festa-sheet .player-hand-bar {
   position: relative;
   z-index: 2100;
-  margin-bottom: calc(28vh + 8px);
-  margin-bottom: calc(28dvh + 8px);
+  /* Sheet sits under the table; only a modest clearance is needed (was 28dvh). */
+  margin-bottom: max(8.5rem, calc(12dvh + 24px));
   pointer-events: auto;
+}
+
+.game-board--festa-sheet:has(.variant-modal--festa-compact) .player-hand-bar {
+  margin-bottom: max(7.25rem, calc(10dvh + 24px));
 }
 
 .game-board--festa-sheet .player-hand-bar .hand-row--scroll {
