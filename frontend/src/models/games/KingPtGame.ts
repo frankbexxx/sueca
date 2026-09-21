@@ -917,6 +917,83 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   /**
+   * DEV ONLY — mid-round negative with deterministic short hands for King Sintético.
+   * Outside development, falls back to normal initialize.
+   */
+  applyDevSyntheticNegativeFixture(
+    playerNames: string[],
+    seed: {
+      contract: KingNegativeContract;
+      trickNumber: number;
+      currentPlayerIndex: number;
+      trickLeader: number;
+      currentTrick: Card[];
+      hands: Card[][];
+    },
+    options?: Record<string, unknown>
+  ): GameState {
+    if (process.env.NODE_ENV !== 'development') {
+      return this.initialize(playerNames, options);
+    }
+
+    const gameIndex = KING_NEGATIVE_CONTRACTS.findIndex((c) => c.id === seed.contract);
+    if (gameIndex < 0) {
+      return this.initialize(playerNames, options);
+    }
+
+    const scores = (options?.playerScores as number[] | undefined) ?? [0, 0, 0, 0];
+
+    this.state = this.buildState(
+      playerNames,
+      {
+        ...options,
+        kohPlayerIndex: (options?.kohPlayerIndex as number | undefined) ?? 0
+      },
+      [...scores],
+      gameIndex,
+      false
+    );
+
+    // Replace random deal with deterministic smoke hands.
+    for (let i = 0; i < 4; i++) {
+      this.state!.players[i].hand = seed.hands[i].map((c) => ({ ...c }));
+      this.state!.players[i].type = i === (options?.localPlayerIndex ?? 0) ? 'human' : 'ai';
+    }
+
+    const king = getKingPtState(this.state);
+    king.phase = 'negative';
+    king.contract = seed.contract;
+    king.gameIndex = gameIndex;
+    king.trickNumber = seed.trickNumber;
+    king.roundStartScores = [...scores];
+    king.lastRoundDeltas = [0, 0, 0, 0];
+    king.playerScores = [...scores];
+    king.roundBreakdown = initBreakdownForRound(
+      king.gameIndex,
+      king.contract,
+      king.festaMode,
+      king.activeContract
+    );
+    king.festaPhase = null;
+    king.waitingForFallback = false;
+    king.waitingForFestaSetup = false;
+    king.eightOrNullsPending = false;
+    king.waitingForEarlyEnd = false;
+
+    this.state!.currentTrick = seed.currentTrick.map((c) => ({ ...c }));
+    this.state!.trickLeader = seed.trickLeader;
+    this.state!.currentPlayerIndex = seed.currentPlayerIndex;
+    this.state!.waitingForRoundStart = false;
+    this.state!.waitingForRoundEnd = false;
+    this.state!.waitingForTrickEnd = false;
+    this.state!.isPaused = false;
+    this.state!.isFirstTrick = seed.trickNumber === 0 && seed.currentTrick.length === 0;
+    // Keep seed hand order stable for deterministic smoke indices (no applyHandSortToState).
+    this.syncKing(king);
+    return this.getCurrentState();
+  }
+
+  /**
    * DEV ONLY — mid-round negative contract with sample captured cards / deltas.
    * Outside development, falls back to normal initialize.
    */

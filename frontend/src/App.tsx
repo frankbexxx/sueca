@@ -34,6 +34,7 @@ import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
 import { ConfirmDialog } from './components/common/ConfirmDialog';
 import { parseDevKingFestaParams } from './dev/kingFestaJump';
 import { parseDevKingNegParams } from './dev/kingNegativeJump';
+import { parseDevKingSyntheticParams } from './dev/kingSyntheticJump';
 import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
@@ -117,7 +118,8 @@ function App() {
     const search = typeof window !== 'undefined' ? window.location.search : '';
     const festaJump = parseDevKingFestaParams(search);
     const negJump = parseDevKingNegParams(search);
-    if (!festaJump && !negJump) return;
+    const synthJump = parseDevKingSyntheticParams(search);
+    if (!festaJump && !negJump && !synthJump) return;
     clearGameSession('king');
     clearMultiplayerLocalStorage();
     startGame({

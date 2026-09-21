@@ -1,5 +1,5 @@
 import { BaseGameAdapter } from './GameAdapter';
-import { GameState, Suit } from '../../types/game';
+import { GameState, Suit, Card } from '../../types/game';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { KingPtGame, getKingPtState } from './KingPtGame';
 import { KingSimplifiedGame } from './KingSimplifiedGame';
@@ -153,6 +153,27 @@ export class KingGame extends BaseGameAdapter {
     const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
     if (isPtGame(game)) {
       return game.applyDevNegativeFixture(playerNames, contract, options);
+    }
+    return game.initialize(playerNames, options);
+  }
+
+  /** DEV ONLY — King Sintético deterministic playable negative fixture. */
+  applyDevSyntheticNegativeFixture(
+    playerNames: string[],
+    seed: {
+      contract: KingNegativeContract;
+      trickNumber: number;
+      currentPlayerIndex: number;
+      trickLeader: number;
+      currentTrick: Card[];
+      hands: Card[][];
+    },
+    options?: Record<string, unknown>
+  ): GameState {
+    this.impl = undefined;
+    const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
+    if (isPtGame(game)) {
+      return game.applyDevSyntheticNegativeFixture(playerNames, seed, options);
     }
     return game.initialize(playerNames, options);
   }

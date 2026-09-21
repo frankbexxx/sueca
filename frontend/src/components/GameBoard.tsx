@@ -52,6 +52,21 @@ import {
   formatDevKingNegBadge,
   parseDevKingNegParams
 } from '../dev/kingNegativeJump';
+import {
+  formatDevKingSyntheticBadge,
+  parseDevKingSyntheticParams,
+  type DevKingSyntheticJump
+} from '../dev/kingSyntheticJump';
+import {
+  activateKingSynthetic,
+  deactivateKingSynthetic,
+  getKingSyntheticContract,
+  isKingSyntheticActive,
+  markKingSyntheticSetupApplied,
+  shouldApplyFixtureAfterKoh,
+  skipToNextKingSyntheticContract
+} from '../dev/kingSyntheticController';
+import { applyKingSyntheticFixture } from '../dev/kingSyntheticFixtures';
 import type { KingNegativeContract } from '../models/games/king/kingContracts';
 import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
@@ -122,6 +137,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [waitingForHost, setWaitingForHost] = useState(isJoiner);
   const [devKingFestaJump, setDevKingFestaJump] = useState<DevKingFestaJump | null>(null);
   const [devKingNegContract, setDevKingNegContract] = useState<KingNegativeContract | null>(
+    null
+  );
+  const [devKingSynthetic, setDevKingSynthetic] = useState<DevKingSyntheticJump | null>(null);
+  const [devSyntheticContract, setDevSyntheticContract] = useState<KingNegativeContract | null>(
     null
   );
 
@@ -449,6 +468,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             !config.multiplayerEnabled;
           const festaJump = canDevJump ? parseDevKingFestaParams(search) : null;
           const negJump = canDevJump && !festaJump ? parseDevKingNegParams(search) : null;
+          const synthJump =
+            canDevJump && !festaJump && !negJump
+              ? parseDevKingSyntheticParams(search)
+              : null;
           if (festaJump && adapter instanceof KingGame) {
             initialState = adapter.applyDevFestaFixture(
               config.playerNames,
@@ -457,6 +480,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             );
             setDevKingFestaJump(festaJump);
             setDevKingNegContract(null);
+            setDevKingSynthetic(null);
+            setDevSyntheticContract(null);
+            deactivateKingSynthetic();
           } else if (negJump && adapter instanceof KingGame) {
             const negState = applyDevNegativeFixture(
               adapter,
@@ -467,10 +493,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             initialState = negState ?? adapter.initialize(config.playerNames, initOptions);
             setDevKingNegContract(negJump);
             setDevKingFestaJump(null);
+            setDevKingSynthetic(null);
+            setDevSyntheticContract(null);
+            deactivateKingSynthetic();
+          } else if (synthJump && adapter instanceof KingGame) {
+            activateKingSynthetic(synthJump);
+            setDevKingSynthetic(synthJump);
+            setDevKingFestaJump(null);
+            setDevKingNegContract(null);
+            if (synthJump.contract) {
+              // Targeted fixture — skip KOH for immediate legality smoke.
+              initialState = applyKingSyntheticFixture(
+                adapter,
+                config.playerNames,
+                synthJump.contract,
+                initOptions
+              );
+              markKingSyntheticSetupApplied();
+              setDevSyntheticContract(synthJump.contract);
+            } else {
+              // Default: keep KOH reveal; fixture applies after confirm.
+              initialState = adapter.initialize(config.playerNames, initOptions);
+              setDevSyntheticContract(getKingSyntheticContract());
+            }
           } else {
             initialState = adapter.initialize(config.playerNames, initOptions);
             setDevKingFestaJump(null);
             setDevKingNegContract(null);
+            setDevKingSynthetic(null);
+            setDevSyntheticContract(null);
+            deactivateKingSynthetic();
           }
         }
         freshStartRef.current = false;
@@ -1186,12 +1238,42 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const handlePinGame = () => {
     if (gameState.isGameOver) return;
+    if (isKingSyntheticActive() || devKingSynthetic) return;
     setPinConfirmOpen(true);
+  };
+
+  const loadSyntheticFixture = useCallback(
+    (contract: KingNegativeContract) => {
+      if (!gameAdapter || !(gameAdapter instanceof KingGame)) return;
+      const next = applyKingSyntheticFixture(
+        gameAdapter,
+        config.playerNames,
+        contract,
+        {
+          aiDifficulty: config.aiDifficulty,
+          localPlayerIndex: config.multiplayerEnabled
+            ? (config.localPlayerIndex ?? 0)
+            : undefined,
+          rulesPresetId: config.rulesPresetId
+        }
+      );
+      markKingSyntheticSetupApplied();
+      setDevSyntheticContract(contract);
+      setGameState(next);
+    },
+    [gameAdapter, config]
+  );
+
+  const handleSyntheticNext = () => {
+    const next = skipToNextKingSyntheticContract();
+    if (!next) return;
+    loadSyntheticFixture(next);
   };
 
   const confirmPinGame = () => {
     setPinConfirmOpen(false);
     if (gameState.isGameOver) return;
+    if (isKingSyntheticActive() || devKingSynthetic) return;
     pinGameSession(
       { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
       gameState
@@ -1411,7 +1493,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
       data-ai-source={isDevMode() ? aiSource : undefined}
     >
-      {(devKingFestaJump || devKingNegContract) ? (
+      {(devKingFestaJump || devKingNegContract || devKingSynthetic) ? (
         <div
           className="dev-king-festa-badge"
           style={{
@@ -1427,12 +1509,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             background: 'rgba(255, 214, 102, 0.92)',
             border: '1px solid rgba(0,0,0,0.2)',
             borderRadius: 4,
-            pointerEvents: 'none'
+            pointerEvents: devKingSynthetic ? 'auto' : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            alignItems: 'flex-end'
           }}
         >
-          {devKingFestaJump
-            ? formatDevKingFestaBadge(devKingFestaJump)
-            : formatDevKingNegBadge(devKingNegContract!)}
+          <span>
+            {devKingFestaJump
+              ? formatDevKingFestaBadge(devKingFestaJump)
+              : devKingNegContract
+                ? formatDevKingNegBadge(devKingNegContract)
+                : formatDevKingSyntheticBadge(devSyntheticContract)}
+          </span>
+          {devKingSynthetic ? (
+            <button
+              type="button"
+              data-testid="king-synthetic-next"
+              className="sueca-btn sueca-btn--secondary sueca-btn--compact"
+              style={{ minHeight: 28, fontSize: 11, pointerEvents: 'auto' }}
+              onClick={handleSyntheticNext}
+            >
+              Seguinte
+            </button>
+          ) : null}
         </div>
       ) : null}
       <div className="in-game-hud-chrome" data-testid="in-game-hud-chrome">
@@ -1450,7 +1551,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           onPause={handlePause}
           onResume={handleResume}
           onNewGame={handleNewGame}
-          onPinGame={handlePinGame}
+          onPinGame={
+            isKingSyntheticActive() || devKingSynthetic ? undefined : handlePinGame
+          }
           onExit={handleLeaveScreen}
           onOpenRules={() => setRulesOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
@@ -1597,7 +1700,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 }}
                 onConfirm={() => {
                   kingCtrl.confirmKohReveal();
-                  setGameState(gameAdapter!.getCurrentState());
+                  let nextState = gameAdapter!.getCurrentState();
+                  if (
+                    shouldApplyFixtureAfterKoh() &&
+                    gameAdapter instanceof KingGame
+                  ) {
+                    const contract = getKingSyntheticContract() ?? 'no_tricks';
+                    nextState = applyKingSyntheticFixture(
+                      gameAdapter,
+                      config.playerNames,
+                      contract,
+                      {
+                        aiDifficulty: config.aiDifficulty,
+                        localPlayerIndex: config.multiplayerEnabled
+                          ? (config.localPlayerIndex ?? 0)
+                          : undefined,
+                        rulesPresetId: config.rulesPresetId
+                      }
+                    );
+                    markKingSyntheticSetupApplied();
+                    setDevSyntheticContract(contract);
+                  }
+                  setGameState(nextState);
                 }}
               />
             );
