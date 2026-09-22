@@ -6,6 +6,7 @@ export type RulesPresetId =
   | 'spades-pt-nil'
   | 'hearts-us-normal'
   | 'king-pt-normal'
+  | 'king-pt-synthetic'
   | 'king-simplified';
 
 export interface RulesPreset {
@@ -130,6 +131,29 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
       'Positivo +25/vaza; nulos 325−75×vazas; contratos preservam +325/ronda.'
     ]
   },
+  'king-pt-synthetic': {
+    id: 'king-pt-synthetic',
+    variant: 'king',
+    name: 'King Synthetic',
+    namePt: 'King Sintético',
+    description:
+      'Portuguese King shortened — one combined negatives round, then 4 festas (5 games).',
+    descriptionPt:
+      'King português abreviado — uma ronda com todos os negativos, depois 4 festas (5 jogos).',
+    isDefault: false,
+    bullets: [
+      '5 games: 1 combined negatives (all six scorers) + 4 festas with auction.',
+      'Same legality/scoring as King PT (composed penalties); no early end on game 1.',
+      'K♥ draw sets festa order; zero-sum preserved across the match.',
+      'Not King simplified (±5 tricks).'
+    ],
+    bulletsPt: [
+      '5 jogos: 1 ronda com todos os negativos + 4 festas com leilão.',
+      'Mesma legalidade/pontuação do King PT (penalizações compostas); sem fim antecipado no jogo 1.',
+      'Viragem K♥ define ordem das festas; zero-sum preservado.',
+      'Não é King simplificado (±5 por vaza).'
+    ]
+  },
   'king-simplified': {
     id: 'king-simplified',
     variant: 'king',
@@ -155,7 +179,7 @@ const PRESETS_BY_VARIANT: Record<GameVariant, RulesPresetId[]> = {
   sueca: ['sueca-pt-normal'],
   spades: ['spades-pt-normal', 'spades-pt-nil'],
   hearts: ['hearts-us-normal'],
-  king: ['king-pt-normal', 'king-simplified']
+  king: ['king-pt-normal', 'king-pt-synthetic', 'king-simplified']
 };
 
 export function getPreset(id: RulesPresetId): RulesPreset {

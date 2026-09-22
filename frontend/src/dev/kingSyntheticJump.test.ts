@@ -61,16 +61,6 @@ describe('kingSyntheticController (combined)', () => {
 });
 
 describe('enableKingSyntheticCombinedRound', () => {
-  const originalEnv = process.env.NODE_ENV;
-
-  beforeEach(() => {
-    process.env.NODE_ENV = 'development';
-  });
-
-  afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
-  });
-
   it('enables combined flag on a dealt negative round', () => {
     const game = new KingPtGame();
     game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
@@ -83,13 +73,20 @@ describe('enableKingSyntheticCombinedRound', () => {
     expect(state.players.every((p) => p.hand.length === 13)).toBe(true);
   });
 
-  it('is inert in production', () => {
+  it('works in production NODE_ENV (product mode)', () => {
+    const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
-    const game = new KingPtGame();
-    game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
-    game.confirmKohReveal();
-    enableKingSyntheticCombinedRound(game);
-    expect(isDevSyntheticAllNegatives(getKingPtState(game.getCurrentState()))).toBe(false);
+    try {
+      const game = new KingPtGame();
+      game.initialize(['A', 'B', 'C', 'D'], {
+        localPlayerIndex: 0,
+        rulesPresetId: 'king-pt-synthetic'
+      });
+      game.confirmKohReveal();
+      expect(isDevSyntheticAllNegatives(getKingPtState(game.getCurrentState()))).toBe(true);
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 });
 

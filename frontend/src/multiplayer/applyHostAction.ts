@@ -67,7 +67,7 @@ export function canJoinerSubmitAction(
 ): boolean {
   if (action.type === 'startRound' && adapter.variant === 'king') {
     const preset = resolvePresetId('king', rulesPresetId);
-    if (preset === 'king-pt-normal' || preset === 'king-simplified') {
+    if (preset === 'king-pt-normal' || preset === 'king-pt-synthetic' || preset === 'king-simplified') {
       return false;
     }
   }

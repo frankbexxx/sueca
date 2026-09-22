@@ -52,6 +52,8 @@ describe('variantFlowApi (C3)', () => {
     expect(isKingFlow(flow)).toBe(true);
     if (!isKingFlow(flow)) return;
     expect(flow.isPtNormal('king-pt-normal')).toBe(true);
+    expect(flow.isPtNormal('king-pt-synthetic')).toBe(true);
+    expect(flow.isPtNormal('king-simplified')).toBe(false);
     expect(flow.readPtState(state).phase).toBeTruthy();
     expect(flow.readPlayerScores(state)).toHaveLength(4);
     expect(typeof flow.tickFestaAi).toBe('function');

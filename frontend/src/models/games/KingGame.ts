@@ -13,7 +13,7 @@ function isPtGame(game: KingImpl): game is KingPtGame {
   return game instanceof KingPtGame;
 }
 
-/** Routes King to PT normal or simplified preset implementation. */
+/** Routes King to PT engine (normal / synthetic) or simplified preset. */
 export class KingGame extends BaseGameAdapter {
   variant = 'king' as const;
   private impl?: KingImpl;
@@ -157,13 +157,18 @@ export class KingGame extends BaseGameAdapter {
     return game.initialize(playerNames, options);
   }
 
-  /** DEV ONLY — enable King Sintético combined-all-negatives on current dealt round. */
-  enableDevSyntheticCombinedRound(): GameState {
-    this.ensureImpl({ rulesPresetId: 'king-pt-normal' });
+  /** Enable King Sintético combined-all-negatives on current dealt round. */
+  enableSyntheticCombinedRound(): GameState {
+    this.ensureImpl({ rulesPresetId: 'king-pt-synthetic' });
     if (isPtGame(this.impl!)) {
-      return this.impl.enableDevSyntheticCombinedRound();
+      return this.impl.enableSyntheticCombinedRound();
     }
     return this.getCurrentState();
+  }
+
+  /** @deprecated Prefer enableSyntheticCombinedRound */
+  enableDevSyntheticCombinedRound(): GameState {
+    return this.enableSyntheticCombinedRound();
   }
 
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {

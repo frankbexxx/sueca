@@ -10,7 +10,7 @@ import {
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
-import { isKingSyntheticActive } from '../../dev/kingSyntheticController';
+import { isKingSyntheticSession, isKingPtEnginePreset } from '../../models/games/king/kingSyntheticMode';
 import { buildKingHudFestaPlayLines } from '../../models/games/king/kingFestaSetupSummary';
 import { shouldShowKingPenaltyCards } from '../../models/games/king/kingHudPenaltyDisplay';
 import {
@@ -79,17 +79,15 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   let heartsBroken = false;
   let showNullNote: string | null = null;
   const kingPreset = variant === 'king' ? resolvePresetId('king', rulesPresetId) : null;
-  const showKingPtExtras = variant === 'king' && kingPreset === 'king-pt-normal';
+  const showKingPtExtras = variant === 'king' && isKingPtEnginePreset(kingPreset ?? undefined);
   const kingPtState = showKingPtExtras ? getKingPtState(gameState) : null;
 
   if (variant === 'king') {
-    if (kingPreset === 'king-pt-normal' && kingPtState) {
+    if (showKingPtExtras && kingPtState) {
       kingContract = kingPtState.contract;
       penaltyCardsByPlayer = kingPtState.roundBreakdown.penaltyCardsTaken;
       const ownerName = gameState.players[kingPtState.festaOwnerIndex]?.name ?? '';
-      // DEV controller stays active after Festa handoff (engine flag cleared).
-      const syntheticSession =
-        isKingSyntheticActive() || Boolean(kingPtState.devSyntheticAllNegatives);
+      const syntheticSession = isKingSyntheticSession(gameState);
       const matchOpts = { syntheticSession };
       if (kingPtState.phase === 'koh_reveal') {
         contractLine = isPt ? 'Viragem do Rei de Copas' : 'King of Hearts draw';
@@ -119,7 +117,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         contractFirstPlayer = lines.firstPlayer;
         matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale, matchOpts);
       } else if (
-        (kingPtState.devSyntheticAllNegatives || isKingSyntheticActive()) &&
+        syntheticSession &&
         kingPtState.gameIndex < KING_NEGATIVE_GAMES
       ) {
         contractLine = kingSyntheticProductName(locale);
@@ -138,14 +136,6 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       if (kingPtState.nullAuctionStartNote && kingPtState.phase !== 'koh_reveal') {
         showNullNote = kingPtState.nullAuctionStartNote;
       }
-    } else if (isKingSyntheticActive()) {
-      // Harden: never fall through to simplified labels during a synthetic DEV session.
-      const synKing = getKingPtState(gameState);
-      contractLine = kingSyntheticProductName(locale);
-      contractDetail = kingSyntheticHudSubtitle(locale);
-      matchLine = kingHudMatchProgress(synKing.gameIndex, locale, {
-        syntheticSession: true
-      });
     } else {
       const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
       contractLine = isPt ? 'King simplificado' : 'King simplified';

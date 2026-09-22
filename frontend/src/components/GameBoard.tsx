@@ -53,19 +53,10 @@ import {
   parseDevKingNegParams
 } from '../dev/kingNegativeJump';
 import {
-  formatDevKingSyntheticBadge,
-  parseDevKingSyntheticParams,
-  type DevKingSyntheticJump
+  parseDevKingSyntheticParams
 } from '../dev/kingSyntheticJump';
-import {
-  activateKingSynthetic,
-  deactivateKingSynthetic,
-  isKingSyntheticActive,
-  markKingSyntheticSetupApplied,
-  shouldEnableSyntheticAfterKoh
-} from '../dev/kingSyntheticController';
-import { enableKingSyntheticCombinedRound } from '../dev/kingSyntheticFixtures';
 import type { KingNegativeContract } from '../models/games/king/kingContracts';
+import { isKingPtEnginePreset } from '../models/games/king/kingSyntheticMode';
 import { PlayerHand } from './PlayerHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
@@ -137,7 +128,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [devKingNegContract, setDevKingNegContract] = useState<KingNegativeContract | null>(
     null
   );
-  const [devKingSynthetic, setDevKingSynthetic] = useState<DevKingSyntheticJump | null>(null);
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
@@ -459,7 +449,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           const canDevJump =
             process.env.NODE_ENV === 'development' &&
             config.gameVariant === 'king' &&
-            config.rulesPresetId === 'king-pt-normal' &&
+            isKingPtEnginePreset(config.rulesPresetId) &&
             !config.multiplayerEnabled;
           const festaJump = canDevJump ? parseDevKingFestaParams(search) : null;
           const negJump = canDevJump && !festaJump ? parseDevKingNegParams(search) : null;
@@ -471,37 +461,32 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             initialState = adapter.applyDevFestaFixture(
               config.playerNames,
               festaJump,
-              initOptions
+              { ...initOptions, rulesPresetId: 'king-pt-normal' }
             );
             setDevKingFestaJump(festaJump);
             setDevKingNegContract(null);
-            setDevKingSynthetic(null);
-            deactivateKingSynthetic();
           } else if (negJump && adapter instanceof KingGame) {
             const negState = applyDevNegativeFixture(
               adapter,
               config.playerNames,
               negJump,
-              initOptions
+              { ...initOptions, rulesPresetId: 'king-pt-normal' }
             );
             initialState = negState ?? adapter.initialize(config.playerNames, initOptions);
             setDevKingNegContract(negJump);
             setDevKingFestaJump(null);
-            setDevKingSynthetic(null);
-            deactivateKingSynthetic();
           } else if (synthJump && adapter instanceof KingGame) {
-            // Combined round: normal 13-card deal + KOH; enable after confirm.
-            activateKingSynthetic(synthJump);
-            setDevKingSynthetic(synthJump);
+            // DEV query routes into the production King Sintético preset.
+            initialState = adapter.initialize(config.playerNames, {
+              ...initOptions,
+              rulesPresetId: 'king-pt-synthetic'
+            });
             setDevKingFestaJump(null);
             setDevKingNegContract(null);
-            initialState = adapter.initialize(config.playerNames, initOptions);
           } else {
             initialState = adapter.initialize(config.playerNames, initOptions);
             setDevKingFestaJump(null);
             setDevKingNegContract(null);
-            setDevKingSynthetic(null);
-            deactivateKingSynthetic();
           }
         }
         freshStartRef.current = false;
@@ -583,14 +568,29 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     publishHostState(gameAdapter.getCurrentState());
   }, [isHost, gameStarted, gameAdapter, publishHostState]);
 
+  const buildPersistConfig = (): typeof config => {
+    const statePreset =
+      gameVariant === 'king'
+        ? resolvePresetId(
+            'king',
+            (gameState.variantState?.rulesPresetId as string | undefined) ?? rulesPresetId
+          )
+        : rulesPresetId;
+    return stripMultiplayerFields({
+      ...config,
+      playerNames,
+      aiDifficulty,
+      dealingMethod,
+      gameVariant,
+      rulesPresetId: statePreset
+    });
+  };
+
   useEffect(() => {
     if (!gameAdapter || !gameStarted || gameState.isGameOver || isMultiplayerActive) return;
-    if (isKingSyntheticActive() || devKingSynthetic) return;
-    saveGameSession(
-      stripMultiplayerFields({ ...config, playerNames, aiDifficulty, dealingMethod, gameVariant }),
-      gameState
-    );
-  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, dealingMethod, gameVariant, devKingSynthetic]);
+    saveGameSession(buildPersistConfig(), gameState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on state ticks
+  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, dealingMethod, gameVariant, rulesPresetId]);
 
   /**
    * Shared deal/round SFX (all variants):
@@ -1190,11 +1190,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    */
   const handleLeaveScreen = () => {
     gameOverExitRef.current.cancel();
-    if (!isMultiplayerActive && !isKingSyntheticActive() && !devKingSynthetic) {
-      saveGameSession(
-        stripMultiplayerFields({ ...config, playerNames, aiDifficulty, dealingMethod, gameVariant }),
-        gameState
-      );
+    if (!isMultiplayerActive) {
+      saveGameSession(buildPersistConfig(), gameState);
     }
     onExit();
   };
@@ -1218,18 +1215,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const handlePinGame = () => {
     if (gameState.isGameOver) return;
-    if (isKingSyntheticActive() || devKingSynthetic) return;
     setPinConfirmOpen(true);
   };
 
   const confirmPinGame = () => {
     setPinConfirmOpen(false);
     if (gameState.isGameOver) return;
-    if (isKingSyntheticActive() || devKingSynthetic) return;
-    pinGameSession(
-      { ...config, playerNames, aiDifficulty, dealingMethod, gameVariant },
-      gameState
-    );
+    pinGameSession(buildPersistConfig(), gameState);
   };
 
   const tableModel = useMemo(
@@ -1445,7 +1437,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
       data-ai-source={isDevMode() ? aiSource : undefined}
     >
-      {(devKingFestaJump || devKingNegContract || devKingSynthetic) ? (
+      {(devKingFestaJump || devKingNegContract) ? (
         <div
           className="dev-king-festa-badge"
           style={{
@@ -1471,9 +1463,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           <span>
             {devKingFestaJump
               ? formatDevKingFestaBadge(devKingFestaJump)
-              : devKingNegContract
-                ? formatDevKingNegBadge(devKingNegContract)
-                : formatDevKingSyntheticBadge()}
+              : formatDevKingNegBadge(devKingNegContract!)}
           </span>
         </div>
       ) : null}
@@ -1492,9 +1482,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           onPause={handlePause}
           onResume={handleResume}
           onNewGame={handleNewGame}
-          onPinGame={
-            isKingSyntheticActive() || devKingSynthetic ? undefined : handlePinGame
-          }
+          onPinGame={handlePinGame}
           onExit={handleLeaveScreen}
           onOpenRules={() => setRulesOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
@@ -1641,15 +1629,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 }}
                 onConfirm={() => {
                   kingCtrl.confirmKohReveal();
-                  let nextState = gameAdapter!.getCurrentState();
-                  if (
-                    shouldEnableSyntheticAfterKoh() &&
-                    gameAdapter instanceof KingGame
-                  ) {
-                    nextState = enableKingSyntheticCombinedRound(gameAdapter);
-                    markKingSyntheticSetupApplied();
-                  }
-                  setGameState(nextState);
+                  setGameState(gameAdapter!.getCurrentState());
                 }}
               />
             );
@@ -1762,8 +1742,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       {gameVariant === 'king' &&
         resolvePresetId('king', rulesPresetId) === 'king-simplified' &&
-        !isKingSyntheticActive() &&
-        !devKingSynthetic &&
         gameState.waitingForRoundStart &&
         !gameState.isGameOver && !isJoiner && (
           <div className="variant-modal-overlay">

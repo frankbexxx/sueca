@@ -2,7 +2,7 @@ import React from 'react';
 import { GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { kingHudMatchProgress } from '../models/games/king/kingContracts';
-import { isKingSyntheticActive } from '../dev/kingSyntheticController';
+import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
 import './VariantModals.css';
 
 interface KingScoreModalProps {
@@ -20,8 +20,7 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
 }) => {
   const king = getKingPtState(gameState);
   const breakdown = king.roundBreakdown.lines;
-  const syntheticSession =
-    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const syntheticSession = isKingSyntheticSession(gameState);
   const matchLabel = kingHudMatchProgress(king.gameIndex, 'pt', { syntheticSession });
 
   return (

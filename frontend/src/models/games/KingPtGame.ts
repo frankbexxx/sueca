@@ -47,6 +47,8 @@ import {
   kingSyntheticRoundLabel,
   KingAuctionHistoryEntry
 } from './king/kingContracts';
+import { isKingSyntheticPreset } from './king/kingSyntheticMode';
+import { resolvePresetId, type RulesPresetId } from '../../constants/rulesPresets';
 import {
   appendKingAuctionHistory,
   buildDevAuctionHistoryFromActions
@@ -119,9 +121,12 @@ export interface KingPtVariantState {
    */
   pauseFestaAiForDev?: boolean;
   /**
-   * DEV ONLY — King Sintético: all six negative objectives active in one round.
-   * Never persisted / never set outside development apply paths.
+   * King Sintético: all six negative objectives active in one round (game 1).
+   * Cleared on Festa handoff; match identity continues via rulesPresetId.
+   * Legacy sessions may still carry `devSyntheticAllNegatives`.
    */
+  syntheticAllNegatives?: boolean;
+  /** @deprecated Prefer syntheticAllNegatives — still read on restore. */
   devSyntheticAllNegatives?: boolean;
   /**
    * After each auction voice (bid/pass) or on auction_result: block auto-advance
@@ -222,15 +227,20 @@ export function getKingPtState(state: GameState): KingPtVariantState {
     ),
     bestBid: vs.bestBid ?? vs.standingBid ?? null,
     showScorePopup,
-    // Never expose synthetic flag outside development.
-    devSyntheticAllNegatives:
-      process.env.NODE_ENV === 'development' ? Boolean(vs.devSyntheticAllNegatives) : false
+    syntheticAllNegatives: Boolean(
+      vs.syntheticAllNegatives ?? vs.devSyntheticAllNegatives
+    )
   };
 }
 
-/** DEV combined-negative round active (production always false via getKingPtState). */
+/** Combined-all-negatives round active (King Sintético game 1). */
+export function isSyntheticAllNegatives(king: KingPtVariantState): boolean {
+  return Boolean(king.syntheticAllNegatives);
+}
+
+/** @deprecated Prefer isSyntheticAllNegatives */
 export function isDevSyntheticAllNegatives(king: KingPtVariantState): boolean {
-  return process.env.NODE_ENV === 'development' && Boolean(king.devSyntheticAllNegatives);
+  return isSyntheticAllNegatives(king);
 }
 
 export function simulateKohDraw(startPlayerIndex?: number): KingKohRevealState {
@@ -264,13 +274,13 @@ export function isMen(card: Card): boolean {
 
 function heartsLeadForbidden(king: KingPtVariantState): boolean {
   if (king.gameIndex >= KING_NEGATIVE_GAMES) return false;
-  if (isDevSyntheticAllNegatives(king)) return true;
+  if (isSyntheticAllNegatives(king)) return true;
   return king.contract === 'no_hearts' || king.contract === 'no_king_hearts';
 }
 
 export function mustPlayKingOfHearts(player: Player, ledSuit: Suit | null, king: KingPtVariantState): boolean {
   if (king.gameIndex >= KING_NEGATIVE_GAMES) return false;
-  if (!isDevSyntheticAllNegatives(king) && king.contract !== 'no_king_hearts') return false;
+  if (!isSyntheticAllNegatives(king) && king.contract !== 'no_king_hearts') return false;
   if (!player.hand.some((c) => c.rank === 'K' && c.suit === 'hearts')) return false;
   // Lead: first legal chance only when the hand is hearts-only (cannot open another suit).
   if (ledSuit === null) return !hasNonHeart(player);
@@ -366,6 +376,9 @@ export class KingPtGame extends BaseGameAdapter {
     );
     this.deal(this.state);
     this.state.waitingForRoundStart = false;
+    if (isKingSyntheticPreset(this.readRulesPresetId())) {
+      this.applySyntheticCombinedRound(king);
+    }
     this.syncKing(king);
   }
 
@@ -647,7 +660,8 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   private syncKing(king: KingPtVariantState): void {
-    this.state!.variantState = { ...this.state!.variantState, kingPt: king, rulesPresetId: 'king-pt-normal' };
+    const rulesPresetId = this.readRulesPresetId();
+    this.state!.variantState = { ...this.state!.variantState, kingPt: king, rulesPresetId };
   }
 
   /**
@@ -836,6 +850,10 @@ export class KingPtGame extends BaseGameAdapter {
 
     const players = this.buildPlayers(playerNames, localPlayerIndex, multiplayerSlots);
     const leader = gameLeader(king.kohPlayerIndex, gameIndex);
+    const rulesPresetId = resolvePresetId(
+      'king',
+      options?.rulesPresetId as string | undefined
+    );
 
     const state: GameState = {
       variant: 'king',
@@ -866,7 +884,7 @@ export class KingPtGame extends BaseGameAdapter {
       playerName: players[0]?.name || 'Player 1',
       aiDifficulty: (options?.aiDifficulty as AIDifficulty) || 'medium',
       partnerSignals: [],
-      variantState: { kingPt: king, rulesPresetId: 'king-pt-normal' }
+      variantState: { kingPt: king, rulesPresetId }
     };
 
     this.state = state;
@@ -1240,7 +1258,7 @@ export class KingPtGame extends BaseGameAdapter {
 
     if (king.gameIndex < KING_NEGATIVE_GAMES && king.contract) {
       if (!king.scoringFrozen) {
-        if (isDevSyntheticAllNegatives(king)) {
+        if (isSyntheticAllNegatives(king)) {
           accumulateSyntheticAllNegativesBreakdown(
             king.roundBreakdown,
             s.currentTrick,
@@ -1297,7 +1315,7 @@ export class KingPtGame extends BaseGameAdapter {
     }
 
     if (
-      !isDevSyntheticAllNegatives(king) &&
+      !isSyntheticAllNegatives(king) &&
       !king.scoringFrozen &&
       !king.earlyEndOffered &&
       canKingEndRoundEarly(king.gameIndex, king.contract, king.roundBreakdown)
@@ -1352,7 +1370,7 @@ export class KingPtGame extends BaseGameAdapter {
       }
     }
 
-    king.roundBreakdown.lines = isDevSyntheticAllNegatives(king)
+    king.roundBreakdown.lines = isSyntheticAllNegatives(king)
       ? buildSyntheticBreakdownLines(king.roundBreakdown, 'pt')
       : buildBreakdownLines(king.roundBreakdown, king.contract, 'pt');
     this.appendHistory(king);
@@ -1367,7 +1385,7 @@ export class KingPtGame extends BaseGameAdapter {
 
   private appendHistory(king: KingPtVariantState): void {
     const ownerName = this.state!.players[king.festaOwnerIndex]?.name ?? '';
-    const title = isDevSyntheticAllNegatives(king)
+    const title = isSyntheticAllNegatives(king)
       ? kingSyntheticRoundLabel('pt')
       : kingGameTitle(king.gameIndex, king.contract, king.gameIndex >= 6 ? ownerName : null, 'pt');
     king.gameHistory.push({
@@ -1411,7 +1429,8 @@ export class KingPtGame extends BaseGameAdapter {
     if (!s.waitingForRoundEnd) return;
     const king = getKingPtState(s);
     const humanIndex = s.players.findIndex((p) => p.type === 'human');
-    const nextIndex = isDevSyntheticAllNegatives(king)
+    const presetId = this.readRulesPresetId();
+    const nextIndex = isSyntheticAllNegatives(king)
       ? KING_NEGATIVE_GAMES
       : king.gameIndex + 1;
     this.state = this.buildState(
@@ -1420,33 +1439,45 @@ export class KingPtGame extends BaseGameAdapter {
         aiDifficulty: s.aiDifficulty,
         localPlayerIndex: humanIndex >= 0 ? humanIndex : 0,
         gameHistory: king.gameHistory,
-        kohPlayerIndex: king.kohPlayerIndex
+        kohPlayerIndex: king.kohPlayerIndex,
+        rulesPresetId: presetId
       },
       [...king.playerScores],
       nextIndex,
       false
     );
-    // Synthetic flag must not carry into Festa / later rounds.
+    // Combined-round flag must not carry into Festa; preset keeps 5-game identity.
     const nextKing = getKingPtState(this.state);
-    if (nextKing.devSyntheticAllNegatives) {
-      nextKing.devSyntheticAllNegatives = false;
+    if (nextKing.syntheticAllNegatives) {
+      nextKing.syntheticAllNegatives = false;
       this.syncKing(nextKing);
     }
   }
 
   /**
-   * DEV ONLY — enable combined-all-negatives on the current dealt negative round.
-   * Outside development, no-op.
+   * Enable combined-all-negatives on the current dealt negative round (King Sintético game 1).
    */
-  enableDevSyntheticCombinedRound(): GameState {
-    if (process.env.NODE_ENV !== 'development' || !this.state) {
+  enableSyntheticCombinedRound(): GameState {
+    if (!this.state) {
       return this.getCurrentState();
     }
     const king = getKingPtState(this.state);
     if (king.phase === 'koh_reveal' || king.gameIndex >= KING_NEGATIVE_GAMES) {
       return this.getCurrentState();
     }
-    king.devSyntheticAllNegatives = true;
+    this.applySyntheticCombinedRound(king);
+    this.state.waitingForRoundStart = false;
+    this.syncKing(king);
+    return this.getCurrentState();
+  }
+
+  /** @deprecated Prefer enableSyntheticCombinedRound */
+  enableDevSyntheticCombinedRound(): GameState {
+    return this.enableSyntheticCombinedRound();
+  }
+
+  private applySyntheticCombinedRound(king: KingPtVariantState): void {
+    king.syntheticAllNegatives = true;
     king.gameIndex = 0;
     king.contract = 'no_tricks';
     king.phase = 'negative';
@@ -1458,9 +1489,13 @@ export class KingPtGame extends BaseGameAdapter {
       'pt'
     );
     king.roundBreakdown.contractLabel = kingSyntheticRoundLabel('pt');
-    this.state.waitingForRoundStart = false;
-    this.syncKing(king);
-    return this.getCurrentState();
+  }
+
+  private readRulesPresetId(): RulesPresetId {
+    return resolvePresetId(
+      'king',
+      this.state?.variantState?.rulesPresetId as string | undefined
+    );
   }
 
   startRound(_state: GameState): void {

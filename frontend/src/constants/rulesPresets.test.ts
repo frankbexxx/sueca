@@ -11,9 +11,13 @@ describe('rulesPresets', () => {
     expect(getDefaultPresetId('king')).toBe('king-pt-normal');
   });
 
-  it('lists king variants including simplified', () => {
+  it('lists king variants including synthetic and simplified', () => {
     const kingPresets = getPresetsForVariant('king');
-    expect(kingPresets.map((p) => p.id)).toEqual(['king-pt-normal', 'king-simplified']);
+    expect(kingPresets.map((p) => p.id)).toEqual([
+      'king-pt-normal',
+      'king-pt-synthetic',
+      'king-simplified'
+    ]);
   });
 
   it('falls back to default when preset invalid for variant', () => {

@@ -8,7 +8,7 @@ import {
   KING_NEGATIVE_GAMES,
   kingSyntheticRoundEndCopy
 } from '../models/games/king/kingContracts';
-import { isKingSyntheticActive } from '../dev/kingSyntheticController';
+import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
 import './GameBoard.css';
 
 interface RoundEndModalProps {
@@ -145,8 +145,7 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
     const hasRoundDeltas = roundPts.some((value) => value !== 0);
     const kingPt = getKingPtState(gameState);
     const syntheticEnd =
-      (isKingSyntheticActive() || Boolean(kingPt.devSyntheticAllNegatives)) &&
-      kingPt.gameIndex < KING_NEGATIVE_GAMES;
+      isKingSyntheticSession(gameState) && kingPt.gameIndex < KING_NEGATIVE_GAMES;
     const synCopy = kingSyntheticRoundEndCopy('pt');
     const kingTitle = syntheticEnd
       ? synCopy.title

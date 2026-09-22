@@ -1,9 +1,8 @@
 /**
- * DEV ONLY — King Sintético entry.
- * Query: `?devKingSynthetic=1`
- * Production builds ignore (NODE_ENV !== 'development').
+ * Optional DEV shortcut for King Sintético.
+ * Query: `?devKingSynthetic=1` (development builds only)
  *
- * ONE combined 13-trick negative round (all six objectives) → Festa.
+ * Routes into the production preset `king-pt-synthetic` — not a separate rules path.
  */
 
 import { kingSyntheticRoundLabel } from '../models/games/king/kingContracts';
@@ -37,6 +36,7 @@ export function parseDevKingSyntheticParams(search: string): DevKingSyntheticJum
   return { enabled: true };
 }
 
+/** @deprecated Product mode has no DEV badge — kept for older tests. */
 export function formatDevKingSyntheticBadge(): string {
   return 'DEV · KING SINTÉTICO';
 }

@@ -8,7 +8,7 @@ import {
   kingHudMatchProgress,
   kingSyntheticRoundEndCopy
 } from '../models/games/king/kingContracts';
-import { isKingSyntheticActive } from '../dev/kingSyntheticController';
+import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
 import './VariantModals.css';
 
 interface KingScoreSheetModalProps {
@@ -29,8 +29,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
   const king = getKingPtState(gameState);
   const { rows, totals } = buildKingScoreSheet(gameState, locale);
   const breakdown = king.roundBreakdown.lines;
-  const syntheticSession =
-    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const syntheticSession = isKingSyntheticSession(gameState);
   const matchLabel = kingHudMatchProgress(king.gameIndex, locale, { syntheticSession });
   const advanceToFestas =
     Boolean(showContinue) &&

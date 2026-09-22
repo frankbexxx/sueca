@@ -1,115 +1,98 @@
-# King Sintético — DEV mode
+# King Sintético — product mode
 
-**Status:** Combined-negative pivot + UI label alignment  
+**Status:** Production-selectable King preset  
 **Branch:** `v2-main`  
-**Scope:** DEV-only smoke — one full 13-trick round with all six negatives active → normal Festa
+**Preset id:** `king-pt-synthetic`
 
 ---
 
 ## Purpose
 
-Accelerate smoke-testing of King PT **combined** negative legality and scoring while reusing the **canonical** engine:
+King Sintético is a **real King PT product mode**: one combined negatives round, then four Festas (5 games). Same canonical legality/scoring as King PT — not `KingSimplifiedGame`, not cardIntelligence `syntheticMode`.
 
-- `KingPtGame.canPlayCard` / `playCard`
-- `negativeTrickPenalty` composed (summed) — no new penalty values
-- `heartsLeadForbidden` / `mustPlayKingOfHearts` widened by a DEV-only flag
-- no parallel rules engine
-- not `KingSimplifiedGame`
-- not cardIntelligence `syntheticMode`
-- normal King (non-synthetic) unchanged
+---
+
+## Mode identity
+
+| | |
+|--|--|
+| User-facing | `King Sintético` |
+| Preset | `king-pt-synthetic` |
+| Engine | `KingPtGame` (same as `king-pt-normal`) |
+| Not | `king-simplified` / KingSimplifiedGame |
 
 ---
 
 ## Entry
 
+**Product:**
+
+```ts
+adapter.initialize(names, { rulesPresetId: 'king-pt-synthetic' })
+```
+
+Also selectable in solo setup when multiple King presets are listed (Landing redesign later).
+
+**Optional DEV shortcut** (development only):
+
 ```
 ?devKingSynthetic=1
 ```
 
-| Query | Behaviour |
-|-------|-----------|
-| `devKingSynthetic=1` | Solo King PT + KOH reveal; after KOH confirm, enables combined-all-negatives on the dealt 13-card round |
-| `synthContract=` | **Removed** — ignored if present |
-| Production | Parser returns `null` — inert |
-
-Badge: `DEV · KING SINTÉTICO`
+Routes into `king-pt-synthetic` — same rules path. No DEV badge in product play.
 
 ---
 
-## Canonical user-facing naming
+## Structure
 
-| Surface | Copy |
-|---------|------|
-| Product name (HUD / KOH) | `King Sintético` |
-| HUD subtitle | `Todos os negativos` |
-| History / score-sheet row | `Sintético · Todos os negativos` |
-| End-of-negatives title | `Negativos sintéticos concluídos` |
-| Totals section | `Total acumulado` |
-| Continue CTA | `Avançar para festas` |
+| Display | Engine |
+|---------|--------|
+| `Jogo 1/5` | Combined all-negatives (`syntheticAllNegatives`) |
+| `Jogo 2/5` … `5/5` | Festa gameIndex 6–9 |
 
-Do **not** show: `King simplificado`, English `negative`, internal contract IDs, or `/10` during a synthetic DEV session.
+HUD: `King Sintético` / `Todos os negativos` on game 1.  
+End of negatives: `Negativos sintéticos concluídos` → `Avançar para festas`.  
+History row: `Sintético · Todos os negativos`.
 
----
-
-## 5-game display model
-
-While `isKingSyntheticActive()` (or engine flag) marks a synthetic session:
-
-| Engine gameIndex | Display |
-|------------------|---------|
-| 0 (combined negatives) | `Jogo 1/5` |
-| 6 Festa 1 | `Jogo 2/5` |
-| 7 Festa 2 | `Jogo 3/5` |
-| 8 Festa 3 | `Jogo 4/5` |
-| 9 Festa 4 | `Jogo 5/5` |
-
-Normal King (no synthetic session) stays `Jogo 1/10` … `Jogo 10/10`.
+Normal King stays `1/10` … `10/10`.
 
 ---
 
-## Model
+## Rules / scoring
 
-1. Normal KOH + full 13-card deal (`gameIndex = 0`)
-2. DEV flag `devSyntheticAllNegatives` (not a production `KingNegativeContract`)
-3. Play **one** 13-trick round with:
-   - follow-suit
-   - no_hearts lead restriction
-   - no_king_hearts K♥ obligation
-   - scoring = sum of all six `negativeTrickPenalty` values per trick
-4. Early-end **disabled** in synthetic (so tricks 12–13 always run)
-5. One history row: `Sintético · Todos os negativos`
-6. Continue (`Avançar para festas`) → `gameIndex = 6` (Festa) with scores preserved; synthetic **engine** flag cleared; DEV controller stays active for 5-game progress
-7. Normal Festa engine thereafter
+Unchanged combined implementation:
+
+- 13-card deal after KOH
+- all six negative scorers active
+- follow-suit, Hearts lead ban, K♥ obligation
+- cumulative composed penalties
+- no early end on game 1
+- Continue → `gameIndex = 6` (Festa); flag cleared; **preset retained**
 
 ---
 
-## Scoring source
+## Persistence
 
-HUD and result modals read **engine** fields only:
+Pin / autosave / leave-save / resume enabled.
 
-- `kingPt.playerScores`
-- `kingPt.lastRoundDeltas`
-- history row deltas from the combined round
-
-They must **not** use `KingSimplifiedGame` (−5/+5) or fixture placeholders. Penalty **values** are unchanged (composed canonical negatives).
-
----
-
-## AI
-
-Uses real `getLegalIndices` / `canPlayCard`. Strategy is generic avoid-winning (no six-objective solver).
+- Config + state store `rulesPresetId: 'king-pt-synthetic'`
+- Mid game-1: `syntheticAllNegatives` restored
+- Mid Festa: preset alone keeps `2/5`…`5/5`
+- No fallback to 10-game normal or King Simplified
 
 ---
 
-## Production / persistence
+## History / stats
 
-- Double-gated by `NODE_ENV === 'development'`
-- Pin + session save blocked while synthetic active
-- Flag stripped / false outside development (`getKingPtState`)
-- Not intended to persist mid-round synthetic state
+Finished/pinned sessions keep `config.rulesPresetId`. Aggregate stats still key by `gameVariant` (`king`) — do not merge with Simplified identity; preset distinguishes modes when reading config.
 
 ---
 
-## Score sheet
+## vs King Simplificado
 
-Completed synthetic row uses history title; unused negative slots stay empty/zero; Festa rows continue normally. End-of-negatives sheet title/CTA use the canonical copy above. No fake duplicate negative rows.
+| | Sintético | Simplificado |
+|--|-----------|--------------|
+| Preset | `king-pt-synthetic` | `king-simplified` |
+| Engine | KingPtGame | KingSimplifiedGame |
+| Scoring | PT composed penalties | ±5 / trick |
+| Arc | 1+4 festas | 6 neg + 4 pos |

@@ -3,7 +3,7 @@ import { Card, GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { getTablePosition } from '../utils/tableLayout';
 import { handleCardImageError } from '../utils/cardImageError';
-import { isKingSyntheticActive } from '../dev/kingSyntheticController';
+import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
 import {
   kingHudMatchProgress,
   kingSyntheticHudSubtitle,
@@ -29,8 +29,7 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
   const king = getKingPtState(gameState);
   const reveal = king.kohReveal;
   const [dealing, setDealing] = useState(false);
-  const syntheticSession =
-    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const syntheticSession = isKingSyntheticSession(gameState);
   const syntheticHeadline = syntheticSession
     ? `${kingSyntheticProductName('pt')} — ${kingHudMatchProgress(0, 'pt', {
         syntheticSession: true

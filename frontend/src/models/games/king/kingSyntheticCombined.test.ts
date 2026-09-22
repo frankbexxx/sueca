@@ -10,24 +10,18 @@ import { canKingEndRoundEarly } from '../../../utils/earlyRoundEnd';
 type Internal = { state: ReturnType<KingPtGame['getCurrentState']> };
 
 function enableSyntheticAfterDeal(game: KingPtGame): Internal {
-  game.initialize(['A', 'B', 'C', 'D'], { localPlayerIndex: 0 });
+  game.initialize(['A', 'B', 'C', 'D'], {
+    localPlayerIndex: 0,
+    rulesPresetId: 'king-pt-synthetic'
+  });
   game.confirmKohReveal();
-  game.enableDevSyntheticCombinedRound();
   const internal = game as unknown as Internal;
   internal.state.waitingForRoundStart = false;
   return internal;
 }
 
 describe('King synthetic combined negatives', () => {
-  const originalEnv = process.env.NODE_ENV;
-
-  beforeEach(() => {
-    process.env.NODE_ENV = 'development';
-  });
-
-  afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
-  });
+  // Product mode — no development NODE_ENV required.
 
   it('follow-suit is mandatory', () => {
     const game = new KingPtGame();

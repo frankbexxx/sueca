@@ -83,11 +83,11 @@ export const KING_TOTAL_POSITIVE = 1300;
 export const KING_TOTAL_GAMES = 10;
 export const KING_NEGATIVE_GAMES = 6;
 export const KING_FESTA_GAMES = 4;
-/** DEV King Sintético display arc: 1 combined negative + 4 festas. */
+/** King Sintético display arc: 1 combined negative + 4 festas. */
 export const KING_SYNTHETIC_DISPLAY_GAMES = 5;
 
 export type KingMatchProgressOptions = {
-  /** DEV session: combined negative → Festa (display total 5). */
+  /** King Sintético session: combined negative → Festa (display total 5). */
   syntheticSession?: boolean;
 };
 
@@ -188,14 +188,14 @@ export function kingHudContractTitle(
   return `${primary} · ${match}`;
 }
 
-/** DEV King Sintético combined-round HUD / history label. */
+/** King Sintético combined-round HUD / history label. */
 export function kingSyntheticRoundLabel(locale: 'pt' | 'en' = 'pt'): string {
   return locale === 'pt'
     ? 'Sintético · Todos os negativos'
     : 'Synthetic · All negatives';
 }
 
-/** User-facing product name for DEV King Sintético (never "simplificado"). */
+/** User-facing product name for King Sintético (never "simplificado"). */
 export function kingSyntheticProductName(locale: 'pt' | 'en' = 'pt'): string {
   return locale === 'pt' ? 'King Sintético' : 'King Synthetic';
 }

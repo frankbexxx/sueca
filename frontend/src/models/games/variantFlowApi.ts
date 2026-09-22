@@ -21,6 +21,7 @@ import type { KingPtVariantState } from './KingPtGame';
 import type { KingBidType, KingFestaChoice } from './king/kingContracts';
 import type { SpadesBidType } from './spades/spadesRules';
 import { resolvePresetId } from '../../constants/rulesPresets';
+import { isKingPtEnginePreset } from './king/kingSyntheticMode';
 
 /** Minimal Sueca dealing / setup flow. */
 export interface SuecaVariantFlow {
@@ -116,13 +117,19 @@ export function isKingPtNormalPreset(rulesPresetId?: string): boolean {
   return resolvePresetId('king', rulesPresetId) === 'king-pt-normal';
 }
 
+/** True for King PT engine presets (normal 10-game or synthetic 5-game). */
+export function isKingPtEngineRulesPreset(rulesPresetId?: string): boolean {
+  return isKingPtEnginePreset(rulesPresetId);
+}
+
 export function createKingVariantFlow(
   host: KingFlowHost,
   readPtState: (state: GameState) => KingPtVariantState
 ): KingVariantFlow {
   return {
     kind: 'king',
-    isPtNormal: (rulesPresetId) => isKingPtNormalPreset(rulesPresetId),
+    // Method name is historical — covers all KingPtGame presets including synthetic.
+    isPtNormal: (rulesPresetId) => isKingPtEnginePreset(rulesPresetId),
     readPtState,
     readPlayerScores: readKingPlayerScores,
     readSimplifiedHandType: readKingSimplifiedHandType,
