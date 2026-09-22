@@ -3,6 +3,12 @@ import { Card, GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { getTablePosition } from '../utils/tableLayout';
 import { handleCardImageError } from '../utils/cardImageError';
+import { isKingSyntheticActive } from '../dev/kingSyntheticController';
+import {
+  kingHudMatchProgress,
+  kingSyntheticHudSubtitle,
+  kingSyntheticProductName
+} from '../models/games/king/kingContracts';
 import './VariantModals.css';
 
 const KOH_DEAL_MS = 480;
@@ -23,6 +29,14 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
   const king = getKingPtState(gameState);
   const reveal = king.kohReveal;
   const [dealing, setDealing] = useState(false);
+  const syntheticSession =
+    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const syntheticHeadline = syntheticSession
+    ? `${kingSyntheticProductName('pt')} — ${kingHudMatchProgress(0, 'pt', {
+        syntheticSession: true
+      })}`
+    : null;
+  const syntheticSub = syntheticSession ? kingSyntheticHudSubtitle('pt') : null;
 
   const current = reveal?.sequence[reveal.step];
   const isLast = reveal ? reveal.step >= reveal.sequence.length - 1 : false;
@@ -73,10 +87,19 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
       </div>
 
       <div className="king-koh-controls">
-        <h2>Viragem do Rei de Copas</h2>
-        {!dealing && !isLast && (
+        <h2>{syntheticHeadline ?? 'Viragem do Rei de Copas'}</h2>
+        {syntheticSub ? (
+          <p className="variant-modal-hint">{syntheticSub}</p>
+        ) : null}
+        {!syntheticSession && !dealing && !isLast && (
           <p className="variant-modal-hint">
             Primeiro jogador: {gameState.players[reveal.startPlayerIndex]?.name}. Viragem automática até sair o K♥.
+          </p>
+        )}
+        {syntheticSession && !dealing && !isLast && (
+          <p className="variant-modal-hint">
+            Viragem do Rei de Copas — primeiro jogador:{' '}
+            {gameState.players[reveal.startPlayerIndex]?.name}.
           </p>
         )}
         {dealing && !isLast && current && (
@@ -96,7 +119,7 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
         )}
         {isLast && (
           <button type="button" className="sueca-btn sueca-btn--primary" onClick={onConfirm}>
-            Começar partida
+            {syntheticSession ? 'Começar mão' : 'Começar partida'}
           </button>
         )}
       </div>

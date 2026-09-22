@@ -3,7 +3,11 @@ import { GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { useLanguage } from '../i18n/useLanguage';
 import { buildKingScoreSheet, formatScoreCell } from '../models/games/king/kingScoreSheet';
-import { kingHudMatchProgress } from '../models/games/king/kingContracts';
+import {
+  KING_NEGATIVE_GAMES,
+  kingHudMatchProgress,
+  kingSyntheticRoundEndCopy
+} from '../models/games/king/kingContracts';
 import { isKingSyntheticActive } from '../dev/kingSyntheticController';
 import './VariantModals.css';
 
@@ -28,13 +32,27 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
   const syntheticSession =
     isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
   const matchLabel = kingHudMatchProgress(king.gameIndex, locale, { syntheticSession });
+  const advanceToFestas =
+    Boolean(showContinue) &&
+    syntheticSession &&
+    king.gameIndex < KING_NEGATIVE_GAMES;
+  const synCopy = kingSyntheticRoundEndCopy(locale);
+  const title = advanceToFestas
+    ? synCopy.title
+    : locale === 'pt'
+      ? `Folha de pontuação · ${matchLabel}`
+      : `Score sheet · ${matchLabel}`;
+  const continueLabel = advanceToFestas
+    ? synCopy.continueCta
+    : locale === 'pt'
+      ? 'Próximo jogo'
+      : 'Next game';
+  const totalLabel = advanceToFestas ? synCopy.totalSection : 'Total';
 
   return (
     <div className="variant-modal-overlay">
       <div className="variant-modal king-score-modal variant-modal-wide">
-        <h2>
-          {locale === 'pt' ? 'Folha de pontuação' : 'Score sheet'} · {matchLabel}
-        </h2>
+        <h2>{title}</h2>
 
         <div className="king-score-sheet-wrap">
           <table className="king-score-sheet">
@@ -59,7 +77,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
                 </tr>
               ))}
               <tr className="king-score-sheet-total">
-                <td>Total</td>
+                <td>{totalLabel}</td>
                 {totals.map((total, i) => (
                   <td key={i}>{total >= 0 ? `+${total}` : total}</td>
                 ))}
@@ -85,7 +103,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
           </button>
           {showContinue && onContinue && (
             <button type="button" className="sueca-btn sueca-btn--primary" onClick={onContinue}>
-              {locale === 'pt' ? 'Próximo jogo' : 'Next game'}
+              {continueLabel}
             </button>
           )}
         </div>

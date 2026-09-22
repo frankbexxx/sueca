@@ -3,6 +3,12 @@ import { getHeartsRoundEndDisplayDeltas } from '../models/games/heartsRoundDispl
 import React from 'react';
 import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
+import { getKingPtState } from '../models/games/KingPtGame';
+import {
+  KING_NEGATIVE_GAMES,
+  kingSyntheticRoundEndCopy
+} from '../models/games/king/kingContracts';
+import { isKingSyntheticActive } from '../dev/kingSyntheticController';
 import './GameBoard.css';
 
 interface RoundEndModalProps {
@@ -137,18 +143,30 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   if (variant === 'king') {
     const { roundPts, totals } = getKingRoundScores(gameState);
     const hasRoundDeltas = roundPts.some((value) => value !== 0);
+    const kingPt = getKingPtState(gameState);
+    const syntheticEnd =
+      (isKingSyntheticActive() || Boolean(kingPt.devSyntheticAllNegatives)) &&
+      kingPt.gameIndex < KING_NEGATIVE_GAMES;
+    const synCopy = kingSyntheticRoundEndCopy('pt');
+    const kingTitle = syntheticEnd
+      ? synCopy.title
+      : tReplace('modals.roundComplete', { round: gameState.round });
+    const kingContinue = syntheticEnd ? synCopy.continueCta : continueLabel;
+    const kingTotalTitle = syntheticEnd
+      ? synCopy.totalSection
+      : t.modals.heartsTotalScores;
 
     return (
       <IndividualRoundEndModal
         gameState={gameState}
         localPlayerIndex={localPlayerIndex}
-        title={tReplace('modals.roundComplete', { round: gameState.round })}
-        roundSectionTitle={hasRoundDeltas ? t.modals.gamePoints : null}
-        totalSectionTitle={t.modals.heartsTotalScores}
+        title={kingTitle}
+        roundSectionTitle={hasRoundDeltas && !syntheticEnd ? t.modals.gamePoints : null}
+        totalSectionTitle={kingTotalTitle}
         roundPts={roundPts}
         totals={totals}
         onContinue={onContinue}
-        continueLabel={continueLabel}
+        continueLabel={kingContinue}
       />
     );
   }

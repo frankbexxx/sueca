@@ -1762,14 +1762,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       {gameVariant === 'king' &&
         resolvePresetId('king', rulesPresetId) === 'king-simplified' &&
+        !isKingSyntheticActive() &&
+        !devKingSynthetic &&
         gameState.waitingForRoundStart &&
         !gameState.isGameOver && !isJoiner && (
           <div className="variant-modal-overlay">
             <div className="variant-modal">
               <h2>
-                King simplificado — Jogo {gameState.round}/10 (
-                {kingCtrl?.readSimplifiedHandType(gameState) || '…'}
-                )
+                King simplificado — Jogo {gameState.round}/10
+                {kingCtrl?.readSimplifiedHandType(gameState) === 'positive'
+                  ? ' · positivas'
+                  : kingCtrl?.readSimplifiedHandType(gameState) === 'negative'
+                    ? ' · evitar vazas'
+                    : ''}
               </h2>
               <button
                 type="button"

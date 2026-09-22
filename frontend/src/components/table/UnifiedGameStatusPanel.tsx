@@ -5,7 +5,8 @@ import { getKingPtState } from '../../models/games/KingPtGame';
 import {
   kingHudContractPrimary,
   kingHudMatchProgress,
-  kingSyntheticRoundLabel,
+  kingSyntheticHudSubtitle,
+  kingSyntheticProductName,
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
@@ -121,7 +122,8 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         (kingPtState.devSyntheticAllNegatives || isKingSyntheticActive()) &&
         kingPtState.gameIndex < KING_NEGATIVE_GAMES
       ) {
-        contractLine = kingSyntheticRoundLabel(locale);
+        contractLine = kingSyntheticProductName(locale);
+        contractDetail = kingSyntheticHudSubtitle(locale);
         matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale, matchOpts);
       } else {
         contractLine = kingHudContractPrimary(
@@ -136,14 +138,28 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       if (kingPtState.nullAuctionStartNote && kingPtState.phase !== 'koh_reveal') {
         showNullNote = kingPtState.nullAuctionStartNote;
       }
+    } else if (isKingSyntheticActive()) {
+      // Harden: never fall through to simplified labels during a synthetic DEV session.
+      const synKing = getKingPtState(gameState);
+      contractLine = kingSyntheticProductName(locale);
+      contractDetail = kingSyntheticHudSubtitle(locale);
+      matchLine = kingHudMatchProgress(synKing.gameIndex, locale, {
+        syntheticSession: true
+      });
     } else {
       const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
       contractLine = isPt ? 'King simplificado' : 'King simplified';
       matchLine = isPt
         ? `Jogo ${gameState.round}/10`
         : `Game ${gameState.round}/10`;
-      if (simplified?.handType) {
-        contractLine = `${contractLine} · ${simplified.handType}`;
+      if (simplified?.handType === 'positive') {
+        contractLine = isPt
+          ? `${contractLine} · positivas`
+          : `${contractLine} · positive`;
+      } else if (simplified?.handType === 'negative') {
+        contractLine = isPt
+          ? `${contractLine} · evitar vazas`
+          : `${contractLine} · avoid tricks`;
       }
     }
   } else if (variant === 'hearts') {

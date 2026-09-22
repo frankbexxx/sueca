@@ -194,3 +194,33 @@ export function kingSyntheticRoundLabel(locale: 'pt' | 'en' = 'pt'): string {
     ? 'Sintético · Todos os negativos'
     : 'Synthetic · All negatives';
 }
+
+/** User-facing product name for DEV King Sintético (never "simplificado"). */
+export function kingSyntheticProductName(locale: 'pt' | 'en' = 'pt'): string {
+  return locale === 'pt' ? 'King Sintético' : 'King Synthetic';
+}
+
+/** Short HUD subtitle under the product name. */
+export function kingSyntheticHudSubtitle(locale: 'pt' | 'en' = 'pt'): string {
+  return locale === 'pt' ? 'Todos os negativos' : 'All negatives';
+}
+
+/** End-of-synthetic-negatives modal copy (score sheet + RoundEnd fallback). */
+export function kingSyntheticRoundEndCopy(locale: 'pt' | 'en' = 'pt'): {
+  title: string;
+  totalSection: string;
+  continueCta: string;
+} {
+  if (locale === 'pt') {
+    return {
+      title: 'Negativos sintéticos concluídos',
+      totalSection: 'Total acumulado',
+      continueCta: 'Avançar para festas'
+    };
+  }
+  return {
+    title: 'Synthetic negatives complete',
+    totalSection: 'Accumulated total',
+    continueCta: 'Advance to festas'
+  };
+}
