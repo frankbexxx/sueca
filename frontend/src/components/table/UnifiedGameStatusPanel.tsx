@@ -9,6 +9,7 @@ import {
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
+import { isKingSyntheticActive } from '../../dev/kingSyntheticController';
 import { buildKingHudFestaPlayLines } from '../../models/games/king/kingFestaSetupSummary';
 import { shouldShowKingPenaltyCards } from '../../models/games/king/kingHudPenaltyDisplay';
 import {
@@ -85,6 +86,10 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
       kingContract = kingPtState.contract;
       penaltyCardsByPlayer = kingPtState.roundBreakdown.penaltyCardsTaken;
       const ownerName = gameState.players[kingPtState.festaOwnerIndex]?.name ?? '';
+      // DEV controller stays active after Festa handoff (engine flag cleared).
+      const syntheticSession =
+        isKingSyntheticActive() || Boolean(kingPtState.devSyntheticAllNegatives);
+      const matchOpts = { syntheticSession };
       if (kingPtState.phase === 'koh_reveal') {
         contractLine = isPt ? 'Viragem do Rei de Copas' : 'King of Hearts draw';
         matchLine = null;
@@ -111,13 +116,13 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         contractLine = lines.primary;
         contractDetail = lines.detail;
         contractFirstPlayer = lines.firstPlayer;
-        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale, matchOpts);
       } else if (
-        kingPtState.devSyntheticAllNegatives &&
+        (kingPtState.devSyntheticAllNegatives || isKingSyntheticActive()) &&
         kingPtState.gameIndex < KING_NEGATIVE_GAMES
       ) {
         contractLine = kingSyntheticRoundLabel(locale);
-        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale, matchOpts);
       } else {
         contractLine = kingHudContractPrimary(
           kingPtState.gameIndex,
@@ -125,7 +130,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
           kingPtState.gameIndex >= KING_NEGATIVE_GAMES ? ownerName : null,
           locale
         );
-        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale, matchOpts);
       }
       // UX-P3.4b: null note only while it carries setup meaning.
       if (kingPtState.nullAuctionStartNote && kingPtState.phase !== 'koh_reveal') {

@@ -83,6 +83,32 @@ export const KING_TOTAL_POSITIVE = 1300;
 export const KING_TOTAL_GAMES = 10;
 export const KING_NEGATIVE_GAMES = 6;
 export const KING_FESTA_GAMES = 4;
+/** DEV King Sintético display arc: 1 combined negative + 4 festas. */
+export const KING_SYNTHETIC_DISPLAY_GAMES = 5;
+
+export type KingMatchProgressOptions = {
+  /** DEV session: combined negative → Festa (display total 5). */
+  syntheticSession?: boolean;
+};
+
+/**
+ * Resolve human-facing match current/total.
+ * Normal King: gameIndex+1 / 10.
+ * Synthetic session: 1/5 on the combined round; Festa gameIndex 6–9 → 2/5…5/5.
+ */
+export function resolveKingMatchDisplay(
+  gameIndex: number,
+  options?: KingMatchProgressOptions
+): { current: number; total: number } {
+  if (options?.syntheticSession) {
+    // Combined negative stays at display slot 1; Festa gameIndex 6–9 → 2–5.
+    return {
+      current: gameIndex < KING_NEGATIVE_GAMES ? 1 : gameIndex - 4,
+      total: KING_SYNTHETIC_DISPLAY_GAMES
+    };
+  }
+  return { current: gameIndex + 1, total: KING_TOTAL_GAMES };
+}
 
 export function kingContractLabel(contract: KingNegativeContract, locale: 'pt' | 'en'): string {
   const def = KING_NEGATIVE_CONTRACTS.find((c) => c.id === contract);
@@ -109,15 +135,14 @@ export function kingGameTitle(
   return locale === 'pt' ? `Jogo ${n}/${KING_TOTAL_GAMES}` : `Game ${n}/${KING_TOTAL_GAMES}`;
 }
 
-/** Match axis for King HUD — always labeled (never bare N/10). */
+/** Match axis for King HUD — always labeled (never bare N/total). */
 export function kingHudMatchProgress(
   gameIndex: number,
-  locale: 'pt' | 'en'
+  locale: 'pt' | 'en',
+  options?: KingMatchProgressOptions
 ): string {
-  const n = gameIndex + 1;
-  return locale === 'pt'
-    ? `Jogo ${n}/${KING_TOTAL_GAMES}`
-    : `Game ${n}/${KING_TOTAL_GAMES}`;
+  const { current, total } = resolveKingMatchDisplay(gameIndex, options);
+  return locale === 'pt' ? `Jogo ${current}/${total}` : `Game ${current}/${total}`;
 }
 
 /**
@@ -149,9 +174,10 @@ export function kingHudContractTitle(
   gameIndex: number,
   contract: KingNegativeContract | null,
   festaOwnerName: string | null,
-  locale: 'pt' | 'en'
+  locale: 'pt' | 'en',
+  options?: KingMatchProgressOptions
 ): string {
-  const match = kingHudMatchProgress(gameIndex, locale);
+  const match = kingHudMatchProgress(gameIndex, locale, options);
   const primary = kingHudContractPrimary(
     gameIndex,
     contract,

@@ -55,6 +55,8 @@ describe('kingSyntheticController (combined)', () => {
     markKingSyntheticSetupApplied();
     expect(getKingSyntheticState().setupApplied).toBe(true);
     expect(shouldEnableSyntheticAfterKoh()).toBe(false);
+    // Session stays active after setup (needed for Festa 2/5…5/5 display).
+    expect(isKingSyntheticActive()).toBe(true);
   });
 });
 

@@ -45,4 +45,37 @@ describe('kingScoreSheet', () => {
     expect(formatScoreCell(25)).toBe('+25');
     expect(formatScoreCell(-20)).toBe('-20');
   });
+
+  it('keeps four player delta slots and synthetic history title', () => {
+    const state = baseState();
+    const kingPt = state.variantState!.kingPt as {
+      gameHistory: Array<{
+        gameIndex: number;
+        title: string;
+        deltas: number[];
+        scoresAfter: number[];
+        breakdownLines: string[];
+      }>;
+      playerScores: number[];
+      gameIndex: number;
+    };
+    kingPt.gameHistory = [
+      {
+        gameIndex: 0,
+        title: 'Sintético · Todos os negativos',
+        deltas: [-410, -510, 0, -380],
+        scoresAfter: [-410, -510, 0, -380],
+        breakdownLines: []
+      }
+    ];
+    kingPt.playerScores = [-410, -510, 0, -380];
+    kingPt.gameIndex = 0;
+    const { rows, totals } = buildKingScoreSheet(state, 'pt');
+    expect(rows).toHaveLength(10);
+    expect(rows[0].label).toBe('Sintético · Todos os negativos');
+    expect(rows[0].deltas).toHaveLength(4);
+    expect(rows[0].deltas).toEqual([-410, -510, 0, -380]);
+    expect(totals).toEqual([-410, -510, 0, -380]);
+    expect(rows.filter((r) => r.isCompleted)).toHaveLength(1);
+  });
 });

@@ -1,6 +1,8 @@
 import React from 'react';
 import { GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
+import { kingHudMatchProgress } from '../models/games/king/kingContracts';
+import { isKingSyntheticActive } from '../dev/kingSyntheticController';
 import './VariantModals.css';
 
 interface KingScoreModalProps {
@@ -18,11 +20,14 @@ export const KingScoreModal: React.FC<KingScoreModalProps> = ({
 }) => {
   const king = getKingPtState(gameState);
   const breakdown = king.roundBreakdown.lines;
+  const syntheticSession =
+    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const matchLabel = kingHudMatchProgress(king.gameIndex, 'pt', { syntheticSession });
 
   return (
     <div className="variant-modal-overlay">
       <div className="variant-modal king-score-modal variant-modal-wide">
-        <h2>Pontuação · jogo {king.gameIndex + 1}/10</h2>
+        <h2>Pontuação · {matchLabel}</h2>
         {king.activeContract && (
           <p className="variant-modal-hint">
             Contrato: {king.activeContract.amount}{' '}

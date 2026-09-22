@@ -857,29 +857,45 @@
 }
 
 .king-score-sheet-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
   margin: 0.5rem 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.king-score-modal.variant-modal {
+  box-sizing: border-box;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 .king-score-sheet {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.72rem;
+  box-sizing: border-box;
 }
 
 .king-score-sheet th,
 .king-score-sheet td {
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.25rem 0.35rem;
+  padding: 0.22rem 0.18rem;
   text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .king-score-sheet-label {
   text-align: left;
-  white-space: nowrap;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 34%;
+}
+
+.king-score-sheet th:not(:first-child),
+.king-score-sheet td:not(:first-child) {
+  width: 16.5%;
 }
 
 .king-score-sheet-row--active {
@@ -888,6 +904,25 @@
 
 .king-score-sheet-total {
   font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .king-score-modal h2 {
+    font-size: 1.05rem;
+  }
+
+  .king-score-sheet {
+    font-size: 0.65rem;
+  }
+
+  .king-score-sheet th,
+  .king-score-sheet td {
+    padding: 0.18rem 0.1rem;
+  }
+
+  .king-score-sheet-label {
+    width: 32%;
+  }
 }
 
 .king-score-round-detail h3 {

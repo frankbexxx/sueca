@@ -3,6 +3,8 @@ import { GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { useLanguage } from '../i18n/useLanguage';
 import { buildKingScoreSheet, formatScoreCell } from '../models/games/king/kingScoreSheet';
+import { kingHudMatchProgress } from '../models/games/king/kingContracts';
+import { isKingSyntheticActive } from '../dev/kingSyntheticController';
 import './VariantModals.css';
 
 interface KingScoreSheetModalProps {
@@ -23,17 +25,22 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
   const king = getKingPtState(gameState);
   const { rows, totals } = buildKingScoreSheet(gameState, locale);
   const breakdown = king.roundBreakdown.lines;
+  const syntheticSession =
+    isKingSyntheticActive() || Boolean(king.devSyntheticAllNegatives);
+  const matchLabel = kingHudMatchProgress(king.gameIndex, locale, { syntheticSession });
 
   return (
     <div className="variant-modal-overlay">
       <div className="variant-modal king-score-modal variant-modal-wide">
-        <h2>Folha de pontuação · jogo {king.gameIndex + 1}/10</h2>
+        <h2>
+          {locale === 'pt' ? 'Folha de pontuação' : 'Score sheet'} · {matchLabel}
+        </h2>
 
         <div className="king-score-sheet-wrap">
           <table className="king-score-sheet">
             <thead>
               <tr>
-                <th>Jogo</th>
+                <th>{locale === 'pt' ? 'Jogo' : 'Game'}</th>
                 {gameState.players.map((p) => (
                   <th key={p.id}>{p.name}</th>
                 ))}
@@ -63,7 +70,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
 
         {breakdown.length > 0 && (
           <div className="king-score-round-detail">
-            <h3>Detalhe desta ronda</h3>
+            <h3>{locale === 'pt' ? 'Detalhe desta ronda' : 'This round'}</h3>
             <ul className="king-score-breakdown">
               {breakdown.map((line) => (
                 <li key={line}>{line}</li>
@@ -78,7 +85,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
           </button>
           {showContinue && onContinue && (
             <button type="button" className="sueca-btn sueca-btn--primary" onClick={onContinue}>
-              Próximo jogo
+              {locale === 'pt' ? 'Próximo jogo' : 'Next game'}
             </button>
           )}
         </div>
