@@ -5,6 +5,7 @@ import { getKingPtState } from '../../models/games/KingPtGame';
 import {
   kingHudContractPrimary,
   kingHudMatchProgress,
+  kingSyntheticRoundLabel,
   KING_NEGATIVE_GAMES,
   type KingNegativeContract
 } from '../../models/games/king/kingContracts';
@@ -110,6 +111,12 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         contractLine = lines.primary;
         contractDetail = lines.detail;
         contractFirstPlayer = lines.firstPlayer;
+        matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
+      } else if (
+        kingPtState.devSyntheticAllNegatives &&
+        kingPtState.gameIndex < KING_NEGATIVE_GAMES
+      ) {
+        contractLine = kingSyntheticRoundLabel(locale);
         matchLine = kingHudMatchProgress(kingPtState.gameIndex, locale);
       } else {
         contractLine = kingHudContractPrimary(

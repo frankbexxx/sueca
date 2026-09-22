@@ -1,5 +1,5 @@
 import { Card } from '../../../types/game';
-import { KingNegativeContract } from './kingContracts';
+import { KING_NEGATIVE_CONTRACTS, KingNegativeContract } from './kingContracts';
 
 export function countHearts(trick: Card[]): number {
   return trick.filter((c) => c.suit === 'hearts').length;
@@ -55,6 +55,20 @@ export function negativeTrickPenalty(
     default:
       return 0;
   }
+}
+
+/**
+ * DEV synthetic combined round: sum canonical penalties for all six negatives.
+ * No new penalty values — composes `negativeTrickPenalty` only.
+ */
+export function syntheticAllNegativesTrickPenalty(
+  trick: Card[],
+  trickNumber: number
+): number {
+  return KING_NEGATIVE_CONTRACTS.reduce(
+    (sum, def) => sum + negativeTrickPenalty(def.id, trick, trickNumber),
+    0
+  );
 }
 
 /** Positive festa: +25 per trick to winner. */

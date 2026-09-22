@@ -161,3 +161,10 @@ export function kingHudContractTitle(
   if (primary === match) return match;
   return `${primary} · ${match}`;
 }
+
+/** DEV King Sintético combined-round HUD / history label. */
+export function kingSyntheticRoundLabel(locale: 'pt' | 'en' = 'pt'): string {
+  return locale === 'pt'
+    ? 'Sintético · Todos os negativos'
+    : 'Synthetic · All negatives';
+}

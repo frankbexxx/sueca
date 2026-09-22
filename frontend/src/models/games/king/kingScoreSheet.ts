@@ -31,8 +31,8 @@ export function buildKingScoreSheet(
       gameIndex >= KING_NEGATIVE_GAMES
         ? gameState.players[festaOwner(king.kohPlayerIndex, gameIndex)]?.name ?? ''
         : null;
-    const label = kingGameTitle(gameIndex, contract, ownerName, locale);
     const entry = historyByIndex.get(gameIndex);
+    const label = entry?.title ?? kingGameTitle(gameIndex, contract, ownerName, locale);
     const deltas = entry ? [...entry.deltas] : [null, null, null, null];
     rows.push({
       gameIndex,

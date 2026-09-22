@@ -157,25 +157,13 @@ export class KingGame extends BaseGameAdapter {
     return game.initialize(playerNames, options);
   }
 
-  /** DEV ONLY — King Sintético deterministic playable negative fixture. */
-  applyDevSyntheticNegativeFixture(
-    playerNames: string[],
-    seed: {
-      contract: KingNegativeContract;
-      trickNumber: number;
-      currentPlayerIndex: number;
-      trickLeader: number;
-      currentTrick: Card[];
-      hands: Card[][];
-    },
-    options?: Record<string, unknown>
-  ): GameState {
-    this.impl = undefined;
-    const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
-    if (isPtGame(game)) {
-      return game.applyDevSyntheticNegativeFixture(playerNames, seed, options);
+  /** DEV ONLY — enable King Sintético combined-all-negatives on current dealt round. */
+  enableDevSyntheticCombinedRound(): GameState {
+    this.ensureImpl({ rulesPresetId: 'king-pt-normal' });
+    if (isPtGame(this.impl!)) {
+      return this.impl.enableDevSyntheticCombinedRound();
     }
-    return game.initialize(playerNames, options);
+    return this.getCurrentState();
   }
 
   canPlayCard(state: GameState, playerIndex: number, cardIndex: number): boolean {

@@ -23,7 +23,9 @@ import {
 import {
   accumulateFestaTrickBreakdown,
   accumulateTrickBreakdown,
+  accumulateSyntheticAllNegativesBreakdown,
   buildBreakdownLines,
+  buildSyntheticBreakdownLines,
   initBreakdownForRound,
   nullAuctionStartNote
 } from './king/kingBreakdownHelpers';
@@ -42,6 +44,7 @@ import {
   KingNegativeContract,
   KingPhase,
   kingGameTitle,
+  kingSyntheticRoundLabel,
   KingAuctionHistoryEntry
 } from './king/kingContracts';
 import {
@@ -54,7 +57,8 @@ import {
   settleFourByThree,
   settleNegativeFesta,
   settleNullAuctionFesta,
-  settlePositiveAuctionRound
+  settlePositiveAuctionRound,
+  syntheticAllNegativesTrickPenalty
 } from './king/kingScoring';
 import { applyHandSortToState } from '../../utils/handSort';
 import { canKingEndRoundEarly } from '../../utils/earlyRoundEnd';
@@ -114,6 +118,11 @@ export interface KingPtVariantState {
    * entry stays observable. Never set in production paths.
    */
   pauseFestaAiForDev?: boolean;
+  /**
+   * DEV ONLY — King Sintético: all six negative objectives active in one round.
+   * Never persisted / never set outside development apply paths.
+   */
+  devSyntheticAllNegatives?: boolean;
   /**
    * After each auction voice (bid/pass) or on auction_result: block auto-advance
    * until the human confirms via confirmAuctionContinue.
@@ -212,8 +221,16 @@ export function getKingPtState(state: GameState): KingPtVariantState {
       vs.standingBid ? bidEquivalentPositive(vs.standingBid) : 0
     ),
     bestBid: vs.bestBid ?? vs.standingBid ?? null,
-    showScorePopup
+    showScorePopup,
+    // Never expose synthetic flag outside development.
+    devSyntheticAllNegatives:
+      process.env.NODE_ENV === 'development' ? Boolean(vs.devSyntheticAllNegatives) : false
   };
+}
+
+/** DEV combined-negative round active (production always false via getKingPtState). */
+export function isDevSyntheticAllNegatives(king: KingPtVariantState): boolean {
+  return process.env.NODE_ENV === 'development' && Boolean(king.devSyntheticAllNegatives);
 }
 
 export function simulateKohDraw(startPlayerIndex?: number): KingKohRevealState {
@@ -247,11 +264,13 @@ export function isMen(card: Card): boolean {
 
 function heartsLeadForbidden(king: KingPtVariantState): boolean {
   if (king.gameIndex >= KING_NEGATIVE_GAMES) return false;
+  if (isDevSyntheticAllNegatives(king)) return true;
   return king.contract === 'no_hearts' || king.contract === 'no_king_hearts';
 }
 
 export function mustPlayKingOfHearts(player: Player, ledSuit: Suit | null, king: KingPtVariantState): boolean {
-  if (king.gameIndex >= KING_NEGATIVE_GAMES || king.contract !== 'no_king_hearts') return false;
+  if (king.gameIndex >= KING_NEGATIVE_GAMES) return false;
+  if (!isDevSyntheticAllNegatives(king) && king.contract !== 'no_king_hearts') return false;
   if (!player.hand.some((c) => c.rank === 'K' && c.suit === 'hearts')) return false;
   // Lead: first legal chance only when the hand is hearts-only (cannot open another suit).
   if (ledSuit === null) return !hasNonHeart(player);
@@ -917,83 +936,6 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   /**
-   * DEV ONLY — mid-round negative with deterministic short hands for King Sintético.
-   * Outside development, falls back to normal initialize.
-   */
-  applyDevSyntheticNegativeFixture(
-    playerNames: string[],
-    seed: {
-      contract: KingNegativeContract;
-      trickNumber: number;
-      currentPlayerIndex: number;
-      trickLeader: number;
-      currentTrick: Card[];
-      hands: Card[][];
-    },
-    options?: Record<string, unknown>
-  ): GameState {
-    if (process.env.NODE_ENV !== 'development') {
-      return this.initialize(playerNames, options);
-    }
-
-    const gameIndex = KING_NEGATIVE_CONTRACTS.findIndex((c) => c.id === seed.contract);
-    if (gameIndex < 0) {
-      return this.initialize(playerNames, options);
-    }
-
-    const scores = (options?.playerScores as number[] | undefined) ?? [0, 0, 0, 0];
-
-    this.state = this.buildState(
-      playerNames,
-      {
-        ...options,
-        kohPlayerIndex: (options?.kohPlayerIndex as number | undefined) ?? 0
-      },
-      [...scores],
-      gameIndex,
-      false
-    );
-
-    // Replace random deal with deterministic smoke hands.
-    for (let i = 0; i < 4; i++) {
-      this.state!.players[i].hand = seed.hands[i].map((c) => ({ ...c }));
-      this.state!.players[i].type = i === (options?.localPlayerIndex ?? 0) ? 'human' : 'ai';
-    }
-
-    const king = getKingPtState(this.state);
-    king.phase = 'negative';
-    king.contract = seed.contract;
-    king.gameIndex = gameIndex;
-    king.trickNumber = seed.trickNumber;
-    king.roundStartScores = [...scores];
-    king.lastRoundDeltas = [0, 0, 0, 0];
-    king.playerScores = [...scores];
-    king.roundBreakdown = initBreakdownForRound(
-      king.gameIndex,
-      king.contract,
-      king.festaMode,
-      king.activeContract
-    );
-    king.festaPhase = null;
-    king.waitingForFallback = false;
-    king.waitingForFestaSetup = false;
-    king.eightOrNullsPending = false;
-    king.waitingForEarlyEnd = false;
-
-    this.state!.currentTrick = seed.currentTrick.map((c) => ({ ...c }));
-    this.state!.trickLeader = seed.trickLeader;
-    this.state!.currentPlayerIndex = seed.currentPlayerIndex;
-    this.state!.waitingForRoundStart = false;
-    this.state!.waitingForRoundEnd = false;
-    this.state!.waitingForTrickEnd = false;
-    this.state!.isPaused = false;
-    this.state!.isFirstTrick = seed.trickNumber === 0 && seed.currentTrick.length === 0;
-    // Keep seed hand order stable for deterministic smoke indices (no applyHandSortToState).
-    this.syncKing(king);
-    return this.getCurrentState();
-  }
-
-  /**
    * DEV ONLY — mid-round negative contract with sample captured cards / deltas.
    * Outside development, falls back to normal initialize.
    */
@@ -1298,17 +1240,31 @@ export class KingPtGame extends BaseGameAdapter {
 
     if (king.gameIndex < KING_NEGATIVE_GAMES && king.contract) {
       if (!king.scoringFrozen) {
-        accumulateTrickBreakdown(
-          king.roundBreakdown,
-          king.contract,
-          s.currentTrick,
-          king.trickNumber,
-          winner
-        );
-        const penalty = negativeTrickPenalty(king.contract, s.currentTrick, king.trickNumber);
-        if (penalty > 0) {
-          king.lastRoundDeltas[winner] -= penalty;
-          king.playerScores[winner] -= penalty;
+        if (isDevSyntheticAllNegatives(king)) {
+          accumulateSyntheticAllNegativesBreakdown(
+            king.roundBreakdown,
+            s.currentTrick,
+            king.trickNumber,
+            winner
+          );
+          const penalty = syntheticAllNegativesTrickPenalty(s.currentTrick, king.trickNumber);
+          if (penalty > 0) {
+            king.lastRoundDeltas[winner] -= penalty;
+            king.playerScores[winner] -= penalty;
+          }
+        } else {
+          accumulateTrickBreakdown(
+            king.roundBreakdown,
+            king.contract,
+            s.currentTrick,
+            king.trickNumber,
+            winner
+          );
+          const penalty = negativeTrickPenalty(king.contract, s.currentTrick, king.trickNumber);
+          if (penalty > 0) {
+            king.lastRoundDeltas[winner] -= penalty;
+            king.playerScores[winner] -= penalty;
+          }
         }
       }
     } else if (king.gameIndex >= KING_NEGATIVE_GAMES) {
@@ -1341,6 +1297,7 @@ export class KingPtGame extends BaseGameAdapter {
     }
 
     if (
+      !isDevSyntheticAllNegatives(king) &&
       !king.scoringFrozen &&
       !king.earlyEndOffered &&
       canKingEndRoundEarly(king.gameIndex, king.contract, king.roundBreakdown)
@@ -1395,11 +1352,9 @@ export class KingPtGame extends BaseGameAdapter {
       }
     }
 
-    king.roundBreakdown.lines = buildBreakdownLines(
-      king.roundBreakdown,
-      king.contract,
-      'pt'
-    );
+    king.roundBreakdown.lines = isDevSyntheticAllNegatives(king)
+      ? buildSyntheticBreakdownLines(king.roundBreakdown, 'pt')
+      : buildBreakdownLines(king.roundBreakdown, king.contract, 'pt');
     this.appendHistory(king);
 
     king.showScorePopup = 'round';
@@ -1412,7 +1367,9 @@ export class KingPtGame extends BaseGameAdapter {
 
   private appendHistory(king: KingPtVariantState): void {
     const ownerName = this.state!.players[king.festaOwnerIndex]?.name ?? '';
-    const title = kingGameTitle(king.gameIndex, king.contract, king.gameIndex >= 6 ? ownerName : null, 'pt');
+    const title = isDevSyntheticAllNegatives(king)
+      ? kingSyntheticRoundLabel('pt')
+      : kingGameTitle(king.gameIndex, king.contract, king.gameIndex >= 6 ? ownerName : null, 'pt');
     king.gameHistory.push({
       gameIndex: king.gameIndex,
       title,
@@ -1454,6 +1411,9 @@ export class KingPtGame extends BaseGameAdapter {
     if (!s.waitingForRoundEnd) return;
     const king = getKingPtState(s);
     const humanIndex = s.players.findIndex((p) => p.type === 'human');
+    const nextIndex = isDevSyntheticAllNegatives(king)
+      ? KING_NEGATIVE_GAMES
+      : king.gameIndex + 1;
     this.state = this.buildState(
       s.players.map((p) => p.name),
       {
@@ -1463,9 +1423,44 @@ export class KingPtGame extends BaseGameAdapter {
         kohPlayerIndex: king.kohPlayerIndex
       },
       [...king.playerScores],
-      king.gameIndex + 1,
+      nextIndex,
       false
     );
+    // Synthetic flag must not carry into Festa / later rounds.
+    const nextKing = getKingPtState(this.state);
+    if (nextKing.devSyntheticAllNegatives) {
+      nextKing.devSyntheticAllNegatives = false;
+      this.syncKing(nextKing);
+    }
+  }
+
+  /**
+   * DEV ONLY — enable combined-all-negatives on the current dealt negative round.
+   * Outside development, no-op.
+   */
+  enableDevSyntheticCombinedRound(): GameState {
+    if (process.env.NODE_ENV !== 'development' || !this.state) {
+      return this.getCurrentState();
+    }
+    const king = getKingPtState(this.state);
+    if (king.phase === 'koh_reveal' || king.gameIndex >= KING_NEGATIVE_GAMES) {
+      return this.getCurrentState();
+    }
+    king.devSyntheticAllNegatives = true;
+    king.gameIndex = 0;
+    king.contract = 'no_tricks';
+    king.phase = 'negative';
+    king.roundBreakdown = initBreakdownForRound(
+      king.gameIndex,
+      king.contract,
+      king.festaMode,
+      king.activeContract,
+      'pt'
+    );
+    king.roundBreakdown.contractLabel = kingSyntheticRoundLabel('pt');
+    this.state.waitingForRoundStart = false;
+    this.syncKing(king);
+    return this.getCurrentState();
   }
 
   startRound(_state: GameState): void {

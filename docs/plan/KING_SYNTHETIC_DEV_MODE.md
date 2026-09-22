@@ -1,20 +1,22 @@
 # King Sintético — DEV mode
 
-**Status:** S1 + S2 implemented  
+**Status:** Combined-negative pivot implemented  
 **Branch:** `v2-main`  
-**Scope:** DEV-only smoke foundation (no progression loop / Festa handoff yet)
+**Scope:** DEV-only smoke — one full 13-trick round with all six negatives active → normal Festa
 
 ---
 
 ## Purpose
 
-Accelerate smoke-testing of all six King PT negative contracts while reusing the **canonical** engine:
+Accelerate smoke-testing of King PT **combined** negative legality and scoring while reusing the **canonical** engine:
 
 - `KingPtGame.canPlayCard` / `playCard`
-- scoring helpers unchanged
-- no parallel legality code
+- `negativeTrickPenalty` composed (summed) — no new penalty values
+- `heartsLeadForbidden` / `mustPlayKingOfHearts` widened by a DEV-only flag
+- no parallel rules engine
 - not `KingSimplifiedGame`
 - not cardIntelligence `syntheticMode`
+- normal King (non-synthetic) unchanged
 
 ---
 
@@ -22,49 +24,52 @@ Accelerate smoke-testing of all six King PT negative contracts while reusing the
 
 ```
 ?devKingSynthetic=1
-?devKingSynthetic=1&synthContract=no_hearts
 ```
 
 | Query | Behaviour |
 |-------|-----------|
-| `devKingSynthetic=1` | Solo King PT + KOH reveal; after KOH confirm, loads first fixture (`no_tricks`) |
-| `+ synthContract=<id>` | Skips KOH; loads that contract fixture immediately |
-| Invalid `synthContract` | Synthetic still enables; falls back to first contract |
+| `devKingSynthetic=1` | Solo King PT + KOH reveal; after KOH confirm, enables combined-all-negatives on the dealt 13-card round |
+| `synthContract=` | **Removed** — ignored if present |
 | Production | Parser returns `null` — inert |
 
-Badge: `DEV · KING SINTÉTICO` (± contract label).  
-DEV control: **Seguinte** loads the next fixture (no fake scoring).
+Badge: `DEV · KING SINTÉTICO`  
+HUD (optional): `Sintético · Todos os negativos`
+
+No **Seguinte** / per-contract cycling.
 
 ---
 
-## Fixtures (S2)
+## Model
 
-| Contract | Beat | Intent |
-|----------|------|--------|
-| `no_tricks` | default | Legal lead / complete a trick |
-| `no_hearts` | default | Cannot lead ♥ while holding non-♥ |
-| `no_queens` | default | Must follow with Q♣ |
-| `no_men` | default | Must follow with K♠ |
-| `no_king_hearts` | `koh_follow_precedence` | K♥ illegal while can follow |
-| `no_king_hearts` | `koh_obligation_void` | Void → must play K♥ |
-| `no_last_two` | default | `trickNumber = 11` (next finish = late) |
+1. Normal KOH + full 13-card deal (`gameIndex = 0`)
+2. DEV flag `devSyntheticAllNegatives` (not a production `KingNegativeContract`)
+3. Play **one** 13-trick round with:
+   - follow-suit
+   - no_hearts lead restriction
+   - no_king_hearts K♥ obligation
+   - scoring = sum of all six `negativeTrickPenalty` values per trick
+4. Early-end **disabled** in synthetic (so tricks 12–13 always run)
+5. One history row: `Sintético · Todos os negativos`
+6. Continue → `gameIndex = 6` (Festa) with scores preserved; synthetic flag cleared
+7. Normal Festa engine thereafter
 
-Cards are still played only through the real engine.
+---
+
+## AI
+
+Uses real `getLegalIndices` / `canPlayCard`. Strategy is generic avoid-winning (no six-objective solver).
 
 ---
 
 ## Production / persistence
 
 - Double-gated by `NODE_ENV === 'development'`
-- Pin control hidden/blocked while synthetic active
-- Synthetic flag lives in DEV controller module — not serialized into canonical game state
-- App clears king session when opening via synthetic query
+- Pin + session save blocked while synthetic active
+- Flag stripped / false outside development (`getKingPtState`)
+- Not intended to persist mid-round synthetic state
 
 ---
 
-## Not yet implemented (S3 / S4)
+## Score sheet
 
-- Automatic trick / contract progression
-- Synthetic score accumulation loop
-- Auto result continuation
-- Festa handoff
+Smallest adaptation: completed synthetic row uses history title; unused negative slots stay empty/zero; Festa rows continue normally. No fake duplicate negative rows.

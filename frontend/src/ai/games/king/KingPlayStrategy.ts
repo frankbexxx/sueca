@@ -1,6 +1,6 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { AIDifficulty, GameState, CARD_HIERARCHY } from '../../../types/game';
-import { KingPtVariantState } from '../../../models/games/KingPtGame';
+import { KingPtVariantState, isDevSyntheticAllNegatives } from '../../../models/games/KingPtGame';
 import { KING_NEGATIVE_GAMES } from '../../../models/games/king/kingContracts';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
@@ -126,6 +126,11 @@ function mediumNegativeDump(
 
   const k02 = tryPlayK02(valid, player.hand, player, led, king);
   if (k02 !== null) return k02;
+
+  // DEV synthetic combined round: generic avoid-winning (legality already via getLegalIndices).
+  if (isDevSyntheticAllNegatives(king)) {
+    return playNoTricksNegative(valid, player.hand, state, playerIndex, king);
+  }
 
   // no_last_two: early tricks (0-7) play freely; tricks 8-9 play full defensive
   if (king.contract === 'no_last_two') {

@@ -99,6 +99,37 @@ export function accumulateTrickBreakdown(
   }
 }
 
+/**
+ * DEV synthetic: accumulate mosaics/counts for every negative contract on one trick.
+ * Increments tricksWon once, then applies each contract's breakdown side-effects.
+ */
+export function accumulateSyntheticAllNegativesBreakdown(
+  breakdown: KingRoundBreakdown,
+  trick: Card[],
+  trickNumber: number,
+  winner: number
+): void {
+  breakdown.tricksWon[winner] += 1;
+  // Hearts (no_hearts scoring mosaics + counts)
+  breakdown.heartsTaken[winner] += countHearts(trick);
+  breakdown.penaltyCardsTaken[winner].push(...heartsInTrick(trick));
+  // Queens
+  breakdown.queensTaken[winner] += countQueens(trick);
+  breakdown.penaltyCardsTaken[winner].push(...queensInTrick(trick));
+  // Men
+  breakdown.menTaken[winner] += countMen(trick);
+  breakdown.penaltyCardsTaken[winner].push(...menInTrick(trick));
+  // K♥
+  if (hasKingHearts(trick)) {
+    breakdown.kingTakenBy = winner;
+    breakdown.penaltyCardsTaken[winner].push(...kingHeartsInTrick(trick));
+  }
+  // Last two
+  if (trickNumber >= 12) {
+    breakdown.lastTwoWinners.push(winner);
+  }
+}
+
 export function accumulateFestaTrickBreakdown(
   breakdown: KingRoundBreakdown,
   trick: Card[],
@@ -187,6 +218,29 @@ export function buildBreakdownLines(
     });
   }
 
+  return lines;
+}
+
+/** DEV synthetic: combine per-contract breakdown lines without inventing new scoring text. */
+export function buildSyntheticBreakdownLines(
+  breakdown: KingRoundBreakdown,
+  locale: 'pt' | 'en'
+): string[] {
+  const lines: string[] = [];
+  if (breakdown.contractLabel) lines.push(breakdown.contractLabel);
+  const contracts: KingNegativeContract[] = [
+    'no_tricks',
+    'no_hearts',
+    'no_queens',
+    'no_men',
+    'no_king_hearts',
+    'no_last_two'
+  ];
+  for (const contract of contracts) {
+    const labeled = { ...breakdown, contractLabel: '' };
+    const part = buildBreakdownLines(labeled, contract, locale).filter(Boolean);
+    lines.push(...part);
+  }
   return lines;
 }
 
