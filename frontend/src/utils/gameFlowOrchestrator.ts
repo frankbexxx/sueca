@@ -1,8 +1,8 @@
 import { GameState, GameVariant } from '../types/game';
-import { resolvePresetId } from '../constants/rulesPresets';
 import { getHeartsState } from '../models/games/HeartsGame';
 import { getSpadesState } from '../models/games/SpadesGame';
 import { getKingPtState, KingPtVariantState } from '../models/games/KingPtGame';
+import { isKingPtEnginePreset } from '../models/games/king/kingSyntheticMode';
 import {
   shouldShowTrickContinueChrome,
   shouldShowTrickContinueCta
@@ -47,7 +47,8 @@ export function isKingPtNormalPreset(
   variant: GameVariant,
   rulesPresetId?: string
 ): boolean {
-  return variant === 'king' && resolvePresetId('king', rulesPresetId) === 'king-pt-normal';
+  // Includes king-pt-normal + king-pt-synthetic (KingPt engine / festa sheets).
+  return variant === 'king' && isKingPtEnginePreset(rulesPresetId);
 }
 
 /** King festa / auction / fallback / setup sheet (CSS + Continue suppress). */

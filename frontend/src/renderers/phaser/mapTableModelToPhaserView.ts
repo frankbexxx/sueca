@@ -190,8 +190,9 @@ export function mapTableModelToPhaserView(options: {
   const aspect = resolveAspectMode(width, height, orientationReference);
   const bottomChromePx = resolveBottomChromePx(height, aspect, {
     sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase,
-    // Only Spades bid uses the short dock — keep Hearts/festa chrome unchanged.
-    compactSheet: spadesBidPhase
+    // Only Spades bid uses the short dock — Festa uses festaChrome density.
+    compactSheet: spadesBidPhase,
+    festaChrome: kingFestaPhase ? model.status.festaSheetChrome : null
   });
   const layout = buildPhaserTableLayout(width, height, {
     bottomChromePx,

@@ -111,6 +111,7 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
       heartsPassActive: false,
       spadesBidActive: false,
       festaSheetActive: false,
+      festaSheetChrome: null,
       flowOverlayActive: false,
       showTrickContinueCta: false,
       showTrickContinueChrome: false
@@ -272,6 +273,17 @@ describe('phaserTableLayout E2', () => {
     });
     expect(bidChrome).toBeGreaterThan(0);
     expect(bidChrome).toBeLessThan(chrome);
+    const festaCompact = resolveBottomChromePx(720, aspect, {
+      sheetActive: true,
+      festaChrome: 'compact'
+    });
+    const festaTall = resolveBottomChromePx(720, aspect, {
+      sheetActive: true,
+      festaChrome: 'tall'
+    });
+    expect(festaCompact).toBeGreaterThan(bidChrome);
+    expect(festaTall).toBeGreaterThan(festaCompact);
+    expect(festaTall).toBeGreaterThanOrEqual(250);
     const plain = computeLocalHandLayout({ width: 390, height: 720, cardCount: 13 });
     const withSheet = computeLocalHandLayout({
       width: 390,
@@ -285,6 +297,25 @@ describe('phaserTableLayout E2', () => {
     const plainSpan = plain.slots[12].x - plain.slots[0].x;
     const sheetSpan = withSheet.slots[12].x - withSheet.slots[0].x;
     expect(sheetSpan).toBeCloseTo(plainSpan, 5);
+  });
+
+  it('UX-FESTA-01B: festa chrome bands scale compact < standard < tall', () => {
+    const aspect = resolveAspectMode(430, 780);
+    const compact = resolveBottomChromePx(780, aspect, {
+      sheetActive: true,
+      festaChrome: 'compact'
+    });
+    const standard = resolveBottomChromePx(780, aspect, {
+      sheetActive: true,
+      festaChrome: 'standard'
+    });
+    const tall = resolveBottomChromePx(780, aspect, {
+      sheetActive: true,
+      festaChrome: 'tall'
+    });
+    expect(compact).toBeLessThan(standard);
+    expect(standard).toBeLessThan(tall);
+    expect(tall).toBeGreaterThanOrEqual(270);
   });
 });
 

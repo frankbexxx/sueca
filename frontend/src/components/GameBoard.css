@@ -108,10 +108,30 @@
 }
 
 @media (max-width: 768px) {
-  .game-board--hearts-pass .sueca-phaser-root,
-  .game-board--festa-sheet .sueca-phaser-root {
+  .game-board--hearts-pass .sueca-phaser-root {
     height: min(62vh, 560px);
     height: min(62dvh, 560px);
+  }
+
+  /* UX-FESTA-01B — canvas height tracks Festa sheet density (not one band for all).
+     Override SuecaPhaserRenderer min-height:360 so tall sheets can shrink below that floor. */
+  .game-board.game-board--festa-sheet .sueca-phaser-root,
+  .game-board.game-board--festa-sheet-compact .sueca-phaser-root {
+    min-height: 0;
+    height: min(62vh, 560px);
+    height: min(62dvh, 560px);
+  }
+
+  .game-board.game-board--festa-sheet-standard .sueca-phaser-root {
+    min-height: 0;
+    height: min(48vh, 420px);
+    height: min(48dvh, 420px);
+  }
+
+  .game-board.game-board--festa-sheet-tall .sueca-phaser-root {
+    min-height: 0;
+    height: min(40vh, 340px);
+    height: min(40dvh, 340px);
   }
 
   .game-board--spades-bid .sueca-phaser-root {
@@ -585,13 +605,13 @@
 .game-board--festa-sheet .player-hand-bar {
   position: relative;
   z-index: 2100;
-  /* UX-FESTA-01: sheet may use up to ~48dvh; keep hand clear of sheet top. */
-  margin-bottom: max(9.5rem, calc(16dvh + 24px));
+  /* DOM fallback only — Phaser hand uses bottomChromePx (UX-FESTA-01B). */
+  margin-bottom: max(8.5rem, calc(12dvh + 24px));
   pointer-events: auto;
 }
 
 .game-board--festa-sheet:has(.variant-modal--festa-compact) .player-hand-bar {
-  margin-bottom: max(8.5rem, calc(14dvh + 24px));
+  margin-bottom: max(7.25rem, calc(10dvh + 24px));
 }
 
 .game-board--festa-sheet .player-hand-bar .hand-row--scroll {

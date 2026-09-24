@@ -1,6 +1,7 @@
 import {
   fourByThreeDisabledReason,
   resolveFallbackActionsAvailability,
+  resolveFestaSheetChromeDensity,
   resolveKingFestaUiView,
   resolveNegotiationOwnerActionsAvailability,
   setupShowsNegotiationActions,
@@ -127,6 +128,57 @@ describe('kingFestaActionAvailability', () => {
       const open = resolveNegotiationOwnerActionsAvailability(false);
       expect(open.accept.enabled).toBe(true);
       expect(open.eightOrNulls.enabled).toBe(true);
+    });
+  });
+
+  describe('resolveFestaSheetChromeDensity', () => {
+    it('maps auction → compact, negotiation → standard, setup → tall', () => {
+      expect(
+        resolveFestaSheetChromeDensity(
+          baseKing({
+            festaPhase: 'auction',
+            auctionOrder: [1, 2, 3],
+            auctionTurnIndex: 0,
+            currentBidder: 1,
+            bestBid: null
+          }),
+          1
+        )
+      ).toBe('compact');
+      expect(resolveFestaSheetChromeDensity(baseKing(), 0)).toBe('standard');
+      expect(
+        resolveFestaSheetChromeDensity(
+          baseKing({
+            festaPhase: 'setup',
+            waitingForFestaSetup: true,
+            benefitOwnerIndex: 0
+          }),
+          0
+        )
+      ).toBe('tall');
+    });
+
+    it('maps Continuar / auction_result → compact (confirm-like short sheets)', () => {
+      expect(
+        resolveFestaSheetChromeDensity(
+          baseKing({
+            festaPhase: 'auction',
+            waitingForAuctionContinue: true,
+            bestBid: { bidderIndex: 1, bidType: 'positive', amount: 2 }
+          }),
+          0
+        )
+      ).toBe('compact');
+      expect(
+        resolveFestaSheetChromeDensity(
+          baseKing({
+            festaPhase: 'auction_result',
+            waitingForAuctionContinue: true,
+            bestBid: { bidderIndex: 1, bidType: 'positive', amount: 5 }
+          }),
+          0
+        )
+      ).toBe('compact');
     });
   });
 });

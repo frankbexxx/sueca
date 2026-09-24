@@ -61,6 +61,11 @@ export interface TableStatusRenderModel {
   heartsPassActive: boolean;
   spadesBidActive: boolean;
   festaSheetActive: boolean;
+  /**
+   * UX-FESTA-01B — Phaser bottom clearance band for the active Festa sheet.
+   * null when no Festa sheet.
+   */
+  festaSheetChrome: 'compact' | 'standard' | 'tall' | null;
   flowOverlayActive: boolean;
   showTrickContinueCta: boolean;
   showTrickContinueChrome: boolean;

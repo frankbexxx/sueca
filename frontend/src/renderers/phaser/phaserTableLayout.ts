@@ -103,7 +103,13 @@ export function resolveAspectMode(
 export function resolveBottomChromePx(
   height: number,
   aspect: PhaserAspectMode,
-  flags: { sheetActive?: boolean; compactSheet?: boolean }
+  flags: {
+    sheetActive?: boolean;
+    /** Spades bid dock — short reserved band. */
+    compactSheet?: boolean;
+    /** King Festa semantic density (UX-FESTA-01B). */
+    festaChrome?: 'compact' | 'standard' | 'tall' | null;
+  }
 ): number {
   if (!flags.sheetActive) return 0;
   // Spades bidding dock is short — reserve less so the hand sits closer to the dock.
@@ -112,6 +118,23 @@ export function resolveBottomChromePx(
     if (aspect === 'landscape') return Math.round(Math.min(height * 0.22, 72));
     return Math.round(Math.min(height * 0.06, 48));
   }
+  // King Festa: match sheet height bands (compact auction / standard / tall setup).
+  if (flags.festaChrome === 'compact') {
+    if (aspect === 'portrait') return Math.round(Math.min(height * 0.12, 100));
+    if (aspect === 'landscape') return Math.round(Math.min(height * 0.28, 100));
+    return Math.round(Math.min(height * 0.12, 96));
+  }
+  if (flags.festaChrome === 'tall') {
+    if (aspect === 'portrait') return Math.round(Math.min(height * 0.36, 280));
+    if (aspect === 'landscape') return Math.round(Math.min(height * 0.4, 150));
+    return Math.round(Math.min(height * 0.3, 240));
+  }
+  if (flags.festaChrome === 'standard') {
+    if (aspect === 'portrait') return Math.round(Math.min(height * 0.24, 190));
+    if (aspect === 'landscape') return Math.round(Math.min(height * 0.34, 130));
+    return Math.round(Math.min(height * 0.2, 160));
+  }
+  // Hearts pass / legacy sheet without density.
   if (aspect === 'portrait') return Math.round(Math.min(height * 0.13, 108));
   if (aspect === 'landscape') return Math.round(Math.min(height * 0.36, 120));
   return Math.round(Math.min(height * 0.12, 88));

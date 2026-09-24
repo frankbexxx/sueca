@@ -519,13 +519,26 @@
 }
 
 .variant-modal--festa-setup {
-  padding: 0.4rem 0.55rem;
+  padding: 0.35rem 0.5rem;
   gap: 0;
   /* UX-FESTA-01: drop 250px / 30dvh cap — shell max-height + scroll body. */
 }
 
 .variant-modal--festa-setup .king-festa-sheet-title {
   font-size: 0.85rem;
+}
+
+.variant-modal--festa-setup .king-festa-sheet__header {
+  gap: 0.28rem;
+}
+
+.variant-modal--festa-setup .king-festa-sheet__body {
+  gap: 0.32rem;
+}
+
+.variant-modal--festa-setup .king-festa-sheet__footer {
+  padding-top: 0.3rem;
+  margin-top: 0.1rem;
 }
 
 .king-festa-choice-grid {

@@ -124,6 +124,34 @@ export function resolveKingFestaUiView(
   return 'none';
 }
 
+/** Phaser bottom-chrome density for the active Festa sheet (no DOM measure). */
+export type FestaSheetChromeDensity = 'compact' | 'standard' | 'tall';
+
+/**
+ * Maps Festa UI view → table clearance band.
+ * compact: auction / short docks · standard: negotiation/fallback · tall: setup choice.
+ */
+export function resolveFestaSheetChromeDensity(
+  king: KingFestaUiState,
+  localPlayerIndex: number
+): FestaSheetChromeDensity | null {
+  const view = resolveKingFestaUiView(king, localPlayerIndex);
+  switch (view) {
+    case 'none':
+      return null;
+    case 'setup_owner':
+      return 'tall';
+    case 'auction_turn':
+    case 'auction_waiting':
+    case 'auction_continue':
+    case 'auction_result':
+    case 'spectator_waiting':
+      return 'compact';
+    default:
+      return 'standard';
+  }
+}
+
 export function fourByThreeDisabledReason(locale: 'pt' | 'en' = 'pt'): string {
   return locale === 'pt'
     ? 'Indisponível: a oferta não é fraca o suficiente.'

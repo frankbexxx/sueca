@@ -8,6 +8,7 @@ import { isActiveTurnSeat } from '../utils/playerSeatHelpers';
 import type { KingPtVariantState } from '../models/games/KingPtGame';
 import type { SpadesVariantState } from '../models/games/SpadesGame';
 import type { HeartsVariantState } from '../models/games/HeartsGame';
+import { resolveFestaSheetChromeDensity } from '../models/games/king/kingFestaActionAvailability';
 import type {
   TableRenderModel,
   TableSeatRenderModel,
@@ -94,8 +95,16 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const localPlayer = gameState.players[localPlayerIndex];
   const localHand = localPlayer ? [...localPlayer.hand] : [];
 
+  const festaSheetChrome =
+    festaSheetActive && kingPt
+      ? resolveFestaSheetChromeDensity(kingPt, localPlayerIndex)
+      : null;
+
   const boardModifiers = [
     festaSheetActive ? 'game-board--festa-sheet' : '',
+    festaSheetChrome === 'compact' ? 'game-board--festa-sheet-compact' : '',
+    festaSheetChrome === 'standard' ? 'game-board--festa-sheet-standard' : '',
+    festaSheetChrome === 'tall' ? 'game-board--festa-sheet-tall' : '',
     isTeamTableLayout ? 'game-board--team-table' : '',
     heartsPassActive ? 'game-board--hearts-pass' : '',
     spadesBidActive ? 'game-board--spades-bid' : ''
@@ -133,6 +142,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
       heartsPassActive,
       spadesBidActive,
       festaSheetActive,
+      festaSheetChrome,
       flowOverlayActive,
       showTrickContinueCta,
       showTrickContinueChrome
