@@ -339,7 +339,8 @@ export class SuecaTableScene extends Phaser.Scene {
     const hasBack = this.textures.exists(this.backKey);
     const edgePad = PREMIUM_TABLE.opponentEdgePad;
     view.opponents.forEach((opp) => {
-      opp.backPositions.forEach((pos) => {
+      const isSide = opp.compass === 'west' || opp.compass === 'east';
+      opp.backPositions.forEach((pos, index) => {
         const shadow = this.add
           .ellipse(
             pos.x + 1.5,
@@ -363,14 +364,14 @@ export class SuecaTableScene extends Phaser.Scene {
               PREMIUM_TABLE.opponentEdgeMatAlpha
             )
             .setDepth(PREMIUM_TABLE.depthOpponentCards - 0.25);
-          if (opp.compass === 'west' || opp.compass === 'east') mat.setAngle(90);
+          if (isSide) mat.setAngle(90);
           this.opponentBacks.push(mat);
 
           const img = this.add
             .image(pos.x, pos.y, this.backKey)
             .setDisplaySize(opponentCardWidth, opponentCardHeight)
             .setDepth(PREMIUM_TABLE.depthOpponentCards);
-          if (opp.compass === 'west' || opp.compass === 'east') img.setAngle(90);
+          if (isSide) img.setAngle(90);
           this.opponentBacks.push(img);
           // Soft ivory edge on top of the mat for Premium Classic read.
           const edge = this.add
@@ -382,8 +383,24 @@ export class SuecaTableScene extends Phaser.Scene {
             )
             .setFillStyle(0x000000, 0)
             .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.5);
-          if (opp.compass === 'west' || opp.compass === 'east') edge.setAngle(90);
+          if (isSide) edge.setAngle(90);
           this.opponentBacks.push(edge);
+
+          // UX-CARDS-01B: dark seam on vertical stacks (break Casino-red merge).
+          // After 90° rot, fan axis = card width; across = card height.
+          if (isSide && index > 0) {
+            const seam = this.add
+              .rectangle(
+                pos.x,
+                pos.y - opponentCardWidth / 2,
+                opponentCardHeight * 0.94,
+                1.5,
+                PREMIUM_TABLE.handEdge,
+                PREMIUM_TABLE.opponentSideOverlapAlpha
+              )
+              .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.75);
+            this.opponentBacks.push(seam);
+          }
         } else {
           const rect = this.add
             .rectangle(

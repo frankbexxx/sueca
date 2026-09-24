@@ -190,29 +190,58 @@ describe('phaserTableLayout E2', () => {
     expect(layoutOpponentBackPositions(5, 'north', layout)).toHaveLength(5);
   });
 
-  it('UX-CARDS-01: opponent gap ~0.28–0.32 × card width on all seats', () => {
+  it('UX-CARDS-01: north gap ~0.28–0.32 × width; sides (01B) ~0.36–0.42 × height', () => {
     const layout = buildPhaserTableLayout(390, 844);
     const w = layout.opponentCardWidth;
-    const baseGap = Math.round(w * PREMIUM_TABLE.opponentGapFraction);
-    for (const compass of ['north', 'west', 'east'] as const) {
+    const h = layout.opponentCardHeight;
+    const northGap = Math.max(
+      PREMIUM_TABLE.opponentGapMinNorth,
+      Math.round(w * PREMIUM_TABLE.opponentGapFraction)
+    );
+    const sideGap = Math.max(
+      PREMIUM_TABLE.opponentGapMinSide,
+      Math.round(h * PREMIUM_TABLE.opponentSideGapFraction)
+    );
+
+    const north = layoutOpponentBackPositions(8, 'north', layout);
+    expect(north[1].x - north[0].x).toBe(northGap);
+    expect(northGap / w).toBeGreaterThanOrEqual(0.28);
+    expect(northGap / w).toBeLessThanOrEqual(0.4);
+
+    for (const compass of ['west', 'east'] as const) {
       const pts = layoutOpponentBackPositions(8, compass, layout);
-      expect(pts).toHaveLength(8);
-      const gap =
-        compass === 'north'
-          ? pts[1].x - pts[0].x
-          : pts[1].y - pts[0].y;
-      const minGap =
-        compass === 'north'
-          ? PREMIUM_TABLE.opponentGapMinNorth
-          : PREMIUM_TABLE.opponentGapMinSide;
-      expect(gap).toBe(Math.max(minGap, baseGap));
-      const ratio = gap / w;
-      // Prefer 0.28–0.32; min-gap floor may raise ratio on very narrow cards.
-      expect(ratio).toBeGreaterThanOrEqual(0.28);
-      expect(ratio).toBeLessThanOrEqual(0.4);
+      expect(pts[1].y - pts[0].y).toBe(sideGap);
+      const ratio = sideGap / h;
+      expect(ratio).toBeGreaterThanOrEqual(0.36);
+      expect(ratio).toBeLessThanOrEqual(0.45);
     }
+
+    // Side offset must stay larger than north (vertical Casino-red merge).
+    expect(sideGap).toBeGreaterThan(northGap);
     expect(PREMIUM_TABLE.opponentGapFraction).toBeGreaterThanOrEqual(0.28);
     expect(PREMIUM_TABLE.opponentGapFraction).toBeLessThanOrEqual(0.32);
+    expect(PREMIUM_TABLE.opponentSideGapFraction).toBeGreaterThanOrEqual(0.36);
+    expect(PREMIUM_TABLE.opponentSideGapFraction).toBeLessThanOrEqual(0.42);
+  });
+
+  it('UX-CARDS-01B: side stacks bias below name chrome and stay inside portrait at 13', () => {
+    for (const width of [360, 390, 430] as const) {
+      const layout = buildPhaserTableLayout(width, 844);
+      for (const compass of ['west', 'east'] as const) {
+        const pts = layoutOpponentBackPositions(13, compass, layout);
+        expect(pts.length).toBeLessThanOrEqual(8);
+        expect(pts.length).toBeGreaterThanOrEqual(1);
+        const half = layout.opponentCardWidth / 2;
+        const top = Math.min(...pts.map((p) => p.y)) - half;
+        const bot = Math.max(...pts.map((p) => p.y)) + half;
+        const labelY =
+          layout.seatAnchor[compass].y - layout.opponentCardHeight * 0.95;
+        // Fan must sit below the name label band.
+        expect(top).toBeGreaterThan(labelY + 8);
+        expect(top).toBeGreaterThanOrEqual(-4);
+        expect(bot).toBeLessThanOrEqual(layout.height + 4);
+      }
+    }
   });
 
   it('UX-CARDS-01: count badge from handCount; hidden at 0; updates with size', () => {

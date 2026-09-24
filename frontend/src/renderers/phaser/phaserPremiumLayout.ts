@@ -87,17 +87,21 @@ export const PREMIUM_TABLE = {
   /** Table chrome typeface (loaded for game board). */
   fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif',
   /**
-   * UX-CARDS-01 — opponent back fan + mini remaining-count badge.
-   * Gap is a fraction of rendered card width (responsive). Edge before shadow.
+   * UX-CARDS-01 / 01B — opponent back fan + mini remaining-count badge.
+   * North gap: fraction of card width. Side gap (01B): fraction of card height
+   * (vertical stacks need more offset to break Casino-red merge).
    * Badge mirrors KOH `.king-koh-pile-count` weight (compact, dark chip).
    */
   opponentGapFraction: 0.3,
+  opponentSideGapFraction: 0.41,
   opponentGapMinNorth: 12,
-  opponentGapMinSide: 10,
+  opponentGapMinSide: 15,
   opponentEdgePad: 2,
   opponentEdgeMatAlpha: 0.72,
   opponentIvoryStroke: 1.2,
   opponentIvoryAlpha: 0.48,
+  /** UX-CARDS-01B — dark hairline at side-stack overlap seams only. */
+  opponentSideOverlapAlpha: 0.95,
   opponentShadowAlpha: 0.4,
   opponentCountFontPx: 10,
   opponentCountPadX: 5,

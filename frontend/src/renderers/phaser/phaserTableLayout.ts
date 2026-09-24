@@ -208,23 +208,39 @@ export function layoutOpponentBackPositions(
   layout: PhaserTableLayout
 ): PhaserPoint[] {
   const anchor = layout.seatAnchor[compass];
-  const n = Math.min(count, 10);
-  // UX-CARDS-01: ~0.28–0.32 × card width so Casino/CardMeister backs separate.
-  const frac = PREMIUM_TABLE.opponentGapFraction;
+  // Sides: slightly fewer visual backs so taller 01B gaps stay below name chrome.
+  const visualCap =
+    compass === 'west' || compass === 'east' ? 8 : 10;
+  const n = Math.min(count, visualCap);
+  // North: ~0.28–0.32 × width. Sides (UX-CARDS-01B): ~0.36–0.42 × height.
   const gap =
     compass === 'north' || compass === 'south'
       ? Math.max(
           PREMIUM_TABLE.opponentGapMinNorth,
-          Math.round(layout.opponentCardWidth * frac)
+          Math.round(layout.opponentCardWidth * PREMIUM_TABLE.opponentGapFraction)
         )
       : Math.max(
           PREMIUM_TABLE.opponentGapMinSide,
-          Math.round(layout.opponentCardWidth * frac)
+          Math.round(
+            layout.opponentCardHeight * PREMIUM_TABLE.opponentSideGapFraction
+          )
         );
   return Array.from({ length: n }, (_, i) => {
     const mid = (n - 1) / 2;
     if (compass === 'west' || compass === 'east') {
-      return { x: anchor.x, y: anchor.y + (i - mid) * gap };
+      // Keep fan below side name labels (labels sit ~0.95×H above the anchor).
+      const halfSpan = mid * gap;
+      const cardHalfAlongFan = layout.opponentCardWidth / 2;
+      const biasY = Math.max(
+        0,
+        Math.round(
+          halfSpan +
+            cardHalfAlongFan -
+            layout.opponentCardHeight * 0.9 +
+            16
+        )
+      );
+      return { x: anchor.x, y: anchor.y + biasY + (i - mid) * gap };
     }
     return { x: anchor.x + (i - mid) * gap, y: anchor.y };
   });
