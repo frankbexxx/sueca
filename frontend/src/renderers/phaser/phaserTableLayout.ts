@@ -208,38 +208,44 @@ export function layoutOpponentBackPositions(
   layout: PhaserTableLayout
 ): PhaserPoint[] {
   const anchor = layout.seatAnchor[compass];
-  // Sides: slightly fewer visual backs so taller 01B gaps stay below name chrome.
-  const visualCap =
-    compass === 'west' || compass === 'east' ? 8 : 10;
-  const n = Math.min(count, visualCap);
-  // North: ~0.28–0.32 × width. Sides (UX-CARDS-01B): ~0.36–0.42 × height.
-  const gap =
-    compass === 'north' || compass === 'south'
-      ? Math.max(
-          PREMIUM_TABLE.opponentGapMinNorth,
-          Math.round(layout.opponentCardWidth * PREMIUM_TABLE.opponentGapFraction)
-        )
-      : Math.max(
-          PREMIUM_TABLE.opponentGapMinSide,
-          Math.round(
-            layout.opponentCardHeight * PREMIUM_TABLE.opponentSideGapFraction
-          )
-        );
+  // UX-CARDS-01C: render every card — no visual cap.
+  const n = Math.max(0, count);
+  if (n === 0) return [];
+
+  // Natural overlap: step = expose × card size along the fan axis.
+  // Side seats are rotated 90° → fan axis uses card width (short edge on-screen).
+  const alongFan = layout.opponentCardWidth;
+  let gap = Math.max(
+    PREMIUM_TABLE.opponentGapMin,
+    Math.round(alongFan * PREMIUM_TABLE.opponentOverlapExpose)
+  );
+
+  // Keep side stacks inside the seat band below name chrome when count is high.
+  if ((compass === 'west' || compass === 'east') && n > 1) {
+    const cardHalf = layout.opponentCardWidth / 2;
+    const labelBottom =
+      anchor.y - layout.opponentCardHeight * 0.95 + 14;
+    const maxTop = labelBottom + 6;
+    const maxBot = layout.height - 10;
+    const maxSpan = Math.max(cardHalf * 2, maxBot - maxTop - cardHalf * 2);
+    const maxGap = Math.floor(maxSpan / (n - 1));
+    if (maxGap > 0) {
+      gap = Math.min(gap, Math.max(PREMIUM_TABLE.opponentGapMin, maxGap));
+    }
+  }
+
   return Array.from({ length: n }, (_, i) => {
     const mid = (n - 1) / 2;
     if (compass === 'west' || compass === 'east') {
-      // Keep fan below side name labels (labels sit ~0.95×H above the anchor).
       const halfSpan = mid * gap;
-      const cardHalfAlongFan = layout.opponentCardWidth / 2;
-      const biasY = Math.max(
-        0,
-        Math.round(
-          halfSpan +
-            cardHalfAlongFan -
-            layout.opponentCardHeight * 0.9 +
-            16
-        )
-      );
+      const cardHalf = layout.opponentCardWidth / 2;
+      const stackTop = anchor.y - halfSpan - cardHalf;
+      const labelBottom =
+        anchor.y - layout.opponentCardHeight * 0.95 + 14;
+      const biasY =
+        stackTop < labelBottom + 4
+          ? Math.ceil(labelBottom + 4 - stackTop)
+          : 0;
       return { x: anchor.x, y: anchor.y + biasY + (i - mid) * gap };
     }
     return { x: anchor.x + (i - mid) * gap, y: anchor.y };

@@ -87,22 +87,20 @@ export const PREMIUM_TABLE = {
   /** Table chrome typeface (loaded for game board). */
   fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif',
   /**
-   * UX-CARDS-01 / 01B — opponent back fan + mini remaining-count badge.
-   * North gap: fraction of card width. Side gap (01B): fraction of card height
-   * (vertical stacks need more offset to break Casino-red merge).
-   * Badge mirrors KOH `.king-koh-pile-count` weight (compact, dark chip).
+   * UX-CARDS-01C — opponent backs: natural overlap + dark silhouette border.
+   * Separation comes from each card’s own rounded black edge (not seams/caps).
+   * Badge mirrors KOH `.king-koh-pile-count` weight.
    */
-  opponentGapFraction: 0.3,
-  opponentSideGapFraction: 0.41,
-  opponentGapMinNorth: 12,
-  opponentGapMinSide: 15,
-  opponentEdgePad: 2,
-  opponentEdgeMatAlpha: 0.72,
-  opponentIvoryStroke: 1.2,
-  opponentIvoryAlpha: 0.48,
-  /** UX-CARDS-01B — dark hairline at side-stack overlap seams only. */
-  opponentSideOverlapAlpha: 0.95,
-  opponentShadowAlpha: 0.4,
+  /** Exposed fraction of card width between centers (natural peek). */
+  opponentOverlapExpose: 0.28,
+  opponentGapMin: 8,
+  /** Thin dark border around each back (~1px visual). */
+  opponentBorder: 0x0a0a0a,
+  opponentBorderPx: 1.75,
+  /** Subtle physical-card corner radius as fraction of min(card W,H). */
+  opponentCornerRadiusFraction: 0.09,
+  opponentCornerRadiusMin: 3,
+  opponentShadowAlpha: 0.32,
   opponentCountFontPx: 10,
   opponentCountPadX: 5,
   opponentCountPadY: 2,

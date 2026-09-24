@@ -117,13 +117,9 @@ describe('phaser model transitions (E1 validation)', () => {
     expect(view.trick).toHaveLength(0);
     expect(view.interactionEnabled).toBe(true);
     expect(view.opponents.every((o) => o.handCount === 10)).toBe(true);
-    // UX-CARDS-01B: side seats cap visual backs lower so taller gaps clear names.
-    expect(
-      view.opponents.every((o) =>
-        o.compass === 'north'
-          ? o.backPositions.length === 10
-          : o.backPositions.length === 8
-      )
-    ).toBe(true);
+    // UX-CARDS-01C: every opponent back is rendered (no visual cap).
+    expect(view.opponents.every((o) => o.backPositions.length === 10)).toBe(
+      true
+    );
   });
 });

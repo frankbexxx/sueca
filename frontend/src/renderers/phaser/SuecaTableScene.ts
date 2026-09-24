@@ -335,88 +335,78 @@ export class SuecaTableScene extends Phaser.Scene {
     this.opponentCountBadges = [];
     this.cardShadows.forEach((s) => s.destroy());
     this.cardShadows = [];
-    const { opponentCardWidth, opponentCardHeight } = view.layout;
+    const { opponentCardWidth: w, opponentCardHeight: h } = view.layout;
     const hasBack = this.textures.exists(this.backKey);
-    const edgePad = PREMIUM_TABLE.opponentEdgePad;
+    const radius = Math.max(
+      PREMIUM_TABLE.opponentCornerRadiusMin,
+      Math.round(Math.min(w, h) * PREMIUM_TABLE.opponentCornerRadiusFraction)
+    );
+    const borderPx = PREMIUM_TABLE.opponentBorderPx;
+
     view.opponents.forEach((opp) => {
       const isSide = opp.compass === 'west' || opp.compass === 'east';
       opp.backPositions.forEach((pos, index) => {
+        const depth = PREMIUM_TABLE.depthOpponentCards + index * 0.01;
         const shadow = this.add
           .ellipse(
-            pos.x + 1.5,
-            pos.y + Math.max(4, opponentCardHeight * 0.1),
-            opponentCardWidth * 0.92,
-            opponentCardHeight * 0.26,
+            pos.x + 1.25,
+            pos.y + Math.max(3, h * 0.08),
+            w * 0.9,
+            h * 0.22,
             PREMIUM_TABLE.shadow,
             PREMIUM_TABLE.opponentShadowAlpha
           )
-          .setDepth(PREMIUM_TABLE.depthOpponentCards - 1);
+          .setDepth(depth - 1);
         this.cardShadows.push(shadow);
-        if (hasBack) {
-          // Dark hairline mat under the back (GLOBAL-CARDS-style separation).
-          const mat = this.add
-            .rectangle(
-              pos.x,
-              pos.y,
-              opponentCardWidth + edgePad * 2,
-              opponentCardHeight + edgePad * 2,
-              PREMIUM_TABLE.handEdge,
-              PREMIUM_TABLE.opponentEdgeMatAlpha
-            )
-            .setDepth(PREMIUM_TABLE.depthOpponentCards - 0.25);
-          if (isSide) mat.setAngle(90);
-          this.opponentBacks.push(mat);
 
+        // Dark rounded silhouette plate (border) — primary separation.
+        const plate = this.add.graphics().setDepth(depth);
+        plate.fillStyle(PREMIUM_TABLE.opponentBorder, 1);
+        plate.fillRoundedRect(
+          -w / 2 - borderPx,
+          -h / 2 - borderPx,
+          w + borderPx * 2,
+          h + borderPx * 2,
+          radius + borderPx * 0.4
+        );
+        plate.setPosition(pos.x, pos.y);
+        if (isSide) plate.setAngle(90);
+        this.opponentBacks.push(plate);
+
+        if (hasBack) {
           const img = this.add
             .image(pos.x, pos.y, this.backKey)
-            .setDisplaySize(opponentCardWidth, opponentCardHeight)
-            .setDepth(PREMIUM_TABLE.depthOpponentCards);
+            .setDisplaySize(w, h)
+            .setDepth(depth + 0.05);
           if (isSide) img.setAngle(90);
-          this.opponentBacks.push(img);
-          // Soft ivory edge on top of the mat for Premium Classic read.
-          const edge = this.add
-            .rectangle(pos.x, pos.y, opponentCardWidth + 1, opponentCardHeight + 1)
-            .setStrokeStyle(
-              PREMIUM_TABLE.opponentIvoryStroke,
-              PREMIUM_TABLE.ivory,
-              PREMIUM_TABLE.opponentIvoryAlpha
-            )
-            .setFillStyle(0x000000, 0)
-            .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.5);
-          if (isSide) edge.setAngle(90);
-          this.opponentBacks.push(edge);
 
-          // UX-CARDS-01B: dark seam on vertical stacks (break Casino-red merge).
-          // After 90° rot, fan axis = card width; across = card height.
-          if (isSide && index > 0) {
-            const seam = this.add
-              .rectangle(
-                pos.x,
-                pos.y - opponentCardWidth / 2,
-                opponentCardHeight * 0.94,
-                1.5,
-                PREMIUM_TABLE.handEdge,
-                PREMIUM_TABLE.opponentSideOverlapAlpha
-              )
-              .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.75);
-            this.opponentBacks.push(seam);
-          }
+          // Soft round-corner mask so silhouette matches the border plate.
+          const maskG = this.make.graphics({ x: 0, y: 0 });
+          maskG.fillStyle(0xffffff, 1);
+          maskG.fillRoundedRect(-w / 2, -h / 2, w, h, radius);
+          maskG.setPosition(pos.x, pos.y);
+          if (isSide) maskG.setAngle(90);
+          maskG.setVisible(false);
+          img.setMask(maskG.createGeometryMask());
+
+          // Crisp dark outline on top (reads better than plate alone under Casino red).
+          const outline = this.add.graphics().setDepth(depth + 0.1);
+          outline.lineStyle(borderPx, PREMIUM_TABLE.opponentBorder, 1);
+          outline.strokeRoundedRect(-w / 2, -h / 2, w, h, radius);
+          outline.setPosition(pos.x, pos.y);
+          if (isSide) outline.setAngle(90);
+
+          this.opponentBacks.push(img, maskG, outline);
         } else {
-          const rect = this.add
-            .rectangle(
-              pos.x,
-              pos.y,
-              opponentCardWidth,
-              opponentCardHeight,
-              0x12203a
-            )
-            .setStrokeStyle(1.25, this.theme.brass, 0.45)
-            .setDepth(PREMIUM_TABLE.depthOpponentCards);
-          this.opponentBacks.push(rect);
+          const fallback = this.add.graphics().setDepth(depth + 0.05);
+          fallback.fillStyle(0x12203a, 1);
+          fallback.fillRoundedRect(-w / 2, -h / 2, w, h, radius);
+          fallback.setPosition(pos.x, pos.y);
+          if (isSide) fallback.setAngle(90);
+          this.opponentBacks.push(fallback);
         }
       });
 
-      // UX-CARDS-01: remaining-card count (not seat number); hide at 0.
       if (opp.countBadgePosition && opp.handCount > 0) {
         this.drawOpponentCountBadge(opp.countBadgePosition, opp.handCount);
       }
