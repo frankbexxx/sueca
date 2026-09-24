@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, GameState } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
-import { getTablePosition } from '../utils/tableLayout';
+import { getTablePositionForPlayer } from '../utils/tableLayout';
 import { handleCardImageError } from '../utils/cardImageError';
 import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
 import {
@@ -18,13 +18,16 @@ interface KingKohRevealModalProps {
   getCardImage: (card: Card) => string;
   onNext: () => void;
   onConfirm: () => void;
+  /** Seat orientation relative to local player (matches live table). */
+  localPlayerIndex?: number;
 }
 
 export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
   gameState,
   getCardImage,
   onNext,
-  onConfirm
+  onConfirm,
+  localPlayerIndex = 0
 }) => {
   const king = getKingPtState(gameState);
   const reveal = king.kohReveal;
@@ -63,7 +66,7 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
     <div className="king-koh-overlay">
       <div className="king-koh-table">
         {gameState.players.map((player, index) => {
-          const position = getTablePosition(index);
+          const position = getTablePositionForPlayer(index, localPlayerIndex);
           const pile = piles[index];
           return (
             <div key={player.id} className={`king-koh-seat king-koh-seat-${position}`}>

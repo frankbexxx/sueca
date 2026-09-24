@@ -12,6 +12,7 @@ import {
   resolveAspectMode,
   resolveBottomChromePx
 } from './phaserTableLayout';
+import { seatsAroundLocal } from '../../utils/tableLayout';
 import {
   cardTextureKey,
   mapTableModelToPhaserView,
@@ -132,10 +133,23 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
 }
 
 describe('phaserTableLayout E2', () => {
-  it('maps seats relative to local south', () => {
+  it('maps seats relative to local south (canonical S→W→N→E)', () => {
     expect(playerIndexToCompass(0, 0)).toBe('south');
     expect(playerIndexToCompass(1, 0)).toBe('west');
+    expect(playerIndexToCompass(2, 0)).toBe('north');
+    expect(playerIndexToCompass(3, 0)).toBe('east');
   });
+
+  it.each([0, 1, 2, 3] as const)(
+    'playerIndexToCompass matches seatsAroundLocal for local=%i',
+    (local) => {
+      const seats = seatsAroundLocal(local);
+      expect(playerIndexToCompass(seats.south, local)).toBe('south');
+      expect(playerIndexToCompass(seats.west, local)).toBe('west');
+      expect(playerIndexToCompass(seats.north, local)).toBe('north');
+      expect(playerIndexToCompass(seats.east, local)).toBe('east');
+    }
+  );
 
   it('resolves portrait / landscape / desktop aspects', () => {
     expect(resolveAspectMode(390, 720)).toBe('portrait');

@@ -72,6 +72,7 @@ Do **not** reopen without new evidence:
 | **UX-FESTA-01** Festa responsive sheets | Viewport blocker fixed; Phaser integration polished — sheet density syncs table clearance (compact/standard/tall) |
 | **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
 | **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
+| **UX-SEAT-01** Canonical player orientation | Phaser / DOM / KOH share S→W→N→E relative to local player |
 
 **AI core (Sueca / Spades / Hearts / King):** DONE for solo finishability — polish only below.
 

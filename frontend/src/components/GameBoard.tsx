@@ -1623,6 +1623,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               <KingKohRevealModal
                 gameState={gameState}
                 getCardImage={getCardImage}
+                localPlayerIndex={localPlayerIndex}
                 onNext={() => {
                   kingCtrl.advanceKohRevealStep();
                   setGameState(gameAdapter!.getCurrentState());

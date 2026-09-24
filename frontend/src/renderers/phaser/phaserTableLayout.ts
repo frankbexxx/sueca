@@ -17,6 +17,10 @@ import {
   type HumanHandSlot
 } from '../../table/localHandLayout';
 import {
+  getTablePositionForPlayer,
+  type TableCompass
+} from '../../utils/tableLayout';
+import {
   PREMIUM_TABLE,
   computePremiumTableLayout,
   premiumToPhaserTableLayout,
@@ -25,7 +29,7 @@ import {
   type TableZones
 } from './phaserPremiumLayout';
 
-export type PhaserCompass = 'south' | 'west' | 'north' | 'east';
+export type PhaserCompass = TableCompass;
 
 export type PhaserAspectMode = 'portrait' | 'landscape' | 'desktop';
 
@@ -81,14 +85,12 @@ export interface PhaserLayoutOptions {
   orientationReference?: { width?: number; height?: number } | null;
 }
 
-const COMPASS_FROM_OFFSET: PhaserCompass[] = ['south', 'west', 'north', 'east'];
-
 export function playerIndexToCompass(
   playerIndex: number,
   localPlayerIndex: number
 ): PhaserCompass {
-  const offset = (playerIndex - localPlayerIndex + 4) % 4;
-  return COMPASS_FROM_OFFSET[offset] ?? 'south';
+  // Single source of truth with DOM / KOH (UX-SEAT-01).
+  return getTablePositionForPlayer(playerIndex, localPlayerIndex);
 }
 
 export function resolveAspectMode(
