@@ -8,7 +8,9 @@
 
 | Doc | Uso |
 |-----|-----|
-| **[plan/ROADMAP_TO_RELEASE.md](plan/ROADMAP_TO_RELEASE.md)** | **Current canonical release roadmap** |
+| **[plan/ROADMAP_TO_RELEASE.md](plan/ROADMAP_TO_RELEASE.md)** | **Canonical live release roadmap** |
+| [plan/roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf](plan/roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf) | Current printable wall snapshot |
+| [plan/roadmap-snapshots/README.md](plan/roadmap-snapshots/README.md) | Snapshot history / rules |
 | [STATUS.md](STATUS.md) | Estado actual, prioridades, próximos passos *(stale vs code — prefer ROADMAP_TO_RELEASE)* |
 | [plan/PLAN_GLOBAL.md](plan/PLAN_GLOBAL.md) | Plano mestre |
 | [plan/ROADMAP_REBASE_SEPTEMBER_2026.md](plan/ROADMAP_REBASE_SEPTEMBER_2026.md) | September rebase inventory (superseded for release tracking) |

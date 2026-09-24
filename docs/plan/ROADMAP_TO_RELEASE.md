@@ -3,9 +3,18 @@
 **Canonical release-tracking document.**  
 Supersedes `ROADMAP_REBASE_SEPTEMBER_2026.md` for **delivery tracking** (that file remains historical).
 
-**Executive input:** `ROADMAP_SUECAO_VERSAO_0.pdf` (wall checklist, approved summary)  
 **Cross-checked against:** code on `v2-main`, Theme Architecture Stage 14, King Synthetic product docs, Android/web env, prior delivery-gap audit.  
 **Rule:** code/runtime wins over stale docs (`STATUS.md`, `PRODUCT_ESSENTIALS.md`, parts of the September rebase).
+
+### Printable snapshot
+
+| Role | Path |
+|------|------|
+| **Canonical live roadmap** | this file (`ROADMAP_TO_RELEASE.md`) |
+| **Current printable snapshot** | [`roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf`](./roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf) |
+| Previous (historical) | [`roadmap-snapshots/ROADMAP_SUECAO_VERSAO_0.pdf`](./roadmap-snapshots/ROADMAP_SUECAO_VERSAO_0.pdf) |
+
+Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README.md).
 
 ---
 
@@ -241,6 +250,8 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 
 | Doc | Role |
 |-----|------|
+| [`roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf`](./roadmap-snapshots/ROADMAP_SUECAO_VERSAO_1.pdf) | Current printable wall snapshot |
+| [`roadmap-snapshots/README.md`](./roadmap-snapshots/README.md) | Snapshot history / rules |
 | [`KING_SYNTHETIC_DEV_MODE.md`](./KING_SYNTHETIC_DEV_MODE.md) | King Sintético product mode |
 | [`THEME_ARCHITECTURE_MASTER_PLAN.md`](./THEME_ARCHITECTURE_MASTER_PLAN.md) | Theme architecture (DONE) |
 | [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md) | Architecture gate PASS |
