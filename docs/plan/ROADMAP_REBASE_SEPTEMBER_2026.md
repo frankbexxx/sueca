@@ -1,5 +1,9 @@
 # ROADMAP REBASE — Setembro 2026
 
+> **SUPERSEDED FOR RELEASE TRACKING**  
+> Canonical delivery roadmap: [`ROADMAP_TO_RELEASE.md`](./ROADMAP_TO_RELEASE.md)  
+> This file remains as historical September 2026 rebase / inventory. Do not use it as the primary release checklist.
+
 **Modo:** DOCUMENTAÇÃO (actualização de estado; sem alterações de produto nesta revisão)  
 **Root:** `E:\SUECAO`  
 **Branch:** `v2-main` @ `7fb89f1` (Spades current-tricks HUD + histórico até advanced music)  

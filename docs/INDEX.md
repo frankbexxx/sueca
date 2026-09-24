@@ -8,8 +8,10 @@
 
 | Doc | Uso |
 |-----|-----|
-| [STATUS.md](STATUS.md) | Estado actual, prioridades, próximos passos |
+| **[plan/ROADMAP_TO_RELEASE.md](plan/ROADMAP_TO_RELEASE.md)** | **Current canonical release roadmap** |
+| [STATUS.md](STATUS.md) | Estado actual, prioridades, próximos passos *(stale vs code — prefer ROADMAP_TO_RELEASE)* |
 | [plan/PLAN_GLOBAL.md](plan/PLAN_GLOBAL.md) | Plano mestre |
+| [plan/ROADMAP_REBASE_SEPTEMBER_2026.md](plan/ROADMAP_REBASE_SEPTEMBER_2026.md) | September rebase inventory (superseded for release tracking) |
 | [plan/prompts/implementation-prompts.md](plan/prompts/implementation-prompts.md) | Ordem P0–P8 |
 | [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md) | Critérios compra packs (itch.io) |
 | [ASSETS.md](ASSETS.md) | Integração cartas/UX no repo |
