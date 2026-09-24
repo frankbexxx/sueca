@@ -34,13 +34,21 @@
 }
 
 /*
- * KING DENSITY — vertical spacing: short auction/festa sheets must sit under the
- * table (~16–32px), not pinned to the viewport floor (large empty felt band).
+ * UX-FESTA-01 — Festa responsive shell:
+ * overlay (100dvh column) → flex spacer (table/HUD) → sheet fully in viewport.
+ * Sheet: header (shrink 0) / body (scroll) / footer CTA (shrink 0).
+ * Do NOT independently budget fixed spacer dvh + sheet max-height that can exceed 100dvh.
  */
 .variant-modal-overlay--king-festa {
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: stretch;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  box-sizing: border-box;
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0%,
@@ -52,24 +60,67 @@
 
 .variant-modal-overlay--king-festa::before {
   content: '';
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   pointer-events: none;
-  /* HUD chrome + festa table slot (matches GameBoard festa phaser cap on portrait). */
-  height: calc(min(62dvh, 560px) + 5.75rem);
-  max-height: calc(100dvh - 9.5rem);
 }
 
-.variant-modal-overlay--king-festa .variant-modal--bottom-sheet {
-  margin-top: 20px;
+.variant-modal-overlay--king-festa .variant-modal--bottom-sheet.king-festa-sheet {
+  margin-top: 0;
   margin-bottom: 0;
   width: 100%;
   max-width: 100%;
+  flex: 0 1 auto;
+  min-height: 0;
+  /* Cap so table stays visible; never sum with a fixed top spacer past 100dvh. */
+  max-height: min(48dvh, calc(100dvh - 7.5rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  overflow-y: hidden;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+.king-festa-sheet__header {
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.king-festa-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.king-festa-sheet__body:empty {
+  display: none;
+}
+
+.king-festa-sheet__footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  padding-top: 0.4rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @media (min-width: 769px) {
-  .variant-modal-overlay--king-festa::before {
-    height: min(68dvh, calc(100dvh - 12rem));
+  .variant-modal-overlay--king-festa .variant-modal--bottom-sheet.king-festa-sheet {
+    max-height: min(42dvh, calc(100dvh - 10rem));
   }
 }
 
@@ -208,9 +259,8 @@
 
 .variant-modal--festa-compact {
   padding: 0.65rem 0.75rem;
-  gap: 0.45rem;
-  max-height: 28vh;
-  max-height: 28dvh;
+  gap: 0;
+  /* UX-FESTA-01: max-height owned by .king-festa-sheet shell, not compact alone. */
 }
 
 .variant-modal--hearts-pass {
@@ -469,10 +519,9 @@
 }
 
 .variant-modal--festa-setup {
-  max-height: min(30vh, 250px);
-  max-height: min(30dvh, 250px);
   padding: 0.4rem 0.55rem;
-  gap: 0.28rem;
+  gap: 0;
+  /* UX-FESTA-01: drop 250px / 30dvh cap — shell max-height + scroll body. */
 }
 
 .variant-modal--festa-setup .king-festa-sheet-title {
@@ -481,18 +530,19 @@
 
 .king-festa-choice-grid {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.28rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: visible;
+  max-width: 100%;
   padding-bottom: 2px;
 }
 
 .king-festa-choice-btn {
-  flex: 1 1 0;
-  min-width: 3.4rem;
+  flex: 1 1 calc(33.333% - 0.28rem);
+  min-width: 4.5rem;
+  max-width: 100%;
   min-height: 32px;
-  padding: 0.22rem 0.28rem;
+  padding: 0.22rem 0.35rem;
   font-size: 0.62rem;
   font-weight: 600;
   border-radius: 8px;
@@ -501,6 +551,7 @@
   color: rgba(245, 245, 245, 0.92);
   cursor: pointer;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .king-festa-choice-btn--selected {

@@ -585,13 +585,13 @@
 .game-board--festa-sheet .player-hand-bar {
   position: relative;
   z-index: 2100;
-  /* Sheet sits under the table; only a modest clearance is needed (was 28dvh). */
-  margin-bottom: max(8.5rem, calc(12dvh + 24px));
+  /* UX-FESTA-01: sheet may use up to ~48dvh; keep hand clear of sheet top. */
+  margin-bottom: max(9.5rem, calc(16dvh + 24px));
   pointer-events: auto;
 }
 
 .game-board--festa-sheet:has(.variant-modal--festa-compact) .player-hand-bar {
-  margin-bottom: max(7.25rem, calc(10dvh + 24px));
+  margin-bottom: max(8.5rem, calc(14dvh + 24px));
 }
 
 .game-board--festa-sheet .player-hand-bar .hand-row--scroll {

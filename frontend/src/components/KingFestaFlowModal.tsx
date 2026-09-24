@@ -13,18 +13,37 @@ import { buildFestaSetupSummaryLines } from '../models/games/king/kingFestaSetup
 import { KingAuctionTimeline } from './KingAuctionTimeline';
 import './VariantModals.css';
 
+/**
+ * UX-FESTA-01 — shared Festa shell:
+ * overlay (100dvh) → flex spacer (table) → sheet (header / scroll body / pinned footer).
+ */
 const FestaSheet: React.FC<{
-  children: React.ReactNode;
+  header?: React.ReactNode;
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
   compact?: boolean;
   setup?: boolean;
-}> = ({ children, compact = false, setup = false }) => (
+}> = ({ header, children, footer, compact = false, setup = false }) => (
   <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet variant-modal-overlay--king-festa">
     <div
-      className={`variant-modal variant-modal--bottom-sheet${
+      className={`variant-modal variant-modal--bottom-sheet king-festa-sheet${
         compact ? ' variant-modal--festa-compact' : ''
       }${setup ? ' variant-modal--festa-setup' : ''}`}
+      data-testid="king-festa-sheet"
     >
-      {children}
+      {header ? (
+        <div className="king-festa-sheet__header" data-testid="king-festa-sheet-header">
+          {header}
+        </div>
+      ) : null}
+      <div className="king-festa-sheet__body" data-testid="king-festa-sheet-body">
+        {children}
+      </div>
+      {footer ? (
+        <div className="king-festa-sheet__footer" data-testid="king-festa-sheet-footer">
+          {footer}
+        </div>
+      ) : null}
     </div>
   </div>
 );
@@ -183,21 +202,27 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   if (view === 'auction_turn') {
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-auction-current-bid">
-          {king.bestBid
-            ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
-            : 'Ainda sem ofertas.'}
-        </p>
-        <AuctionToolbar
-          bidType={bidType}
-          bidAmount={bidAmount}
-          onBidTypeChange={setBidType}
-          onBidAmountChange={setBidAmount}
-          onOffer={() => onAuctionBid(bidType, bidAmount)}
-          onPass={onAuctionPass}
-        />
+      <FestaSheet
+        compact
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-auction-current-bid">
+              {king.bestBid
+                ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
+                : 'Ainda sem ofertas.'}
+            </p>
+            <AuctionToolbar
+              bidType={bidType}
+              bidAmount={bidAmount}
+              onBidTypeChange={setBidType}
+              onBidAmountChange={setBidAmount}
+              onOffer={() => onAuctionBid(bidType, bidAmount)}
+              onPass={onAuctionPass}
+            />
+          </>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );
@@ -206,13 +231,19 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   if (view === 'auction_waiting') {
     const waiting = gameState.players[currentAuctionPlayer ?? 0]?.name ?? '…';
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-auction-current-bid">
-          {king.bestBid
-            ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
-            : 'A aguardar oferta de ' + waiting + '…'}
-        </p>
+      <FestaSheet
+        compact
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-auction-current-bid">
+              {king.bestBid
+                ? `Melhor oferta: ${formatBid(king.bestBid)} (${gameState.players[king.bestBid.bidderIndex]?.name})`
+                : 'A aguardar oferta de ' + waiting + '…'}
+            </p>
+          </>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );
@@ -233,14 +264,22 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
               amount: last.amount ?? 0
             });
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-auction-current-bid">
-          {last ? `${lastName} · ${lastLabel}` : 'Oferta registada.'}
-        </p>
-        <div className="king-festa-actions king-festa-actions--dominant">
-          <FestaActionButton primary label="Continuar" onClick={onAuctionContinue} />
-        </div>
+      <FestaSheet
+        compact
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Leilão · festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-auction-current-bid">
+              {last ? `${lastName} · ${lastLabel}` : 'Oferta registada.'}
+            </p>
+          </>
+        }
+        footer={
+          <div className="king-festa-actions king-festa-actions--dominant">
+            <FestaActionButton primary label="Continuar" onClick={onAuctionContinue} />
+          </div>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );
@@ -251,8 +290,19 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
       ? gameState.players[king.bestBid.bidderIndex]?.name ?? '…'
       : null;
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Leilão concluído</h2>
+      <FestaSheet
+        compact
+        header={<h2 className="king-festa-sheet-title">Leilão concluído</h2>}
+        footer={
+          <div className="king-festa-actions king-festa-actions--dominant">
+            <FestaActionButton
+              primary
+              label={king.bestBid ? 'Continuar para negociação' : 'Continuar'}
+              onClick={onAuctionContinue}
+            />
+          </div>
+        }
+      >
         <div className="king-festa-winner-box">
           {king.bestBid && winnerName ? (
             <>
@@ -269,13 +319,6 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             </p>
           )}
         </div>
-        <div className="king-festa-actions king-festa-actions--dominant">
-          <FestaActionButton
-            primary
-            label={king.bestBid ? 'Continuar para negociação' : 'Continuar'}
-            onClick={onAuctionContinue}
-          />
-        </div>
         {auctionTimeline}
       </FestaSheet>
     );
@@ -283,20 +326,26 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   if (view === 'eight_respond') {
     return (
-      <FestaSheet>
-        <h2 className="king-festa-sheet-title">8 ou nulos</h2>
-        <p className="variant-modal-hint king-festa-context-hint">
-          {owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?
-        </p>
-        <div className="king-festa-actions king-festa-actions--dominant">
-          <FestaActionButton
-            primary
-            label="Oferecer 8"
-            onClick={() => onRespondEight(true)}
-          />
-          <FestaActionButton label="Não ofereço 8" onClick={() => onRespondEight(false)} />
-        </div>
-      </FestaSheet>
+      <FestaSheet
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">8 ou nulos</h2>
+            <p className="variant-modal-hint king-festa-context-hint">
+              {owner?.name} declarou «8 ou nulos». Ofereces 8 positivas?
+            </p>
+          </>
+        }
+        footer={
+          <div className="king-festa-actions king-festa-actions--dominant">
+            <FestaActionButton
+              primary
+              label="Oferecer 8"
+              onClick={() => onRespondEight(true)}
+            />
+            <FestaActionButton label="Não ofereço 8" onClick={() => onRespondEight(false)} />
+          </div>
+        }
+      />
     );
   }
 
@@ -310,21 +359,30 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
         ? `Declaraste «8 ou nulos». A aguardar resposta de ${targetName}…`
         : `A aguardar resposta de ${targetName} a «8 ou nulos»…`;
     return (
-      <FestaSheet>
-        <h2 className="king-festa-sheet-title">A aguardar resposta</h2>
-        <p className="variant-modal-hint king-festa-context-hint">{waitingHint}</p>
-      </FestaSheet>
+      <FestaSheet
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">A aguardar resposta</h2>
+            <p className="variant-modal-hint king-festa-context-hint">{waitingHint}</p>
+          </>
+        }
+      />
     );
   }
 
   if (view === 'counter_owner_waiting' && king.bestBid && king.requestedBid) {
     const bidderIdx = king.bestBid.bidderIndex;
     return (
-      <FestaSheet>
-        <h2 className="king-festa-sheet-title">A aguardar resposta</h2>
-        <p className="variant-modal-hint king-festa-context-hint">
-          Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
-        </p>
+      <FestaSheet
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">A aguardar resposta</h2>
+            <p className="variant-modal-hint king-festa-context-hint">
+              Pediste {formatBid(king.requestedBid)} a {gameState.players[bidderIdx]?.name}.
+            </p>
+          </>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );
@@ -332,21 +390,27 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
   if (view === 'counter_bidder' && king.bestBid && king.requestedBid) {
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Pedido de subida</h2>
-        <p className="variant-modal-hint king-auction-current-bid">
-          {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
-        </p>
-        <AuctionToolbar
-          bidType={raiseType}
-          bidAmount={raiseAmount}
-          onBidTypeChange={setRaiseType}
-          onBidAmountChange={setRaiseAmount}
-          onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
-          onPass={() => onRespondHigherBid(false)}
-          passLabel="Recusar subida"
-          offerLabel="Subir oferta"
-        />
+      <FestaSheet
+        compact
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Pedido de subida</h2>
+            <p className="variant-modal-hint king-auction-current-bid">
+              {owner?.name} pede {formatBid(king.requestedBid)} (oferta actual: {formatBid(king.bestBid)}).
+            </p>
+            <AuctionToolbar
+              bidType={raiseType}
+              bidAmount={raiseAmount}
+              onBidTypeChange={setRaiseType}
+              onBidAmountChange={setRaiseAmount}
+              onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
+              onPass={() => onRespondHigherBid(false)}
+              passLabel="Recusar subida"
+              offerLabel="Subir oferta"
+            />
+          </>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );
@@ -356,11 +420,45 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     const bidder = gameState.players[king.bestBid.bidderIndex];
     const actions = resolveNegotiationOwnerActionsAvailability(king.eightOrNullsPending);
     return (
-      <FestaSheet>
-        <h2 className="king-festa-sheet-title">Negociação · festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-festa-context-hint">
-          {bidder?.name} oferece {formatBid(king.bestBid)}.
-        </p>
+      <FestaSheet
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Negociação · festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-festa-context-hint">
+              {bidder?.name} oferece {formatBid(king.bestBid)}.
+            </p>
+          </>
+        }
+        footer={
+          <div className="king-festa-actions king-festa-actions--dominant">
+            <FestaActionButton
+              primary
+              label="Aceitar"
+              enabled={actions.accept.enabled}
+              disabledReason={actions.accept.disabledReason}
+              onClick={onAcceptContract}
+            />
+            <FestaActionButton
+              label="Pedir mais"
+              enabled={actions.askMore.enabled}
+              disabledReason={actions.askMore.disabledReason}
+              onClick={() => setShowRaiseForm(!showRaiseForm)}
+            />
+            <FestaActionButton
+              label="Recusar"
+              enabled={actions.reject.enabled}
+              disabledReason={actions.reject.disabledReason}
+              onClick={onRejectContract}
+            />
+            <FestaActionButton
+              label="8 ou nulos"
+              enabled={actions.eightOrNulls.enabled}
+              disabledReason={actions.eightOrNulls.disabledReason}
+              onClick={onEightOrNulls}
+            />
+          </div>
+        }
+      >
         {showRaiseForm && actions.askMore.enabled && (
           <div className="king-auction-bid-form">
             <AuctionToolbar
@@ -376,33 +474,6 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             />
           </div>
         )}
-        <div className="king-festa-actions king-festa-actions--dominant">
-          <FestaActionButton
-            primary
-            label="Aceitar"
-            enabled={actions.accept.enabled}
-            disabledReason={actions.accept.disabledReason}
-            onClick={onAcceptContract}
-          />
-          <FestaActionButton
-            label="Pedir mais"
-            enabled={actions.askMore.enabled}
-            disabledReason={actions.askMore.disabledReason}
-            onClick={() => setShowRaiseForm(!showRaiseForm)}
-          />
-          <FestaActionButton
-            label="Recusar"
-            enabled={actions.reject.enabled}
-            disabledReason={actions.reject.disabledReason}
-            onClick={onRejectContract}
-          />
-          <FestaActionButton
-            label="8 ou nulos"
-            enabled={actions.eightOrNulls.enabled}
-            disabledReason={actions.eightOrNulls.disabledReason}
-            onClick={onEightOrNulls}
-          />
-        </div>
         {auctionTimeline}
       </FestaSheet>
     );
@@ -415,41 +486,47 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
       king.highestEquivalentValue
     );
     return (
-      <FestaSheet>
-        <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-festa-context-hint">
-          {kingFallbackBody(
-            king.fallbackReason,
-            !!king.bestBid,
-            fallbackActions.fourByThree.enabled,
-            'pt'
-          )}
-        </p>
-        <div className="king-festa-actions king-festa-actions--dominant">
-          <FestaActionButton
-            primary
-            label="Trunfo"
-            enabled={fallbackActions.trump.enabled}
-            onClick={() => onFallback('trump')}
-          />
-          <FestaActionButton
-            label="Sem trunfo"
-            enabled={fallbackActions.noTrump.enabled}
-            onClick={() => onFallback('no_trump')}
-          />
-          <FestaActionButton
-            label="Nulos"
-            enabled={fallbackActions.nulos.enabled}
-            onClick={() => onFallback('nulos')}
-          />
-          <FestaActionButton
-            label="4×3×3"
-            enabled={fallbackActions.fourByThree.enabled}
-            disabledReason={fallbackActions.fourByThree.disabledReason}
-            onClick={() => onFallback('four_by_three')}
-          />
-        </div>
-      </FestaSheet>
+      <FestaSheet
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-festa-context-hint">
+              {kingFallbackBody(
+                king.fallbackReason,
+                !!king.bestBid,
+                fallbackActions.fourByThree.enabled,
+                'pt'
+              )}
+            </p>
+          </>
+        }
+        footer={
+          <div className="king-festa-actions king-festa-actions--dominant">
+            <FestaActionButton
+              primary
+              label="Trunfo"
+              enabled={fallbackActions.trump.enabled}
+              onClick={() => onFallback('trump')}
+            />
+            <FestaActionButton
+              label="Sem trunfo"
+              enabled={fallbackActions.noTrump.enabled}
+              onClick={() => onFallback('no_trump')}
+            />
+            <FestaActionButton
+              label="Nulos"
+              enabled={fallbackActions.nulos.enabled}
+              onClick={() => onFallback('nulos')}
+            />
+            <FestaActionButton
+              label="4×3×3"
+              enabled={fallbackActions.fourByThree.enabled}
+              disabledReason={fallbackActions.fourByThree.disabledReason}
+              onClick={() => onFallback('four_by_three')}
+            />
+          </div>
+        }
+      />
     );
   }
 
@@ -475,8 +552,24 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
 
     if (setupConfirm) {
       return (
-        <FestaSheet compact setup>
-          <h2 className="king-festa-sheet-title">Contrato final</h2>
+        <FestaSheet
+          compact
+          setup
+          header={<h2 className="king-festa-sheet-title">Contrato final</h2>}
+          footer={
+            <div className="king-festa-actions">
+              <FestaActionButton label="Voltar" onClick={() => setSetupConfirm(false)} />
+              <FestaActionButton
+                primary
+                label="Continuar"
+                onClick={() => {
+                  onSetup(effectiveTrump, effectiveNoTrump, firstPlayer);
+                  setSetupConfirm(false);
+                }}
+              />
+            </div>
+          }
+        >
           <div className="king-festa-winner-box king-festa-winner-box--setup">
             <p className="king-festa-winner-box__line">{summary.winnerLine}</p>
             <p className="king-festa-winner-box__line">
@@ -484,24 +577,21 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             </p>
             <p className="king-festa-winner-box__line">{summary.firstPlayerLine}</p>
           </div>
-          <div className="king-festa-actions">
-            <FestaActionButton label="Voltar" onClick={() => setSetupConfirm(false)} />
-            <FestaActionButton
-              primary
-              label="Continuar"
-              onClick={() => {
-                onSetup(effectiveTrump, effectiveNoTrump, firstPlayer);
-                setSetupConfirm(false);
-              }}
-            />
-          </div>
         </FestaSheet>
       );
     }
 
     return (
-      <FestaSheet compact setup>
-        <h2 className="king-festa-sheet-title">Configurar festa</h2>
+      <FestaSheet
+        compact
+        setup
+        header={<h2 className="king-festa-sheet-title">Configurar festa</h2>}
+        footer={
+          <div className="king-festa-actions">
+            <FestaActionButton primary label="Continuar" onClick={() => setSetupConfirm(true)} />
+          </div>
+        }
+      >
         {king.festaMode === 'positive' && (
           <div className="king-festa-choice-grid" role="group" aria-label="Trunfo">
             {SUITS.map((s) => {
@@ -557,18 +647,21 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
           <p className="king-festa-winner-box__line">{summary.contractLine}</p>
           <p className="king-festa-winner-box__line">{summary.firstPlayerLine}</p>
         </div>
-        <div className="king-festa-actions">
-          <FestaActionButton primary label="Continuar" onClick={() => setSetupConfirm(true)} />
-        </div>
       </FestaSheet>
     );
   }
 
   if (view === 'spectator_waiting') {
     return (
-      <FestaSheet compact>
-        <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
-        <p className="variant-modal-hint king-festa-context-hint">A aguardar decisão…</p>
+      <FestaSheet
+        compact
+        header={
+          <>
+            <h2 className="king-festa-sheet-title">Festa de {owner?.name}</h2>
+            <p className="variant-modal-hint king-festa-context-hint">A aguardar decisão…</p>
+          </>
+        }
+      >
         {auctionTimeline}
       </FestaSheet>
     );

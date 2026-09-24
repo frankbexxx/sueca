@@ -132,9 +132,93 @@ describe('KingFestaFlowModal density', () => {
       );
     });
 
-    expect(container.querySelector('.variant-modal--bottom-sheet')).not.toBeNull();
+    expect(container.querySelector('[data-testid="king-festa-sheet"]')).not.toBeNull();
+    expect(container.querySelector('.variant-modal--bottom-sheet.king-festa-sheet')).not.toBeNull();
+    expect(container.querySelector('[data-testid="king-festa-sheet-header"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="king-festa-sheet-body"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="king-auction-timeline"]')).toBeNull();
     expect(container.querySelector('[data-testid="king-auction-history-toggle"]')).not.toBeNull();
     expect(container.querySelector('.king-auction-toolbar')).not.toBeNull();
+    // Toolbar lives in pinned header so history can scroll in body.
+    expect(
+      container.querySelector('[data-testid="king-festa-sheet-header"] .king-auction-toolbar')
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="king-festa-sheet-body"] [data-testid="king-auction-history"]')
+    ).not.toBeNull();
+  });
+
+  it('pins auction result CTA in sheet footer and keeps history in scroll body', () => {
+    const game = new KingPtGame();
+    const base = game.applyDevFestaFixture(
+      ['Ana', 'Bruno', 'Carla', 'Diogo'],
+      { festaGameNumber: 7, festaPhase: 'auction_result' },
+      { localPlayerIndex: 0 }
+    ) as GameState;
+    const king = { ...getKingPtState(base) };
+    king.festaPhase = 'auction_result';
+    king.festaOwnerIndex = 0;
+    king.bestBid = { bidderIndex: 0, bidType: 'positive', amount: 3 };
+    king.auctionHistory = [
+      { sequence: 1, seat: 0, action: 'bid', bidType: 'positive', amount: 3 },
+      { sequence: 2, seat: 1, action: 'pass' },
+      { sequence: 3, seat: 2, action: 'pass' },
+      { sequence: 4, seat: 3, action: 'pass' }
+    ];
+    const state: GameState = {
+      ...base,
+      variantState: { ...base.variantState, kingPt: king }
+    };
+
+    act(() => {
+      ReactDOM.render(
+        <KingFestaFlowModal gameState={state} localPlayerIndex={0} {...festaHandlers} />,
+        container
+      );
+    });
+
+    const footer = container.querySelector('[data-testid="king-festa-sheet-footer"]');
+    expect(footer).not.toBeNull();
+    expect(footer?.textContent).toContain('Continuar para negociação');
+    expect(
+      container.querySelector('[data-testid="king-festa-sheet-body"] .king-festa-winner-box')
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="king-festa-sheet-body"] [data-testid="king-auction-history"]')
+    ).not.toBeNull();
+  });
+
+  it('uses the same setup shell with footer Continuar for festa choice', () => {
+    const game = new KingPtGame();
+    const base = game.applyDevFestaFixture(
+      ['Ana', 'Bruno', 'Carla', 'Diogo'],
+      { festaGameNumber: 7, festaPhase: 'setup' },
+      { localPlayerIndex: 0 }
+    ) as GameState;
+    const king = { ...getKingPtState(base) };
+    king.festaPhase = 'setup';
+    king.festaMode = 'positive';
+    king.festaOwnerIndex = 0;
+    king.bestBid = { bidderIndex: 0, bidType: 'positive', amount: 3 };
+    king.benefitOwnerIndex = 0;
+    const state: GameState = {
+      ...base,
+      variantState: { ...base.variantState, kingPt: king }
+    };
+
+    act(() => {
+      ReactDOM.render(
+        <KingFestaFlowModal gameState={state} localPlayerIndex={0} {...festaHandlers} />,
+        container
+      );
+    });
+
+    const sheet = container.querySelector('[data-testid="king-festa-sheet"]');
+    expect(sheet?.className).toContain('variant-modal--festa-setup');
+    expect(sheet?.className).toContain('king-festa-sheet');
+    expect(container.querySelector('[data-testid="king-festa-sheet-body"] .king-festa-choice-grid')).not.toBeNull();
+    expect(container.querySelector('[data-testid="king-festa-sheet-footer"]')?.textContent).toContain(
+      'Continuar'
+    );
   });
 });

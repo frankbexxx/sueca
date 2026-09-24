@@ -69,6 +69,7 @@ Do **not** reopen without new evidence:
 | King legality hardening | Canonical PT legality |
 | King Synthetic combined round | All negatives in one 13-trick round |
 | King Synthetic **product** promotion | Preset `king-pt-synthetic` @ `f84201a` |
+| **UX-FESTA-01** Festa responsive sheets | Sheet always in viewport; scroll body + pinned CTA; suit wrap — structural fix for screenshots 8–11 |
 
 **AI core (Sueca / Spades / Hearts / King):** DONE for solo finishability — polish only below.
 
@@ -144,7 +145,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-HOME-01 | Landing / Home | TODO | Redesign density; King / King Sintético selector; Spades modes; reduce stats weight; use empty space | P1 | YES | TODO |
 | REL-PLAYERS-01 | Player names | TODO | Unify Profile vs Setup; global vs per-game; bot name policy | P1 | YES | TODO |
 | REL-DIFF-01 | Difficulty UX | TODO | Legibility; Home vs Setup placement | P1 | YES | TODO |
-| REL-KING-01 | King Sintético / Festa smoke | READY FOR TEST | Device smoke 4 Festas; handoff `2/5`→`5/5`; final Festa completion; desktop + OPPO. **No rules/scoring reopen** | P1 | NO | READY FOR TEST |
+| REL-KING-01 | King Sintético / Festa smoke | READY FOR TEST | Device smoke 4 Festas; handoff `2/5`→`5/5`; final Festa completion; desktop + OPPO. **UX-FESTA-01 layout fixed** — do not close this row on layout alone. **No rules/scoring reopen** | P1 | NO | READY FOR TEST |
 | REL-HIST-01 | History / Stats / Persistence | TODO | Separate modes by `rulesPresetId` (King vs Sintético; Spades presets); avoid continue/stats collision | P1 | YES | TODO |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
