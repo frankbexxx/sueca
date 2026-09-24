@@ -209,11 +209,18 @@ export function layoutOpponentBackPositions(
 ): PhaserPoint[] {
   const anchor = layout.seatAnchor[compass];
   const n = Math.min(count, 10);
-  // Slightly wider gaps so larger backs still read as a fan/stack.
+  // UX-CARDS-01: ~0.28–0.32 × card width so Casino/CardMeister backs separate.
+  const frac = PREMIUM_TABLE.opponentGapFraction;
   const gap =
     compass === 'north' || compass === 'south'
-      ? Math.max(11, Math.round(layout.opponentCardWidth * 0.22))
-      : Math.max(9, Math.round(layout.opponentCardHeight * 0.18));
+      ? Math.max(
+          PREMIUM_TABLE.opponentGapMinNorth,
+          Math.round(layout.opponentCardWidth * frac)
+        )
+      : Math.max(
+          PREMIUM_TABLE.opponentGapMinSide,
+          Math.round(layout.opponentCardWidth * frac)
+        );
   return Array.from({ length: n }, (_, i) => {
     const mid = (n - 1) / 2;
     if (compass === 'west' || compass === 'east') {
@@ -221,6 +228,41 @@ export function layoutOpponentBackPositions(
     }
     return { x: anchor.x + (i - mid) * gap, y: anchor.y };
   });
+}
+
+/**
+ * Mini remaining-count chip near an opponent fan (not on the card faces).
+ * Labels sit above the stack; badge sits below / outer so names & cues stay clear.
+ */
+export function layoutOpponentCountBadgePosition(
+  compass: PhaserCompass,
+  layout: PhaserTableLayout,
+  backPositions: PhaserPoint[]
+): PhaserPoint | null {
+  if (backPositions.length === 0) return null;
+  const { opponentCardWidth: w, opponentCardHeight: h } = layout;
+  const xs = backPositions.map((p) => p.x);
+  const ys = backPositions.map((p) => p.y);
+  const midX = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const maxY = Math.max(...ys);
+  const margin = 10;
+
+  if (compass === 'north') {
+    return { x: midX, y: maxY + h * 0.52 + 6 };
+  }
+  // Side seats: backs are rotated 90° — visual half-width ≈ h/2.
+  // Prefer outer + bottom of fan, but keep the chip on-canvas (portrait clips).
+  if (compass === 'west') {
+    const outerX = midX - (h * 0.5 + 8);
+    const x = Math.max(margin, Math.min(midX - 4, outerX));
+    return { x, y: maxY + w * 0.22 + 2 };
+  }
+  if (compass === 'east') {
+    const outerX = midX + (h * 0.5 + 8);
+    const x = Math.min(layout.width - margin, Math.max(midX + 4, outerX));
+    return { x, y: maxY + w * 0.22 + 2 };
+  }
+  return null;
 }
 
 export function layoutTrickSlot(

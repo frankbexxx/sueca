@@ -54,6 +54,7 @@ export class SuecaTableScene extends Phaser.Scene {
   private handSprites = new Map<string, Phaser.GameObjects.Image>();
   private trickSprites = new Map<string, Phaser.GameObjects.Image>();
   private opponentBacks: Phaser.GameObjects.GameObject[] = [];
+  private opponentCountBadges: Phaser.GameObjects.GameObject[] = [];
   private seatLabels = new Map<number, Phaser.GameObjects.Text>();
   private seatTurnCues = new Map<number, Phaser.GameObjects.Text>();
   private seatTurnDots = new Map<number, Phaser.GameObjects.Graphics>();
@@ -330,10 +331,13 @@ export class SuecaTableScene extends Phaser.Scene {
   private redrawOpponents(view: PhaserTableViewModel): void {
     this.opponentBacks.forEach((s) => s.destroy());
     this.opponentBacks = [];
+    this.opponentCountBadges.forEach((s) => s.destroy());
+    this.opponentCountBadges = [];
     this.cardShadows.forEach((s) => s.destroy());
     this.cardShadows = [];
     const { opponentCardWidth, opponentCardHeight } = view.layout;
     const hasBack = this.textures.exists(this.backKey);
+    const edgePad = PREMIUM_TABLE.opponentEdgePad;
     view.opponents.forEach((opp) => {
       opp.backPositions.forEach((pos) => {
         const shadow = this.add
@@ -343,21 +347,39 @@ export class SuecaTableScene extends Phaser.Scene {
             opponentCardWidth * 0.92,
             opponentCardHeight * 0.26,
             PREMIUM_TABLE.shadow,
-            0.38
+            PREMIUM_TABLE.opponentShadowAlpha
           )
           .setDepth(PREMIUM_TABLE.depthOpponentCards - 1);
         this.cardShadows.push(shadow);
         if (hasBack) {
+          // Dark hairline mat under the back (GLOBAL-CARDS-style separation).
+          const mat = this.add
+            .rectangle(
+              pos.x,
+              pos.y,
+              opponentCardWidth + edgePad * 2,
+              opponentCardHeight + edgePad * 2,
+              PREMIUM_TABLE.handEdge,
+              PREMIUM_TABLE.opponentEdgeMatAlpha
+            )
+            .setDepth(PREMIUM_TABLE.depthOpponentCards - 0.25);
+          if (opp.compass === 'west' || opp.compass === 'east') mat.setAngle(90);
+          this.opponentBacks.push(mat);
+
           const img = this.add
             .image(pos.x, pos.y, this.backKey)
             .setDisplaySize(opponentCardWidth, opponentCardHeight)
             .setDepth(PREMIUM_TABLE.depthOpponentCards);
           if (opp.compass === 'west' || opp.compass === 'east') img.setAngle(90);
           this.opponentBacks.push(img);
-          // Soft ivory edge so backs separate from teal felt without glow.
+          // Soft ivory edge on top of the mat for Premium Classic read.
           const edge = this.add
-            .rectangle(pos.x, pos.y, opponentCardWidth + 2, opponentCardHeight + 2)
-            .setStrokeStyle(1.25, PREMIUM_TABLE.ivory, 0.35)
+            .rectangle(pos.x, pos.y, opponentCardWidth + 1, opponentCardHeight + 1)
+            .setStrokeStyle(
+              PREMIUM_TABLE.opponentIvoryStroke,
+              PREMIUM_TABLE.ivory,
+              PREMIUM_TABLE.opponentIvoryAlpha
+            )
             .setFillStyle(0x000000, 0)
             .setDepth(PREMIUM_TABLE.depthOpponentCards + 0.5);
           if (opp.compass === 'west' || opp.compass === 'east') edge.setAngle(90);
@@ -376,7 +398,42 @@ export class SuecaTableScene extends Phaser.Scene {
           this.opponentBacks.push(rect);
         }
       });
+
+      // UX-CARDS-01: remaining-card count (not seat number); hide at 0.
+      if (opp.countBadgePosition && opp.handCount > 0) {
+        this.drawOpponentCountBadge(opp.countBadgePosition, opp.handCount);
+      }
     });
+  }
+
+  /** KOH-inspired mini chip: compact dark pill, low visual weight. */
+  private drawOpponentCountBadge(pos: { x: number; y: number }, count: number): void {
+    const label = this.add
+      .text(pos.x, pos.y, String(count), {
+        fontFamily: PREMIUM_TABLE.fontFamily,
+        fontSize: `${PREMIUM_TABLE.opponentCountFontPx}px`,
+        color: '#ffffff',
+        fontStyle: '600'
+      })
+      .setOrigin(0.5)
+      .setDepth(PREMIUM_TABLE.depthOpponentCards + 2);
+    const tw = label.width + PREMIUM_TABLE.opponentCountPadX * 2;
+    const th = Math.max(
+      PREMIUM_TABLE.opponentCountFontPx + PREMIUM_TABLE.opponentCountPadY * 2,
+      label.height + PREMIUM_TABLE.opponentCountPadY * 2
+    );
+    const bg = this.add
+      .graphics()
+      .setDepth(PREMIUM_TABLE.depthOpponentCards + 1.5);
+    bg.fillStyle(0x000000, PREMIUM_TABLE.opponentCountBgAlpha);
+    bg.fillRoundedRect(
+      pos.x - tw / 2,
+      pos.y - th / 2,
+      tw,
+      th,
+      PREMIUM_TABLE.opponentCountRadius
+    );
+    this.opponentCountBadges.push(bg, label);
   }
 
   private redrawSeatChrome(view: PhaserTableViewModel): void {

@@ -12,6 +12,7 @@ import {
   buildPhaserTableLayout,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
+  layoutOpponentCountBadgePosition,
   layoutTrickSlot,
   playerIndexToCompass,
   resolveAspectMode,
@@ -64,6 +65,11 @@ export interface PhaserSeatEntity {
   turnCueLabel: string | null;
   backPositions: PhaserPoint[];
   labelPosition: PhaserPoint;
+  /**
+   * Mini remaining-card count chip (opponents only; null when local or empty).
+   * Source: seat.handCount — not a seat number.
+   */
+  countBadgePosition: PhaserPoint | null;
 }
 
 export interface PhaserTrickCardEntity {
@@ -313,6 +319,14 @@ export function mapTableModelToPhaserView(options: {
       omitTeam: compass === 'north'
     });
 
+    const backPositions = seat.isLocal
+      ? []
+      : layoutOpponentBackPositions(seat.handCount, compass, layout);
+    const countBadgePosition =
+      !seat.isLocal && seat.handCount > 0
+        ? layoutOpponentCountBadgePosition(compass, layout, backPositions)
+        : null;
+
     return {
       seatIndex: seat.index,
       compass,
@@ -327,10 +341,9 @@ export function mapTableModelToPhaserView(options: {
       isDealer: seat.isDealer,
       showActiveHighlight: presentation.showActiveRing,
       turnCueLabel: presentation.turnCueLabel,
-      backPositions: seat.isLocal
-        ? []
-        : layoutOpponentBackPositions(seat.handCount, compass, layout),
-      labelPosition: seatLabelPosition(compass, layout)
+      backPositions,
+      labelPosition: seatLabelPosition(compass, layout),
+      countBadgePosition
     };
   });
 

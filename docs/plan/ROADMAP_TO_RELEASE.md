@@ -73,6 +73,7 @@ Do **not** reopen without new evidence:
 | **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
 | **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
 | **UX-SEAT-01** Canonical player orientation | Phaser / DOM / KOH share S→W→N→E relative to local player |
+| **UX-CARDS-01** Opponent hand readability | Wider back gap (~0.30× width), subtle edge, KOH-style remaining-count badges (Phaser shared) |
 
 **AI core (Sueca / Spades / Hearts / King):** DONE for solo finishability — polish only below.
 

@@ -13,6 +13,7 @@ export {
   computeLocalHandLayout,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
+  layoutOpponentCountBadgePosition,
   layoutTrickSlot,
   playerIndexToCompass,
   resolveBottomChromePx

@@ -5,6 +5,7 @@ import {
   handExposedFraction,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
+  layoutOpponentCountBadgePosition,
   layoutTrickSlot,
   localHandDisplayWidth,
   playerIndexToCompass,
@@ -12,6 +13,7 @@ import {
   resolveAspectMode,
   resolveBottomChromePx
 } from './phaserTableLayout';
+import { PREMIUM_TABLE } from './phaserPremiumLayout';
 import { seatsAroundLocal } from '../../utils/tableLayout';
 import {
   cardTextureKey,
@@ -186,6 +188,122 @@ describe('phaserTableLayout E2', () => {
   it('stacks opponent backs', () => {
     const layout = buildPhaserTableLayout(640, 480);
     expect(layoutOpponentBackPositions(5, 'north', layout)).toHaveLength(5);
+  });
+
+  it('UX-CARDS-01: opponent gap ~0.28–0.32 × card width on all seats', () => {
+    const layout = buildPhaserTableLayout(390, 844);
+    const w = layout.opponentCardWidth;
+    const baseGap = Math.round(w * PREMIUM_TABLE.opponentGapFraction);
+    for (const compass of ['north', 'west', 'east'] as const) {
+      const pts = layoutOpponentBackPositions(8, compass, layout);
+      expect(pts).toHaveLength(8);
+      const gap =
+        compass === 'north'
+          ? pts[1].x - pts[0].x
+          : pts[1].y - pts[0].y;
+      const minGap =
+        compass === 'north'
+          ? PREMIUM_TABLE.opponentGapMinNorth
+          : PREMIUM_TABLE.opponentGapMinSide;
+      expect(gap).toBe(Math.max(minGap, baseGap));
+      const ratio = gap / w;
+      // Prefer 0.28–0.32; min-gap floor may raise ratio on very narrow cards.
+      expect(ratio).toBeGreaterThanOrEqual(0.28);
+      expect(ratio).toBeLessThanOrEqual(0.4);
+    }
+    expect(PREMIUM_TABLE.opponentGapFraction).toBeGreaterThanOrEqual(0.28);
+    expect(PREMIUM_TABLE.opponentGapFraction).toBeLessThanOrEqual(0.32);
+  });
+
+  it('UX-CARDS-01: count badge from handCount; hidden at 0; updates with size', () => {
+    const model = minimalModel({
+      seats: [
+        {
+          index: 0,
+          name: 'P1',
+          team: 1,
+          isLocal: true,
+          isActive: true,
+          isDealer: false,
+          isTrickLeader: true,
+          handCount: 10
+        },
+        {
+          index: 1,
+          name: 'P2',
+          team: 2,
+          isLocal: false,
+          isActive: false,
+          isDealer: false,
+          isTrickLeader: false,
+          handCount: 13
+        },
+        {
+          index: 2,
+          name: 'P3',
+          team: 1,
+          isLocal: false,
+          isActive: false,
+          isDealer: false,
+          isTrickLeader: false,
+          handCount: 8
+        },
+        {
+          index: 3,
+          name: 'P4',
+          team: 2,
+          isLocal: false,
+          isActive: false,
+          isDealer: false,
+          isTrickLeader: false,
+          handCount: 0
+        }
+      ]
+    });
+
+    const view = mapTableModelToPhaserView({
+      model,
+      width: 390,
+      height: 844
+    });
+    expect(view.opponents).toHaveLength(3);
+    // Shared renderer path: all non-local seats share back + badge mapping.
+    const west = view.opponents.find((o) => o.compass === 'west')!;
+    const north = view.opponents.find((o) => o.compass === 'north')!;
+    const east = view.opponents.find((o) => o.compass === 'east')!;
+    expect(west.handCount).toBe(13);
+    expect(west.countBadgePosition).not.toBeNull();
+    expect(north.handCount).toBe(8);
+    expect(north.countBadgePosition).not.toBeNull();
+    expect(east.handCount).toBe(0);
+    expect(east.countBadgePosition).toBeNull();
+    expect(east.backPositions).toHaveLength(0);
+
+    const local = view.seats.find((s) => s.isLocal)!;
+    expect(local.countBadgePosition).toBeNull();
+
+    // Badge sits near the fan (helper), not on the name chrome above.
+    const badge = layoutOpponentCountBadgePosition(
+      'north',
+      view.layout,
+      north.backPositions
+    )!;
+    expect(badge.y).toBeGreaterThan(north.backPositions[0].y);
+    expect(badge.y).toBeGreaterThan(north.labelPosition.y);
+
+    const fewer = mapTableModelToPhaserView({
+      model: {
+        ...model,
+        seats: model.seats.map((s) =>
+          s.index === 2 ? { ...s, handCount: 4 } : s
+        )
+      },
+      width: 390,
+      height: 844
+    });
+    const north4 = fewer.opponents.find((o) => o.compass === 'north')!;
+    expect(north4.handCount).toBe(4);
+    expect(north4.countBadgePosition).not.toBeNull();
   });
 
   it('uses continuous hand spacing (no tier jumps) across counts', () => {

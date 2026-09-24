@@ -86,6 +86,24 @@ export const PREMIUM_TABLE = {
   shadow: 0x050808,
   /** Table chrome typeface (loaded for game board). */
   fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif',
+  /**
+   * UX-CARDS-01 — opponent back fan + mini remaining-count badge.
+   * Gap is a fraction of rendered card width (responsive). Edge before shadow.
+   * Badge mirrors KOH `.king-koh-pile-count` weight (compact, dark chip).
+   */
+  opponentGapFraction: 0.3,
+  opponentGapMinNorth: 12,
+  opponentGapMinSide: 10,
+  opponentEdgePad: 2,
+  opponentEdgeMatAlpha: 0.72,
+  opponentIvoryStroke: 1.2,
+  opponentIvoryAlpha: 0.48,
+  opponentShadowAlpha: 0.4,
+  opponentCountFontPx: 10,
+  opponentCountPadX: 5,
+  opponentCountPadY: 2,
+  opponentCountBgAlpha: 0.65,
+  opponentCountRadius: 8,
   tableMarginPortrait: 14,
   tableMarginLandscape: 12,
   tableRadiusPortrait: 32,
