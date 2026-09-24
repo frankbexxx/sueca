@@ -87,13 +87,13 @@ export const PREMIUM_TABLE = {
   /** Table chrome typeface (loaded for game board). */
   fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif',
   /**
-   * UX-CARDS-01C — opponent backs: natural overlap + dark silhouette border.
-   * Separation comes from each card’s own rounded black edge (not seams/caps).
-   * Badge mirrors KOH `.king-koh-pile-count` weight.
+   * UX-CARDS-01C — opponent backs: natural overlap + real depth occlusion.
+   * Full opaque backs; later cards sit above earlier ones so covered borders
+   * disappear. Outline only on the top card of each stack. Badge mirrors KOH.
    */
-  /** Exposed fraction of card width between centers (natural peek). */
-  opponentOverlapExpose: 0.28,
-  opponentGapMin: 8,
+  /** Exposed fraction of card width between centers (readable peeks, not a grill). */
+  opponentOverlapExpose: 0.22,
+  opponentGapMin: 7,
   /** Thin dark border around each back (~1px visual). */
   opponentBorder: 0x0a0a0a,
   opponentBorderPx: 1.75,

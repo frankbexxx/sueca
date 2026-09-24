@@ -209,14 +209,28 @@ describe('phaserTableLayout E2', () => {
       expect(gap).toBeGreaterThanOrEqual(PREMIUM_TABLE.opponentGapMin);
       expect(gap).toBeLessThanOrEqual(expectedGap + 1);
       const expose = gap / w;
-      expect(expose).toBeGreaterThanOrEqual(0.18);
-      expect(expose).toBeLessThanOrEqual(0.35);
+      expect(expose).toBeGreaterThanOrEqual(0.12);
+      expect(expose).toBeLessThanOrEqual(0.30);
     }
 
-    expect(PREMIUM_TABLE.opponentOverlapExpose).toBeGreaterThanOrEqual(0.24);
-    expect(PREMIUM_TABLE.opponentOverlapExpose).toBeLessThanOrEqual(0.34);
+    expect(PREMIUM_TABLE.opponentOverlapExpose).toBeGreaterThanOrEqual(0.14);
+    expect(PREMIUM_TABLE.opponentOverlapExpose).toBeLessThanOrEqual(0.28);
     expect(PREMIUM_TABLE.opponentBorderPx).toBeGreaterThan(0);
     expect(PREMIUM_TABLE.opponentCornerRadiusFraction).toBeGreaterThan(0);
+  });
+
+  it('UX-CARDS-01C: under-card expose equals fan step (depth-occlusion model)', () => {
+    const layout = buildPhaserTableLayout(390, 844);
+    for (const compass of ['north', 'west', 'east'] as const) {
+      const pts = layoutOpponentBackPositions(13, compass, layout);
+      const fanStep =
+        compass === 'north'
+          ? Math.abs(pts[1].x - pts[0].x)
+          : Math.abs(pts[1].y - pts[0].y);
+      // Peek width left after the next opaque card covers the rest.
+      expect(fanStep).toBeGreaterThanOrEqual(PREMIUM_TABLE.opponentGapMin);
+      expect(fanStep).toBeLessThan(layout.opponentCardWidth);
+    }
   });
 
   it('UX-CARDS-01C: side stacks stay below name chrome and inside portrait at 13', () => {

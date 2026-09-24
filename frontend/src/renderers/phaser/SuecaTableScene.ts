@@ -345,60 +345,74 @@ export class SuecaTableScene extends Phaser.Scene {
 
     view.opponents.forEach((opp) => {
       const isSide = opp.compass === 'west' || opp.compass === 'east';
-      opp.backPositions.forEach((pos, index) => {
-        const depth = PREMIUM_TABLE.depthOpponentCards + index * 0.01;
+      const positions = opp.backPositions;
+      const n = positions.length;
+
+      // One soft shadow under the topmost card only.
+      if (n > 0) {
+        const top = positions[n - 1];
         const shadow = this.add
           .ellipse(
-            pos.x + 1.25,
-            pos.y + Math.max(3, h * 0.08),
+            top.x + 1.25,
+            top.y + Math.max(3, h * 0.08),
             w * 0.9,
             h * 0.22,
             PREMIUM_TABLE.shadow,
             PREMIUM_TABLE.opponentShadowAlpha
           )
-          .setDepth(depth - 1);
+          .setDepth(PREMIUM_TABLE.depthOpponentCards - 0.5);
         this.cardShadows.push(shadow);
+      }
 
-        // Dark rounded silhouette plate (border) — primary separation.
-        const plate = this.add.graphics().setDepth(depth);
-        plate.fillStyle(PREMIUM_TABLE.opponentBorder, 1);
-        plate.fillRoundedRect(
-          -w / 2 - borderPx,
-          -h / 2 - borderPx,
-          w + borderPx * 2,
-          h + borderPx * 2,
-          radius + borderPx * 0.4
-        );
-        plate.setPosition(pos.x, pos.y);
-        if (isSide) plate.setAngle(90);
-        this.opponentBacks.push(plate);
+      positions.forEach((pos, index) => {
+        const isTop = index === n - 1;
+        // Critical: entire card i must sit below entire card i+1 so opaque
+        // backs occlude covered borders (previous outline Δ0.1 broke this).
+        const depth = PREMIUM_TABLE.depthOpponentCards + index * 0.05;
+
+        // Under-cards: opaque image only — next card occludes covered borders.
+        // Thin leading edge keeps peeks readable without a full contour.
+        // Top card: dark plate + outline for the stack silhouette.
+        if (isTop) {
+          const plate = this.add.graphics().setDepth(depth);
+          plate.fillStyle(PREMIUM_TABLE.opponentBorder, 1);
+          plate.fillRoundedRect(
+            -w / 2 - borderPx,
+            -h / 2 - borderPx,
+            w + borderPx * 2,
+            h + borderPx * 2,
+            radius + borderPx * 0.4
+          );
+          plate.setPosition(pos.x, pos.y);
+          if (isSide) plate.setAngle(90);
+          this.opponentBacks.push(plate);
+        } else {
+          const edge = this.add.graphics().setDepth(depth + 0.015);
+          edge.fillStyle(PREMIUM_TABLE.opponentBorder, 0.9);
+          edge.fillRect(-w / 2, -h / 2, Math.max(1, borderPx * 0.85), h);
+          edge.setPosition(pos.x, pos.y);
+          if (isSide) edge.setAngle(90);
+          this.opponentBacks.push(edge);
+        }
 
         if (hasBack) {
           const img = this.add
             .image(pos.x, pos.y, this.backKey)
             .setDisplaySize(w, h)
-            .setDepth(depth + 0.05);
+            .setDepth(depth + 0.01);
           if (isSide) img.setAngle(90);
+          this.opponentBacks.push(img);
 
-          // Soft round-corner mask so silhouette matches the border plate.
-          const maskG = this.make.graphics({ x: 0, y: 0 });
-          maskG.fillStyle(0xffffff, 1);
-          maskG.fillRoundedRect(-w / 2, -h / 2, w, h, radius);
-          maskG.setPosition(pos.x, pos.y);
-          if (isSide) maskG.setAngle(90);
-          maskG.setVisible(false);
-          img.setMask(maskG.createGeometryMask());
-
-          // Crisp dark outline on top (reads better than plate alone under Casino red).
-          const outline = this.add.graphics().setDepth(depth + 0.1);
-          outline.lineStyle(borderPx, PREMIUM_TABLE.opponentBorder, 1);
-          outline.strokeRoundedRect(-w / 2, -h / 2, w, h, radius);
-          outline.setPosition(pos.x, pos.y);
-          if (isSide) outline.setAngle(90);
-
-          this.opponentBacks.push(img, maskG, outline);
+          if (isTop) {
+            const outline = this.add.graphics().setDepth(depth + 0.02);
+            outline.lineStyle(borderPx, PREMIUM_TABLE.opponentBorder, 1);
+            outline.strokeRoundedRect(-w / 2, -h / 2, w, h, radius);
+            outline.setPosition(pos.x, pos.y);
+            if (isSide) outline.setAngle(90);
+            this.opponentBacks.push(outline);
+          }
         } else {
-          const fallback = this.add.graphics().setDepth(depth + 0.05);
+          const fallback = this.add.graphics().setDepth(depth + 0.01);
           fallback.fillStyle(0x12203a, 1);
           fallback.fillRoundedRect(-w / 2, -h / 2, w, h, radius);
           fallback.setPosition(pos.x, pos.y);
