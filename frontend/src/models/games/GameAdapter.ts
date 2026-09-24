@@ -8,8 +8,8 @@
  *
  * Per variant SoT:
  * - Sueca: Game.private state (via SuecaGame)
- * - Spades / Hearts / King simplified / King PT: adapter.private state
- * - KingGame facade: delegates to KingPtGame | KingSimplifiedGame
+ * - Spades / Hearts / King PT: adapter.private state
+ * - KingGame facade: delegates to KingPtGame (normal + synthetic)
  *
  * Divergence risks (mitigated):
  * - Mutating a getCurrentState() snapshot must not affect the engine

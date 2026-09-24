@@ -1,6 +1,10 @@
 import { GameConfig } from '../types/gameConfig';
 import { GameState, GameVariant } from '../types/game';
-import { resolvePresetId, getDefaultPresetId } from '../constants/rulesPresets';
+import {
+  resolvePresetId,
+  getDefaultPresetId,
+  isObsoleteKingPresetId
+} from '../constants/rulesPresets';
 
 const SESSIONS_KEY = 'sueca-saved-sessions-v1';
 const LEGACY_SESSION_KEY = 'sueca-saved-session';
@@ -46,6 +50,22 @@ function isValidSession(session: SavedGameSession | undefined): session is Saved
   return Boolean(session && session.config?.gameVariant && session.state && !session.state.isGameOver);
 }
 
+/**
+ * Mid-game saves for deleted `king-simplified` cannot restore safely (wrong engine state).
+ * Reject/clear them — never launch the removed engine. Last-config prefs use resolvePresetId.
+ */
+function isObsoleteKingSavedSession(session: SavedGameSession): boolean {
+  if (session.config.gameVariant !== 'king') return false;
+  const configPreset = session.config.rulesPresetId;
+  const statePreset = session.state.variantState?.rulesPresetId as string | undefined;
+  if (isObsoleteKingPresetId(configPreset) || isObsoleteKingPresetId(statePreset)) {
+    return true;
+  }
+  const vs = session.state.variantState as Record<string, unknown> | undefined;
+  if (vs?.kingSimplified && !vs?.kingPt) return true;
+  return false;
+}
+
 function readSessionsRaw(): SavedGameSessions {
   migrateLegacySession();
   const raw = localStorage.getItem(SESSIONS_KEY);
@@ -56,7 +76,7 @@ function readSessionsRaw(): SavedGameSessions {
     const cleaned: SavedGameSessions = {};
     for (const variant of ALL_VARIANTS) {
       const session = parsed[variant];
-      if (isValidSession(session)) {
+      if (isValidSession(session) && !isObsoleteKingSavedSession(session)) {
         cleaned[variant] = session;
       }
     }

@@ -85,6 +85,20 @@
   font-size: 1rem;
 }
 
+.more-select {
+  color-scheme: dark;
+}
+
+.more-select option {
+  background-color: #f4f4f5;
+  color: #111827;
+}
+
+.more-select option:disabled {
+  background-color: #e4e4e7;
+  color: #71717a;
+}
+
 .more-select:focus-visible,
 .more-name-input:focus-visible {
   outline: 2px solid var(--sc-focus-ring, rgba(255, 255, 255, 0.5));

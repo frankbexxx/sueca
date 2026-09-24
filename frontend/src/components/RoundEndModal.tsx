@@ -27,7 +27,6 @@ function getKingRoundScores(gameState: GameState): {
   const kingPt = gameState.variantState?.kingPt as
     | { playerScores?: number[]; lastRoundDeltas?: number[] }
     | undefined;
-  const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
 
   if (kingPt) {
     return {
@@ -38,7 +37,7 @@ function getKingRoundScores(gameState: GameState): {
 
   return {
     roundPts: [0, 0, 0, 0],
-    totals: kingSimple?.playerScores ?? [0, 0, 0, 0]
+    totals: [0, 0, 0, 0]
   };
 }
 

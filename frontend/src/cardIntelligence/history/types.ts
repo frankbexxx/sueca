@@ -43,6 +43,7 @@ export interface KingPtTrickEndFields {
   penalizingCardIds: string[];
 }
 
+/** LEGACY DATA ONLY — historical Card Intelligence logs; cannot launch product mode. */
 export interface KingSimplifiedTrickEndFields {
   engine: 'king_simplified';
   handType: 'negative' | 'positive';

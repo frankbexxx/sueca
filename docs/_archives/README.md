@@ -5,6 +5,7 @@ Documentos **históricos** ou **tracks congelados**. Não usar para execução d
 | Pasta | Conteúdo |
 |-------|----------|
 | `snapshots/` | PROJECT_STATUS, ROADMAP, TODOs de sessão, Jan 2025 |
-| `plan-prompts-e/` | Prompts E1–E5 (produção web multi-jogo — **concluídos**) |
+| `plan-prompts-e/` | Prompts E1–E5 (produção web multi-jogo — **concluídos**); inclui P2-king-simplified (histórico) |
+| `rules/` | Regras de variantes removidas do produto (ex.: king-simplified) |
 | `parallel-ai/` | IA externa Python — **congelado até Android** |
 | `legacy-alpha/` | Documentação alpha v0.1 |

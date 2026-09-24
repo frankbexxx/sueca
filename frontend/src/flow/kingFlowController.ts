@@ -27,7 +27,6 @@ export interface KingFlowController {
   isPtNormal(rulesPresetId?: string): boolean;
   readPtState(state: GameState): KingPtVariantState;
   readPlayerScores(state: GameState): number[];
-  readSimplifiedHandType(state: GameState): string | undefined;
   isInFestaFlow(king: KingPtVariantState): boolean;
   buildFestaSyncKey(king: KingPtVariantState): string;
   shouldTickFestaAi(
@@ -90,10 +89,6 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
 
     readPlayerScores(state) {
       return flow.readPlayerScores(state);
-    },
-
-    readSimplifiedHandType(state) {
-      return flow.readSimplifiedHandType(state);
     },
 
     isInFestaFlow: isKingInFestaFlow,

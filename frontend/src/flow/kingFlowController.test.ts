@@ -27,7 +27,6 @@ function mockFlow(overrides: Partial<KingVariantFlow> = {}): KingVariantFlow {
     isPtNormal: () => true,
     readPtState: () => kingStub(),
     readPlayerScores: () => [0, 0, 0, 0],
-    readSimplifiedHandType: () => undefined,
     advanceKohRevealStep: jest.fn(),
     confirmKohReveal: jest.fn(),
     submitAuctionPass: jest.fn(),
@@ -44,6 +43,7 @@ function mockFlow(overrides: Partial<KingVariantFlow> = {}): KingVariantFlow {
     acceptEarlyEnd: jest.fn(),
     declineEarlyEnd: jest.fn(),
     tickFestaAi: jest.fn(() => true),
+    confirmAuctionContinue: jest.fn(),
     ...overrides
   };
   return { ...base, ...overrides };
@@ -94,7 +94,7 @@ describe('kingFlowController', () => {
           isPtNormal: () => false,
           readPtState: () => kingStub({ festaPhase: 'auction' })
         })
-      ).shouldTickFestaAi(state, 'king-simplified')
+      ).shouldTickFestaAi(state, 'hearts-us-normal')
     ).toBe(false);
 
     expect(

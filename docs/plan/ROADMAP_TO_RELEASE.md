@@ -70,6 +70,8 @@ Do **not** reopen without new evidence:
 | King Synthetic combined round | All negatives in one 13-trick round |
 | King Synthetic **product** promotion | Preset `king-pt-synthetic` @ `f84201a` |
 | **UX-FESTA-01** Festa responsive sheets | Viewport blocker fixed; Phaser integration polished — sheet density syncs table clearance (compact/standard/tall) |
+| **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
+| **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
 
 **AI core (Sueca / Spades / Hearts / King):** DONE for solo finishability — polish only below.
 

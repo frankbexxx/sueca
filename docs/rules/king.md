@@ -2,7 +2,7 @@
 
 Preset id: `king-pt-normal`
 
-Variante simplificada: [`king-simplified.md`](king-simplified.md) (`king-simplified`)
+Produto irmão: King Sintético (`king-pt-synthetic`). A variante histórica «King simplificado» foi removida do produto.
 
 ## Estrutura
 

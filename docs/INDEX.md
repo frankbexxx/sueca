@@ -37,7 +37,6 @@
 |--|--|
 | [P0-assets](plan/prompts/P0-assets.md) | Packs cartas + UX |
 | [P1-spades-hearts](plan/prompts/P1-spades-hearts.md) | Regras |
-| [P2-king-simplified](plan/prompts/P2-king-simplified.md) | King |
 | [P3-mobile-chrome](plan/prompts/P3-mobile-chrome.md) | Mobile UX |
 | [P4-capacitor](plan/prompts/P4-capacitor.md) | Android AAB |
 | [P5-backend-mp](plan/prompts/P5-backend-mp.md) | **Backend obrigatório** |
@@ -62,7 +61,6 @@
 | [rules/spades.md](rules/spades.md) | Spades PT · modo normal |
 | [rules/hearts.md](rules/hearts.md) | Hearts US · modo normal |
 | [rules/king.md](rules/king.md) | King PT · modo normal |
-| [rules/king-simplified.md](rules/king-simplified.md) | King · variante simplificada |
 | [TEXTOS_ECRAN.md](TEXTOS_ECRAN.md) | Textos UI |
 | [PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md) | Privacidade |
 | [TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md) | Termos |

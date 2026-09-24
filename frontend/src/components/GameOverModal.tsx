@@ -21,8 +21,7 @@ function getIndividualFinalScores(gameState: GameState, variant: 'hearts' | 'kin
   }
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
-  const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
-  return kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
+  return kingPt?.playerScores ?? [0, 0, 0, 0];
 }
 
 function IndividualGameOverModal({

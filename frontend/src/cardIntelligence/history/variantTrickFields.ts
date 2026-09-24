@@ -23,6 +23,7 @@ function readKingPtState(state: GameState): Record<string, unknown> | null {
   return king ?? null;
 }
 
+/** LEGACY DATA ONLY — read persisted kingSimplified blobs from old logs; not a live engine. */
 function readKingSimplifiedState(state: GameState): Record<string, unknown> | null {
   const king = state.variantState?.kingSimplified as Record<string, unknown> | undefined;
   return king ?? null;

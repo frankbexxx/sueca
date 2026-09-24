@@ -1,43 +1,30 @@
 import { KingGame } from './KingGame';
-import { KingSimplifiedGame } from './KingSimplifiedGame';
+import { isKingPtEnginePreset } from './king/kingSyntheticMode';
 
-describe('KingGame simplified preset', () => {
-  it('starts with negative hand 1 and trump clubs', () => {
-    const game = new KingSimplifiedGame();
-    const state = game.initialize(['A', 'B', 'C', 'D'], {});
-    const king = state.variantState?.kingSimplified as {
-      handIndex: number;
-      handType: string;
-      trumpSuit: string;
-    };
-    expect(king.handIndex).toBe(0);
-    expect(king.handType).toBe('negative');
-    expect(king.trumpSuit).toBe('clubs');
-  });
+describe('KingGame product presets', () => {
+  const names = ['A', 'B', 'C', 'D'];
 
-  it('applies -5 per trick on negative hands', () => {
-    const game = new KingSimplifiedGame();
-    game.initialize(['A', 'B', 'C', 'D'], {});
-    const internal = game as unknown as { state: ReturnType<KingSimplifiedGame['getCurrentState']> };
-    internal.state.waitingForRoundStart = false;
-    internal.state.waitingForTrickEnd = true;
-    internal.state.nextTrickLeader = 0;
-    game.finishTrick(internal.state);
-    const king = internal.state.variantState?.kingSimplified as { playerScores: number[] };
-    expect(king.playerScores[0]).toBe(-5);
-  });
-});
-
-describe('KingGame router', () => {
-  it('uses PT normal by default', () => {
+  it('launches king-pt-normal on KingPtGame', () => {
     const game = new KingGame();
-    const state = game.initialize(['A', 'B', 'C', 'D'], {});
+    const state = game.initialize(names, { rulesPresetId: 'king-pt-normal' });
     expect(state.variantState?.kingPt).toBeDefined();
+    expect(state.variantState?.kingSimplified).toBeUndefined();
+    expect(state.variantState?.rulesPresetId).toBe('king-pt-normal');
   });
 
-  it('uses simplified when preset requested', () => {
+  it('launches king-pt-synthetic on KingPtGame', () => {
     const game = new KingGame();
-    const state = game.initialize(['A', 'B', 'C', 'D'], { rulesPresetId: 'king-simplified' });
-    expect(state.variantState?.kingSimplified).toBeDefined();
+    const state = game.initialize(names, { rulesPresetId: 'king-pt-synthetic' });
+    expect(state.variantState?.kingPt).toBeDefined();
+    expect(isKingPtEnginePreset('king-pt-synthetic')).toBe(true);
+    expect(state.variantState?.rulesPresetId).toBe('king-pt-synthetic');
+  });
+
+  it('maps obsolete king-simplified to king-pt-normal (no simplified engine)', () => {
+    const game = new KingGame();
+    const state = game.initialize(names, { rulesPresetId: 'king-simplified' });
+    expect(state.variantState?.kingPt).toBeDefined();
+    expect(state.variantState?.kingSimplified).toBeUndefined();
+    expect(state.variantState?.rulesPresetId).toBe('king-pt-normal');
   });
 });

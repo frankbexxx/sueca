@@ -1740,35 +1740,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           return null;
         })()}
 
-      {gameVariant === 'king' &&
-        resolvePresetId('king', rulesPresetId) === 'king-simplified' &&
-        gameState.waitingForRoundStart &&
-        !gameState.isGameOver && !isJoiner && (
-          <div className="variant-modal-overlay">
-            <div className="variant-modal">
-              <h2>
-                King simplificado — Jogo {gameState.round}/10
-                {kingCtrl?.readSimplifiedHandType(gameState) === 'positive'
-                  ? ' · positivas'
-                  : kingCtrl?.readSimplifiedHandType(gameState) === 'negative'
-                    ? ' · evitar vazas'
-                    : ''}
-              </h2>
-              <button
-                type="button"
-                className="sueca-btn sueca-btn--primary"
-                onClick={() => {
-                  if (!gameAdapter) return;
-                  gameAdapter.startRound(gameAdapter.getCurrentState());
-                  afterHostMutation();
-                }}
-              >
-                Começar mão
-              </button>
-            </div>
-          </div>
-        )}
-
       {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && !isJoiner && (
         <SuecaDealingModal
           round={gameState.round}

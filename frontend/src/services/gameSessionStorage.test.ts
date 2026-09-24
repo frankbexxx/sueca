@@ -262,4 +262,34 @@ describe('gameSessionStorage', () => {
     const config = buildSoloConfigForVariant('sueca');
     expect(config.rulesPresetId).toBe('sueca-pt-normal');
   });
+
+  it('maps obsolete king-simplified last-config to king-pt-normal', () => {
+    localStorage.setItem(
+      LAST_CONFIG_KEY,
+      JSON.stringify({
+        ...mockConfig('king'),
+        rulesPresetId: 'king-simplified'
+      })
+    );
+    const loaded = loadLastConfig();
+    expect(loaded?.rulesPresetId).toBe('king-pt-normal');
+    expect(buildSoloConfigForVariant('king').rulesPresetId).toBe('king-pt-normal');
+  });
+
+  it('rejects obsolete king-simplified mid-game sessions (does not resume deleted engine)', () => {
+    const obsolete = {
+      config: { ...mockConfig('king'), rulesPresetId: 'king-simplified' },
+      state: {
+        ...mockState('king'),
+        variantState: {
+          rulesPresetId: 'king-simplified',
+          kingSimplified: { handType: 'negative', playerScores: [0, 0, 0, 0] }
+        }
+      },
+      savedAt: Date.now()
+    };
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify({ king: obsolete }));
+    expect(loadGameSession('king')).toBeNull();
+  });
+
 });

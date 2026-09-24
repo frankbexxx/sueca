@@ -634,8 +634,9 @@
 
 .variant-modal select option,
 .king-auction-bid-form select option {
-  background: var(--sc-surface-modal);
-  color: var(--sc-text);
+  /* Same UX-KING-02 contract as .form-select option — readable native popup. */
+  background-color: #f4f4f5;
+  color: #111827;
 }
 
 .variant-modal label {

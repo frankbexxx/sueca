@@ -53,7 +53,8 @@ describe('variantFlowApi (C3)', () => {
     if (!isKingFlow(flow)) return;
     expect(flow.isPtNormal('king-pt-normal')).toBe(true);
     expect(flow.isPtNormal('king-pt-synthetic')).toBe(true);
-    expect(flow.isPtNormal('king-simplified')).toBe(false);
+    // Obsolete simplified maps to default King PT via resolvePresetId.
+    expect(flow.isPtNormal('king-simplified')).toBe(true);
     expect(flow.readPtState(state).phase).toBeTruthy();
     expect(flow.readPlayerScores(state)).toHaveLength(4);
     expect(typeof flow.tickFestaAi).toBe('function');

@@ -1,4 +1,4 @@
-import { chooseKingPtCard, chooseKingSimplifiedCard } from './KingPlayStrategy';
+import { chooseKingPtCard } from './KingPlayStrategy';
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { Card, GameState } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
@@ -204,10 +204,11 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
   });
 
   describe('IMPLEMENTATION_16.1 — regressions', () => {
-    it('16.1-11 Simplified negative unchanged', () => {
+    it('16.1-11 King PT negative dump still prefers low lead', () => {
       const hand = [makeCard('K', 'clubs'), makeCard('2', 'clubs')];
       const state = makeState(hand, []);
-      const idx = chooseKingSimplifiedCard(makeAdapter(), state, 0, true, 'medium');
+      const king = makeKing(0, 'no_tricks');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
       expect(hand[idx].rank).toBe('2');
     });
   });

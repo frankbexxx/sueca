@@ -58,6 +58,8 @@
   font-size: 1rem;
   width: 100%;
   font-family: inherit;
+  /* Closed control stays dark; native popup options get explicit contrast below. */
+  color-scheme: dark;
 }
 
 .form-input:focus-visible,
@@ -70,6 +72,26 @@
 .form-select:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/*
+ * UX-KING-02 — native <option> popup (Firefox/Chromium/WebView).
+ * Light panel + dark text: readable when the OS popup ignores page theme.
+ */
+.form-select option {
+  background-color: #f4f4f5;
+  color: #111827;
+}
+
+.form-select option:checked,
+.form-select option:hover {
+  background-color: #e4e4e7;
+  color: #111827;
+}
+
+.form-select option:disabled {
+  background-color: #e4e4e7;
+  color: #71717a;
 }
 
 .radio-group {

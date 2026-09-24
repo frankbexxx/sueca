@@ -75,6 +75,8 @@ describe('Stage 6 shared component theming', () => {
     expect(playSetup).toMatch(/accent-color:\s*var\(--sc-accent\)/);
     expect(playSetup).toMatch(/\.form-input:focus-visible/);
     expect(playSetup).toMatch(/\.form-input:disabled/);
+    expect(playSetup).toMatch(/\.form-select option\s*\{[\s\S]*?background-color:\s*#f4f4f5/);
+    expect(playSetup).toMatch(/\.form-select option\s*\{[\s\S]*?color:\s*#111827/);
     expect(more).toMatch(/\.more-select,\s*\n\.more-name-input\s*\{[\s\S]*?var\(--sc-surface\)/);
     expect(more).toMatch(/\.more-toggle input\[type='checkbox'\][\s\S]*?accent-color:\s*var\(--sc-accent\)/);
     expect(variantModals).toMatch(/\.variant-modal select[\s\S]*?var\(--sc-surface-border\)/);

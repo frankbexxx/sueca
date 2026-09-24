@@ -6,8 +6,16 @@ export type RulesPresetId =
   | 'spades-pt-nil'
   | 'hearts-us-normal'
   | 'king-pt-normal'
-  | 'king-pt-synthetic'
-  | 'king-simplified';
+  | 'king-pt-synthetic';
+
+/** Legacy ids that must never launch a product mode. Mapped only at resolve/migration. */
+export const OBSOLETE_KING_PRESET_IDS = ['king-simplified'] as const;
+
+export type ObsoleteKingPresetId = (typeof OBSOLETE_KING_PRESET_IDS)[number];
+
+export function isObsoleteKingPresetId(value?: string | null): value is ObsoleteKingPresetId {
+  return value === 'king-simplified';
+}
 
 export interface RulesPreset {
   id: RulesPresetId;
@@ -111,8 +119,8 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
   'king-pt-normal': {
     id: 'king-pt-normal',
     variant: 'king',
-    name: 'King PT · normal mode',
-    namePt: 'King PT · modo normal',
+    name: 'King',
+    namePt: 'King',
     description: 'Full Portuguese King — 6 negative contracts, 4 festas with auction, zero-sum.',
     descriptionPt: 'King português completo — 6 negativos, 4 festas com leilão, zero-sum.',
     isDefault: true,
@@ -144,33 +152,12 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
     bullets: [
       '5 games: 1 combined negatives (all six scorers) + 4 festas with auction.',
       'Same legality/scoring as King PT (composed penalties); no early end on game 1.',
-      'K♥ draw sets festa order; zero-sum preserved across the match.',
-      'Not King simplified (±5 tricks).'
+      'K♥ draw sets festa order; zero-sum preserved across the match.'
     ],
     bulletsPt: [
       '5 jogos: 1 ronda com todos os negativos + 4 festas com leilão.',
       'Mesma legalidade/pontuação do King PT (penalizações compostas); sem fim antecipado no jogo 1.',
-      'Viragem K♥ define ordem das festas; zero-sum preservado.',
-      'Não é King simplificado (±5 por vaza).'
-    ]
-  },
-  'king-simplified': {
-    id: 'king-simplified',
-    variant: 'king',
-    name: 'King simplified',
-    namePt: 'King simplificado',
-    description: 'Light variant — 6 generic negative + 4 positive hands, ±5 per trick.',
-    descriptionPt: 'Variante leve — 6 negativas genéricas + 4 positivas, ±5 por vaza.',
-    isDefault: false,
-    bullets: [
-      '10 hands: 6 negative (avoid tricks, −5 each), 4 positive (+5 each).',
-      'Rotating trump by hand index.',
-      'Individual scoring; highest total wins.'
-    ],
-    bulletsPt: [
-      '10 mãos: 6 negativas (evitar vazas, −5 cada), 4 positivas (+5 cada).',
-      'Trunfo rotativo por índice de mão.',
-      'Pontuação individual; maior total ganha.'
+      'Viragem K♥ define ordem das festas; zero-sum preservado.'
     ]
   }
 };
@@ -179,7 +166,7 @@ const PRESETS_BY_VARIANT: Record<GameVariant, RulesPresetId[]> = {
   sueca: ['sueca-pt-normal'],
   spades: ['spades-pt-normal', 'spades-pt-nil'],
   hearts: ['hearts-us-normal'],
-  king: ['king-pt-normal', 'king-pt-synthetic', 'king-simplified']
+  king: ['king-pt-normal', 'king-pt-synthetic']
 };
 
 export function getPreset(id: RulesPresetId): RulesPreset {
@@ -194,7 +181,14 @@ export function getPresetsForVariant(variant: GameVariant): RulesPreset[] {
   return PRESETS_BY_VARIANT[variant].map((id) => RULES_PRESETS[id]);
 }
 
+/**
+ * Resolve a product preset. Obsolete ids (e.g. deleted `king-simplified`) map to the
+ * variant default — never reintroduced as selectable product modes.
+ */
 export function resolvePresetId(variant: GameVariant, presetId?: string): RulesPresetId {
+  if (variant === 'king' && isObsoleteKingPresetId(presetId)) {
+    return getDefaultPresetId(variant);
+  }
   const allowed = PRESETS_BY_VARIANT[variant];
   if (presetId && allowed.includes(presetId as RulesPresetId)) {
     return presetId as RulesPresetId;

@@ -1,6 +1,6 @@
 /**
  * King Sintético product-mode helpers.
- * Distinct from KingSimplifiedGame and from cardIntelligence syntheticMode.
+ * Distinct from the deleted King Simplificado product and from cardIntelligence syntheticMode.
  */
 
 import { resolvePresetId, type RulesPresetId } from '../../../constants/rulesPresets';

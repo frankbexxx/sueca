@@ -2,37 +2,32 @@ import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Suit, Card } from '../../types/game';
 import { resolvePresetId } from '../../constants/rulesPresets';
 import { KingPtGame, getKingPtState } from './KingPtGame';
-import { KingSimplifiedGame } from './KingSimplifiedGame';
 import { KingBidType, KingFestaChoice } from './king/kingContracts';
 import type { KingNegativeContract } from './king/kingContracts';
 import { createKingVariantFlow, KingVariantFlow } from './variantFlowApi';
 
-type KingImpl = KingPtGame | KingSimplifiedGame;
-
-function isPtGame(game: KingImpl): game is KingPtGame {
-  return game instanceof KingPtGame;
-}
-
-/** Routes King to PT engine (normal / synthetic) or simplified preset. */
+/** Routes King product presets to KingPtGame (normal + synthetic). */
 export class KingGame extends BaseGameAdapter {
   variant = 'king' as const;
-  private impl?: KingImpl;
+  private impl?: KingPtGame;
 
   getVariantFlow(): KingVariantFlow {
     return createKingVariantFlow(this, getKingPtState);
   }
 
-  private ensureImpl(options?: Record<string, unknown>): KingImpl {
+  private ensureImpl(options?: Record<string, unknown>): KingPtGame {
     if (this.impl) return this.impl;
-    const preset = resolvePresetId('king', options?.rulesPresetId as string | undefined);
-    this.impl = preset === 'king-simplified' ? new KingSimplifiedGame() : new KingPtGame();
+    // Resolve (and migrate obsolete ids) — always KingPtGame for live product.
+    resolvePresetId('king', options?.rulesPresetId as string | undefined);
+    this.impl = new KingPtGame();
     return this.impl;
   }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
     this.impl = undefined;
     const game = this.ensureImpl(options);
-    return game.initialize(playerNames, options);
+    const preset = resolvePresetId('king', options?.rulesPresetId as string | undefined);
+    return game.initialize(playerNames, { ...options, rulesPresetId: preset });
   }
 
   getCurrentState(): GameState {
@@ -57,76 +52,75 @@ export class KingGame extends BaseGameAdapter {
   }
 
   advanceKohRevealStep(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.advanceKohRevealStep();
+    this.impl?.advanceKohRevealStep();
   }
 
   confirmKohReveal(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.confirmKohReveal();
+    this.impl?.confirmKohReveal();
   }
 
   submitAuctionPass(playerIndex: number): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionPass(playerIndex);
+    this.impl?.submitAuctionPass(playerIndex);
   }
 
   submitAuctionBid(playerIndex: number, bidType: KingBidType, amount: number): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.submitAuctionBid(playerIndex, bidType, amount);
+    this.impl?.submitAuctionBid(playerIndex, bidType, amount);
   }
 
   acceptContract(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.acceptContract();
+    this.impl?.acceptContract();
   }
 
   rejectContract(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.rejectContract();
+    this.impl?.rejectContract();
   }
 
   requestHigherBid(bidType: KingBidType, amount: number): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.requestHigherBid(bidType, amount);
+    this.impl?.requestHigherBid(bidType, amount);
   }
 
   respondToHigherBid(raise: boolean, bidType?: KingBidType, amount?: number): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.respondToHigherBid(raise, bidType, amount);
+    this.impl?.respondToHigherBid(raise, bidType, amount);
   }
 
   declareEightOrNulls(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.declareEightOrNulls();
+    this.impl?.declareEightOrNulls();
   }
 
   respondEightOrNulls(bidderIndex: number, offerEight: boolean): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.respondEightOrNulls(bidderIndex, offerEight);
+    this.impl?.respondEightOrNulls(bidderIndex, offerEight);
   }
 
   chooseFallback(choice: KingFestaChoice): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.chooseFallback(choice);
+    this.impl?.chooseFallback(choice);
   }
 
   setupFesta(trump: Suit | null, noTrump: boolean, firstPlayerIndex: number): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.setupFesta(trump, noTrump, firstPlayerIndex);
+    this.impl?.setupFesta(trump, noTrump, firstPlayerIndex);
   }
 
   confirmFestaSetup(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.confirmFestaSetup();
+    this.impl?.confirmFestaSetup();
   }
 
   dismissScorePopup(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.dismissScorePopup();
+    this.impl?.dismissScorePopup();
   }
 
   acceptEarlyEnd(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.acceptEarlyEnd();
+    this.impl?.acceptEarlyEnd();
   }
 
   declineEarlyEnd(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.declineEarlyEnd();
+    this.impl?.declineEarlyEnd();
   }
 
   tickFestaAi(): boolean {
-    if (this.impl && isPtGame(this.impl)) return this.impl.tickFestaAi();
-    return false;
+    return this.impl?.tickFestaAi() ?? false;
   }
 
   confirmAuctionContinue(): void {
-    if (this.impl && isPtGame(this.impl)) this.impl.confirmAuctionContinue();
+    this.impl?.confirmAuctionContinue();
   }
 
   /** DEV ONLY — jump into festa 7–10. See `dev/kingFestaJump.ts`. */
@@ -137,10 +131,7 @@ export class KingGame extends BaseGameAdapter {
   ): GameState {
     this.impl = undefined;
     const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
-    if (isPtGame(game)) {
-      return game.applyDevFestaFixture(playerNames, jump, options);
-    }
-    return game.initialize(playerNames, options);
+    return game.applyDevFestaFixture(playerNames, jump, options);
   }
 
   /** DEV ONLY — mid-round negative with sample penalty cards. */
@@ -151,19 +142,13 @@ export class KingGame extends BaseGameAdapter {
   ): GameState {
     this.impl = undefined;
     const game = this.ensureImpl({ ...options, rulesPresetId: 'king-pt-normal' });
-    if (isPtGame(game)) {
-      return game.applyDevNegativeFixture(playerNames, contract, options);
-    }
-    return game.initialize(playerNames, options);
+    return game.applyDevNegativeFixture(playerNames, contract, options);
   }
 
   /** Enable King Sintético combined-all-negatives on current dealt round. */
   enableSyntheticCombinedRound(): GameState {
     this.ensureImpl({ rulesPresetId: 'king-pt-synthetic' });
-    if (isPtGame(this.impl!)) {
-      return this.impl.enableSyntheticCombinedRound();
-    }
-    return this.getCurrentState();
+    return this.impl!.enableSyntheticCombinedRound();
   }
 
   /** @deprecated Prefer enableSyntheticCombinedRound */
@@ -192,7 +177,8 @@ export class KingGame extends BaseGameAdapter {
   }
 
   restoreState(state: GameState): GameState {
-    const preset = (state.variantState?.rulesPresetId as string) ?? 'king-pt-normal';
+    const raw = (state.variantState?.rulesPresetId as string) ?? 'king-pt-normal';
+    const preset = resolvePresetId('king', raw);
     this.impl = undefined;
     const game = this.ensureImpl({ rulesPresetId: preset });
     return game.restoreState(state);

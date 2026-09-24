@@ -18,7 +18,7 @@ describe('King Sintético product mode (king-pt-synthetic)', () => {
     process.env.NODE_ENV = originalEnv;
   });
 
-  it('is a distinct preset from normal and simplified', () => {
+  it('is a distinct preset from normal (not the deleted simplified mode)', () => {
     expect(isKingSyntheticPreset('king-pt-synthetic')).toBe(true);
     expect(isKingSyntheticPreset('king-pt-normal')).toBe(false);
     expect(isKingSyntheticPreset('king-simplified')).toBe(false);
@@ -102,11 +102,12 @@ describe('King Sintético product mode (king-pt-synthetic)', () => {
     expect(kingHudMatchProgress(0, 'pt')).toBe('Jogo 1/10');
   });
 
-  it('KingSimplified remains a separate impl path', () => {
+  it('maps obsolete king-simplified initialize to king-pt-normal', () => {
     const game = new KingGame();
     const state = game.initialize(names, { rulesPresetId: 'king-simplified' });
-    expect(state.variantState?.kingSimplified).toBeTruthy();
-    expect(state.variantState?.kingPt).toBeUndefined();
+    expect(state.variantState?.kingSimplified).toBeUndefined();
+    expect(state.variantState?.kingPt).toBeDefined();
+    expect(readKingRulesPresetId(state)).toBe('king-pt-normal');
     expect(isKingSyntheticPreset(state.variantState?.rulesPresetId as string)).toBe(false);
   });
 });

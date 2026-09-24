@@ -20,7 +20,6 @@
 |-------|----------|------------|
 | P0 | [P0-assets.md](P0-assets.md) | **Agora** — packs itch.io |
 | P1 | [P1-spades-hearts.md](P1-spades-hearts.md) | MVP regras |
-| P2 | [P2-king-simplified.md](P2-king-simplified.md) | King |
 | P3 | [P3-mobile-chrome.md](P3-mobile-chrome.md) | Menus, safe area |
 | P4 | [P4-capacitor.md](P4-capacitor.md) | AAB |
 | P5 | [P5-backend-mp.md](P5-backend-mp.md) | **Obrigatório** |

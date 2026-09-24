@@ -75,7 +75,6 @@ export interface KingVariantFlow extends KingFlowHost {
   isPtNormal(rulesPresetId?: string): boolean;
   readPtState(state: GameState): KingPtVariantState;
   readPlayerScores(state: GameState): number[];
-  readSimplifiedHandType(state: GameState): string | undefined;
 }
 
 export type VariantFlowApi =
@@ -103,14 +102,7 @@ export function isKingFlow(api: VariantFlowApi): api is KingVariantFlow {
 /** Shared helper used by King adapters. */
 export function readKingPlayerScores(state: GameState): number[] {
   const kingPt = state.variantState?.kingPt as { playerScores?: number[] } | undefined;
-  const kingSimple = state.variantState?.kingSimplified as
-    | { playerScores?: number[] }
-    | undefined;
-  return kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
-}
-
-export function readKingSimplifiedHandType(state: GameState): string | undefined {
-  return (state.variantState?.kingSimplified as { handType?: string } | undefined)?.handType;
+  return kingPt?.playerScores ?? [0, 0, 0, 0];
 }
 
 export function isKingPtNormalPreset(rulesPresetId?: string): boolean {
@@ -132,7 +124,6 @@ export function createKingVariantFlow(
     isPtNormal: (rulesPresetId) => isKingPtEnginePreset(rulesPresetId),
     readPtState,
     readPlayerScores: readKingPlayerScores,
-    readSimplifiedHandType: readKingSimplifiedHandType,
     advanceKohRevealStep: () => host.advanceKohRevealStep(),
     confirmKohReveal: () => host.confirmKohReveal(),
     submitAuctionPass: (playerIndex) => host.submitAuctionPass(playerIndex),
@@ -154,30 +145,6 @@ export function createKingVariantFlow(
     declineEarlyEnd: () => host.declineEarlyEnd(),
     tickFestaAi: () => host.tickFestaAi(),
     confirmAuctionContinue: () => host.confirmAuctionContinue()
-  };
-}
-
-/** No-op host for King simplified (PT-only flows are unused). */
-export function createNoopKingFlowHost(): KingFlowHost {
-  const noop = (): void => undefined;
-  return {
-    advanceKohRevealStep: noop,
-    confirmKohReveal: noop,
-    submitAuctionPass: noop,
-    submitAuctionBid: noop,
-    acceptContract: noop,
-    rejectContract: noop,
-    requestHigherBid: noop,
-    respondToHigherBid: noop,
-    declareEightOrNulls: noop,
-    respondEightOrNulls: noop,
-    chooseFallback: noop,
-    setupFesta: noop,
-    dismissScorePopup: noop,
-    acceptEarlyEnd: noop,
-    declineEarlyEnd: noop,
-    tickFestaAi: () => false,
-    confirmAuctionContinue: noop
   };
 }
 

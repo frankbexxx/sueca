@@ -53,12 +53,11 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   const [scoreTableOpen, setScoreTableOpen] = useState(false);
 
   const kingPt = gameState.variantState?.kingPt as { playerScores?: number[] } | undefined;
-  const kingSimple = gameState.variantState?.kingSimplified as { playerScores?: number[] } | undefined;
 
   const fallbackTotals =
     variant === 'hearts'
       ? getHeartsState(gameState).playerScores
-      : kingPt?.playerScores ?? kingSimple?.playerScores ?? [0, 0, 0, 0];
+      : kingPt?.playerScores ?? [0, 0, 0, 0];
 
   const pointsLabel = isPt ? 'Pontos' : 'Points';
   const statusHeader =
@@ -137,20 +136,8 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
         showNullNote = kingPtState.nullAuctionStartNote;
       }
     } else {
-      const simplified = gameState.variantState?.kingSimplified as { handType?: string } | undefined;
-      contractLine = isPt ? 'King simplificado' : 'King simplified';
-      matchLine = isPt
-        ? `Jogo ${gameState.round}/10`
-        : `Game ${gameState.round}/10`;
-      if (simplified?.handType === 'positive') {
-        contractLine = isPt
-          ? `${contractLine} · positivas`
-          : `${contractLine} · positive`;
-      } else if (simplified?.handType === 'negative') {
-        contractLine = isPt
-          ? `${contractLine} · evitar vazas`
-          : `${contractLine} · avoid tricks`;
-      }
+      contractLine = isPt ? 'King' : 'King';
+      matchLine = null;
     }
   } else if (variant === 'hearts') {
     const heartsState = getHeartsState(gameState);
