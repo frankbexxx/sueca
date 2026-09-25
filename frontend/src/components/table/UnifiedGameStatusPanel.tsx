@@ -25,6 +25,7 @@ import { getCardImagePath } from '../../constants/cardAssets';
 import { RANK_TO_IMAGE_NAME, SUIT_TO_NAME } from '../../utils/cardMappings';
 import { SuitBrokenBadge } from './SuitBrokenBadge';
 import { KingScoreSheetModal } from '../KingScoreSheetModal';
+import { PenaltyCardMini } from './PenaltyCardMini';
 
 export interface UnifiedGameStatusPanelProps {
   gameState: GameState;
@@ -213,17 +214,16 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                           const src = penaltyCardImage(card);
                           if (!src) return null;
                           return (
-                            <img
+                            <PenaltyCardMini
                               key={card.id}
+                              card={card}
                               src={src}
-                              alt={`${card.rank} ${card.suit}`}
-                              className="game-status-panel__penalty-card"
+                              locale={locale}
                             />
                           );
                         })}
                       </div>
-                    )}
-                  </div>
+                    )}                  </div>
                 );
               })}
             </div>

@@ -29,7 +29,7 @@ import {
   PLAY_CLICK_LOCK_MS
 } from './phaserSyncGuards';
 import { resolveOrientationReference } from './phaserPremiumLayout';
-import { pointInDropZone } from './phaserTableLayout';
+import { clampSeatChromePanelX, pointInDropZone } from './phaserTableLayout';
 import { PREMIUM_TABLE, premiumTrickDepth } from './phaserPremiumLayout';
 
 export const SUECA_TABLE_SCENE_KEY = 'SuecaTableScene';
@@ -548,7 +548,12 @@ export class SuecaTableScene extends Phaser.Scene {
       const contentW = Math.max(nameW, cueW);
       const pw = contentW + padX * 2;
       const ph = Math.max(22, label.height + (showCue ? cueGap + cueRowH : 0) + padY * 2);
-      const px = seat.labelPosition.x - pw / 2;
+      const px = clampSeatChromePanelX(
+        seat.labelPosition.x - pw / 2,
+        pw,
+        this.scale.width
+      );
+      const centerX = px + pw / 2;
       const py = seat.labelPosition.y - ph / 2;
       const radius = 8;
       const active = seat.showActiveHighlight;
@@ -557,11 +562,11 @@ export class SuecaTableScene extends Phaser.Scene {
       const nameY = showCue
         ? py + padY + label.height / 2
         : seat.labelPosition.y;
-      label.setPosition(seat.labelPosition.x, nameY);
+      label.setPosition(centerX, nameY);
 
       if (showCue && cueLabel && cueDot) {
         const cueY = py + ph - padY - cueRowH / 2;
-        const rowStartX = seat.labelPosition.x - cueW / 2;
+        const rowStartX = centerX - cueW / 2;
         cueDot.clear();
         cueDot.fillStyle(turnColor, 1);
         cueDot.fillCircle(rowStartX + 3, cueY, 3);

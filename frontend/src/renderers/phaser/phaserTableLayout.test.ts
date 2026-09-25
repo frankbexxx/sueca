@@ -1,6 +1,7 @@
 import {
   HAND_LAYOUT,
   buildPhaserTableLayout,
+  clampSeatChromePanelX,
   computeLocalHandLayout,
   handExposedFraction,
   layoutLocalHandPositions,
@@ -340,6 +341,42 @@ describe('phaserTableLayout E2', () => {
     const north4 = fewer.opponents.find((o) => o.compass === 'north')!;
     expect(north4.handCount).toBe(4);
     expect(north4.countBadgePosition).not.toBeNull();
+  });
+
+  it('UX-SEAT-LABELS-02: clamps nameplate panels and keeps side labels inward', () => {
+    expect(clampSeatChromePanelX(-40, 140, 360)).toBe(4);
+    expect(clampSeatChromePanelX(300, 140, 360)).toBe(360 - 140 - 4);
+    expect(clampSeatChromePanelX(100, 80, 390)).toBe(100);
+
+    for (const width of [360, 390, 430] as const) {
+      const view = mapTableModelToPhaserView({
+        model: minimalModel(),
+        width,
+        height: 844
+      });
+      expect(view.layout.aspect).toBe('portrait');
+      const west = view.seats.find((s) => s.compass === 'west')!;
+      const east = view.seats.find((s) => s.compass === 'east')!;
+      // Inward of the raw seat anchor on portrait sides.
+      expect(west.labelPosition.x).toBeGreaterThan(view.layout.seatAnchor.west.x + 8);
+      expect(east.labelPosition.x).toBeLessThan(view.layout.seatAnchor.east.x - 8);
+      // Long auction + dealer chrome must fit after clamp.
+      const longPw = 168;
+      const westPx = clampSeatChromePanelX(
+        west.labelPosition.x - longPw / 2,
+        longPw,
+        width
+      );
+      const eastPx = clampSeatChromePanelX(
+        east.labelPosition.x - longPw / 2,
+        longPw,
+        width
+      );
+      expect(westPx).toBeGreaterThanOrEqual(4);
+      expect(westPx + longPw).toBeLessThanOrEqual(width - 4);
+      expect(eastPx).toBeGreaterThanOrEqual(4);
+      expect(eastPx + longPw).toBeLessThanOrEqual(width - 4);
+    }
   });
 
   it('uses continuous hand spacing (no tier jumps) across counts', () => {

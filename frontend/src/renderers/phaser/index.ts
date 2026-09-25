@@ -11,6 +11,7 @@ export { PhaserTableErrorBoundary } from './PhaserTableErrorBoundary';
 export {
   buildPhaserTableLayout,
   computeLocalHandLayout,
+  clampSeatChromePanelX,
   layoutLocalHandPositions,
   layoutOpponentBackPositions,
   layoutOpponentCountBadgePosition,

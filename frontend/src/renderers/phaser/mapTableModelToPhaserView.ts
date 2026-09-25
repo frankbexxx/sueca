@@ -151,12 +151,21 @@ function seatLabelPosition(
     };
   }
   // Side labels sit above the vertical stack so backs don't cover names.
-  if (layout.compactSideSeats) {
-    const inward = compass === 'west' ? 4 : -4;
-    return {
-      x: anchor.x + inward,
-      y: anchor.y - layout.opponentCardHeight * 0.95
-    };
+  // UX-SEAT-LABELS-02: inward nudge on portrait sides so auction suffixes stay on-canvas
+  // (panel clamp in SuecaTableScene is the hard safety net).
+  if (compass === 'west' || compass === 'east') {
+    const portraitSide =
+      layout.aspect === 'portrait' || layout.compactSideSeats;
+    if (portraitSide) {
+      const inset = layout.compactSideSeats
+        ? Math.max(22, layout.opponentCardHeight * 0.28)
+        : Math.max(14, layout.opponentCardHeight * 0.2);
+      const inward = compass === 'west' ? inset : -inset;
+      return {
+        x: anchor.x + inward,
+        y: anchor.y - layout.opponentCardHeight * 0.95
+      };
+    }
   }
   return {
     x: anchor.x,

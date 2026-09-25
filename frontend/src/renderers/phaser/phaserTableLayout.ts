@@ -294,6 +294,24 @@ export function layoutOpponentCountBadgePosition(
   return null;
 }
 
+/**
+ * UX-SEAT-LABELS-02 — keep west/east nameplate panels inside the canvas.
+ * Mirrors the count-badge clamp so long auction suffixes do not clip.
+ */
+export function clampSeatChromePanelX(
+  panelX: number,
+  panelWidth: number,
+  canvasWidth: number,
+  margin = 4
+): number {
+  if (!Number.isFinite(panelX) || !Number.isFinite(panelWidth) || canvasWidth <= 0) {
+    return panelX;
+  }
+  const min = margin;
+  const max = Math.max(min, canvasWidth - panelWidth - margin);
+  return Math.min(max, Math.max(min, panelX));
+}
+
 export function layoutTrickSlot(
   compass: PhaserCompass,
   layout: PhaserTableLayout

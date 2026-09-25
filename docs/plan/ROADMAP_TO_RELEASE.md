@@ -73,6 +73,8 @@ Do **not** reopen without new evidence:
 | **UX-FESTA-02** Auction defaults + compact bid control | **DONE** — Positivas=3 / Nulos=1 defaults, compact − value +, legal floor respected |
 | **UX-ROUND-01** Synthetic negatives end cue | **DONE** — restrained «Negativos sintéticos concluídos» (~1s) before score sheet |
 | **UX-KING-SYN-CARDS** Synthetic special-card miniatures | **DONE** — reuse King normal HUD mosaics via `shouldShowKingPenaltyCards` synthetic gate |
+| **UX-KING-CARD-PREVIEW-01** HUD mini press-to-enlarge | **READY FOR USER VISUAL REVIEW** — press-and-hold preview on penalty mosaics (King normal + Sintético) |
+| **UX-SEAT-LABELS-02** Side seat label clipping | **READY FOR USER VISUAL REVIEW** — inward side anchors + panel clamp inside canvas |
 | **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
 | **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
 | **UX-SEAT-01** Canonical player orientation | Phaser / DOM / KOH share S→W→N→E relative to local player |
