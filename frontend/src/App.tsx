@@ -3,7 +3,7 @@ import { LandingPage } from './components/LandingPage';
 import { GameBoard } from './components/GameBoard';
 import { BottomNav } from './components/navigation/BottomNav';
 import { ShellRouter } from './navigation/ShellRouter';
-import { AppScreen, AppTab } from './types/navigation';
+import { AppScreen, AppTab, isHomeSetupRoute } from './types/navigation';
 import { GameConfig } from './types/gameConfig';
 import { GameVariant } from './types/game';
 import {
@@ -191,6 +191,8 @@ function App() {
     goBack();
   }, [goBack]);
 
+  const hideBottomNav = screen === 'shell' && isHomeSetupRoute(current);
+
   if (screen === 'landing') {
     return (
       <div className="App app-shell app-shell--landing" data-theme={activeTheme}>
@@ -217,7 +219,7 @@ function App() {
 
   return (
     <div
-      className="App app-shell"
+      className={`App app-shell${hideBottomNav ? ' app-shell--setup' : ''}`}
       data-theme={activeTheme}
     >
       <main className="app-shell-content">
@@ -231,7 +233,9 @@ function App() {
           onContinue={handleContinue}
         />
       </main>
-      <BottomNav activeTab={current.tab} onChange={handleTabChange} />
+      {!hideBottomNav && (
+        <BottomNav activeTab={current.tab} onChange={handleTabChange} />
+      )}
     </div>
   );
 }

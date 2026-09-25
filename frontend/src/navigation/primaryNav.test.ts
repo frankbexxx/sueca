@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PRIMARY_TABS } from '../types/navigation';
+import { PRIMARY_TABS, homeSetup, HOME_LIST, isHomeSetupRoute } from '../types/navigation';
 import { tabRootRoute } from '../navigation/shellNavigation';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -25,5 +25,24 @@ describe('Bottom nav IA (REL-HOME-01)', () => {
     expect(css).toContain('Personalizar');
     expect(css).toContain('Mais');
     expect(css).not.toContain('bottom-nav-icon');
+  });
+
+  it('hides primary bottom nav only on Home Setup subflow', () => {
+    expect(isHomeSetupRoute({ tab: 'home', screen: HOME_LIST })).toBe(false);
+    expect(isHomeSetupRoute({ tab: 'home', screen: homeSetup('hearts') })).toBe(true);
+    expect(isHomeSetupRoute({ tab: 'home', screen: homeSetup('king', 'king-pt-synthetic') })).toBe(
+      true
+    );
+    expect(isHomeSetupRoute({ tab: 'activity', screen: 'hub' })).toBe(false);
+    expect(isHomeSetupRoute({ tab: 'personalize', screen: 'hub' })).toBe(false);
+
+    const app = readFileSync(join(here, '../App.tsx'), 'utf8');
+    expect(app).toContain('isHomeSetupRoute');
+    expect(app).toContain('hideBottomNav');
+    expect(app).toContain('app-shell--setup');
+    expect(app).toMatch(/!hideBottomNav\s*&&\s*\([\s\S]*?<BottomNav/);
+
+    const shell = readFileSync(join(here, '../styles/app-shell.css'), 'utf8');
+    expect(shell).toContain('.app-shell--setup .app-shell-content');
   });
 });

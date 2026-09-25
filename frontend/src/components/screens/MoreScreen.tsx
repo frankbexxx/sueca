@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CreditsModal } from '../CreditsModal';
 import { useLanguage } from '../../i18n/useLanguage';
-import { loadLastConfig } from '../../services/gameSessionStorage';
+import { getP1Name, setP1Name } from '../../services/setupPreferences';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
 import {
   loadHandPreferences,
@@ -15,30 +15,14 @@ import { isSoundEnabled, setSoundEnabled } from '../../services/audioService';
 import { MusicSettingsControls } from './MusicSettingsControls';
 import './MoreScreen.css';
 
-const LAST_CONFIG_KEY = 'sueca-last-config';
-
 interface MoreScreenProps {
   // dark mode removed
-}
-
-function loadPlayerNames(): string[] {
-  const saved = localStorage.getItem('sueca-player-names');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length === 4) return parsed;
-    } catch {
-      /* ignore */
-    }
-  }
-  const last = loadLastConfig();
-  return last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
 }
 
 export const MoreScreen: React.FC<MoreScreenProps> = () => {
   const { language, setLanguage, t } = useLanguage();
   const [showCredits, setShowCredits] = useState(false);
-  const [playerName, setPlayerName] = useState(() => loadPlayerNames()[0] || 'Player 1');
+  const [playerName, setPlayerName] = useState(() => getP1Name());
   const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
   const [handPrefs, setHandPrefs] = useState(() => loadHandPreferences());
   const [autoPauseTrick, setAutoPauseTrick] = useState(() => loadAutoPauseTrick());
@@ -46,15 +30,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = () => {
   const savePlayerName = () => {
     const trimmed = playerName.trim() || 'Player 1';
     setPlayerName(trimmed);
-    const names = loadPlayerNames();
-    names[0] = trimmed;
-    localStorage.setItem('sueca-player-names', JSON.stringify(names));
-    const last = loadLastConfig();
-    if (last) {
-      const updatedNames = [...last.playerNames];
-      updatedNames[0] = trimmed;
-      localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify({ ...last, playerNames: updatedNames }));
-    }
+    setP1Name(trimmed);
   };
 
   const toggleSound = () => {

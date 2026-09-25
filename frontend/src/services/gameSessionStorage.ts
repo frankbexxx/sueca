@@ -5,6 +5,7 @@ import {
   getDefaultPresetId,
   isObsoleteKingPresetId
 } from '../constants/rulesPresets';
+import { getDifficultyForVariant, getPlayerNamesForVariant } from './setupPreferences';
 
 const SESSIONS_KEY = 'sueca-saved-sessions-v1';
 const LEGACY_SESSION_KEY = 'sueca-saved-session';
@@ -182,8 +183,8 @@ export function buildSoloConfigForVariant(variant: GameVariant): GameConfig {
       ? resolvePresetId(variant, last.rulesPresetId)
       : getDefaultPresetId(variant);
   return {
-    playerNames: last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
-    aiDifficulty: last?.aiDifficulty ?? 'medium',
+    playerNames: getPlayerNamesForVariant(variant),
+    aiDifficulty: getDifficultyForVariant(variant),
     dealingMethod: last?.dealingMethod ?? 'A',
     multiplayerEnabled: false,
     gameVariant: variant,

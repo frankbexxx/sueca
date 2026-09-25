@@ -14,6 +14,7 @@ import {
   SavedGameSession,
   isOfflineMultiplayerSession
 } from '../../services/gameSessionStorage';
+import { getP1Name } from '../../services/setupPreferences';
 import { getKingPtState } from '../../models/games/KingPtGame';
 import { kingHudMatchProgress } from '../../models/games/king/kingContracts';
 import { isKingSyntheticPreset } from '../../models/games/king/kingSyntheticMode';
@@ -123,8 +124,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 }) => {
   const [kingSheet, setKingSheet] = useState(false);
   const activeSession = pickResumableSession();
-  const lastConfig = loadLastConfig();
-  const playerName = lastConfig?.playerNames[0]?.trim() || 'Player 1';
+  const playerName = getP1Name();
   const lastLabel = lastActivityLabel();
 
   useEffect(() => {

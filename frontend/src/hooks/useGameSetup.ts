@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { getAvailableGames } from '../constants/gameMetadata';
@@ -10,6 +10,14 @@ import {
 } from '../constants/rulesPresets';
 import { MULTIPLAYER_ENABLED } from '../config/features';
 import { loadLastConfig } from '../services/gameSessionStorage';
+import {
+  getDifficultyForVariant,
+  getP1Name,
+  getPlayerNamesForVariant,
+  savePlayerNamesForVariant,
+  setDifficultyForVariant
+} from '../services/setupPreferences';
+import { DEFAULT_PLAYER_NAMES } from '../constants/gameConstants';
 
 export function useGameSetup(
   initialVariant?: GameVariant,
@@ -17,24 +25,30 @@ export function useGameSetup(
 ) {
   const last = loadLastConfig();
 
-  const [playerNames, setPlayerNames] = useState<string[]>(() => {
-    const saved = localStorage.getItem('sueca-player-names');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 4) return parsed;
-      } catch {
-        /* ignore */
-      }
-    }
-    return last?.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+  const [gameVariant, setGameVariantState] = useState<GameVariant>(() => {
+    const saved = localStorage.getItem('sueca-game-variant');
+    const allowed = getAvailableGames().map((g) => g.variant);
+    if (initialVariant && allowed.includes(initialVariant)) return initialVariant;
+    if (saved && allowed.includes(saved as GameVariant)) return saved as GameVariant;
+    return last?.gameVariant ?? 'sueca';
   });
 
-  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(
-    () =>
-      (localStorage.getItem('sueca-ai-difficulty') as AIDifficulty) ||
-      last?.aiDifficulty ||
-      'medium'
+  const resolveInitialVariant = (): GameVariant => {
+    const allowed = getAvailableGames().map((g) => g.variant);
+    if (initialVariant && allowed.includes(initialVariant)) return initialVariant;
+    return gameVariant;
+  };
+
+  const [playerNames, setPlayerNamesState] = useState<string[]>(() => {
+    const variant = resolveInitialVariant();
+    const names = getPlayerNamesForVariant(variant);
+    // Force P1 from global identity on every mount (variant remounts).
+    names[0] = getP1Name();
+    return names;
+  });
+
+  const [aiDifficulty, setAIDifficultyState] = useState<AIDifficulty>(() =>
+    getDifficultyForVariant(resolveInitialVariant())
   );
 
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>(
@@ -52,14 +66,6 @@ export function useGameSetup(
     () => localStorage.getItem('sueca-multiplayer-session-id') || ''
   );
 
-  const [gameVariant, setGameVariantState] = useState<GameVariant>(() => {
-    const saved = localStorage.getItem('sueca-game-variant');
-    const allowed = getAvailableGames().map((g) => g.variant);
-    if (initialVariant && allowed.includes(initialVariant)) return initialVariant;
-    if (saved && allowed.includes(saved as GameVariant)) return saved as GameVariant;
-    return last?.gameVariant ?? 'sueca';
-  });
-
   const [rulesPresetId, setRulesPresetId] = useState<RulesPresetId>(() => {
     const variant =
       initialVariant ??
@@ -70,24 +76,39 @@ export function useGameSetup(
       return resolvePresetId(variant, initialRulesPresetId);
     }
     const saved = localStorage.getItem('sueca-rules-preset');
-    if (last?.rulesPresetId) {
+    if (last?.rulesPresetId && last.gameVariant === variant) {
       return resolvePresetId(variant, last.rulesPresetId);
     }
     return resolvePresetId(variant, saved ?? undefined);
   });
 
+  const setPlayerNames = useCallback(
+    (names: string[] | ((prev: string[]) => string[])) => {
+      setPlayerNamesState((prev) => {
+        const next = typeof names === 'function' ? names(prev) : names;
+        savePlayerNamesForVariant(gameVariant, next);
+        return next.map((n, i) => n);
+      });
+    },
+    [gameVariant]
+  );
+
+  const setAIDifficulty = useCallback(
+    (difficulty: AIDifficulty) => {
+      setAIDifficultyState(difficulty);
+      setDifficultyForVariant(gameVariant, difficulty);
+    },
+    [gameVariant]
+  );
+
   const setGameVariant = (variant: GameVariant) => {
     setGameVariantState(variant);
     setRulesPresetId((prev) => resolvePresetId(variant, prev));
+    const names = getPlayerNamesForVariant(variant);
+    names[0] = getP1Name();
+    setPlayerNamesState(names);
+    setAIDifficultyState(getDifficultyForVariant(variant));
   };
-
-  useEffect(() => {
-    localStorage.setItem('sueca-player-names', JSON.stringify(playerNames));
-  }, [playerNames]);
-
-  useEffect(() => {
-    localStorage.setItem('sueca-ai-difficulty', aiDifficulty);
-  }, [aiDifficulty]);
 
   useEffect(() => {
     localStorage.setItem('sueca-dealing-method', dealingMethod);
@@ -124,8 +145,10 @@ export function useGameSetup(
   const buildConfig = (): GameConfig => {
     const cleanedNames = playerNames.map((name, index) => {
       const trimmed = name.trim();
-      return trimmed || `Player ${index + 1}`;
+      return trimmed || DEFAULT_PLAYER_NAMES[index];
     });
+    savePlayerNamesForVariant(gameVariant, cleanedNames);
+    setDifficultyForVariant(gameVariant, aiDifficulty);
     return {
       playerNames: cleanedNames,
       aiDifficulty,
@@ -153,6 +176,8 @@ export function useGameSetup(
     rulesPresetId,
     setRulesPresetId,
     presetOptions: getPresetsForVariant(gameVariant),
+    /** King mode from Home is locked — no in-Setup change. */
+    lockRulesPreset: gameVariant === 'king',
     buildConfig
   };
 }

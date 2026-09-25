@@ -56,6 +56,17 @@ export type ShellRoute =
 
 export const HOME_ROUTE: ShellRoute = { tab: 'home', screen: HOME_LIST };
 
+/** Home → Setup subflow (hide primary bottom nav). */
+export function isHomeSetupRoute(route: ShellRoute): boolean {
+  return (
+    route.tab === 'home' &&
+    typeof route.screen === 'object' &&
+    route.screen !== null &&
+    'type' in route.screen &&
+    route.screen.type === 'setup'
+  );
+}
+
 export const ACTIVITY_HUB: ShellRoute = { tab: 'activity', screen: 'hub' };
 export const PERSONALIZE_HUB: ShellRoute = { tab: 'personalize', screen: 'hub' };
 export const MORE_HUB: ShellRoute = { tab: 'more', screen: 'hub' };

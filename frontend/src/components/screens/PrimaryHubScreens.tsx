@@ -63,7 +63,7 @@ export const PersonalizeHubScreen: React.FC<PersonalizeHubScreenProps> = ({
     <div className="shell-screen screen-personalize">
       <ShellHeader
         title="Personalizar"
-        subtitle="Tema, áudio e mão"
+        subtitle="Tema, mão e cartas, áudio"
         showBack={showBack}
         onBack={onBack}
       />
@@ -83,8 +83,8 @@ export const PersonalizeHubScreen: React.FC<PersonalizeHubScreenProps> = ({
           },
           {
             id: 'hand',
-            label: 'Mão',
-            hint: 'Ordem de naipes e preferências',
+            label: 'Mão e Cartas',
+            hint: 'Ordem de naipes, baralho e verso',
             onClick: onOpenHand
           }
         ]}
