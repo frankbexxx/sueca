@@ -1,12 +1,16 @@
 import {
   auctionBidderOrder,
+  amountAfterBidTypeChange,
   bidAbsoluteValue,
   bidEquivalentPositive,
   canBeatBid,
   canUseFourThreeThree,
+  clampBidAmountForType,
   compareKingOffers,
+  defaultBidAmountForType,
   formatAuctionActionShort,
-  isWeakBid
+  isWeakBid,
+  maxBidAmountForType
 } from './kingAuction';
 import { KingBid } from './kingContracts';
 
@@ -15,6 +19,21 @@ describe('kingAuction', () => {
 
   it('orders bidders after beneficiary', () => {
     expect(order).toEqual([1, 2, 3]);
+  });
+
+  it('UX-FESTA-02: bid amount defaults and type-switch', () => {
+    expect(defaultBidAmountForType('positive')).toBe(3);
+    expect(defaultBidAmountForType('null')).toBe(1);
+    expect(maxBidAmountForType('positive')).toBe(8);
+    expect(maxBidAmountForType('null')).toBe(4);
+    expect(amountAfterBidTypeChange('null')).toBe(1);
+    expect(amountAfterBidTypeChange('positive')).toBe(3);
+    expect(amountAfterBidTypeChange('positive', 5)).toBe(5);
+    expect(amountAfterBidTypeChange('null', 2)).toBe(2);
+    expect(clampBidAmountForType('positive', 0)).toBe(1);
+    expect(clampBidAmountForType('positive', 99)).toBe(8);
+    expect(clampBidAmountForType('null', 99)).toBe(4);
+    expect(clampBidAmountForType('positive', 3, 5)).toBe(5);
   });
 
   it('equates 3 positive to 1 null', () => {

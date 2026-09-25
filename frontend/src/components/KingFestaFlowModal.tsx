@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { GameState, Suit } from '../types/game';
 import { getKingPtState } from '../models/games/KingPtGame';
 import { KingBidType, KingFestaChoice } from '../models/games/king/kingContracts';
-import { formatBid } from '../models/games/king/kingAuction';
+import {
+  amountAfterBidTypeChange,
+  clampBidAmountForType,
+  defaultBidAmountForType,
+  formatBid,
+  maxBidAmountForType,
+  minBidToBeat
+} from '../models/games/king/kingAuction';
 import { kingFallbackBody } from '../models/games/king/kingFestaFallbackCopy';
 import {
   resolveFallbackActionsAvailability,
@@ -91,6 +98,8 @@ const FestaActionButton: React.FC<FestaActionButtonProps> = ({
 interface AuctionToolbarProps {
   bidType: KingBidType;
   bidAmount: number;
+  /** Legal floor for the current type (auction must beat standing). */
+  amountFloor?: number;
   onBidTypeChange: (type: KingBidType) => void;
   onBidAmountChange: (amount: number) => void;
   onOffer: () => void;
@@ -99,48 +108,90 @@ interface AuctionToolbarProps {
   offerLabel?: string;
 }
 
+/** UX-FESTA-02 — compact − / value / + (no native number spinner). */
+const BidAmountStepper: React.FC<{
+  value: number;
+  min: number;
+  max: number;
+  onChange: (next: number) => void;
+}> = ({ value, min, max, onChange }) => (
+  <div className="king-auction-amount-stepper" role="group" aria-label="Número de vazas">
+    <button
+      type="button"
+      className="king-auction-amount-stepper__btn"
+      aria-label="Diminuir vazas"
+      disabled={value <= min}
+      onClick={() => onChange(value - 1)}
+    >
+      −
+    </button>
+    <span className="king-auction-amount-stepper__value" aria-live="polite" aria-atomic="true">
+      {value}
+    </span>
+    <button
+      type="button"
+      className="king-auction-amount-stepper__btn"
+      aria-label="Aumentar vazas"
+      disabled={value >= max}
+      onClick={() => onChange(value + 1)}
+    >
+      +
+    </button>
+  </div>
+);
+
 const AuctionToolbar: React.FC<AuctionToolbarProps> = ({
   bidType,
   bidAmount,
+  amountFloor = 1,
   onBidTypeChange,
   onBidAmountChange,
   onOffer,
   onPass,
   passLabel = 'Passar',
   offerLabel = 'Oferecer'
-}) => (
-  <div className="king-auction-toolbar">
-    <select
-      className="king-auction-toolbar__select"
-      value={bidType}
-      onChange={(e) => onBidTypeChange(e.target.value as KingBidType)}
-      aria-label="Tipo de oferta"
-    >
-      <option value="positive">Positivas</option>
-      <option value="null">Nulos</option>
-    </select>
-    <input
-      className="king-auction-toolbar__amount-input"
-      type="number"
-      min={1}
-      max={bidType === 'positive' ? 8 : 4}
-      value={bidAmount}
-      aria-label="Número de vazas"
-      onChange={(e) => onBidAmountChange(Number(e.target.value))}
-    />
-    <span className="king-auction-toolbar__vazas" aria-hidden="true">
-      Vazas
-    </span>
-    <button type="button" className="sueca-btn sueca-btn--primary sueca-btn--compact" onClick={onOffer}>
-      {offerLabel}
-    </button>
-    {onPass && (
-      <button type="button" className="sueca-btn sueca-btn--secondary sueca-btn--compact" onClick={onPass}>
-        {passLabel}
+}) => {
+  const min = Math.max(1, amountFloor);
+  const max = maxBidAmountForType(bidType);
+  const handleTypeChange = (type: KingBidType) => {
+    onBidTypeChange(type);
+    onBidAmountChange(amountAfterBidTypeChange(type, amountFloor));
+  };
+  const handleAmountChange = (next: number) => {
+    onBidAmountChange(clampBidAmountForType(bidType, next, amountFloor));
+  };
+
+  return (
+    <div className="king-auction-toolbar">
+      <select
+        className="king-auction-toolbar__select"
+        value={bidType}
+        onChange={(e) => handleTypeChange(e.target.value as KingBidType)}
+        aria-label="Tipo de oferta"
+      >
+        <option value="positive">Positivas</option>
+        <option value="null">Nulos</option>
+      </select>
+      <BidAmountStepper
+        value={bidAmount}
+        min={min}
+        max={max}
+        onChange={handleAmountChange}
+      />
+      <span className="king-auction-toolbar__vazas" aria-hidden="true">
+        Vazas
+      </span>
+      <button type="button" className="sueca-btn sueca-btn--primary sueca-btn--compact" onClick={onOffer}>
+        {offerLabel}
       </button>
-    )}
-  </div>
-);
+      {onPass && (
+        <button type="button" className="sueca-btn sueca-btn--secondary sueca-btn--compact" onClick={onPass}>
+          {passLabel}
+        </button>
+      )}
+    </div>
+  );
+};
 
 interface KingFestaFlowModalProps {
   gameState: GameState;
@@ -182,7 +233,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
   const [firstPlayer, setFirstPlayer] = useState(king.benefitOwnerIndex ?? king.festaOwnerIndex);
   const [showRaiseForm, setShowRaiseForm] = useState(false);
   const [raiseType, setRaiseType] = useState<KingBidType>('positive');
-  const [raiseAmount, setRaiseAmount] = useState(5);
+  const [raiseAmount, setRaiseAmount] = useState(() => defaultBidAmountForType('positive'));
   const [setupConfirm, setSetupConfirm] = useState(false);
 
   const view = resolveKingFestaUiView(king, localPlayerIndex);
@@ -190,6 +241,22 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
     king.festaPhase === 'auction'
       ? (king.currentBidder ?? king.auctionOrder[king.auctionTurnIndex] ?? null)
       : null;
+  const auctionAmountFloor = (() => {
+    if (!king.bestBid) return 1;
+    const min = minBidToBeat(king.bestBid, king.auctionOrder, localPlayerIndex);
+    if (!min || min.bidType !== bidType) return 1;
+    return min.amount;
+  })();
+  const raiseAmountFloor = (() => {
+    const standing = king.requestedBid ?? king.bestBid;
+    if (!standing) return 1;
+    const order = king.auctionOrder.length ? king.auctionOrder : [0, 1, 2, 3];
+    const seat =
+      view === 'counter_bidder' ? localPlayerIndex : king.bestBid?.bidderIndex ?? localPlayerIndex;
+    const min = minBidToBeat(standing, order, seat);
+    if (!min || min.bidType !== raiseType) return 1;
+    return min.amount;
+  })();
   const playerNames = gameState.players.map((p) => p.name);
   const auctionTimeline = (
     <KingAuctionTimeline
@@ -215,6 +282,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             <AuctionToolbar
               bidType={bidType}
               bidAmount={bidAmount}
+              amountFloor={auctionAmountFloor}
               onBidTypeChange={setBidType}
               onBidAmountChange={setBidAmount}
               onOffer={() => onAuctionBid(bidType, bidAmount)}
@@ -401,6 +469,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             <AuctionToolbar
               bidType={raiseType}
               bidAmount={raiseAmount}
+              amountFloor={raiseAmountFloor}
               onBidTypeChange={setRaiseType}
               onBidAmountChange={setRaiseAmount}
               onOffer={() => onRespondHigherBid(true, raiseType, raiseAmount)}
@@ -442,7 +511,14 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
               label="Pedir mais"
               enabled={actions.askMore.enabled}
               disabledReason={actions.askMore.disabledReason}
-              onClick={() => setShowRaiseForm(!showRaiseForm)}
+              onClick={() => {
+                const opening = !showRaiseForm;
+                setShowRaiseForm(opening);
+                if (opening) {
+                  setRaiseType('positive');
+                  setRaiseAmount(amountAfterBidTypeChange('positive', raiseAmountFloor));
+                }
+              }}
             />
             <FestaActionButton
               label="Recusar"
@@ -464,6 +540,7 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
             <AuctionToolbar
               bidType={raiseType}
               bidAmount={raiseAmount}
+              amountFloor={raiseAmountFloor}
               onBidTypeChange={setRaiseType}
               onBidAmountChange={setRaiseAmount}
               onOffer={() => {

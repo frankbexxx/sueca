@@ -32,3 +32,9 @@ yarn-error.log*
 /ios
 keystore.properties
 *.keystore
+
+# Cursor / local visual-smoke artefacts (never commit)
+/tmp-*.png
+/tmp-*.html
+/tmp-*.json
+/.tmp/

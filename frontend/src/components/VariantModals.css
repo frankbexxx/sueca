@@ -465,17 +465,18 @@
 
 .king-auction-toolbar {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 5px;
   width: 100%;
 }
 
 .king-auction-toolbar__select {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 1 auto;
+  min-width: 6.75rem;
+  max-width: 100%;
   min-height: 40px;
-  font-size: 1rem;
+  font-size: 0.85rem;
   padding: 0.3rem 0.35rem;
   border-radius: 8px;
   border: 1px solid var(--sc-surface-border);
@@ -496,6 +497,58 @@
   color: var(--sc-text);
   box-sizing: border-box;
   text-align: center;
+}
+
+/* UX-FESTA-02 — compact − value + (replaces native number spinner). */
+.king-auction-amount-stepper {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0;
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  overflow: hidden;
+}
+
+.king-auction-amount-stepper__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sc-text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.king-auction-amount-stepper__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.king-auction-amount-stepper__btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.king-auction-amount-stepper__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  padding: 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-text);
+  line-height: 1;
 }
 
 .king-auction-toolbar__vazas {

@@ -7,6 +7,38 @@ export const WEAK_BID_POSITIVE_THRESHOLD = 4;
 export const MAX_POSITIVE_BID = 8;
 export const MAX_NULL_BID = 4;
 
+/** UX-FESTA-02 — product defaults when choosing bid type. */
+export function defaultBidAmountForType(bidType: KingBidType): number {
+  return bidType === 'positive' ? 3 : 1;
+}
+
+export function maxBidAmountForType(bidType: KingBidType): number {
+  return bidType === 'positive' ? MAX_POSITIVE_BID : MAX_NULL_BID;
+}
+
+/**
+ * Clamp a bid amount into the legal UI range for its type.
+ * `floor` may be raised by auction state (must beat standing bid).
+ */
+export function clampBidAmountForType(
+  bidType: KingBidType,
+  amount: number,
+  floor = 1
+): number {
+  const min = Math.max(1, Math.min(maxBidAmountForType(bidType), Math.floor(floor)));
+  const max = maxBidAmountForType(bidType);
+  const n = Number.isFinite(amount) ? Math.floor(amount) : min;
+  return Math.min(max, Math.max(min, n));
+}
+
+/** Amount after switching bid type (default, then legal floor). */
+export function amountAfterBidTypeChange(
+  bidType: KingBidType,
+  floor = 1
+): number {
+  return clampBidAmountForType(bidType, defaultBidAmountForType(bidType), floor);
+}
+
 /** Absolute point value of a bid (3 positive = 1 null). */
 export function bidAbsoluteValue(bid: Pick<KingBid, 'bidType' | 'amount'>): number {
   return bid.bidType === 'positive'

@@ -70,6 +70,7 @@ Do **not** reopen without new evidence:
 | King Synthetic combined round | All negatives in one 13-trick round |
 | King Synthetic **product** promotion | Preset `king-pt-synthetic` @ `f84201a` |
 | **UX-FESTA-01** Festa responsive sheets | Viewport blocker fixed; Phaser integration polished — sheet density syncs table clearance (compact/standard/tall) |
+| **UX-FESTA-02** Auction defaults + compact bid control | **DONE** — Positivas=3 / Nulos=1 defaults, compact − value +, legal floor respected |
 | **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
 | **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
 | **UX-SEAT-01** Canonical player orientation | Phaser / DOM / KOH share S→W→N→E relative to local player |

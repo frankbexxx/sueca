@@ -31,6 +31,9 @@ arquivo/
 # Local asset trials (itch.io downloads, npm svg-cards test)
 _temp/
 
+# Repo-root disposable scratch (prefer frontend/.tmp/ for UI smokes)
+.tmp/
+
 # Cloudflare Wrangler local state
 .wrangler/
 

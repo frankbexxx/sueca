@@ -148,6 +148,108 @@ describe('KingFestaFlowModal density', () => {
     ).not.toBeNull();
   });
 
+  it('UX-FESTA-02: auction stepper defaults, type switch, min/max, no number input', () => {
+    const offers: Array<{ bidType: string; amount: number }> = [];
+    const game = new KingPtGame();
+    const base = game.applyDevFestaFixture(
+      ['Ana', 'Bruno', 'Carla', 'Diogo'],
+      { festaGameNumber: 7, festaPhase: 'auction' },
+      { localPlayerIndex: 1 }
+    ) as GameState;
+    const king = { ...getKingPtState(base) };
+    king.festaPhase = 'auction';
+    king.festaOwnerIndex = 0;
+    king.auctionOrder = [1, 2, 3];
+    king.auctionTurnIndex = 0;
+    king.currentBidder = 1;
+    king.bestBid = null;
+    king.auctionHistory = [];
+    const state: GameState = {
+      ...base,
+      variantState: { ...base.variantState, kingPt: king }
+    };
+
+    act(() => {
+      ReactDOM.render(
+        <KingFestaFlowModal
+          gameState={state}
+          localPlayerIndex={1}
+          {...festaHandlers}
+          onAuctionBid={(bidType, amount) => {
+            offers.push({ bidType, amount });
+          }}
+        />,
+        container
+      );
+    });
+
+    expect(container.querySelector('input[type="number"]')).toBeNull();
+    expect(container.querySelector('.king-auction-amount-stepper')).not.toBeNull();
+    expect(
+      container.querySelector('.king-auction-amount-stepper__value')?.textContent
+    ).toBe('3');
+
+    const typeSelect = container.querySelector(
+      '.king-auction-toolbar__select'
+    ) as HTMLSelectElement;
+    act(() => {
+      typeSelect.value = 'null';
+      typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(
+      container.querySelector('.king-auction-amount-stepper__value')?.textContent
+    ).toBe('1');
+
+    act(() => {
+      typeSelect.value = 'positive';
+      typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(
+      container.querySelector('.king-auction-amount-stepper__value')?.textContent
+    ).toBe('3');
+
+    const minus = container.querySelector(
+      'button[aria-label="Diminuir vazas"]'
+    ) as HTMLButtonElement;
+    const plus = container.querySelector(
+      'button[aria-label="Aumentar vazas"]'
+    ) as HTMLButtonElement;
+
+    // Floor is 1; at default 3, minus works then stops at 1.
+    act(() => {
+      minus.click();
+    });
+    act(() => {
+      minus.click();
+    });
+    act(() => {
+      minus.click();
+    });
+    expect(
+      container.querySelector('.king-auction-amount-stepper__value')?.textContent
+    ).toBe('1');
+    expect(minus.disabled).toBe(true);
+
+    for (let i = 0; i < 20; i++) {
+      act(() => {
+        plus.click();
+      });
+    }
+    expect(
+      container.querySelector('.king-auction-amount-stepper__value')?.textContent
+    ).toBe('8');
+    expect(plus.disabled).toBe(true);
+
+    act(() => {
+      (
+        container.querySelector(
+          '.king-auction-toolbar .sueca-btn--primary'
+        ) as HTMLButtonElement
+      ).click();
+    });
+    expect(offers).toEqual([{ bidType: 'positive', amount: 8 }]);
+  });
+
   it('pins auction result CTA in sheet footer and keeps history in scroll body', () => {
     const game = new KingPtGame();
     const base = game.applyDevFestaFixture(
