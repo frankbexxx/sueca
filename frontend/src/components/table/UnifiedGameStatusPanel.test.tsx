@@ -47,7 +47,8 @@ describe('UnifiedGameStatusPanel King negatives', () => {
     const cards = container.querySelectorAll('.game-status-panel__penalty-card');
     expect(cards.length).toBeGreaterThanOrEqual(4);
     expect(container.textContent).toMatch(/P1:\s*-40/);
-    expect(container.textContent).toMatch(/Total\s*-90/);
+    // UX-KING-SCORE-LIVE-01: Total = roundStartScores (not live-projected playerScores)
+    expect(container.textContent).toMatch(/Total\s*-50/);
     expect(container.querySelectorAll('.game-status-panel__score-total').length).toBe(4);
   });
 
