@@ -1,25 +1,24 @@
 import { GameVariant } from './game';
+import type { RulesPresetId } from '../constants/rulesPresets';
 
-export type AppTab =
-  | 'home'
-  | 'stats'
-  | 'history'
-  | 'themes'
-  | 'online'
-  | 'rules'
-  | 'settings'
-  | 'profile';
+/** Primary bottom-nav destinations (REL-HOME-01). */
+export type AppTab = 'home' | 'activity' | 'personalize' | 'more';
 
 export type AppScreen = 'landing' | 'shell' | 'game';
 
 export type HomeSubScreen =
   | { type: 'list' }
-  | { type: 'setup'; variant: GameVariant };
+  | { type: 'setup'; variant: GameVariant; rulesPresetId?: RulesPresetId };
 
 export const HOME_LIST: HomeSubScreen = { type: 'list' };
 
-export function homeSetup(variant: GameVariant): HomeSubScreen {
-  return { type: 'setup', variant };
+export function homeSetup(
+  variant: GameVariant,
+  rulesPresetId?: RulesPresetId
+): HomeSubScreen {
+  return rulesPresetId
+    ? { type: 'setup', variant, rulesPresetId }
+    : { type: 'setup', variant };
 }
 
 export type HistoryScreenId = 'hub' | 'continue' | 'pinned' | 'finished';
@@ -30,14 +29,35 @@ export type SettingsScreenId = 'hub' | 'general' | 'hand';
 
 export type ProfileScreenId = 'hub' | 'name' | 'credits';
 
+export type ActivityScreenId =
+  | 'hub'
+  | 'stats'
+  | { type: 'history'; section: HistoryScreenId };
+
+export type PersonalizeScreenId =
+  | 'hub'
+  | { type: 'themes' }
+  | { type: 'themeEditor'; themeId?: string }
+  | 'audio'
+  | 'hand';
+
+export type MoreScreenId =
+  | 'hub'
+  | 'online'
+  | { type: 'rules'; screen: RulesScreenId }
+  | { type: 'settings'; screen: SettingsScreenId }
+  | { type: 'profile'; screen: ProfileScreenId };
+
 export type ShellRoute =
   | { tab: 'home'; screen: HomeSubScreen }
-  | { tab: 'stats'; screen: { type: 'main' } }
-  | { tab: 'history'; screen: HistoryScreenId }
-  | { tab: 'themes'; screen: { type: 'main' } | { type: 'editor'; themeId?: string } }
-  | { tab: 'online'; screen: { type: 'main' } }
-  | { tab: 'rules'; screen: RulesScreenId }
-  | { tab: 'settings'; screen: SettingsScreenId }
-  | { tab: 'profile'; screen: ProfileScreenId };
+  | { tab: 'activity'; screen: ActivityScreenId }
+  | { tab: 'personalize'; screen: PersonalizeScreenId }
+  | { tab: 'more'; screen: MoreScreenId };
 
 export const HOME_ROUTE: ShellRoute = { tab: 'home', screen: HOME_LIST };
+
+export const ACTIVITY_HUB: ShellRoute = { tab: 'activity', screen: 'hub' };
+export const PERSONALIZE_HUB: ShellRoute = { tab: 'personalize', screen: 'hub' };
+export const MORE_HUB: ShellRoute = { tab: 'more', screen: 'hub' };
+
+export const PRIMARY_TABS: AppTab[] = ['home', 'activity', 'personalize', 'more'];

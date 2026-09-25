@@ -1,8 +1,6 @@
 import React from 'react';
 import {
-  AppTab,
   homeSetup,
-  HOME_LIST,
   ShellRoute
 } from '../types/navigation';
 import { GameConfig } from '../types/gameConfig';
@@ -26,6 +24,12 @@ import { ProfileHubScreen } from '../components/screens/ProfileHubScreen';
 import { ProfileNameScreen } from '../components/screens/ProfileNameScreen';
 import { ProfileCreditsScreen } from '../components/screens/ProfileCreditsScreen';
 import { OnlineScreen } from '../components/screens/OnlineScreen';
+import {
+  ActivityHubScreen,
+  MoreHubScreen,
+  PersonalizeHubScreen
+} from '../components/screens/PrimaryHubScreens';
+import type { RulesPresetId } from '../constants/rulesPresets';
 
 export interface ShellRouterProps {
   route: ShellRoute;
@@ -35,7 +39,6 @@ export interface ShellRouterProps {
   onThemeChange: (theme: ThemeId) => void;
   onStartGame: (config: GameConfig, session?: SavedGameSession | null) => void;
   onContinue: (variant: GameVariant, session?: SavedGameSession | null) => void;
-  onPlayVariant: (variant: GameVariant) => void;
 }
 
 export const ShellRouter: React.FC<ShellRouterProps> = ({
@@ -45,19 +48,15 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
   onPush,
   onThemeChange,
   onStartGame,
-  onContinue,
-  onPlayVariant
+  onContinue
 }) => {
-  const pushTab = (tab: AppTab, screen: ShellRoute['screen']) => {
-    onPush({ tab, screen } as ShellRoute);
-  };
-
   if (route.tab === 'home') {
     if (route.screen.type === 'setup') {
       return (
         <GameSetupScreen
-          key={route.screen.variant}
+          key={`${route.screen.variant}-${route.screen.rulesPresetId ?? 'default'}`}
           initialVariant={route.screen.variant}
+          initialRulesPresetId={route.screen.rulesPresetId}
           lockVariant
           showBack={canGoBack}
           onBack={onBack}
@@ -67,35 +66,46 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
     }
     return (
       <HomeDashboard
-        onContinue={(variant) => onContinue(variant)}
-        onPlayVariant={onPlayVariant}
-        onConfigureVariant={(variant) =>
-          onPush({ tab: 'home', screen: homeSetup(variant) })
+        onContinue={(variant, session) => onContinue(variant, session)}
+        onOpenSetup={(variant, rulesPresetId) =>
+          onPush({ tab: 'home', screen: homeSetup(variant, rulesPresetId) })
         }
-        onViewRules={(variant) =>
-          onPush({ tab: 'rules', screen: { type: 'detail', variant } })
-        }
+        onOpenActivity={() => onPush({ tab: 'activity', screen: 'hub' })}
       />
     );
   }
 
-  if (route.tab === 'stats') {
-    return <StatsScreen showBack={canGoBack} onBack={onBack} />;
-  }
-
-  if (route.tab === 'history') {
+  if (route.tab === 'activity') {
     if (route.screen === 'hub') {
+      return (
+        <ActivityHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenStats={() => onPush({ tab: 'activity', screen: 'stats' })}
+          onOpenHistory={() =>
+            onPush({ tab: 'activity', screen: { type: 'history', section: 'hub' } })
+          }
+        />
+      );
+    }
+    if (route.screen === 'stats') {
+      return <StatsScreen showBack={canGoBack} onBack={onBack} />;
+    }
+    const section = route.screen.section;
+    if (section === 'hub') {
       return (
         <HistoryHubScreen
           showBack={canGoBack}
           onBack={onBack}
-          onOpenSection={(section) => pushTab('history', section)}
+          onOpenSection={(s) =>
+            onPush({ tab: 'activity', screen: { type: 'history', section: s } })
+          }
         />
       );
     }
     return (
       <HistoryListScreen
-        section={route.screen}
+        section={section}
         showBack={canGoBack}
         onBack={onBack}
         onContinue={onContinue}
@@ -103,15 +113,32 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
     );
   }
 
-  if (route.tab === 'themes') {
-    if (route.screen.type === 'editor') {
+  if (route.tab === 'personalize') {
+    if (route.screen === 'hub') {
+      return (
+        <PersonalizeHubScreen
+          showBack={canGoBack}
+          onBack={onBack}
+          onOpenThemes={() => onPush({ tab: 'personalize', screen: { type: 'themes' } })}
+          onOpenAudio={() => onPush({ tab: 'personalize', screen: 'audio' })}
+          onOpenHand={() => onPush({ tab: 'personalize', screen: 'hand' })}
+        />
+      );
+    }
+    if (route.screen === 'audio') {
+      return <SettingsGeneralScreen showBack={canGoBack} onBack={onBack} />;
+    }
+    if (route.screen === 'hand') {
+      return <SettingsHandScreen showBack={canGoBack} onBack={onBack} />;
+    }
+    if (route.screen.type === 'themeEditor') {
       return (
         <ThemeEditorScreen
           themeId={route.screen.themeId}
           showBack={canGoBack}
           onBack={onBack}
           onSaved={(id) => {
-            onThemeChange(id as import('../services/billingService').ThemeId);
+            onThemeChange(id as ThemeId);
             onBack();
           }}
         />
@@ -127,77 +154,94 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
     );
   }
 
-  if (route.tab === 'online') {
-    return (
-      <OnlineScreen
-        showBack={canGoBack}
-        onBack={onBack}
-        onStartGame={(config) => onStartGame(config)}
-      />
-    );
-  }
-
-  if (route.tab === 'rules') {
+  if (route.tab === 'more') {
     if (route.screen === 'hub') {
       return (
-        <RulesHubScreen
+        <MoreHubScreen
           showBack={canGoBack}
           onBack={onBack}
-          onOpenGame={(variant) =>
-            onPush({ tab: 'rules', screen: { type: 'detail', variant } })
+          onOpenOnline={() => onPush({ tab: 'more', screen: 'online' })}
+          onOpenRules={() =>
+            onPush({ tab: 'more', screen: { type: 'rules', screen: 'hub' } })
+          }
+          onOpenSettings={() =>
+            onPush({ tab: 'more', screen: { type: 'settings', screen: 'hub' } })
+          }
+          onOpenProfile={() =>
+            onPush({ tab: 'more', screen: { type: 'profile', screen: 'hub' } })
           }
         />
       );
     }
-    return (
-      <RulesDetailScreen
-        variant={route.screen.variant}
-        showBack={canGoBack}
-        onBack={onBack}
-      />
-    );
-  }
-
-  if (route.tab === 'settings') {
-    if (route.screen === 'hub') {
+    if (route.screen === 'online') {
       return (
-        <SettingsHubScreen
+        <OnlineScreen
           showBack={canGoBack}
           onBack={onBack}
-          onOpenSection={(section) => pushTab('settings', section)}
+          onStartGame={(config) => onStartGame(config)}
         />
       );
     }
-    if (route.screen === 'general') {
+    if (route.screen.type === 'rules') {
+      if (route.screen.screen === 'hub') {
+        return (
+          <RulesHubScreen
+            showBack={canGoBack}
+            onBack={onBack}
+            onOpenGame={(variant) =>
+              onPush({
+                tab: 'more',
+                screen: { type: 'rules', screen: { type: 'detail', variant } }
+              })
+            }
+          />
+        );
+      }
       return (
-        <SettingsGeneralScreen
+        <RulesDetailScreen
+          variant={route.screen.screen.variant}
           showBack={canGoBack}
           onBack={onBack}
         />
       );
     }
-    return <SettingsHandScreen showBack={canGoBack} onBack={onBack} />;
-  }
-
-  if (route.tab === 'profile') {
-    if (route.screen === 'hub') {
-      return (
-        <ProfileHubScreen
-          showBack={canGoBack}
-          onBack={onBack}
-          onOpenSection={(section) => pushTab('profile', section)}
-        />
-      );
+    if (route.screen.type === 'settings') {
+      if (route.screen.screen === 'hub') {
+        return (
+          <SettingsHubScreen
+            showBack={canGoBack}
+            onBack={onBack}
+            onOpenSection={(section) =>
+              onPush({ tab: 'more', screen: { type: 'settings', screen: section } })
+            }
+          />
+        );
+      }
+      if (route.screen.screen === 'general') {
+        return <SettingsGeneralScreen showBack={canGoBack} onBack={onBack} />;
+      }
+      return <SettingsHandScreen showBack={canGoBack} onBack={onBack} />;
     }
-    if (route.screen === 'name') {
-      return <ProfileNameScreen showBack={canGoBack} onBack={onBack} />;
+    if (route.screen.type === 'profile') {
+      if (route.screen.screen === 'hub') {
+        return (
+          <ProfileHubScreen
+            showBack={canGoBack}
+            onBack={onBack}
+            onOpenSection={(section) =>
+              onPush({ tab: 'more', screen: { type: 'profile', screen: section } })
+            }
+          />
+        );
+      }
+      if (route.screen.screen === 'name') {
+        return <ProfileNameScreen showBack={canGoBack} onBack={onBack} />;
+      }
+      return <ProfileCreditsScreen showBack={canGoBack} onBack={onBack} />;
     }
-    return (
-      <ProfileCreditsScreen showBack={canGoBack} onBack={onBack} />
-    );
   }
 
   return null;
 };
 
-export { HOME_LIST };
+export type { RulesPresetId };

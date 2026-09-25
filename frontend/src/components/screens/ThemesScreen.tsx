@@ -427,7 +427,12 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
         <button
           type="button"
           className="themes-card-edit"
-          onClick={() => onPush?.({ tab: 'themes', screen: { type: 'editor', themeId: theme.id } })}
+          onClick={() =>
+            onPush?.({
+              tab: 'personalize',
+              screen: { type: 'themeEditor', themeId: theme.id }
+            })
+          }
           aria-label="Editar"
         >
           ✏
@@ -466,7 +471,9 @@ export const ThemesScreen: React.FC<ThemesScreenProps> = ({
                 <button
                   type="button"
                   className="themes-create-btn"
-                  onClick={() => onPush({ tab: 'themes', screen: { type: 'editor' } })}
+                  onClick={() =>
+                    onPush({ tab: 'personalize', screen: { type: 'themeEditor' } })
+                  }
                 >
                   + Criar
                 </button>

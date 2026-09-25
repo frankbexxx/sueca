@@ -1,5 +1,5 @@
 /**
- * Home play/continue confirm gates — App-level React dialog (not window.confirm).
+ * Home Continue resume — App-level (REL-HOME-01: new games go through Setup, not silent start).
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -24,18 +24,13 @@ vi.mock('./components/LandingPage', () => ({
 
 vi.mock('./navigation/ShellRouter', () => ({
   ShellRouter: ({
-    onContinue,
-    onPlayVariant
+    onContinue
   }: {
     onContinue: (variant: GameVariant) => void;
-    onPlayVariant: (variant: GameVariant) => void;
   }) => (
     <div data-testid="shell-home">
       <button type="button" data-testid="home-continue" onClick={() => onContinue('sueca')}>
         Continuar
-      </button>
-      <button type="button" data-testid="home-play" onClick={() => onPlayVariant('sueca')}>
-        Jogar
       </button>
     </div>
   )
@@ -107,7 +102,7 @@ function minimalState(): GameState {
   };
 }
 
-describe('App home play confirm gates', () => {
+describe('App home continue resume (REL-HOME-01)', () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
@@ -132,56 +127,13 @@ describe('App home play confirm gates', () => {
     });
   }
 
-  it('starts directly when no session exists', () => {
-    enterShell();
-    expect(loadGameSession('sueca')).toBeNull();
-    act(() => {
-      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
-    });
-    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
-    expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
-  });
-
-  it('opens dialog when session exists; cancel keeps session', () => {
-    const config = buildSoloConfigForVariant('sueca');
-    saveGameSession(config, minimalState());
-    enterShell();
-    act(() => {
-      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
-    });
-    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="game-board"]')).toBeNull();
-    act(() => {
-      container.querySelector<HTMLButtonElement>('[data-testid="confirm-dialog-cancel"]')?.click();
-    });
-    expect(loadGameSession('sueca')).toBeTruthy();
-    expect(container.querySelector('[data-testid="game-board"]')).toBeNull();
-    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
-  });
-
-  it('confirm clears session and starts new game once', () => {
-    const config = buildSoloConfigForVariant('sueca');
-    saveGameSession(config, minimalState());
-    enterShell();
-    act(() => {
-      container.querySelector<HTMLButtonElement>('[data-testid="home-play"]')?.click();
-    });
-    act(() => {
-      container.querySelector<HTMLButtonElement>('[data-testid="confirm-dialog-confirm"]')?.click();
-    });
-    expect(loadGameSession('sueca')).toBeNull();
-    expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
-  });
-
-  it('Continuar resumes without dialog', () => {
+  it('Continuar resumes saved session without Setup', () => {
     const config = buildSoloConfigForVariant('sueca');
     saveGameSession(config, minimalState());
     enterShell();
     act(() => {
       container.querySelector<HTMLButtonElement>('[data-testid="home-continue"]')?.click();
     });
-    expect(container.querySelector('[data-testid="confirm-dialog"]')).toBeNull();
     expect(container.querySelector('[data-testid="game-board"]')).toBeTruthy();
     expect(loadGameSession('sueca')).toBeTruthy();
   });

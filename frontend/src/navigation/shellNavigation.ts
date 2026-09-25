@@ -1,6 +1,9 @@
 import {
   AppTab,
+  ACTIVITY_HUB,
   HOME_ROUTE,
+  MORE_HUB,
+  PERSONALIZE_HUB,
   ShellRoute
 } from '../types/navigation';
 
@@ -18,20 +21,12 @@ export function tabRootRoute(tab: AppTab): ShellRoute {
   switch (tab) {
     case 'home':
       return HOME_ROUTE;
-    case 'stats':
-      return { tab: 'stats', screen: { type: 'main' } };
-    case 'history':
-      return { tab: 'history', screen: 'hub' };
-    case 'themes':
-      return { tab: 'themes', screen: { type: 'main' } };
-    case 'online':
-      return { tab: 'online', screen: { type: 'main' } };
-    case 'rules':
-      return { tab: 'rules', screen: 'hub' };
-    case 'settings':
-      return { tab: 'settings', screen: 'hub' };
-    case 'profile':
-      return { tab: 'profile', screen: 'hub' };
+    case 'activity':
+      return ACTIVITY_HUB;
+    case 'personalize':
+      return PERSONALIZE_HUB;
+    case 'more':
+      return MORE_HUB;
   }
 }
 

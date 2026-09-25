@@ -11,7 +11,10 @@ import {
 import { MULTIPLAYER_ENABLED } from '../config/features';
 import { loadLastConfig } from '../services/gameSessionStorage';
 
-export function useGameSetup(initialVariant?: GameVariant) {
+export function useGameSetup(
+  initialVariant?: GameVariant,
+  initialRulesPresetId?: RulesPresetId
+) {
   const last = loadLastConfig();
 
   const [playerNames, setPlayerNames] = useState<string[]>(() => {
@@ -28,11 +31,17 @@ export function useGameSetup(initialVariant?: GameVariant) {
   });
 
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(
-    () => (localStorage.getItem('sueca-ai-difficulty') as AIDifficulty) || last?.aiDifficulty || 'medium'
+    () =>
+      (localStorage.getItem('sueca-ai-difficulty') as AIDifficulty) ||
+      last?.aiDifficulty ||
+      'medium'
   );
 
   const [dealingMethod, setDealingMethod] = useState<DealingMethod>(
-    () => (localStorage.getItem('sueca-dealing-method') as DealingMethod) || last?.dealingMethod || 'A'
+    () =>
+      (localStorage.getItem('sueca-dealing-method') as DealingMethod) ||
+      last?.dealingMethod ||
+      'A'
   );
 
   const [multiplayerEnabled, setMultiplayerEnabled] = useState(
@@ -52,12 +61,15 @@ export function useGameSetup(initialVariant?: GameVariant) {
   });
 
   const [rulesPresetId, setRulesPresetId] = useState<RulesPresetId>(() => {
-    const saved = localStorage.getItem('sueca-rules-preset');
     const variant =
       initialVariant ??
       (localStorage.getItem('sueca-game-variant') as GameVariant | null) ??
       last?.gameVariant ??
       'sueca';
+    if (initialRulesPresetId) {
+      return resolvePresetId(variant, initialRulesPresetId);
+    }
+    const saved = localStorage.getItem('sueca-rules-preset');
     if (last?.rulesPresetId) {
       return resolvePresetId(variant, last.rulesPresetId);
     }

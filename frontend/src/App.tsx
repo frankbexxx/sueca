@@ -31,7 +31,6 @@ import {
 import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
 import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
-import { ConfirmDialog } from './components/common/ConfirmDialog';
 import { parseDevKingFestaParams } from './dev/kingFestaJump';
 import { parseDevKingNegParams } from './dev/kingNegativeJump';
 import { parseDevKingSyntheticParams } from './dev/kingSyntheticJump';
@@ -51,7 +50,6 @@ function App() {
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [resumeSession, setResumeSession] = useState<SavedGameSession | null>(null);
   const [activeTheme, setActiveTheme] = useState<ThemeId>(() => getActiveTheme());
-  const [pendingPlayVariant, setPendingPlayVariant] = useState<GameVariant | null>(null);
 
   useEffect(() => {
     consumeLandingReturnFlag();
@@ -169,27 +167,6 @@ function App() {
     [startGame, t.dashboard.multiplayerOfflineContinueBlocked]
   );
 
-  const handlePlayVariant = useCallback((variant: GameVariant) => {
-    const saved = loadGameSession(variant);
-    if (saved) {
-      setPendingPlayVariant(variant);
-      return;
-    }
-    startGame(buildSoloConfigForVariant(variant));
-  }, [startGame]);
-
-  const cancelPendingPlayVariant = useCallback(() => {
-    setPendingPlayVariant(null);
-  }, []);
-
-  const confirmPendingPlayVariant = useCallback(() => {
-    if (!pendingPlayVariant) return;
-    const variant = pendingPlayVariant;
-    setPendingPlayVariant(null);
-    clearGameSession(variant);
-    startGame(buildSoloConfigForVariant(variant));
-  }, [pendingPlayVariant, startGame]);
-
   const handleTabChange = useCallback(
     (tab: AppTab) => {
       if (tab === 'home') {
@@ -252,20 +229,9 @@ function App() {
           onThemeChange={handleThemeChange}
           onStartGame={startGame}
           onContinue={handleContinue}
-          onPlayVariant={handlePlayVariant}
         />
       </main>
       <BottomNav activeTab={current.tab} onChange={handleTabChange} />
-      <ConfirmDialog
-        open={pendingPlayVariant != null}
-        title={t.inGame.newGame}
-        message={t.dashboard.playNewGameConfirm}
-        confirmLabel={t.inGame.newGame}
-        cancelLabel={t.gameMenu.cancel}
-        destructive
-        onConfirm={confirmPendingPlayVariant}
-        onCancel={cancelPendingPlayVariant}
-      />
     </div>
   );
 }

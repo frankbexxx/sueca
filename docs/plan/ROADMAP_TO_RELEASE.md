@@ -151,7 +151,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
-| REL-HOME-01 | Landing / Home | READY FOR USER VISUAL REVIEW | New Home IA: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped. **Not DONE** — user visual review pending | P1 | YES | READY FOR USER VISUAL REVIEW |
+| REL-HOME-01 | Landing / Home | DONE | Production Home approved: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped via hubs. Still open: Setup redesign · REL-PLAYERS-01 · REL-DIFF-01 · REL-PERS-01 | P1 | YES | DONE |
 | REL-PLAYERS-01 | Player names | TODO | Unify Profile vs Setup; global vs per-game; bot name policy | P1 | YES | TODO |
 | REL-DIFF-01 | Difficulty UX | TODO | Legibility; Home vs Setup placement | P1 | YES | TODO |
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
@@ -246,7 +246,9 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 |----|-------|--------|
 | **AI-KING-FESTA-PLAY-01** | Festa positive card-play strategy quality review (post restyle/app) | OPEN / later |
 
-**Spades modes architecture (v1):** existing `spades-pt-normal` + `spades-pt-nil` via setup; Landing selector UX under `REL-HOME-01`. COSPE/CPOES remain Phase D unless product promotes them.
+**Spades modes architecture (v1):** existing `spades-pt-normal` + `spades-pt-nil` via setup; Home tile → Setup (mode via Setup). COSPE/CPOES remain Phase D unless product promotes them.
+
+**Home notes (`REL-HOME-01`):** **DONE** — compact Suecão header · active-session Continue · 2×2 game grid · King contextual mode sheet · quiet Última actividade line · 4-tab bottom nav. Remaining product UX: Setup redesign · REL-PLAYERS-01 · REL-DIFF-01 · Personalisation redesign (`REL-PERS-01`).
 
 ---
 

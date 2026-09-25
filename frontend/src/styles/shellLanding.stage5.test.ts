@@ -52,16 +52,16 @@ describe('Stage 5 Landing + App Shell theming', () => {
     expect(bottomNavCss).toMatch(/var\(--sc-surface-modal\)/);
     expect(bottomNavCss).toMatch(/var\(--sc-surface-border\)/);
     expect(bottomNavCss).toMatch(/var\(--sc-text-muted\)/);
-    expect(bottomNavCss).toMatch(/rgba\(var\(--sc-accent-rgb\)/);
+    expect(bottomNavCss).toMatch(/var\(--sc-rail\)/);
     expect(bottomNavCss).not.toMatch(/rgba\(20,\s*28,\s*40/);
     expect(bottomNavCss).not.toMatch(/sueca-rgb-primary/);
   });
 
-  it('shell panels/hubs and dashboard consume --sc-* directly', () => {
+  it('shell panels/hubs and Home consume --sc-* directly', () => {
     expect(shellScreensCss).toMatch(/\.shell-panel[\s\S]*var\(--sc-surface\)/);
     expect(shellScreensCss).toMatch(/\.shell-hub-item[\s\S]*var\(--sc-surface\)/);
-    expect(dashboardCss).toMatch(/\.dashboard-game-row[\s\S]*var\(--sc-surface\)/);
-    expect(dashboardCss).toMatch(/rgba\(var\(--sc-accent-rgb\)/);
+    expect(dashboardCss).toMatch(/\.home-tile[\s\S]*var\(--sc-felt/);
+    expect(dashboardCss).toMatch(/var\(--sc-rail\)/);
     expect(themesCss).toMatch(/\.themes-card--active[\s\S]*--sc-accent-rgb/);
   });
 

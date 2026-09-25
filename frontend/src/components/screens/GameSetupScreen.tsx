@@ -7,12 +7,14 @@ import { useGameSetup } from '../../hooks/useGameSetup';
 import { USE_LOCAL_AI_ONLY } from '../../config/features';
 import { saveLastConfig } from '../../services/gameSessionStorage';
 import { getAvailableGames } from '../../constants/gameMetadata';
+import type { RulesPresetId } from '../../constants/rulesPresets';
 import '../screens/PlaySetup.css';
 import { ShellHeader } from '../navigation/ShellHeader';
 
 interface GameSetupScreenProps {
   onStartGame: (config: GameConfig) => void;
   initialVariant?: GameVariant | null;
+  initialRulesPresetId?: RulesPresetId;
   lockVariant?: boolean;
   showBack?: boolean;
   onBack?: () => void;
@@ -21,12 +23,13 @@ interface GameSetupScreenProps {
 export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
   onStartGame,
   initialVariant,
+  initialRulesPresetId,
   lockVariant = false,
   showBack = false,
   onBack
 }) => {
   const { t } = useLanguage();
-  const setup = useGameSetup(initialVariant ?? undefined);
+  const setup = useGameSetup(initialVariant ?? undefined, initialRulesPresetId);
   const [editingPlayerIndex, setEditingPlayerIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const gameName =
