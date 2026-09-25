@@ -107,6 +107,10 @@ export class KingGame extends BaseGameAdapter {
     this.impl?.dismissScorePopup();
   }
 
+  promoteSyntheticRoundComplete(): void {
+    this.impl?.promoteSyntheticRoundComplete();
+  }
+
   acceptEarlyEnd(): void {
     this.impl?.acceptEarlyEnd();
   }

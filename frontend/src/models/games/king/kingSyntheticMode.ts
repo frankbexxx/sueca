@@ -46,3 +46,20 @@ export function isKingSyntheticSession(
   );
   return isKingSyntheticPreset(preset) || flag || Boolean(engineFlag);
 }
+
+/** Score-sheet popup (results table). */
+export const KING_SCORE_POPUP_ROUND = 'round';
+
+/**
+ * UX-ROUND-01 — intermediate synthetic negatives completion cue
+ * before {@link KING_SCORE_POPUP_ROUND}.
+ */
+export const KING_SCORE_POPUP_SYNTHETIC_COMPLETE = 'synthetic_complete';
+
+export function isKingSyntheticCompletePopup(value: string | null | undefined): boolean {
+  return value === KING_SCORE_POPUP_SYNTHETIC_COMPLETE;
+}
+
+export function isKingScoreSheetPopup(value: string | null | undefined): boolean {
+  return value === KING_SCORE_POPUP_ROUND;
+}

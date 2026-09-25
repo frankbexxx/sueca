@@ -21,6 +21,7 @@ import {
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
   ROUND_START_SFX_DELAY_MS,
+  SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
 import { createGameOverExitController } from '../utils/gameOverExitTimer';
@@ -69,6 +70,7 @@ import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
+import { KingSyntheticRoundCompleteCue } from './KingSyntheticRoundCompleteCue';
 import { EarlyRoundEndModal } from './EarlyRoundEndModal';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
@@ -682,6 +684,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameState.waitingForRoundEnd,
     gameState.isGameOver,
     playRoundEndSound
+  ]);
+
+  /**
+   * UX-ROUND-01 — after synthetic negatives, hold restrained cue then open score sheet.
+   */
+  useEffect(() => {
+    if (!gameStarted || !gameAdapter || !kingCtrl) return;
+    if (!kingCtrl.isPtNormal(rulesPresetId)) return;
+    if (kingPtState?.showScorePopup !== 'synthetic_complete') return;
+
+    const timer = window.setTimeout(() => {
+      kingCtrl.promoteSyntheticRoundComplete();
+      setGameState(gameAdapter.getCurrentState());
+    }, SYNTHETIC_ROUND_COMPLETE_HOLD_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    gameStarted,
+    gameAdapter,
+    kingCtrl,
+    rulesPresetId,
+    kingPtState?.showScorePopup
   ]);
 
   /**
@@ -1716,6 +1740,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               />
             );
           }
+          if (overlay === 'synthetic_complete') {
+            return (
+              <KingSyntheticRoundCompleteCue
+                locale={language === 'pt' ? 'pt' : 'en'}
+              />
+            );
+          }
+
           if (overlay === 'score_popup') {
             return (
               <KingScoreSheetModal

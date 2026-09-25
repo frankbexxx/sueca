@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, GameState, GameVariant } from '../../types/game';
 import { useLanguage } from '../../i18n/useLanguage';
-import { getKingPtState } from '../../models/games/KingPtGame';
+import { getKingPtState, isSyntheticAllNegatives } from '../../models/games/KingPtGame';
 import {
   kingHudContractPrimary,
   kingHudMatchProgress,
@@ -148,7 +148,11 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
   }
 
   const showPenaltyCards =
-    (variant === 'king' && shouldShowKingPenaltyCards(kingContract)) || variant === 'hearts';
+    (variant === 'king' &&
+      shouldShowKingPenaltyCards(kingContract, {
+        syntheticAllNegatives: Boolean(kingPtState && isSyntheticAllNegatives(kingPtState))
+      })) ||
+    variant === 'hearts';
 
   // King festa trump face only during positive festa play.
   const showTrump =

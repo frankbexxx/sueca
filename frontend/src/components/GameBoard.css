@@ -5,6 +5,7 @@
   --card-h: 71px; /* 70% of 101px */
   --hand-row-h: 76px; /* 70% of 108px */
   --button-min-w: 126px; /* 70% of 180px */
+  position: relative;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;

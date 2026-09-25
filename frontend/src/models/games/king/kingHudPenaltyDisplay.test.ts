@@ -26,6 +26,18 @@ describe('kingHudPenaltyDisplay', () => {
     expect(shouldShowKingPenaltyCards(null)).toBe(false);
     expect(KING_PENALTY_CARD_CONTRACTS).toHaveLength(4);
   });
+
+  it('shows mosaics for synthetic all-negatives even when contract is no_tricks', () => {
+    expect(
+      shouldShowKingPenaltyCards('no_tricks', { syntheticAllNegatives: true })
+    ).toBe(true);
+    expect(
+      shouldShowKingPenaltyCards(null, { syntheticAllNegatives: true })
+    ).toBe(true);
+    expect(
+      shouldShowKingPenaltyCards('no_tricks', { syntheticAllNegatives: false })
+    ).toBe(false);
+  });
 });
 
 describe('kingHudScoreDisplay', () => {

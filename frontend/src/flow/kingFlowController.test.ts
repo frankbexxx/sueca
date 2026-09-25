@@ -40,6 +40,7 @@ function mockFlow(overrides: Partial<KingVariantFlow> = {}): KingVariantFlow {
     chooseFallback: jest.fn(),
     setupFesta: jest.fn(),
     dismissScorePopup: jest.fn(),
+    promoteSyntheticRoundComplete: jest.fn(),
     acceptEarlyEnd: jest.fn(),
     declineEarlyEnd: jest.fn(),
     tickFestaAi: jest.fn(() => true),
@@ -132,6 +133,21 @@ describe('kingFlowController', () => {
         })
       ).resolvePtOverlay({ waitingForRoundStart: false } as GameState, 'king-pt-normal')
     ).toBe('score_popup');
+
+    expect(
+      createKingFlowController(
+        mockFlow({
+          readPtState: () => kingStub({ showScorePopup: 'synthetic_complete' })
+        })
+      ).resolvePtOverlay({ waitingForRoundStart: false } as GameState, 'king-pt-synthetic')
+    ).toBe('synthetic_complete');
+  });
+
+  it('promoteSyntheticRoundComplete forwards to flow host', () => {
+    const promoteSyntheticRoundComplete = jest.fn();
+    const ctrl = createKingFlowController(mockFlow({ promoteSyntheticRoundComplete }));
+    ctrl.promoteSyntheticRoundComplete();
+    expect(promoteSyntheticRoundComplete).toHaveBeenCalledTimes(1);
   });
 
   it('resolveEarlyEnd and KOH paths forward without side rules', () => {

@@ -39,6 +39,12 @@ export const DEAL_DELAY_MS = 600;
  */
 export const ROUND_START_SFX_DELAY_MS = 1000;
 
+/**
+ * UX-ROUND-01 — hold table + restrained cue after synthetic negatives,
+ * before opening the King score sheet (800–1200 ms band).
+ */
+export const SYNTHETIC_ROUND_COMPLETE_HOLD_MS = 1000;
+
 // Card layout thresholds
 export const HAND_SCROLL_THRESHOLD = 8;
 

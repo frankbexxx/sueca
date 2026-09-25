@@ -1,6 +1,9 @@
 import { Card } from '../../../types/game';
 import { emptyBreakdown } from './kingBreakdown';
-import { accumulateTrickBreakdown } from './kingBreakdownHelpers';
+import {
+  accumulateSyntheticAllNegativesBreakdown,
+  accumulateTrickBreakdown
+} from './kingBreakdownHelpers';
 
 const c = (rank: Card['rank'], suit: Card['suit'], id: string): Card => ({
   rank,
@@ -25,5 +28,28 @@ describe('kingBreakdownHelpers penalty cards', () => {
     expect(breakdown.kingTakenBy).toBe(1);
     expect(breakdown.penaltyCardsTaken[1]).toHaveLength(1);
     expect(breakdown.penaltyCardsTaken[1][0].rank).toBe('K');
+  });
+
+  it('synthetic accumulator attributes multiple specials to the trick winner', () => {
+    const breakdown = emptyBreakdown();
+    const trick = [
+      c('Q', 'spades', 'qs'),
+      c('K', 'clubs', 'kc'),
+      c('5', 'hearts', 'h5'),
+      c('2', 'diamonds', 'd2')
+    ];
+    accumulateSyntheticAllNegativesBreakdown(breakdown, trick, 5, 3);
+    const taken = breakdown.penaltyCardsTaken[3];
+    expect(taken.some((card) => card.suit === 'hearts' && card.rank === '5')).toBe(true);
+    expect(taken.some((card) => card.rank === 'Q' && card.suit === 'spades')).toBe(true);
+    expect(taken.some((card) => card.rank === 'K' && card.suit === 'clubs')).toBe(true);
+    expect(taken.length).toBeGreaterThanOrEqual(3);
+    expect(breakdown.penaltyCardsTaken[0]).toHaveLength(0);
+    expect(breakdown.penaltyCardsTaken[1]).toHaveLength(0);
+    expect(breakdown.penaltyCardsTaken[2]).toHaveLength(0);
+    expect(breakdown.heartsTaken[3]).toBe(1);
+    expect(breakdown.queensTaken[3]).toBe(1);
+    expect(breakdown.menTaken[3]).toBe(1);
+    expect(breakdown.kingTakenBy).toBeNull();
   });
 });

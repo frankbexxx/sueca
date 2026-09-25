@@ -63,6 +63,7 @@ export interface KingFlowHost {
   chooseFallback(choice: KingFestaChoice): void;
   setupFesta(trump: Suit | null, noTrump: boolean, firstPlayerIndex: number): void;
   dismissScorePopup(): void;
+  promoteSyntheticRoundComplete(): void;
   acceptEarlyEnd(): void;
   declineEarlyEnd(): void;
   tickFestaAi(): boolean;
@@ -141,6 +142,7 @@ export function createKingVariantFlow(
     setupFesta: (trump, noTrump, firstPlayerIndex) =>
       host.setupFesta(trump, noTrump, firstPlayerIndex),
     dismissScorePopup: () => host.dismissScorePopup(),
+    promoteSyntheticRoundComplete: () => host.promoteSyntheticRoundComplete(),
     acceptEarlyEnd: () => host.acceptEarlyEnd(),
     declineEarlyEnd: () => host.declineEarlyEnd(),
     tickFestaAi: () => host.tickFestaAi(),

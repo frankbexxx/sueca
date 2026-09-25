@@ -47,7 +47,11 @@ import {
   kingSyntheticRoundLabel,
   KingAuctionHistoryEntry
 } from './king/kingContracts';
-import { isKingSyntheticPreset } from './king/kingSyntheticMode';
+import {
+  isKingSyntheticPreset,
+  KING_SCORE_POPUP_ROUND,
+  KING_SCORE_POPUP_SYNTHETIC_COMPLETE
+} from './king/kingSyntheticMode';
 import { resolvePresetId, type RulesPresetId } from '../../constants/rulesPresets';
 import {
   appendKingAuctionHistory,
@@ -638,6 +642,18 @@ export class KingPtGame extends BaseGameAdapter {
     if (!this.state) return;
     const king = getKingPtState(this.state);
     king.showScorePopup = null;
+    this.syncKing(king);
+  }
+
+  /**
+   * UX-ROUND-01 — promote synthetic completion cue → score sheet.
+   * No-op unless `showScorePopup === synthetic_complete`.
+   */
+  promoteSyntheticRoundComplete(): void {
+    if (!this.state) return;
+    const king = getKingPtState(this.state);
+    if (king.showScorePopup !== KING_SCORE_POPUP_SYNTHETIC_COMPLETE) return;
+    king.showScorePopup = KING_SCORE_POPUP_ROUND;
     this.syncKing(king);
   }
 
@@ -1375,7 +1391,9 @@ export class KingPtGame extends BaseGameAdapter {
       : buildBreakdownLines(king.roundBreakdown, king.contract, 'pt');
     this.appendHistory(king);
 
-    king.showScorePopup = 'round';
+    king.showScorePopup = isSyntheticAllNegatives(king)
+      ? KING_SCORE_POPUP_SYNTHETIC_COMPLETE
+      : KING_SCORE_POPUP_ROUND;
     this.state!.scores = {
       team1: king.playerScores[0] + king.playerScores[2],
       team2: king.playerScores[1] + king.playerScores[3]
@@ -1403,7 +1421,7 @@ export class KingPtGame extends BaseGameAdapter {
       king.playerScores[i] += deltas[i];
     }
     this.appendHistory(king);
-    king.showScorePopup = 'round';
+    king.showScorePopup = KING_SCORE_POPUP_ROUND;
     this.state!.scores = {
       team1: king.playerScores[0] + king.playerScores[2],
       team2: king.playerScores[1] + king.playerScores[3]

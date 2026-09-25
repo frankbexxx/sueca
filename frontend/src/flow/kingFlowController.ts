@@ -7,8 +7,12 @@ import type { GameState, Suit } from '../types/game';
 import type { KingVariantFlow } from '../models/games/variantFlowApi';
 import type { KingPtVariantState } from '../models/games/KingPtGame';
 import type { KingBidType, KingFestaChoice } from '../models/games/king/kingContracts';
+import {
+  isKingScoreSheetPopup,
+  isKingSyntheticCompletePopup
+} from '../models/games/king/kingSyntheticMode';
 
-export type KingPtOverlay = 'koh_reveal' | 'festa' | 'score_popup';
+export type KingPtOverlay = 'koh_reveal' | 'festa' | 'synthetic_complete' | 'score_popup';
 
 export type KingFestaUiAction =
   | { type: 'auction_pass'; playerIndex: number }
@@ -42,6 +46,7 @@ export interface KingFlowController {
   confirmKohReveal(): void;
   dispatchFestaAction(action: KingFestaUiAction): void;
   dismissScorePopup(): void;
+  promoteSyntheticRoundComplete(): void;
   resolveEarlyEnd(accept: boolean): void;
 }
 
@@ -123,7 +128,8 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
       const king = flow.readPtState(state);
       if (king.phase === 'koh_reveal' && state.waitingForRoundStart) return 'koh_reveal';
       if (isKingInFestaFlow(king) && state.waitingForRoundStart) return 'festa';
-      if (king.showScorePopup) return 'score_popup';
+      if (isKingSyntheticCompletePopup(king.showScorePopup)) return 'synthetic_complete';
+      if (isKingScoreSheetPopup(king.showScorePopup) || king.showScorePopup) return 'score_popup';
       return null;
     },
 
@@ -179,6 +185,10 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
 
     dismissScorePopup() {
       flow.dismissScorePopup();
+    },
+
+    promoteSyntheticRoundComplete() {
+      flow.promoteSyntheticRoundComplete();
     },
 
     resolveEarlyEnd(accept) {

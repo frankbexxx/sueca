@@ -204,10 +204,13 @@ describe('King synthetic combined negatives', () => {
 
     const king = getKingPtState(internal.state);
     expect(king.trickNumber).toBe(13);
-    expect(king.showScorePopup).toBe('round');
+    expect(king.showScorePopup).toBe('synthetic_complete');
     expect(king.gameHistory).toHaveLength(1);
     expect(king.gameHistory[0].title).toBe(kingSyntheticRoundLabel('pt'));
     expect(king.gameHistory[0].gameIndex).toBe(0);
+
+    game.promoteSyntheticRoundComplete();
+    expect(getKingPtState(internal.state).showScorePopup).toBe('round');
   });
 
   it('normal King early-end still works without synthetic flag', () => {
