@@ -154,7 +154,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-HOME-01 | Landing / Home | TODO | Redesign density; King / King Sintético selector; Spades modes; reduce stats weight; use empty space | P1 | YES | TODO |
 | REL-PLAYERS-01 | Player names | TODO | Unify Profile vs Setup; global vs per-game; bot name policy | P1 | YES | TODO |
 | REL-DIFF-01 | Difficulty UX | TODO | Legibility; Home vs Setup placement | P1 | YES | TODO |
-| REL-KING-01 | King Sintético / Festa smoke | READY FOR TEST | Device smoke 4 Festas; handoff `2/5`→`5/5`; final Festa completion; desktop + OPPO. **UX-FESTA-01**: viewport blocker fixed; Phaser integration polished — do not close this row on layout alone. **No rules/scoring reopen** | P1 | NO | READY FOR TEST |
+| REL-KING-01 | King Sintético / Festa smoke | READY FOR FIX | Full OPPO smoke through Jogo 5/5 **passed** flow/scoring; **not DONE** — open follow-ups: `UX-KING-SCORE-LIVE-01`, `AI-KING-AUCTION-01`, `UX-KING-FINAL-01` (see King smoke findings below). **No rules/scoring redesign** | P1 | NO | READY FOR FIX |
 | REL-HIST-01 | History / Stats / Persistence | TODO | Separate modes by `rulesPresetId` (King vs Sintético; Spades presets); avoid continue/stats collision | P1 | YES | TODO |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
@@ -206,7 +206,36 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 - Normal King: **DONE**
 - King Sintético: **PRODUCT MODE DONE** (`king-pt-synthetic`)
-- Pending only: real-device smoke of four Festas, `2/5`…`5/5`, final completion — **not** rules/scoring changes
+- Full Synthetic smoke (Jogo 1/5 → 5/5) completed on device — **REL-KING-01 not DONE** until follow-up findings close
+- Pending: live Festa HUD deltas · auction AI variety · final result sheet persistence — **not** rules/scoring redesign
+
+### King smoke findings (REL-KING-01) — baseline `c58675b`
+
+Full King Sintético smoke through **Jogo 5/5** recorded. Parent row stays **READY FOR FIX / not DONE**.
+
+#### Confirmed PASS
+
+- King Synthetic progresses `1/5` → `5/5`
+- Synthetic negatives complete correctly
+- Intermediate synthetic completion cue works
+- Special-card miniatures work
+- Mini-card press preview works on phone
+- Four Festa rounds start in sequence
+- Festa auction state resets correctly between rounds
+- Positivas / Nulos legal floors work
+- Auction history survives long sequences
+- Intermediate score sheets populate the correct Festa row
+- Accumulated scores are correct
+- No sixth game starts after `5/5`
+- Match reaches final result
+
+#### Open follow-ups
+
+| ID | Finding | Status | Notes |
+|----|---------|--------|-------|
+| **UX-KING-SCORE-LIVE-01** | During Festa play, HUD current-round scores stay at `0`; round-end sheet + accumulated totals are correct | **READY FOR FIX** | Live HUD / state exposure — not a final scoring bug |
+| **AI-KING-AUCTION-01** | AI very frequently escalates Festa auctions to `8 positivas` (repeated across smoke; not literally every auction) | **READY FOR AUDIT/FIX** | Audit hand eval, bid thresholds, pass logic, Positivas vs Nulos, escalation, difficulty — **do not** fix with arbitrary randomness alone |
+| **UX-KING-FINAL-01** | After Jogo 5/5, final score sheet appears then auto-dismisses to Home after a few seconds | **READY FOR FIX** | Final match result must stay until explicit user action |
 
 **Spades modes architecture (v1):** existing `spades-pt-normal` + `spades-pt-nil` via setup; Landing selector UX under `REL-HOME-01`. COSPE/CPOES remain Phase D unless product promotes them.
 
