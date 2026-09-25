@@ -187,6 +187,7 @@ export const UnifiedGameStatusPanel: React.FC<UnifiedGameStatusPanelProps> = ({
                         phase: kingPtState.phase,
                         lastRoundDeltas: kingPtState.lastRoundDeltas,
                         playerScores: kingPtState.playerScores,
+                        roundStartScores: kingPtState.roundStartScores,
                         playerIndex: index
                       })
                     : null;

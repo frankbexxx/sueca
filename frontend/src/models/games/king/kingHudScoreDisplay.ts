@@ -11,6 +11,7 @@ export interface KingHudScoreLine {
 /**
  * King HUD scores — reads engine fields only (no recalculation).
  * Live round progress uses `lastRoundDeltas` (updated in finishTrick).
+ * Match total stays at pre-round accumulation (`roundStartScores`) while live.
  * Applies to negatives and festa_play.
  */
 export function resolveKingNegativeHudScore(input: {
@@ -19,14 +20,22 @@ export function resolveKingNegativeHudScore(input: {
   lastRoundDeltas: number[];
   playerScores: number[];
   playerIndex: number;
+  /** When provided during live play, Total shows this (not live-projected playerScores). */
+  roundStartScores?: number[];
 }): KingHudScoreLine {
-  const { gameIndex, phase, lastRoundDeltas, playerScores, playerIndex } = input;
+  const { gameIndex, phase, lastRoundDeltas, playerScores, playerIndex, roundStartScores } =
+    input;
   const roundDelta = lastRoundDeltas[playerIndex] ?? 0;
-  const totalScore = playerScores[playerIndex] ?? 0;
   const negativeLive =
     gameIndex >= 0 && gameIndex < KING_NEGATIVE_GAMES && phase === 'negative';
   const festaLive = gameIndex >= KING_NEGATIVE_GAMES && phase === 'festa_play';
   const roundPrimary = negativeLive || festaLive;
+
+  // UX-KING-SCORE-LIVE-01 — keep accumulated previous-round total separate from live delta.
+  const totalScore = roundPrimary
+    ? (roundStartScores?.[playerIndex] ??
+      (playerScores[playerIndex] ?? 0) - roundDelta)
+    : (playerScores[playerIndex] ?? 0);
 
   return { roundPrimary, roundDelta, totalScore };
 }

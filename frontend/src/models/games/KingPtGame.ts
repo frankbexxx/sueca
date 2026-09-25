@@ -821,7 +821,12 @@ export class KingPtGame extends BaseGameAdapter {
       chooseFallback: (type) => this.chooseFallback(type as Parameters<typeof this.chooseFallback>[0]),
       confirmFestaSetup: () => this.confirmFestaSetup(),
     };
-    return runOneAiFestaStep(king, this.state!.players, controller);
+    return runOneAiFestaStep(
+      king,
+      this.state!.players,
+      controller,
+      this.state!.aiDifficulty ?? 'medium'
+    );
   }
 
   private buildState(
@@ -1305,18 +1310,46 @@ export class KingPtGame extends BaseGameAdapter {
       accumulateFestaTrickBreakdown(king.roundBreakdown, s.currentTrick, winner);
     }
 
-    const scoreDuringPlay =
+    // UX-KING-SCORE-LIVE-01 — auction Festa: provisional deltas from full settlement
+    // so HUD round scores track play; endGame recomputes the same formula.
+    if (
       !king.scoringFrozen &&
-      (king.gameIndex < KING_NEGATIVE_GAMES ||
-        (king.festaMode === 'positive' && !king.activeContract) ||
-        king.festaMode === 'negative_festa');
+      king.gameIndex >= KING_NEGATIVE_GAMES &&
+      king.activeContract
+    ) {
+      const { beneficiaryIndex, bidderIndex, bidType, amount } = king.activeContract;
+      const deltas =
+        bidType === 'positive'
+          ? settlePositiveAuctionRound(
+              amount,
+              king.tricksWonThisGame,
+              beneficiaryIndex,
+              bidderIndex
+            )
+          : settleNullAuctionFesta(
+              king.tricksWonThisGame,
+              beneficiaryIndex,
+              bidderIndex,
+              amount
+            );
+      king.lastRoundDeltas = [...deltas];
+      for (let i = 0; i < 4; i++) {
+        king.playerScores[i] = king.roundStartScores[i] + deltas[i];
+      }
+    } else {
+      const scoreDuringPlay =
+        !king.scoringFrozen &&
+        (king.gameIndex < KING_NEGATIVE_GAMES ||
+          (king.festaMode === 'positive' && !king.activeContract) ||
+          king.festaMode === 'negative_festa');
 
-    if (scoreDuringPlay && king.festaMode === 'positive') {
-      king.lastRoundDeltas[winner] += FESTA_POSITIVE_TRICK;
-      king.playerScores[winner] += FESTA_POSITIVE_TRICK;
-    } else if (scoreDuringPlay && king.festaMode === 'negative_festa') {
-      king.lastRoundDeltas[winner] -= 75;
-      king.playerScores[winner] -= 75;
+      if (scoreDuringPlay && king.festaMode === 'positive') {
+        king.lastRoundDeltas[winner] += FESTA_POSITIVE_TRICK;
+        king.playerScores[winner] += FESTA_POSITIVE_TRICK;
+      } else if (scoreDuringPlay && king.festaMode === 'negative_festa') {
+        king.lastRoundDeltas[winner] -= 75;
+        king.playerScores[winner] -= 75;
+      }
     }
 
     s.waitingForTrickEnd = false;

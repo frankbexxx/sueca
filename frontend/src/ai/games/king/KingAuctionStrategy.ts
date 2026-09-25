@@ -1,11 +1,8 @@
-import { Player } from '../../../types/game';
+import { AIDifficulty, Player } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
 import { KingBidType } from '../../../models/games/king/kingContracts';
-import {
-  canBeatBid,
-  canUseFourThreeThree,
-  minBidToBeat
-} from '../../../models/games/king/kingAuction';
+import { canUseFourThreeThree } from '../../../models/games/king/kingAuction';
+import { decideAiAuctionBid } from './kingAuctionHandEval';
 
 /**
  * Minimal interface for auction mutations — implemented by KingPtGame.
@@ -27,11 +24,13 @@ export interface KingAuctionController {
  *
  * Auction is multi-round: AI may bid on later cycles; pass removes them permanently.
  * Only legal improving (or preference-equalizing) bids are submitted.
+ * AI-KING-AUCTION-01: bid ceiling from hand strength (not always escalate to 8).
  */
 export function runOneAiFestaStep(
   king: KingPtVariantState,
   players: Player[],
-  controller: KingAuctionController
+  controller: KingAuctionController,
+  difficulty: AIDifficulty = 'medium'
 ): boolean {
   if (king.festaPhase === 'auction') {
     const current = controller.getCurrentAuctionPlayer(king);
@@ -39,18 +38,20 @@ export function runOneAiFestaStep(
     if (players[current]?.type !== 'ai') return false;
     if (!king.activeBidders.includes(current)) return false;
 
-    const standing = king.standingBid ?? king.bestBid;
+    const standing = king.standingBid ?? king.bestBid ?? null;
+    const hand = players[current]?.hand ?? [];
+    const decision = decideAiAuctionBid({
+      hand,
+      standing,
+      auctionOrder: king.auctionOrder,
+      seat: current,
+      difficulty
+    });
 
-    if (Math.random() < 0.35 && !standing) {
+    if (decision.action === 'pass') {
       controller.submitAuctionPass(current);
-      return true;
-    }
-
-    const min = minBidToBeat(standing, king.auctionOrder, current);
-    if (min && canBeatBid(standing, min, king.auctionOrder)) {
-      controller.submitAuctionBid(current, min.bidType, min.amount);
     } else {
-      controller.submitAuctionPass(current);
+      controller.submitAuctionBid(current, decision.bidType, decision.amount);
     }
     return true;
   }
@@ -59,7 +60,9 @@ export function runOneAiFestaStep(
     const bidder = king.bestBid?.bidderIndex;
     if (bidder === undefined) return false;
     if (players[bidder]?.type !== 'ai') return false;
-    if (king.requestedBid && Math.random() < 0.55) {
+    // Slightly less eager on easy; still can accept.
+    const acceptRate = difficulty === 'easy' ? 0.35 : difficulty === 'hard' ? 0.55 : 0.45;
+    if (king.requestedBid && Math.random() < acceptRate) {
       controller.respondToHigherBid(true, king.requestedBid.bidType, king.requestedBid.amount);
     } else {
       controller.respondToHigherBid(false);
@@ -72,7 +75,9 @@ export function runOneAiFestaStep(
     if (king.eightOrNullsPending) {
       const target = king.eightOrNullsTarget;
       if (target !== null && players[target]?.type === 'ai') {
-        controller.respondEightOrNulls(target, Math.random() < 0.25);
+        const acceptEight =
+          difficulty === 'hard' ? Math.random() < 0.2 : Math.random() < 0.12;
+        controller.respondEightOrNulls(target, acceptEight);
         return true;
       }
       return false;

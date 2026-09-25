@@ -1,3 +1,13 @@
+import type { GameVariant } from '../types/game';
+
+/**
+ * UX-KING-FINAL-01 — King keeps the final score sheet until an explicit CTA.
+ * Other variants still use the delayed Home exit.
+ */
+export function shouldAutoExitAfterGameOver(variant: GameVariant): boolean {
+  return variant !== 'king';
+}
+
 /**
  * Schedules a delayed game-over exit and allows cancelling so a stale
  * callback cannot leave the screen after "New Game" or manual exit.
@@ -17,8 +27,8 @@ export function createGameOverExitController(
     generation += 1;
     if (timerId !== null) {
       clearTimeout(timerId);
-      timerId = null;
     }
+    timerId = null;
   };
 
   const schedule = () => {

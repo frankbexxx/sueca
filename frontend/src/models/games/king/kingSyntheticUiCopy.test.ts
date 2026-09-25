@@ -42,10 +42,11 @@ describe('King Sintético user-facing copy', () => {
       phase: 'negative',
       lastRoundDeltas: [-120, -80, 0, -210],
       playerScores: [-410, -510, 0, -380],
+      roundStartScores: [-290, -430, 0, -170],
       playerIndex: 0
     });
     expect(line.roundDelta).toBe(-120);
-    expect(line.totalScore).toBe(-410);
+    expect(line.totalScore).toBe(-290);
     expect(line.roundDelta).not.toBe(-5);
     expect(line.totalScore).not.toBe(5);
   });

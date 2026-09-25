@@ -16,13 +16,16 @@ interface KingScoreSheetModalProps {
   onDismiss: () => void;
   onContinue?: () => void;
   showContinue?: boolean;
+  /** UX-KING-FINAL-01 — explicit end of match (no auto-dismiss). */
+  onConclude?: () => void;
 }
 
 export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
   gameState,
   onDismiss,
   onContinue,
-  showContinue
+  showContinue,
+  onConclude
 }) => {
   const { language } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
@@ -35,6 +38,7 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
     Boolean(showContinue) &&
     syntheticSession &&
     king.gameIndex < KING_NEGATIVE_GAMES;
+  const isFinalMatch = Boolean(gameState.isGameOver);
   const synCopy = kingSyntheticRoundEndCopy(locale);
   const title = advanceToFestas
     ? synCopy.title
@@ -47,6 +51,18 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
       ? 'Próximo jogo'
       : 'Next game';
   const totalLabel = advanceToFestas ? synCopy.totalSection : 'Total';
+  const primaryLabel = isFinalMatch
+    ? locale === 'pt'
+      ? 'Concluir'
+      : 'Finish'
+    : 'OK';
+  const handlePrimary = () => {
+    if (isFinalMatch && onConclude) {
+      onConclude();
+      return;
+    }
+    onDismiss();
+  };
 
   return (
     <div className="variant-modal-overlay">
@@ -97,10 +113,14 @@ export const KingScoreSheetModal: React.FC<KingScoreSheetModalProps> = ({
         )}
 
         <div className="king-score-actions">
-          <button type="button" className="sueca-btn" onClick={onDismiss}>
-            OK
+          <button
+            type="button"
+            className={`sueca-btn${isFinalMatch ? ' sueca-btn--primary' : ''}`}
+            onClick={handlePrimary}
+          >
+            {primaryLabel}
           </button>
-          {showContinue && onContinue && (
+          {showContinue && onContinue && !isFinalMatch && (
             <button type="button" className="sueca-btn sueca-btn--primary" onClick={onContinue}>
               {continueLabel}
             </button>

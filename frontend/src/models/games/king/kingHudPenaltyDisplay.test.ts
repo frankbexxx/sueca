@@ -47,13 +47,14 @@ describe('kingHudScoreDisplay', () => {
       phase: 'negative',
       lastRoundDeltas: [-40, 0, -20, 0],
       playerScores: [-90, 20, -50, 60],
+      roundStartScores: [-50, 20, -30, 60],
       playerIndex: 0
     });
     expect(line.roundPrimary).toBe(true);
     expect(line.roundDelta).toBe(-40);
-    expect(line.totalScore).toBe(-90);
+    expect(line.totalScore).toBe(-50);
     expect(formatSignedScore(-40)).toBe('-40');
-    expect(formatKingHudTotalLabel(-90, 'pt')).toBe('Total -90');
+    expect(formatKingHudTotalLabel(-50, 'pt')).toBe('Total -50');
   });
 
   it('does not use round-primary during festa setup (pre-play)', () => {
@@ -73,13 +74,27 @@ describe('kingHudScoreDisplay', () => {
       phase: 'festa_play',
       lastRoundDeltas: [50, 0, 25, 0],
       playerScores: [-50, 20, -10, 60],
+      roundStartScores: [-100, 20, -35, 60],
       playerIndex: 0
     });
     expect(line.roundPrimary).toBe(true);
     expect(line.roundDelta).toBe(50);
-    expect(line.totalScore).toBe(-50);
+    expect(line.totalScore).toBe(-100);
     expect(formatSignedScore(50)).toBe('+50');
-    expect(formatKingHudTotalLabel(-50, 'pt')).toBe('Total -50');
+    expect(formatKingHudTotalLabel(-100, 'pt')).toBe('Total -100');
+  });
+
+  it('UX-KING-SCORE-LIVE-01: Total stays at roundStart while deltas move', () => {
+    const line = resolveKingNegativeHudScore({
+      gameIndex: 7,
+      phase: 'festa_play',
+      lastRoundDeltas: [75, -125, 25, 0],
+      playerScores: [-90, 75, 325, 400],
+      roundStartScores: [-165, 200, 300, 400],
+      playerIndex: 0
+    });
+    expect(line.roundDelta).toBe(75);
+    expect(line.totalScore).toBe(-165);
   });
 });
 

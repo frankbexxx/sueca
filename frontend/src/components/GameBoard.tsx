@@ -24,7 +24,7 @@ import {
   SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
-import { createGameOverExitController } from '../utils/gameOverExitTimer';
+import { createGameOverExitController, shouldAutoExitAfterGameOver } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
 import {
@@ -1086,7 +1086,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
 
     clearGameSession(gameVariant);
-    gameOverExitRef.current.schedule();
+    // UX-KING-FINAL-01 — King final score sheet must stay until explicit CTA.
+    if (shouldAutoExitAfterGameOver(gameVariant)) {
+      gameOverExitRef.current.schedule();
+    }
   }, [
     gameAdapter,
     heartsCtrl,
@@ -1767,6 +1770,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     setGameState(gameAdapter.getCurrentState());
                   }
                 }}
+                onConclude={() => {
+                  gameOverExitRef.current.cancel();
+                  if (gameAdapter) {
+                    kingCtrl.dismissScorePopup();
+                  }
+                  onExit();
+                }}
               />
             );
           }
@@ -1795,8 +1805,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       )}
 
 
-      {/* Game over modal - displays final scores and new game options */}
-      {gameState.isGameOver && (
+      {/* Game over modal - displays final scores and new game options.
+          King final sheet owns the end UX (UX-KING-FINAL-01) while showScorePopup is set. */}
+      {gameState.isGameOver &&
+        !(
+          gameVariant === 'king' &&
+          kingCtrl &&
+          Boolean(kingCtrl.readPtState(gameState).showScorePopup)
+        ) && (
         <GameOverModal
           gameState={gameState}
           variant={gameVariant}

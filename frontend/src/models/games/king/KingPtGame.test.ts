@@ -426,6 +426,47 @@ describe('KingPtGame', () => {
     expect(after.roundBreakdown.lines.some((l) => l.includes('contrato -125'))).toBe(true);
   });
 
+  it('UX-KING-SCORE-LIVE-01: auction positive updates live deltas during tricks', () => {
+    const game = new KingPtGame();
+    enterFestaSetup(game, {
+      festaMode: 'positive',
+      festaPhase: null,
+      phase: 'festa_play',
+      waitingForFestaSetup: false,
+      activeContract: {
+        bidType: 'positive',
+        amount: 5,
+        bidderIndex: 1,
+        beneficiaryIndex: 0
+      },
+      tricksWonThisGame: [0, 0, 0, 0],
+      roundStartScores: [100, 200, 300, 400],
+      playerScores: [100, 200, 300, 400],
+      lastRoundDeltas: [0, 0, 0, 0]
+    });
+    const internal = game as unknown as { state: ReturnType<KingPtGame['getCurrentState']> };
+    const state = internal.state;
+    state.waitingForTrickEnd = true;
+    state.nextTrickLeader = 2;
+    state.currentTrick = [
+      { id: '1', rank: '2', suit: 'clubs' },
+      { id: '2', rank: '3', suit: 'clubs' },
+      { id: '3', rank: '4', suit: 'clubs' },
+      { id: '4', rank: '5', suit: 'clubs' }
+    ];
+    state.players.forEach((p) => {
+      p.hand = [{ id: `${p.id}-x`, rank: 'A', suit: 'spades' }];
+    });
+    game.finishTrick(state);
+    const king = getKingPtState(game.getCurrentState());
+    // settlePositiveAuctionRound(5, [0,0,1,0], beneficiary 0, bidder 1)
+    expect(king.tricksWonThisGame).toEqual([0, 0, 1, 0]);
+    expect(king.lastRoundDeltas).toEqual([125, -125, 25, 0]);
+    expect(king.playerScores).toEqual([225, 75, 325, 400]);
+    // Totals still = roundStart + live deltas (not finalized-only).
+    expect(king.playerScores[0]).toBe(king.roundStartScores[0] + king.lastRoundDeltas[0]);
+  });
+
   it('valid four_by_three applies once with a single history entry', () => {
     const game = new KingPtGame();
     enterFestaSetup(game, {

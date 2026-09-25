@@ -151,10 +151,10 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
-| REL-HOME-01 | Landing / Home | TODO | Redesign density; King / King Sintético selector; Spades modes; reduce stats weight; use empty space | P1 | YES | TODO |
+| REL-HOME-01 | Landing / Home | READY FOR USER VISUAL REVIEW | New Home IA: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped. **Not DONE** — user visual review pending | P1 | YES | READY FOR USER VISUAL REVIEW |
 | REL-PLAYERS-01 | Player names | TODO | Unify Profile vs Setup; global vs per-game; bot name policy | P1 | YES | TODO |
 | REL-DIFF-01 | Difficulty UX | TODO | Legibility; Home vs Setup placement | P1 | YES | TODO |
-| REL-KING-01 | King Sintético / Festa smoke | READY FOR FIX | Full OPPO smoke through Jogo 5/5 **passed** flow/scoring; **not DONE** — open follow-ups: `UX-KING-SCORE-LIVE-01`, `AI-KING-AUCTION-01`, `UX-KING-FINAL-01` (see King smoke findings below). **No rules/scoring redesign** | P1 | NO | READY FOR FIX |
+| REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
 | REL-HIST-01 | History / Stats / Persistence | TODO | Separate modes by `rulesPresetId` (King vs Sintético; Spades presets); avoid continue/stats collision | P1 | YES | TODO |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
@@ -206,12 +206,12 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 - Normal King: **DONE**
 - King Sintético: **PRODUCT MODE DONE** (`king-pt-synthetic`)
-- Full Synthetic smoke (Jogo 1/5 → 5/5) completed on device — **REL-KING-01 not DONE** until follow-up findings close
-- Pending: live Festa HUD deltas · auction AI variety · final result sheet persistence — **not** rules/scoring redesign
+- Full Synthetic smoke (Jogo 1/5 → 5/5) + follow-ups: **REL-KING-01 DONE**
+- Later AI debt (not blocking release close): **AI-KING-FESTA-PLAY-01** — Festa positive card-play strategy needs broader review after restyle/app completion (auction ceilings already fixed)
 
-### King smoke findings (REL-KING-01) — baseline `c58675b`
+### King smoke findings (REL-KING-01) — baseline `c58675b` → closed
 
-Full King Sintético smoke through **Jogo 5/5** recorded. Parent row stays **READY FOR FIX / not DONE**.
+Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validated on OPPO.
 
 #### Confirmed PASS
 
@@ -228,14 +228,23 @@ Full King Sintético smoke through **Jogo 5/5** recorded. Parent row stays **REA
 - Accumulated scores are correct
 - No sixth game starts after `5/5`
 - Match reaches final result
+- Festa live HUD round scores update during play; Total stays at round-start accumulation
+- Auction AI no longer mechanically ratchets to 8
+- Final 5/5 sheet stays until explicit **Concluir**
 
-#### Open follow-ups
+#### Follow-ups (closed)
 
 | ID | Finding | Status | Notes |
 |----|---------|--------|-------|
-| **UX-KING-SCORE-LIVE-01** | During Festa play, HUD current-round scores stay at `0`; round-end sheet + accumulated totals are correct | **READY FOR FIX** | Live HUD / state exposure — not a final scoring bug |
-| **AI-KING-AUCTION-01** | AI very frequently escalates Festa auctions to `8 positivas` (repeated across smoke; not literally every auction) | **READY FOR AUDIT/FIX** | Audit hand eval, bid thresholds, pass logic, Positivas vs Nulos, escalation, difficulty — **do not** fix with arbitrary randomness alone |
-| **UX-KING-FINAL-01** | After Jogo 5/5, final score sheet appears then auto-dismisses to Home after a few seconds | **READY FOR FIX** | Final match result must stay until explicit user action |
+| **UX-KING-SCORE-LIVE-01** | Festa HUD round scores stuck at 0 mid-play | **DONE** | Provisional settle into `lastRoundDeltas`; HUD Total = `roundStartScores` |
+| **AI-KING-AUCTION-01** | AI escalates too often to 8 positivas | **DONE** | Hand-strength ceilings + pass when over |
+| **UX-KING-FINAL-01** | Final sheet auto-dismissed to Home | **DONE** | No King auto-exit; **Concluir** |
+
+#### Later debt
+
+| ID | Notes | Status |
+|----|-------|--------|
+| **AI-KING-FESTA-PLAY-01** | Festa positive card-play strategy quality review (post restyle/app) | OPEN / later |
 
 **Spades modes architecture (v1):** existing `spades-pt-normal` + `spades-pt-nil` via setup; Landing selector UX under `REL-HOME-01`. COSPE/CPOES remain Phase D unless product promotes them.
 

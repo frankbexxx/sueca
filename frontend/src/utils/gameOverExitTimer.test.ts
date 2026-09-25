@@ -1,4 +1,4 @@
-import { createGameOverExitController } from './gameOverExitTimer';
+import { createGameOverExitController, shouldAutoExitAfterGameOver } from './gameOverExitTimer';
 
 describe('createGameOverExitController', () => {
   beforeEach(() => {
@@ -7,6 +7,13 @@ describe('createGameOverExitController', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('UX-KING-FINAL-01: King does not auto-exit; others do', () => {
+    expect(shouldAutoExitAfterGameOver('king')).toBe(false);
+    expect(shouldAutoExitAfterGameOver('sueca')).toBe(true);
+    expect(shouldAutoExitAfterGameOver('hearts')).toBe(true);
+    expect(shouldAutoExitAfterGameOver('spades')).toBe(true);
   });
 
   it('Caso A: waiting — onExit fires once after delay', () => {
@@ -65,7 +72,7 @@ describe('createGameOverExitController', () => {
     ctrl.schedule();
     jest.advanceTimersByTime(1500);
     ctrl.cancel(); // New Game
-    ctrl.schedule(); // should not happen for new game, but proves cancel isolation
+    ctrl.schedule();
     ctrl.cancel();
     jest.advanceTimersByTime(10000);
     expect(onExit).not.toHaveBeenCalled();
