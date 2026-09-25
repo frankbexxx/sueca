@@ -76,8 +76,8 @@
   position: relative;
   z-index: 2100;
   pointer-events: auto;
-  margin-bottom: calc(12vh + 4px);
-  margin-bottom: calc(12dvh + 4px);
+  /* DOM fallback only — Phaser hand is in-canvas. */
+  margin-bottom: 0;
 }
 
 /* Phaser: leave a clear band for the React pass / festa chrome. */
@@ -94,6 +94,11 @@
   margin-bottom: 20px;
 }
 
+/* Hearts pass: panel is position:fixed below the host — margin does not set the visual gap. */
+.game-board--hearts-pass .sueca-phaser-root {
+  margin-bottom: 0;
+}
+
 /* Spades bidding: dock sits tight under the canvas — no large dead band. */
 .game-board--spades-bid .sueca-phaser-root {
   position: relative;
@@ -108,9 +113,14 @@
 }
 
 @media (max-width: 768px) {
+  /*
+   * Hearts pass: grow host so felt sits ~12–20px above the fixed pass sheet.
+   * (Panel is fixed — host margin does not create that gap; height does.)
+   * 14.25rem ≈ HUD + pass sheet + target breathing room.
+   */
   .game-board--hearts-pass .sueca-phaser-root {
-    height: min(62vh, 560px);
-    height: min(62dvh, 560px);
+    height: calc(100dvh - 14.25rem);
+    max-height: calc(100dvh - 14.25rem);
   }
 
   /* UX-FESTA-01B — canvas height tracks Festa sheet density (not one band for all).

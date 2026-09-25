@@ -441,6 +441,11 @@ describe('phaserTableLayout E2', () => {
     });
     expect(bidChrome).toBeGreaterThan(0);
     expect(bidChrome).toBeLessThan(chrome);
+    const heartsDocked = resolveBottomChromePx(720, aspect, {
+      sheetActive: true,
+      dockedBelowHost: true
+    });
+    expect(heartsDocked).toBe(0);
     const festaCompact = resolveBottomChromePx(720, aspect, {
       sheetActive: true,
       festaChrome: 'compact'
@@ -842,8 +847,15 @@ describe('mapTableModelToPhaserView E2', () => {
       isLocalCardPlayable: () => false
     });
     expect(pass.passSelectionEnabled).toBe(true);
-    expect(pass.layout.bottomChromePx).toBeGreaterThan(0);
-    expect(pass.layout.handY).toBeLessThan(play.layout.handY);
+    // Hearts pass docks below the host — no interior bottomChrome dead band.
+    expect(pass.layout.bottomChromePx).toBe(0);
+    expect(
+      resolveBottomChromePx(720, resolveAspectMode(390, 720), {
+        sheetActive: true,
+        dockedBelowHost: true
+      })
+    ).toBe(0);
+    expect(pass.layout.handY).toBe(play.layout.handY);
     expect(pass.localHand.filter((c) => c.selected)).toHaveLength(3);
     expect(pass.localHand.every((c) => c.visualState === 'legal')).toBe(true);
     expect(pass.localHand.every((c) => !c.canDrag)).toBe(true);

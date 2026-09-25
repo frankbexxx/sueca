@@ -109,11 +109,18 @@ export function resolveBottomChromePx(
     sheetActive?: boolean;
     /** Spades bid dock — short reserved band. */
     compactSheet?: boolean;
+    /**
+     * Hearts pass: React sheet sits below the Phaser host (not over the canvas).
+     * Do not reserve legacy interior chrome — it becomes a dead dark band under the felt.
+     */
+    dockedBelowHost?: boolean;
     /** King Festa semantic density (UX-FESTA-01B). */
     festaChrome?: 'compact' | 'standard' | 'tall' | null;
   }
 ): number {
   if (!flags.sheetActive) return 0;
+  // Hearts pass panel docks under the host — no interior bottom chrome.
+  if (flags.dockedBelowHost) return 0;
   // Spades bidding dock is short — reserve less so the hand sits closer to the dock.
   if (flags.compactSheet) {
     if (aspect === 'portrait') return Math.round(Math.min(height * 0.045, 40));
@@ -136,7 +143,7 @@ export function resolveBottomChromePx(
     if (aspect === 'landscape') return Math.round(Math.min(height * 0.34, 130));
     return Math.round(Math.min(height * 0.2, 160));
   }
-  // Hearts pass / legacy sheet without density.
+  // Legacy sheet without density (should be unused once callers set a mode flag).
   if (aspect === 'portrait') return Math.round(Math.min(height * 0.13, 108));
   if (aspect === 'landscape') return Math.round(Math.min(height * 0.36, 120));
   return Math.round(Math.min(height * 0.12, 88));

@@ -73,7 +73,7 @@ Do **not** reopen without new evidence:
 | **UX-KING-01** Remove King Simplificado | Live product presets: `king-pt-normal` + `king-pt-synthetic` only |
 | **UX-KING-02** King / Sintético select contrast | Native `<option>` readable on Firefox / Chromium / WebView |
 | **UX-SEAT-01** Canonical player orientation | Phaser / DOM / KOH share S→W→N→E relative to local player |
-| **UX-CARDS-01** Opponent hand readability | 01C depth occlusion (no interior outlines) — **READY FOR USER VISUAL REVIEW** (not closed) |
+| **UX-CARDS-01** Opponent hand readability | **DONE** — natural overlap + depth occlusion (Spades / Sueca / Hearts approved) |
 
 **AI core (Sueca / Spades / Hearts / King):** DONE for solo finishability — polish only below.
 
