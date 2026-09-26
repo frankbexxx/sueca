@@ -309,15 +309,17 @@ LocalGuest → user chooses Google → backend validates Google
 | Phase | Scope |
 |-------|--------|
 | **AUTH-01A** | Durable `localGuestId` (DATA-01 envelope) · auth-state facade · signed-out/guest · **no network** — **DONE** |
-| **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation — **READY FOR IMPLEMENTATION** |
-| **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout |
+| **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation — **DONE** |
+| **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout — **READY FOR IMPLEMENTATION** |
 | **AUTH-01D** | Android native Google / Credential Manager · nonce · Android OAuth client · **secure** refresh-token storage · reopen/restore |
 | **AUTH-01E** | Mais → Conta UI — Guest: Jogar sem conta · Ligar conta Google; Signed in: identity · Terminar sessão · Apagar conta scaffolding |
 | **AUTH-01F** | Web + OPPO smoke · update-in-place · zero local data loss · offline guest · sign-in/reopen/logout |
 
 **AUTH-01A evidence (DONE):** durable key `sueca-local-guest-v1` · DATA-01 envelope · UUID via `crypto.randomUUID` (+ fallback) · no PII · independent of P1 · `linkedAccountId` helpers without inventing accounts · auth-state facade guest-only · no network · existing DATA stores untouched · focused + full suite/tsc/build PASS · OPPO `adb install -r` smoke PASS (stable guest across reload + force-stop/reopen; stats/history preserved; no Conta UI).
 
-**AUTH-01B** is next. Google Cloud / Postgres / deploy prerequisites apply from AUTH-01B onward (not required for AUTH-01A, now closed).
+**AUTH-01B evidence (DONE):** real local Postgres (`db:up` :5433) · migration `001_auth_accounts.sql` idempotent via `schema_migrations` · tables `accounts` / `external_identities` / `refresh_tokens` with PK + `UNIQUE(provider,provider_subject)` + FKs · Suecão access JWT + opaque refresh hash + rotate/revoke · concurrent first-login → 1 Account · `/me` · soft-delete scaffolding · MP guest JWT/WS isolated · secret/log review PASS · backend auth+MP tests PASS · real-DB smoke PASS.
+
+**AUTH-01C** is next (Web Google UI). Google Cloud OAuth clients required for AUTH-01C+.
 
 #### DONE definition (`REL-AUTH-01`)
 

@@ -6,12 +6,19 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test src/server.test.js"
+    "migrate": "node src/db/migrate.js",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "test": "node --test src/server.test.js src/auth/*.test.js",
+    "test:auth": "node --test src/auth/*.test.js",
+    "test:mp": "node --test src/server.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3",
     "uuid": "^11.0.3",
     "ws": "^8.18.0"
   }
