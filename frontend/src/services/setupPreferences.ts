@@ -12,6 +12,7 @@
  */
 import { AIDifficulty, GameVariant } from '../types/game';
 import { DEFAULT_AI_DIFFICULTY, DEFAULT_PLAYER_NAMES, STORAGE_KEYS } from '../constants/gameConstants';
+import { quarantineCorruptRaw } from './durableLocalStorage';
 
 export const SETUP_PREFS_KEY = 'sueca-setup-prefs-v1';
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -144,6 +145,8 @@ export function loadSetupPrefs(): SetupPrefsV1 {
   if (existing) {
     const parsed = parsePrefs(existing);
     if (parsed) return parsed;
+    // Corrupt / unrecognized v1 blob — quarantine; do not overwrite without a copy.
+    quarantineCorruptRaw(SETUP_PREFS_KEY, existing, 'setup_prefs_unreadable');
   }
   const migrated = emptyPrefs(readLegacyNames(), readLegacyDifficulty());
   persistSetupPrefs(migrated);

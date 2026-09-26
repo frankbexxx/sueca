@@ -6,16 +6,21 @@ import {
   isObsoleteKingPresetId
 } from '../constants/rulesPresets';
 import { getDifficultyForVariant, getPlayerNamesForVariant } from './setupPreferences';
+import {
+  DURABLE_SCHEMA_VERSION,
+  loadDurableJson,
+  writeDurableEnvelope
+} from './durableLocalStorage';
 
-const SESSIONS_KEY = 'sueca-saved-sessions-v1';
-const LEGACY_SESSION_KEY = 'sueca-saved-session';
-const LAST_CONFIG_KEY = 'sueca-last-config';
-const STATS_KEY = 'sueca-local-stats';
+export const SESSIONS_KEY = 'sueca-saved-sessions-v1';
+export const LEGACY_SESSION_KEY = 'sueca-saved-session';
+export const LAST_CONFIG_KEY = 'sueca-last-config';
+export const STATS_KEY = 'sueca-local-stats';
 
 export const MP_LOCAL_STORAGE_KEYS = {
   enabled: 'sueca-multiplayer-enabled',
   sessionId: 'sueca-multiplayer-session-id',
-  legacyJoinMode: 'sueca-multiplayer-join-mode',
+  legacyJoinMode: 'sueca-multiplayer-join-mode'
 } as const;
 
 const ALL_VARIANTS: GameVariant[] = ['sueca', 'hearts', 'spades', 'king'];
@@ -47,6 +52,59 @@ const emptyStats = (): LocalStats => ({
   }
 });
 
+function isVariantKey(value: string): value is GameVariant {
+  return (ALL_VARIANTS as string[]).includes(value);
+}
+
+function normalizeVariantStats(
+  raw: unknown
+): { played: number; wins: number } {
+  if (!raw || typeof raw !== 'object') return { played: 0, wins: 0 };
+  const v = raw as Record<string, unknown>;
+  return {
+    played: typeof v.played === 'number' && Number.isFinite(v.played) ? v.played : 0,
+    wins: typeof v.wins === 'number' && Number.isFinite(v.wins) ? v.wins : 0
+  };
+}
+
+/** Normalize any recognized stats object (legacy or envelope data). */
+export function normalizeLocalStats(parsed: unknown): LocalStats | null {
+  if (!parsed || typeof parsed !== 'object') return null;
+  const p = parsed as Record<string, unknown>;
+  // Reject durable envelopes mistaken as stats data.
+  if ('schemaVersion' in p && 'data' in p) return null;
+  if (typeof p.gamesPlayed !== 'number' && !p.byVariant) return null;
+
+  const base = emptyStats();
+  const byVariant = { ...base.byVariant };
+  if (p.byVariant && typeof p.byVariant === 'object') {
+    for (const key of ALL_VARIANTS) {
+      byVariant[key] = normalizeVariantStats(
+        (p.byVariant as Record<string, unknown>)[key]
+      );
+    }
+  }
+
+  return {
+    gamesPlayed:
+      typeof p.gamesPlayed === 'number' && Number.isFinite(p.gamesPlayed)
+        ? p.gamesPlayed
+        : base.gamesPlayed,
+    wins: typeof p.wins === 'number' && Number.isFinite(p.wins) ? p.wins : base.wins,
+    lastPlayedAt:
+      typeof p.lastPlayedAt === 'number' ? p.lastPlayedAt : undefined,
+    lastPlayedVariant:
+      typeof p.lastPlayedVariant === 'string' && isVariantKey(p.lastPlayedVariant)
+        ? p.lastPlayedVariant
+        : undefined,
+    byVariant
+  };
+}
+
+function isLocalStats(data: unknown): data is LocalStats {
+  return normalizeLocalStats(data) !== null;
+}
+
 function isValidSession(session: SavedGameSession | undefined): session is SavedGameSession {
   return Boolean(session && session.config?.gameVariant && session.state && !session.state.isGameOver);
 }
@@ -55,7 +113,7 @@ function isValidSession(session: SavedGameSession | undefined): session is Saved
  * Mid-game saves for deleted `king-simplified` cannot restore safely (wrong engine state).
  * Reject/clear them — never launch the removed engine. Last-config prefs use resolvePresetId.
  */
-function isObsoleteKingSavedSession(session: SavedGameSession): boolean {
+export function isObsoleteKingSavedSession(session: SavedGameSession): boolean {
   if (session.config.gameVariant !== 'king') return false;
   const configPreset = session.config.rulesPresetId;
   const statePreset = session.state.variantState?.rulesPresetId as string | undefined;
@@ -67,70 +125,108 @@ function isObsoleteKingSavedSession(session: SavedGameSession): boolean {
   return false;
 }
 
-function readSessionsRaw(): SavedGameSessions {
-  migrateLegacySession();
-  const raw = localStorage.getItem(SESSIONS_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw) as SavedGameSessions;
-    if (!parsed || typeof parsed !== 'object') return {};
-    const cleaned: SavedGameSessions = {};
-    for (const variant of ALL_VARIANTS) {
-      const session = parsed[variant];
-      if (isValidSession(session) && !isObsoleteKingSavedSession(session)) {
-        cleaned[variant] = session;
-      }
+function cleanSessionsMap(parsed: unknown): SavedGameSessions {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+  const cleaned: SavedGameSessions = {};
+  for (const variant of ALL_VARIANTS) {
+    const session = (parsed as SavedGameSessions)[variant];
+    if (isValidSession(session) && !isObsoleteKingSavedSession(session)) {
+      cleaned[variant] = session;
     }
-    return cleaned;
-  } catch {
-    return {};
   }
+  return cleaned;
 }
 
-function writeSessions(sessions: SavedGameSessions): void {
-  const hasAny = ALL_VARIANTS.some((variant) => isValidSession(sessions[variant]));
-  if (!hasAny) {
-    localStorage.removeItem(SESSIONS_KEY);
-    return;
-  }
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+/** Legacy: bare map keyed by variant (pre-envelope). */
+function migrateLegacySessionsMap(parsed: unknown): SavedGameSessions | null {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const p = parsed as Record<string, unknown>;
+  if ('schemaVersion' in p && 'data' in p) return null;
+  // Must look like a sessions map (at least one known variant key or empty object).
+  const keys = Object.keys(p);
+  if (keys.length > 0 && !keys.some((k) => isVariantKey(k))) return null;
+  return cleanSessionsMap(parsed);
 }
 
-function migrateLegacySession(): void {
+function isSessionsMap(data: unknown): data is SavedGameSessions {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  return true;
+}
+
+function migrateLegacySessionInto(target: SavedGameSessions): void {
   const legacyRaw = localStorage.getItem(LEGACY_SESSION_KEY);
   if (!legacyRaw) return;
   try {
     const legacy = JSON.parse(legacyRaw) as SavedGameSession;
-    if (isValidSession(legacy)) {
-      const sessions = readSessionsWithoutMigration();
-      sessions[legacy.config.gameVariant] = legacy;
-      writeSessions(sessions);
+    if (isValidSession(legacy) && !isObsoleteKingSavedSession(legacy)) {
+      target[legacy.config.gameVariant] = legacy;
     }
   } catch {
-    /* ignore corrupt legacy */
+    /* ignore corrupt legacy — do not wipe sessions store */
   }
-  localStorage.removeItem(LEGACY_SESSION_KEY);
+  try {
+    localStorage.removeItem(LEGACY_SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
-function readSessionsWithoutMigration(): SavedGameSessions {
-  const raw = localStorage.getItem(SESSIONS_KEY);
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw) as SavedGameSessions;
-  } catch {
-    return {};
+function readSessionsRaw(): SavedGameSessions {
+  const result = loadDurableJson<SavedGameSessions>({
+    key: SESSIONS_KEY,
+    schemaVersion: DURABLE_SCHEMA_VERSION,
+    emptyFallback: {},
+    migrateLegacy: migrateLegacySessionsMap,
+    validateData: isSessionsMap
+  });
+
+  const fromStore = cleanSessionsMap(result.data);
+  const sessions: SavedGameSessions = { ...fromStore };
+  migrateLegacySessionInto(sessions);
+
+  // Persist when legacy single-session was folded in, or obsolete/invalid
+  // entries were filtered out of an otherwise readable store.
+  if (JSON.stringify(sessions) !== JSON.stringify(fromStore)) {
+    writeSessions(sessions);
+  } else if (result.ok && result.migrated) {
+    // Envelope already written by loadDurableJson; ensure cleaned shape.
+    writeSessions(sessions);
   }
+
+  return sessions;
+}
+
+function writeSessions(sessions: SavedGameSessions): void {
+  const cleaned = cleanSessionsMap(sessions);
+  const hasAny = ALL_VARIANTS.some((variant) => isValidSession(cleaned[variant]));
+  if (!hasAny) {
+    try {
+      localStorage.removeItem(SESSIONS_KEY);
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+  writeDurableEnvelope(SESSIONS_KEY, cleaned, DURABLE_SCHEMA_VERSION);
+}
+
+function persistStats(stats: LocalStats): void {
+  writeDurableEnvelope(STATS_KEY, stats, DURABLE_SCHEMA_VERSION);
 }
 
 export function touchLastPlayed(variant: GameVariant): void {
   const stats = loadLocalStats();
   stats.lastPlayedAt = Date.now();
   stats.lastPlayedVariant = variant;
-  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  persistStats(stats);
 }
 
 export function saveLastConfig(config: GameConfig): void {
-  localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify(stripMultiplayerFields(config)));
+  try {
+    localStorage.setItem(LAST_CONFIG_KEY, JSON.stringify(stripMultiplayerFields(config)));
+  } catch {
+    /* quota — last-config is preference-only */
+  }
   touchLastPlayed(config.gameVariant);
 }
 
@@ -142,7 +238,7 @@ export function stripMultiplayerFields(config: GameConfig): GameConfig {
     dealingMethod: config.dealingMethod,
     gameVariant: config.gameVariant,
     rulesPresetId: config.rulesPresetId,
-    multiplayerEnabled: false,
+    multiplayerEnabled: false
   };
 }
 
@@ -168,7 +264,7 @@ export function loadLastConfig(): GameConfig | null {
       dealingMethod: parsed.dealingMethod ?? 'A',
       multiplayerEnabled: false,
       gameVariant: parsed.gameVariant,
-      rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId),
+      rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId)
     });
   } catch {
     return null;
@@ -236,14 +332,14 @@ export function clearGameSession(variant?: GameVariant): void {
 }
 
 export function loadLocalStats(): LocalStats {
-  const raw = localStorage.getItem(STATS_KEY);
-  if (!raw) return emptyStats();
-  try {
-    const parsed = JSON.parse(raw) as LocalStats;
-    return { ...emptyStats(), ...parsed, byVariant: { ...emptyStats().byVariant, ...parsed.byVariant } };
-  } catch {
-    return emptyStats();
-  }
+  const result = loadDurableJson<LocalStats>({
+    key: STATS_KEY,
+    schemaVersion: DURABLE_SCHEMA_VERSION,
+    emptyFallback: emptyStats(),
+    migrateLegacy: (parsed) => normalizeLocalStats(parsed),
+    validateData: isLocalStats
+  });
+  return normalizeLocalStats(result.data) ?? emptyStats();
 }
 
 export function recordGameResult(variant: GameVariant, playerWon: boolean): void {
@@ -256,7 +352,7 @@ export function recordGameResult(variant: GameVariant, playerWon: boolean): void
   }
   stats.lastPlayedAt = Date.now();
   stats.lastPlayedVariant = variant;
-  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  persistStats(stats);
 }
 
 export function getWinRate(stats: LocalStats): number | null {

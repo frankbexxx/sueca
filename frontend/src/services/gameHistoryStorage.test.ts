@@ -117,6 +117,8 @@ describe('gameHistoryStorage', () => {
     expect(finished).toHaveLength(3);
     expect(finished[0].variant).toBe('king');
     expect(finished[2].variant).toBe('hearts');
-    expect(JSON.parse(localStorage.getItem(FINISHED_KEY) || '[]')).toHaveLength(3);
+    const stored = JSON.parse(localStorage.getItem(FINISHED_KEY) || '{}');
+    expect(stored.schemaVersion).toBe(1);
+    expect(stored.data).toHaveLength(3);
   });
 });

@@ -52,7 +52,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 4. **Multiplayer production posture** — `.env.production` has `VITE_MULTIPLAYER_ENABLED=true` while Android is solo-off; Online tab always visible → **DECISION REQUIRED**.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
-7. **Durable local data safety (`REL-DATA-01`)** — career stats / sessions lack safe schema versioning; parse failure can surface as empty user data. Harden before larger history/sync work.
+7. **Durable local data safety (`REL-DATA-01`)** — **DONE** (envelopes · backup · quarantine · OPPO `install -r` PASS). Next: `REL-DATA-02` real match history.
 
 ---
 
@@ -153,14 +153,14 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
-| REL-DATA-01 | Durable local data safety | READY FOR IMPLEMENTATION | Version durable schemas; protect `sueca-local-stats` + saved sessions; backup raw before destructive migrate; parse failures must not silently become empty user data; recovery path; migration tests; document retention; preserve unknown/old data until migration succeeds | P0 | NO | READY FOR IMPLEMENTATION |
-| REL-DATA-02 | Real match history | BLOCKED | Per-match history records (id · game · rulesPresetId · timestamp · result · scores · difficulty · schemaVersion · build); explicit retention; no silent career truncation; migrate from aggregate stats + 3-summary finished list; user history ≠ technical replay; backup/export. **Depends on `REL-DATA-01`** | P0 | YES (retention UX) | BLOCKED |
+| REL-DATA-01 | Durable local data safety | DONE | Versioned envelopes · backup-before-migrate · quarantine/recovery · migration idempotence · King played=160 fixture · corruption + quarantine/backup write-failure protection · full tests/build · OPPO `adb install -r` update PASS (prefs/stats/sessions preserved). Closed on device validation | P0 | NO | DONE |
+| REL-DATA-02 | Real match history | READY FOR IMPLEMENTATION | Per-match history records (id · game · rulesPresetId · timestamp · result · scores · difficulty · schemaVersion · build); explicit retention; no silent career truncation; migrate from aggregate stats + 3-summary finished list; user history ≠ technical replay; backup/export. **Unblocked by `REL-DATA-01` DONE** | P0 | YES (retention UX) | READY FOR IMPLEMENTATION |
 | REL-HOME-01 | Landing / Home | DONE | Production Home approved: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped via hubs. Setup redesign closed. Remaining product UX: `REL-PERS-01` | P1 | YES | DONE |
 | REL-PLAYERS-01 | Player names | DONE | P1 global profile identity · P2–P4 per-game bots (editable, always `IA`) · migration from `sueca-player-names` · Setup + Profile share P1. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-DIFF-01 | Difficulty UX | DONE | Per-game Easy/Medium/Hard segmented control in Setup · migration from `sueca-ai-difficulty` · Home has no difficulty. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
 | REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
-| REL-REPLAY-01 | Diagnostic match logs / replay foundation | BLOCKED | Technical export (debug / AI analysis / regression), separate from user history: mode · difficulty · build · hands · ordered actions · bids/auction/Festa · scores; investigate seeded RNG (`Math.random` today). **Depends on `REL-DATA-01`**; can parallel Auth/Sync later | P1 | NO | BLOCKED |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | READY FOR IMPLEMENTATION | Technical export (debug / AI analysis / regression), separate from user history: mode · difficulty · build · hands · ordered actions · bids/auction/Festa · scores; investigate seeded RNG (`Math.random` today). **Unblocked by `REL-DATA-01` DONE**; can parallel Auth/Sync | P1 | NO | READY FOR IMPLEMENTATION |
 | REL-AUTH-01 | Optional account / Google sign-in | READY FOR DESIGN | Login **not** mandatory; local guest play; optional Google link preserving local progress; Google proves identity → backend validates → Suecão session/JWT (not Google ID token as app session); separate Web/Android Google clients. TVDE handoff for patterns only — no TVDE roles/phone/onboarding copy | P1 | YES | READY FOR DESIGN |
 | REL-SYNC-01 | Cloud backup and sync | BLOCKED | Sync history · stats · profile/P1 · per-game names · difficulty · selected prefs; local-first; safe guest→account adoption; never destructive auto-merge; append-only matches by stable id. **No** music cache / sessionStorage / ads counters. Mid-game sync out of v1 unless promoted. **Depends on `REL-AUTH-01` + `REL-DATA-02`** | P1 | YES | BLOCKED |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
@@ -190,8 +190,8 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |
-| REL-DATA-01 | Durable local data safety (schemas · parse recovery · migration backups) | P0 |
-| REL-DATA-02 | Real match history (depends on DATA-01) | P0 |
+| REL-DATA-01 | Durable local data safety (schemas · parse recovery · migration backups) | P0 · DONE |
+| REL-DATA-02 | Real match history | P0 · READY FOR IMPLEMENTATION |
 
 **Exit criteria:** legal pack shippable; MP posture explicit; Play policies path clear; smoke checklist green for declared v1 scope; durable local data safety in place before cloud/history expansion.
 
@@ -218,9 +218,9 @@ REL-AUTH-01 → REL-SYNC-01
 
 | ID | Summary | Priority | Status |
 |----|---------|----------|--------|
-| REL-DATA-01 | Durable local data safety | P0 | READY FOR IMPLEMENTATION |
-| REL-DATA-02 | Real match history | P0 | BLOCKED by DATA-01 |
-| REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | BLOCKED by DATA-01 |
+| REL-DATA-01 | Durable local data safety | P0 | DONE |
+| REL-DATA-02 | Real match history | P0 | READY FOR IMPLEMENTATION |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | READY FOR IMPLEMENTATION |
 | REL-AUTH-01 | Optional Google / Suecão account | P1 | READY FOR DESIGN |
 | REL-SYNC-01 | Cloud backup and sync | P1 | BLOCKED by AUTH-01 + DATA-02 |
 
@@ -231,13 +231,15 @@ Do **not** overstate the tester “~160 King games lost” report as proven app 
 | Finding | Note |
 |---------|------|
 | Storage surface | Almost all durable user data is WebView **localStorage**; no cloud history backup today |
-| Career counters | `sueca-local-stats` is the main long-term career store (unversioned) |
-| Finished list | `sueca-finished-games-v1` retains only **3** summaries (`MAX_FINISHED`) — never a career archive |
+| Career counters | `sueca-local-stats` is the main long-term career store (**now versioned envelope under `REL-DATA-01`**) |
+| Finished list | `sueca-finished-games-v1` retains only **3** summaries (`MAX_FINISHED`) — never a career archive (**envelope hardened; cap unchanged**) |
 | ~160 matches | App never stored ~160 individual King match records; a high King count is only plausible as **stats** (`byVariant.king.played`) |
-| Parse failure | Corrupt JSON can currently surface as **empty** stats/sessions (catch → defaults) |
+| Parse failure | Corrupt JSON is **quarantined** (raw preserved); runtime uses safe fallback without overwriting unquarantined originals |
 | Update wipe | No evidence of intentional stats wipe on normal `install -r` / same-package update |
 | Clear data | Uninstall / Android “Clear storage” / site-data clear **does** remove local data |
 | Replay | Production shuffle uses `Math.random()`; deterministic replay capability is incomplete |
+
+**`REL-DATA-01` evidence:** durable envelopes · backup registry `sueca-durable-backup-v1` · quarantine ledger `sueca-durable-quarantine-v1` · King `played=160` migration fixture · write-failure safety · focused + full frontend tests · **OPPO `adb install -r` PASS** — **DONE**.
 
 ### Data safety rules (release)
 
@@ -372,7 +374,9 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 | **FUTURE** | 3 |
 | **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); MP + Personalisation + Auth/Sync posture still pending |
 
-Open **implementation-ready / blocked** Data–Sync set: `REL-DATA-01` READY · `REL-DATA-02`/`REL-REPLAY-01`/`REL-SYNC-01` BLOCKED · `REL-AUTH-01` READY FOR DESIGN.
+Open Data–Sync set: `REL-DATA-01` DONE · `REL-DATA-02`/`REL-REPLAY-01` READY FOR IMPLEMENTATION · `REL-SYNC-01` BLOCKED · `REL-AUTH-01` READY FOR DESIGN.
+
+**`REL-DATA-01` closed evidence:** durable envelopes · `sueca-durable-backup-v1` · `sueca-durable-quarantine-v1` · King `played=160` fixture · quarantine/backup write-failure protection · full frontend tests · OPPO Reno13 `adb install -r` (prefs · stats · sessions preserved; Continue resume OK; reopen idempotent).
 
 ---
 
