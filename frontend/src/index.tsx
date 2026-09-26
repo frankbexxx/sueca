@@ -6,6 +6,14 @@ import './styles/sueca-buttons.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CARD_INTELLIGENCE_DEBUG, CARD_INTELLIGENCE_DEV_LAB } from './config/features';
+import { ensureAuthInitialized } from './services/authState';
+
+// AUTH-01A: durable LocalGuest before render — offline, sync, no UI delay.
+try {
+  ensureAuthInitialized();
+} catch {
+  /* app remains playable; auth helpers retry on demand */
+}
 
 if (CARD_INTELLIGENCE_DEBUG) {
   void import('./cardIntelligence/debug/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {

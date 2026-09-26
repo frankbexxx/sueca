@@ -308,14 +308,16 @@ LocalGuest → user chooses Google → backend validates Google
 
 | Phase | Scope |
 |-------|--------|
-| **AUTH-01A** | Durable `localGuestId` (DATA-01 envelope) · auth-state facade · signed-out/guest · **no network** |
-| **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation |
+| **AUTH-01A** | Durable `localGuestId` (DATA-01 envelope) · auth-state facade · signed-out/guest · **no network** — **DONE** |
+| **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation — **READY FOR IMPLEMENTATION** |
 | **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout |
 | **AUTH-01D** | Android native Google / Credential Manager · nonce · Android OAuth client · **secure** refresh-token storage · reopen/restore |
 | **AUTH-01E** | Mais → Conta UI — Guest: Jogar sem conta · Ligar conta Google; Signed in: identity · Terminar sessão · Apagar conta scaffolding |
 | **AUTH-01F** | Web + OPPO smoke · update-in-place · zero local data loss · offline guest · sign-in/reopen/logout |
 
-**AUTH-01A** is not blocked by Google Cloud / Postgres / deploy prerequisites below.
+**AUTH-01A evidence (DONE):** durable key `sueca-local-guest-v1` · DATA-01 envelope · UUID via `crypto.randomUUID` (+ fallback) · no PII · independent of P1 · `linkedAccountId` helpers without inventing accounts · auth-state facade guest-only · no network · existing DATA stores untouched · focused + full suite/tsc/build PASS · OPPO `adb install -r` smoke PASS (stable guest across reload + force-stop/reopen; stats/history preserved; no Conta UI).
+
+**AUTH-01B** is next. Google Cloud / Postgres / deploy prerequisites apply from AUTH-01B onward (not required for AUTH-01A, now closed).
 
 #### DONE definition (`REL-AUTH-01`)
 
@@ -337,7 +339,7 @@ LocalGuest → user chooses Google → backend validates Google
 - Google consent · privacy URL · support contact · Data Safety review  
 - Postgres hosting · auth backend deployment/env  
 
-These **do not** block **AUTH-01A**.
+These block **AUTH-01B+** (AUTH-01A closed without them).
 
 #### Sync boundary (`REL-SYNC-01`)
 
