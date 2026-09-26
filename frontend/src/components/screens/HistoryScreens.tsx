@@ -9,12 +9,12 @@ import {
   SavedGameSession
 } from '../../services/gameSessionStorage';
 import {
-  loadFinishedGames,
   loadPinnedSessions,
   loadPinnedSession,
   pinGameSession,
   unpinGameSession
 } from '../../services/gameHistoryStorage';
+import { loadRecentFinishedFromHistory } from '../../services/matchHistoryStorage';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
 import './HistoryScreen.css';
@@ -34,7 +34,7 @@ export const HistoryHubScreen: React.FC<HistoryHubScreenProps> = ({
   const { t } = useLanguage();
   const continueCount = Object.keys(loadAllGameSessions()).length;
   const pinnedCount = Object.keys(loadPinnedSessions()).length;
-  const finishedCount = loadFinishedGames().length;
+  const finishedCount = loadRecentFinishedFromHistory().length;
 
   return (
     <div className="shell-screen screen-history">
@@ -88,7 +88,7 @@ export const HistoryListScreen: React.FC<HistoryListScreenProps> = ({
   const games = getAvailableGames();
   const continueSessions = loadAllGameSessions();
   const pinnedSessions = loadPinnedSessions();
-  const finishedGames = loadFinishedGames();
+  const finishedGames = loadRecentFinishedFromHistory();
 
   const refresh = () => tick((n) => n + 1);
 

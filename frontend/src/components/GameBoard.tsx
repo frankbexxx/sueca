@@ -75,6 +75,11 @@ import { EarlyRoundEndModal } from './EarlyRoundEndModal';
 import { resolvePresetId } from '../constants/rulesPresets';
 import { recordGameFinished, showInterstitialIfDue } from '../services/adsService';
 import { recordFinishedGame, pinGameSession } from '../services/gameHistoryStorage';
+import {
+  recordMatchHistory,
+  resolveMatchCompletionId,
+  snapshotPlayersFromGame
+} from '../services/matchHistoryStorage';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 import { fetchSessionState, subscribeToActions } from '../services/multiplayerClient';
 import { applyHostAction } from '../multiplayer/applyHostAction';
@@ -145,6 +150,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     createGameOverExitController(() => onExitRef.current(), GAME_OVER_DELAY_MS)
   );
   const gameOverStatsRecordedRef = useRef(false);
+  /** Stable id for one physical match completion (survives duplicate effect runs). */
+  const matchHistoryIdRef = useRef<string | null>(null);
 
   /**
    * Game state snapshot - reactive state for UI updates
@@ -1011,11 +1018,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   useEffect(() => {
     if (!gameState.isGameOver) {
       gameOverStatsRecordedRef.current = false;
+      matchHistoryIdRef.current = null;
       return;
     }
     if (!gameAdapter || !gameState.winner) return;
     if (gameOverStatsRecordedRef.current) return;
     gameOverStatsRecordedRef.current = true;
+
+    const finishedAt = Date.now();
+    const playerSnapshots = snapshotPlayersFromGame(gameState.players);
+    const namesKey = playerSnapshots.map((p) => p.name).join(',');
+    const bindMatchId = (fingerprint: string) => {
+      const id = resolveMatchCompletionId(fingerprint);
+      matchHistoryIdRef.current = id;
+      return id;
+    };
 
     recordGameFinished();
     void showInterstitialIfDue();
@@ -1026,12 +1043,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const winnerIndex = scores.indexOf(Math.min(...scores));
       const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
       const playerWon = winnerIndex === localIdx;
+      const summary = `${winnerName} · ${scores.join('/')}`;
+      const matchId = bindMatchId(
+        `hearts|${rulesPresetId}|${scores.join('/')}|${namesKey}|${winnerIndex}`
+      );
       recordGameResult(gameVariant, playerWon);
+      recordMatchHistory({
+        id: matchId,
+        idempotencyKey: matchId,
+        completedAt: finishedAt,
+        gameVariant,
+        rulesPresetId,
+        difficulty: aiDifficulty,
+        players: playerSnapshots,
+        localPlayerIndex: localIdx,
+        playerWon,
+        resultKind: 'individual',
+        winner: winnerIndex,
+        finalScores: { players: [...scores] },
+        summary
+      });
       recordFinishedGame({
         variant: gameVariant,
-        finishedAt: Date.now(),
+        finishedAt,
         playerWon,
-        summary: `${winnerName} · ${scores.join('/')}`
+        summary
       });
       const audioResult = resolveHumanGameAudioResult({
         variant: 'hearts',
@@ -1047,12 +1083,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const winnerIndex = scores.indexOf(Math.max(...scores));
       const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
       const playerWon = winnerIndex === localIdx;
+      const summary = `${winnerName} · ${scores.join('/')}`;
+      const matchId = bindMatchId(
+        `king|${rulesPresetId}|${scores.join('/')}|${namesKey}|${winnerIndex}`
+      );
       recordGameResult(gameVariant, playerWon);
+      recordMatchHistory({
+        id: matchId,
+        idempotencyKey: matchId,
+        completedAt: finishedAt,
+        gameVariant,
+        rulesPresetId,
+        difficulty: aiDifficulty,
+        players: playerSnapshots,
+        localPlayerIndex: localIdx,
+        playerWon,
+        resultKind: 'individual',
+        winner: winnerIndex,
+        finalScores: { players: [...scores] },
+        summary
+      });
       recordFinishedGame({
         variant: gameVariant,
-        finishedAt: Date.now(),
+        finishedAt,
         playerWon,
-        summary: `${winnerName} · ${scores.join('/')}`
+        summary
       });
       const audioResult = resolveHumanGameAudioResult({
         variant: 'king',
@@ -1066,14 +1121,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     } else {
       const us = gameState.players[localIdx]?.team;
       const playerWon = us === gameState.winner;
-      recordGameResult(gameVariant, playerWon);
       const winnerLabel = gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
       const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
+      const summary = `${winnerLabel} · ${scoreSummary}`;
+      const matchId = bindMatchId(
+        `${gameVariant}|${rulesPresetId}|${scoreSummary}|${namesKey}|${gameState.winner}`
+      );
+      recordGameResult(gameVariant, playerWon);
+      recordMatchHistory({
+        id: matchId,
+        idempotencyKey: matchId,
+        completedAt: finishedAt,
+        gameVariant,
+        rulesPresetId,
+        difficulty: aiDifficulty,
+        players: playerSnapshots,
+        localPlayerIndex: localIdx,
+        playerWon,
+        resultKind: 'team',
+        winner: gameState.winner,
+        finalScores: {
+          team1: gameState.gameScore.team1,
+          team2: gameState.gameScore.team2
+        },
+        summary
+      });
       recordFinishedGame({
         variant: gameVariant,
-        finishedAt: Date.now(),
+        finishedAt,
         playerWon,
-        summary: `${winnerLabel} · ${scoreSummary}`
+        summary
       });
       const audioResult = resolveHumanGameAudioResult({
         variant: gameVariant,
@@ -1101,6 +1178,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameState.gameScore,
     gameState.variantState,
     gameVariant,
+    rulesPresetId,
+    aiDifficulty,
     isMultiplayer,
     multiplayerPlayerIndex,
     playGameLoseSound,
