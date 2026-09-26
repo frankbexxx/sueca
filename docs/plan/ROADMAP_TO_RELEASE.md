@@ -161,7 +161,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
 | REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | DONE | LEVEL 1 reconstructable diagnostic logs · IndexedDB + LS fallback · newest 50 · King auction/Festa/AI decisions · Hearts PASS · Spades BID · JSON export + anonymise · real OPPO export/share smoke · deterministic LEVEL 2 explicitly NOT implemented. Closed on device validation | P1 | NO | DONE |
-| REL-AUTH-01 | Optional account / Google sign-in | READY FOR DESIGN | Login **not** mandatory; local guest play; optional Google link preserving local progress; Google proves identity → backend validates → Suecão session/JWT (not Google ID token as app session); separate Web/Android Google clients. TVDE handoff for patterns only — no TVDE roles/phone/onboarding copy | P1 | YES | READY FOR DESIGN |
+| REL-AUTH-01 | Optional account / Google sign-in | READY FOR IMPLEMENTATION | Architecture closed (see Data/Auth section). Login optional · durable `localGuestId` · Google identity proof only · Suecão Account + session · game data stays local (no upload in AUTH) · sub-phases A–F. TVDE patterns only — no TVDE roles/phone/onboarding | P1 | YES | READY FOR IMPLEMENTATION |
 | REL-SYNC-01 | Cloud backup and sync | BLOCKED | Sync history · stats · profile/P1 · per-game names · difficulty · selected prefs; local-first; safe guest→account adoption; never destructive auto-merge; append-only matches by stable id. **No** music cache / sessionStorage / ads counters. Mid-game sync out of v1 unless promoted. **`REL-DATA-02` DONE** — remains **blocked by `REL-AUTH-01`** | P1 | YES | BLOCKED |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
@@ -201,18 +201,19 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 **Product sequence (current):**
 
-1. `REL-DATA-01` — harden local durable storage  
-2. `REL-DATA-02` — real match history  
-3. `REL-REPLAY-01` and/or `REL-AUTH-01` as appropriate (replay after DATA-01; auth design can start in parallel)  
-4. `REL-SYNC-01` — cloud backup after AUTH + DATA-02  
-5. Personalisation redesign (`REL-PERS-01`) resumes afterwards unless priorities change  
+1. `REL-DATA-01` — harden local durable storage — **DONE**  
+2. `REL-DATA-02` — real match history — **DONE**  
+3. `REL-REPLAY-01` — diagnostic logs — **DONE**  
+4. `REL-AUTH-01` — optional Google / Suecão account — **READY FOR IMPLEMENTATION** (sub-phases A–F)  
+5. `REL-SYNC-01` — cloud backup after AUTH — **BLOCKED by AUTH-01**  
+6. Personalisation redesign (`REL-PERS-01`) resumes afterwards unless priorities change  
 
 **Dependency order:**
 
 ```
 REL-DATA-01
   → REL-DATA-02 → REL-SYNC-01
-  → REL-REPLAY-01 (parallel with Auth/Sync after DATA-01)
+  → REL-REPLAY-01 (DONE; parallel path closed)
 REL-AUTH-01 → REL-SYNC-01
 ```
 
@@ -221,7 +222,7 @@ REL-AUTH-01 → REL-SYNC-01
 | REL-DATA-01 | Durable local data safety | P0 | DONE |
 | REL-DATA-02 | Real match history | P0 | DONE |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | DONE |
-| REL-AUTH-01 | Optional Google / Suecão account | P1 | READY FOR DESIGN |
+| REL-AUTH-01 | Optional Google / Suecão account | P1 | READY FOR IMPLEMENTATION |
 | REL-SYNC-01 | Cloud backup and sync | P1 | BLOCKED by AUTH-01 (`REL-DATA-02` DONE) |
 
 ### Persistence audit findings (2026-09-26)
@@ -254,13 +255,94 @@ Do **not** overstate the tester “~160 King games lost” report as proven app 
 7. Migration tests must cover old/corrupt representative fixtures.  
 8. User history and technical replay logs are **separate** concepts.
 
-### Auth / sync product notes
+### Auth / sync product notes (approved architecture)
 
-- Login is **optional**; guest play always works.  
-- Google link must **preserve** local progress (no destructive duplicate account).  
-- Google proves identity; app issues its own session — do not persist Google ID token as app session.  
+**Status:** `REL-AUTH-01` → **READY FOR IMPLEMENTATION** (not DONE). `REL-SYNC-01` remains **BLOCKED by REL-AUTH-01**.
+
+#### Product decisions
+
+- Login is **optional**; full guest/local play remains available without account.  
+- Durable **`localGuestId`** is independent of P1 display name (`sueca-setup-prefs-v1`).  
+- Google is **identity proof only**; Suecão owns **Account + session**.  
+- Game data (history / stats / prefs) remains **local during AUTH-01** — **no** upload in AUTH.  
+- `REL-SYNC-01` owns upload / merge / conflict resolution.  
+- MP guest JWT (`POST /auth/guest` + WS) remains **separate** from Account auth — do **not** merge semantics.
+
+#### Identity layers (must stay distinct)
+
+```
+LocalGuest → Account → ExternalIdentity(provider + subject) → Game Player Slot
+```
+
+Email is **not** the identity primary key. Unique key: `(provider, provider_subject)`.
+
+#### Backend decision
+
+- AUTH-01 **requires** persistent backend + DB.  
+- Prefer **extending** existing `backend/` with Account auth isolated under `/auth/*`.  
+- Keep current multiplayer auth/WS behaviour separate.  
+- **Postgres** for Account / ExternalIdentity / refresh-session state.
+
+#### Session decision
+
+| Token | Rule |
+|-------|------|
+| Access | Short-lived Suecão JWT; memory-first where practical |
+| Refresh (Android) | Target **platform secure storage** (Android Keystore–backed). **Do not** treat `@capacitor/preferences` as final secure credential storage |
+| Refresh (Web) | Preferred: **httpOnly cookie** when deploy topology supports it. Temporary localStorage refresh only if required — document XSS weakness. Access stays memory-first |
+| Google ID token | Validate for authentication; **never** persist as Suecão application session |
+
+#### Guest → Google rule
+
+```
+LocalGuest → user chooses Google → backend validates Google
+  → find/create Account → link ExternalIdentity → Suecão session
+  → set local linkedAccountId → KEEP all game/history/stats data local
+```
+
+- No automatic data merge/upload in AUTH-01.  
+- Existing Google Account + unrelated rich local data: **preserve local data**, **flag conflict**, defer to `REL-SYNC-01`.  
+- **Never** auto-delete or destructive-merge guest data.
+
+#### Sub-phases
+
+| Phase | Scope |
+|-------|--------|
+| **AUTH-01A** | Durable `localGuestId` (DATA-01 envelope) · auth-state facade · signed-out/guest · **no network** |
+| **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation |
+| **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout |
+| **AUTH-01D** | Android native Google / Credential Manager · nonce · Android OAuth client · **secure** refresh-token storage · reopen/restore |
+| **AUTH-01E** | Mais → Conta UI — Guest: Jogar sem conta · Ligar conta Google; Signed in: identity · Terminar sessão · Apagar conta scaffolding |
+| **AUTH-01F** | Web + OPPO smoke · update-in-place · zero local data loss · offline guest · sign-in/reopen/logout |
+
+**AUTH-01A** is not blocked by Google Cloud / Postgres / deploy prerequisites below.
+
+#### DONE definition (`REL-AUTH-01`)
+
+- Durable LocalGuest identity  
+- Persistent Account backend  
+- Google Web auth + Google Android auth  
+- Suecão-owned session  
+- Secure Android refresh-token storage  
+- Conta UI · logout · account deletion path/scaffolding  
+- Existing local history/stats/preferences **preserved**  
+- **No** cloud history sync yet  
+- Web smoke PASS · OPPO smoke PASS  
+
+#### Prerequisites / blockers (external)
+
+- Dedicated Suecão Google Cloud project (not TVDE)  
+- Web OAuth client · Android OAuth client for `com.suecao.cardgames`  
+- Debug SHA · release/Play signing SHA later  
+- Google consent · privacy URL · support contact · Data Safety review  
+- Postgres hosting · auth backend deployment/env  
+
+These **do not** block **AUTH-01A**.
+
+#### Sync boundary (`REL-SYNC-01`)
+
 - Sync candidates: match history · stats · P1/profile · per-game names · difficulty · selected prefs.  
-- Do **not** sync: music binaries/cache · sessionStorage · ads counters · disposable caches.  
+- Do **not** sync: music binaries/cache · sessionStorage · ads counters · diagnostic logs · disposable caches.  
 - Mid-game resume sync stays out of v1 unless explicitly promoted.  
 - `AI-KING-FESTA-PLAY-01` remains later AI quality work (can consume diagnostic exports from `REL-REPLAY-01`).
 
@@ -374,9 +456,9 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 | **P1** | 12 open+done tracking rows (`REL-HOME/PLAYERS/DIFF/KING` DONE · `REL-HIST` SUPERSEDED · `REL-REPLAY/AUTH/SYNC` new · `REL-OXS/ANDROID/WEB/DOCS` open) |
 | **P2** | 4 (+ `REL-PERS-01` if kept deferred as P2-class) |
 | **FUTURE** | 3 |
-| **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); MP + Personalisation + Auth/Sync posture still pending |
+| **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); Auth architecture closed (READY FOR IMPLEMENTATION); MP + Personalisation + Sync still pending |
 
-Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01` DONE · `REL-SYNC-01` BLOCKED by AUTH-01 · `REL-AUTH-01` READY FOR DESIGN.
+Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01` DONE · `REL-AUTH-01` READY FOR IMPLEMENTATION (A–F) · `REL-SYNC-01` BLOCKED by AUTH-01.
 
 **`REL-REPLAY-01` evidence:** LEVEL 1 reconstruct (not LEVEL 2) · IndexedDB + LS fallback · retention 50 · King auction/Festa/AI · Hearts PASS · Spades BID · Mais → Exportar dados de diagnóstico · Android share sheet · anonymise · OPPO `adb install -r` export smoke.
 
