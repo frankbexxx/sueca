@@ -80,6 +80,14 @@ import {
   resolveMatchCompletionId,
   snapshotPlayersFromGame
 } from '../services/matchHistoryStorage';
+import {
+  startDiagnosticMatch,
+  recordDealCompleted,
+  recordAuctionAction,
+  recordFestaDecision,
+  completeDiagnosticMatch,
+  abandonDiagnosticMatch
+} from '../diagnostics/session';
 import { useMultiplayer } from '../hooks/useMultiplayer';
 import { fetchSessionState, subscribeToActions } from '../services/multiplayerClient';
 import { applyHostAction } from '../multiplayer/applyHostAction';
@@ -535,6 +543,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           setWaitingForHost(isJoiner);
         }
         setGameStarted(true);
+
+        try {
+          abandonDiagnosticMatch();
+          startDiagnosticMatch({
+            gameVariant: config.gameVariant,
+            rulesPresetId: config.rulesPresetId,
+            difficulty: config.aiDifficulty,
+            players: snapshotPlayersFromGame(initialState.players),
+            localPlayerIndex: config.multiplayerEnabled
+              ? (config.localPlayerIndex ?? 0)
+              : 0
+          });
+          const handsReadyDiag =
+            initialState.players.length > 0 &&
+            initialState.players.every((p) => (p.hand?.length ?? 0) > 0);
+          if (handsReadyDiag) {
+            recordDealCompleted({
+              players: initialState.players,
+              trumpSuit: initialState.trumpSuit,
+              trumpCard: initialState.trumpCard,
+              dealerIndex: initialState.dealerIndex,
+              roundIndex: initialState.round
+            });
+          }
+        } catch {
+          /* diagnostic must never block start */
+        }
 
         // Spades/Hearts/King often initialize with hands already dealt — cue here so
         // we do not miss the first paint edge in the shared effect.
@@ -1069,6 +1104,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         playerWon,
         summary
       });
+      void completeDiagnosticMatch({
+        playerWon,
+        winner: winnerIndex,
+        finalScores: { players: [...scores] },
+        summary
+      });
       const audioResult = resolveHumanGameAudioResult({
         variant: 'hearts',
         winner: gameState.winner,
@@ -1107,6 +1148,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         variant: gameVariant,
         finishedAt,
         playerWon,
+        summary
+      });
+      void completeDiagnosticMatch({
+        playerWon,
+        winner: winnerIndex,
+        finalScores: { players: [...scores] },
         summary
       });
       const audioResult = resolveHumanGameAudioResult({
@@ -1150,6 +1197,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         variant: gameVariant,
         finishedAt,
         playerWon,
+        summary
+      });
+      void completeDiagnosticMatch({
+        playerWon,
+        winner: gameState.winner,
+        finalScores: {
+          team1: gameState.gameScore.team1,
+          team2: gameState.gameScore.team2
+        },
         summary
       });
       const audioResult = resolveHumanGameAudioResult({
@@ -1197,6 +1253,38 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
 
+  const dispatchFestaLogged = useCallback(
+    (action: { type: string; playerIndex?: number; [key: string]: unknown }) => {
+      if (!kingCtrl) return;
+      try {
+        const type = action.type;
+        if (
+          type === 'auction_bid' ||
+          type === 'auction_pass' ||
+          type === 'auction_continue'
+        ) {
+          recordAuctionAction({
+            seat: typeof action.playerIndex === 'number' ? action.playerIndex : localPlayerIndex,
+            action: type,
+            bidType: typeof action.bidType === 'string' ? action.bidType : undefined,
+            bidAmount: typeof action.amount === 'number' ? action.amount : undefined,
+            details: { ...action }
+          });
+        } else {
+          recordFestaDecision({
+            action: type,
+            seat: typeof action.playerIndex === 'number' ? action.playerIndex : undefined,
+            details: { ...action }
+          });
+        }
+      } catch {
+        /* ignore */
+      }
+      kingCtrl.dispatchFestaAction(action as Parameters<typeof kingCtrl.dispatchFestaAction>[0]);
+    },
+    [kingCtrl, localPlayerIndex]
+  );
+
   const kingPtFestaKey =
     kingCtrl && kingCtrl.isPtNormal(rulesPresetId)
       ? kingCtrl.buildFestaSyncKey(kingCtrl.readPtState(gameState))
@@ -1212,8 +1300,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       festaPhase === 'auction' ? 0 : FESTA_AI_STEP_DELAY_MS;
 
     const timer = window.setTimeout(() => {
+      const before = kingCtrl.readPtState(gameState);
       const acted = kingCtrl.tickFestaAi();
       if (acted) {
+        try {
+          const after = kingCtrl.readPtState(gameAdapter.getCurrentState());
+          recordFestaDecision({
+            action: 'festa_ai_tick',
+            details: {
+              phaseBefore: before.festaPhase,
+              phaseAfter: after.festaPhase,
+              standingBid: after.standingBid,
+              bestBid: after.bestBid
+            }
+          });
+        } catch {
+          /* ignore */
+        }
         setGameState(gameAdapter.getCurrentState());
       }
     }, delayMs);
@@ -1748,14 +1851,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 gameState={gameState}
                 localPlayerIndex={localPlayerIndex}
                 onAuctionPass={() => {
-                  kingCtrl.dispatchFestaAction({
+                  dispatchFestaLogged({
                     type: 'auction_pass',
                     playerIndex: localPlayerIndex
                   });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAuctionBid={(bidType, amount) => {
-                  kingCtrl.dispatchFestaAction({
+                  dispatchFestaLogged({
                     type: 'auction_bid',
                     playerIndex: localPlayerIndex,
                     bidType,
@@ -1764,19 +1867,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAuctionContinue={() => {
-                  kingCtrl.dispatchFestaAction({ type: 'auction_continue' });
+                  dispatchFestaLogged({ type: 'auction_continue' });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onAcceptContract={() => {
-                  kingCtrl.dispatchFestaAction({ type: 'accept_contract' });
+                  dispatchFestaLogged({ type: 'accept_contract' });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRejectContract={() => {
-                  kingCtrl.dispatchFestaAction({ type: 'reject_contract' });
+                  dispatchFestaLogged({ type: 'reject_contract' });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRequestHigherBid={(bidType, amount) => {
-                  kingCtrl.dispatchFestaAction({
+                  dispatchFestaLogged({
                     type: 'request_higher',
                     bidType,
                     amount
@@ -1784,7 +1887,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRespondHigherBid={(raise, bidType, amount) => {
-                  kingCtrl.dispatchFestaAction({
+                  dispatchFestaLogged({
                     type: 'respond_higher',
                     raise,
                     bidType,
@@ -1793,12 +1896,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onEightOrNulls={() => {
-                  kingCtrl.dispatchFestaAction({ type: 'declare_eight_or_nulls' });
+                  dispatchFestaLogged({ type: 'declare_eight_or_nulls' });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onRespondEight={(offerEight) => {
                   if (king.eightOrNullsTarget !== null) {
-                    kingCtrl.dispatchFestaAction({
+                    dispatchFestaLogged({
                       type: 'respond_eight',
                       targetIndex: king.eightOrNullsTarget,
                       offerEight
@@ -1807,11 +1910,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   }
                 }}
                 onFallback={(choice) => {
-                  kingCtrl.dispatchFestaAction({ type: 'fallback', choice });
+                  dispatchFestaLogged({ type: 'fallback', choice });
                   setGameState(gameAdapter!.getCurrentState());
                 }}
                 onSetup={(trump, noTrump, firstPlayer) => {
-                  kingCtrl.dispatchFestaAction({
+                  dispatchFestaLogged({
                     type: 'setup',
                     trump,
                     noTrump,

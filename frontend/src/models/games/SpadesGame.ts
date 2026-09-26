@@ -11,6 +11,7 @@ import {
   SpadesBidType
 } from './spades/spadesRules';
 import { SpadesVariantFlow } from './variantFlowApi';
+import { recordSpadesBid } from '../../diagnostics/session';
 
 const WINNING_SCORE = 500;
 const BAG_PENALTY_EVERY = 10;
@@ -157,6 +158,25 @@ export class SpadesGame extends BaseGameAdapter {
     }
 
     this.state.variantState = { ...this.state.variantState, spades };
+
+    try {
+      recordSpadesBid({
+        seat: playerIndex,
+        bid: normalizedBid,
+        bidType: normalizedType,
+        nil: normalizedType === 'nil' || normalizedType === 'blindNil',
+        blindNil: normalizedType === 'blindNil',
+        nilEnabled: spades.nilEnabled,
+        currentBidderAfter: spades.currentBidderIndex,
+        bidsComplete,
+        team1Bid: bidsComplete ? spades.team1Bid : null,
+        team2Bid: bidsComplete ? spades.team2Bid : null,
+        roundIndex: this.state.round
+      });
+    } catch {
+      /* diagnostic must never block bidding */
+    }
+
     return true;
   }
 

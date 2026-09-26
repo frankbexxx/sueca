@@ -160,7 +160,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-DIFF-01 | Difficulty UX | DONE | Per-game Easy/Medium/Hard segmented control in Setup · migration from `sueca-ai-difficulty` · Home has no difficulty. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
 | REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
-| REL-REPLAY-01 | Diagnostic match logs / replay foundation | READY FOR IMPLEMENTATION | Technical export (debug / AI analysis / regression), separate from user history: mode · difficulty · build · hands · ordered actions · bids/auction/Festa · scores; investigate seeded RNG (`Math.random` today). **Unblocked by `REL-DATA-01` DONE**; can parallel Auth/Sync | P1 | NO | READY FOR IMPLEMENTATION |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | DONE | LEVEL 1 reconstructable diagnostic logs · IndexedDB + LS fallback · newest 50 · King auction/Festa/AI decisions · Hearts PASS · Spades BID · JSON export + anonymise · real OPPO export/share smoke · deterministic LEVEL 2 explicitly NOT implemented. Closed on device validation | P1 | NO | DONE |
 | REL-AUTH-01 | Optional account / Google sign-in | READY FOR DESIGN | Login **not** mandatory; local guest play; optional Google link preserving local progress; Google proves identity → backend validates → Suecão session/JWT (not Google ID token as app session); separate Web/Android Google clients. TVDE handoff for patterns only — no TVDE roles/phone/onboarding copy | P1 | YES | READY FOR DESIGN |
 | REL-SYNC-01 | Cloud backup and sync | BLOCKED | Sync history · stats · profile/P1 · per-game names · difficulty · selected prefs; local-first; safe guest→account adoption; never destructive auto-merge; append-only matches by stable id. **No** music cache / sessionStorage / ads counters. Mid-game sync out of v1 unless promoted. **`REL-DATA-02` DONE** — remains **blocked by `REL-AUTH-01`** | P1 | YES | BLOCKED |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
@@ -220,7 +220,7 @@ REL-AUTH-01 → REL-SYNC-01
 |----|---------|----------|--------|
 | REL-DATA-01 | Durable local data safety | P0 | DONE |
 | REL-DATA-02 | Real match history | P0 | DONE |
-| REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | READY FOR IMPLEMENTATION |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | DONE |
 | REL-AUTH-01 | Optional Google / Suecão account | P1 | READY FOR DESIGN |
 | REL-SYNC-01 | Cloud backup and sync | P1 | BLOCKED by AUTH-01 (`REL-DATA-02` DONE) |
 
@@ -376,7 +376,9 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 | **FUTURE** | 3 |
 | **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); MP + Personalisation + Auth/Sync posture still pending |
 
-Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02` DONE · `REL-REPLAY-01` READY FOR IMPLEMENTATION · `REL-SYNC-01` BLOCKED by AUTH-01 · `REL-AUTH-01` READY FOR DESIGN.
+Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01` DONE · `REL-SYNC-01` BLOCKED by AUTH-01 · `REL-AUTH-01` READY FOR DESIGN.
+
+**`REL-REPLAY-01` evidence:** LEVEL 1 reconstruct (not LEVEL 2) · IndexedDB + LS fallback · retention 50 · King auction/Festa/AI · Hearts PASS · Spades BID · Mais → Exportar dados de diagnóstico · Android share sheet · anonymise · OPPO `adb install -r` export smoke.
 
 **`REL-DATA-01` closed evidence:** durable envelopes · `sueca-durable-backup-v1` · `sueca-durable-quarantine-v1` · King `played=160` fixture · quarantine/backup write-failure protection · full frontend tests · OPPO Reno13 `adb install -r` (prefs · stats · sessions preserved; Continue resume OK; reopen idempotent).
 

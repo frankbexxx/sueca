@@ -100,6 +100,7 @@ interface MoreHubScreenProps {
   onOpenRules: () => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
+  onOpenDiagnostic: () => void;
 }
 
 export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
@@ -108,7 +109,8 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
   onOpenOnline,
   onOpenRules,
   onOpenSettings,
-  onOpenProfile
+  onOpenProfile,
+  onOpenDiagnostic
 }) => {
   return (
     <div className="shell-screen screen-more-hub">
@@ -143,6 +145,12 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
             label: 'Perfil',
             hint: 'Nome, créditos e sair',
             onClick: onOpenProfile
+          },
+          {
+            id: 'diagnostic',
+            label: 'Exportar dados de diagnóstico',
+            hint: 'Logs técnicos para análise (não é o histórico)',
+            onClick: onOpenDiagnostic
           }
         ]}
       />

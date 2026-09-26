@@ -12,6 +12,7 @@ import {
 } from '../../utils/earlyRoundEnd';
 import { settleHeartsRoundDeltas } from './heartsRoundDisplay';
 import { HeartsVariantFlow } from './variantFlowApi';
+import { recordHeartsPass } from '../../diagnostics/session';
 
 const TARGET_SCORE = 100;
 
@@ -132,6 +133,19 @@ export class HeartsGame extends BaseGameAdapter {
       hearts.humanPassIndices = [];
       this.state.waitingForRoundStart = false;
       this.state.variantState = { ...this.state.variantState, hearts };
+      try {
+        for (let from = 0; from < 4; from++) {
+          recordHeartsPass({
+            passDirection: 'hold',
+            sourceSeat: from,
+            destinationSeat: from,
+            cards: [],
+            roundIndex: this.state.round
+          });
+        }
+      } catch {
+        /* ignore */
+      }
       this.setOpeningLeader();
       return true;
     }
@@ -158,6 +172,21 @@ export class HeartsGame extends BaseGameAdapter {
     for (let from = 0; from < 4; from++) {
       const to = this.passTarget(from, hearts.passDirection);
       this.state.players[to].hand.push(...passes[from]);
+    }
+
+    try {
+      for (let from = 0; from < 4; from++) {
+        const to = this.passTarget(from, hearts.passDirection);
+        recordHeartsPass({
+          passDirection: hearts.passDirection,
+          sourceSeat: from,
+          destinationSeat: to,
+          cards: passes[from],
+          roundIndex: this.state.round
+        });
+      }
+    } catch {
+      /* diagnostic must never block pass */
     }
 
     hearts.waitingForPass = false;

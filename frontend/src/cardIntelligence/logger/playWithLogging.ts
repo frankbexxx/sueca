@@ -1,7 +1,13 @@
 import { playFirstLegal } from '../../ai/core/FallbackMoveSelector';
 import { CARD_INTELLIGENCE_LOGGER_ENABLED } from '../../config/features';
+import {
+  recordAiDecision,
+  recordCardPlayed,
+  recordTrickCompleted,
+  getActiveDiagnosticLog
+} from '../../diagnostics/session';
 import { GameAdapter } from '../../models/games/GameAdapter';
-import { Card, GameState } from '../../types/game';
+import { Card, GameState, GameVariant } from '../../types/game';
 import { cloneGameStateSnapshot } from '../shared/clone';
 import { logCardDecision, logTrickEndDecision } from './CardIntelligenceLogger';
 import { extractLegalMoves } from './extractLegalMoves';
@@ -20,6 +26,75 @@ function createPlayLogSnapshot(
   return { legalMoves: extractLegalMoves(adapter, stateBefore, playerIndex) };
 }
 
+function resolveTrickIndex(state: GameState): number {
+  return Math.floor((state.playedCards?.length ?? 0) / 4);
+}
+
+function recordDiagnosticPlay(
+  stateBeforeSnapshot: GameState,
+  stateAfter: GameState,
+  playerIndex: number,
+  cardIndex: number,
+  legalMoves: Card[],
+  options: PlayLogOptions
+): void {
+  if (!getActiveDiagnosticLog()) return;
+  try {
+    const hand = stateBeforeSnapshot.players[playerIndex]?.hand ?? [];
+    const chosen = hand[cardIndex];
+    if (!chosen) return;
+    const playerType = stateBeforeSnapshot.players[playerIndex]?.type;
+    const trickIndex = resolveTrickIndex(stateBeforeSnapshot);
+    const isAi = playerType === 'ai';
+    const active = getActiveDiagnosticLog();
+    const gameVariant = (stateBeforeSnapshot.variant ??
+      active?.gameVariant ??
+      'sueca') as GameVariant;
+
+    if (isAi) {
+      recordAiDecision({
+        seat: playerIndex,
+        difficulty: stateBeforeSnapshot.aiDifficulty ?? null,
+        legalCards: legalMoves,
+        chosenCard: chosen,
+        trickIndex,
+        gameVariant,
+        rulesPresetId:
+          options.gameConfigMode ??
+          (stateBeforeSnapshot.variantState?.rulesPresetId as string | undefined) ??
+          active?.rulesPresetId,
+        context: {
+          trumpSuit: stateBeforeSnapshot.trumpSuit,
+          trickLenBefore: stateBeforeSnapshot.currentTrick.length,
+          round: stateBeforeSnapshot.round
+        }
+      });
+    }
+
+    recordCardPlayed({
+      seat: playerIndex,
+      card: chosen,
+      trickIndex,
+      playerType,
+      legalCards: legalMoves,
+      linkAiDecision: isAi
+    });
+
+    if (
+      stateAfter.currentTrick.length === 0 &&
+      stateBeforeSnapshot.currentTrick.length + 1 === 4
+    ) {
+      recordTrickCompleted({
+        trickIndex,
+        winnerSeat: stateAfter.lastTrickWinner,
+        cards: [...stateBeforeSnapshot.currentTrick, chosen]
+      });
+    }
+  } catch {
+    /* never break gameplay */
+  }
+}
+
 function logSuccessfulPlay(
   adapter: GameAdapter,
   stateBeforeSnapshot: GameState,
@@ -28,23 +103,37 @@ function logSuccessfulPlay(
   legalMoves: Card[],
   options: PlayLogOptions
 ): void {
-  void logCardDecision({
-    gameAdapter: adapter,
-    stateBefore: stateBeforeSnapshot,
-    playerIndex,
-    cardIndex,
-    gameConfigMode: options.gameConfigMode ?? null,
-    isMultiplayer: options.isMultiplayer ?? false,
-    legalMoves,
-  }).catch(recordLogFailure);
+  if (CARD_INTELLIGENCE_LOGGER_ENABLED) {
+    void logCardDecision({
+      gameAdapter: adapter,
+      stateBefore: stateBeforeSnapshot,
+      playerIndex,
+      cardIndex,
+      gameConfigMode: options.gameConfigMode ?? null,
+      isMultiplayer: options.isMultiplayer ?? false,
+      legalMoves,
+    }).catch(recordLogFailure);
+  }
 
   const stateAfter = adapter.getCurrentState();
-  void logTrickEndDecision({
-    gameAdapter: adapter,
-    stateBefore: stateBeforeSnapshot,
+
+  if (CARD_INTELLIGENCE_LOGGER_ENABLED) {
+    void logTrickEndDecision({
+      gameAdapter: adapter,
+      stateBefore: stateBeforeSnapshot,
+      stateAfter,
+      isMultiplayer: options.isMultiplayer ?? false,
+    }).catch(recordLogFailure);
+  }
+
+  recordDiagnosticPlay(
+    stateBeforeSnapshot,
     stateAfter,
-    isMultiplayer: options.isMultiplayer ?? false,
-  }).catch(recordLogFailure);
+    playerIndex,
+    cardIndex,
+    legalMoves,
+    options
+  );
 }
 
 /**
@@ -60,10 +149,12 @@ export function playCardAndLogDecision(
   cardIndex: number,
   options: PlayLogOptions = {}
 ): boolean {
-  const stateSnapshot = CARD_INTELLIGENCE_LOGGER_ENABLED
+  const needsSnapshot =
+    CARD_INTELLIGENCE_LOGGER_ENABLED || !!getActiveDiagnosticLog();
+  const stateSnapshot = needsSnapshot
     ? cloneGameStateSnapshot(stateBefore)
     : null;
-  const legalMoves = CARD_INTELLIGENCE_LOGGER_ENABLED
+  const legalMoves = needsSnapshot
     ? createPlayLogSnapshot(adapter, stateBefore, playerIndex).legalMoves
     : null;
 
@@ -86,10 +177,12 @@ export function playFirstLegalAndLogDecision(
   playerIndex: number,
   options: PlayLogOptions = {}
 ): number {
-  const stateSnapshot = CARD_INTELLIGENCE_LOGGER_ENABLED
+  const needsSnapshot =
+    CARD_INTELLIGENCE_LOGGER_ENABLED || !!getActiveDiagnosticLog();
+  const stateSnapshot = needsSnapshot
     ? cloneGameStateSnapshot(stateBefore)
     : null;
-  const legalMoves = CARD_INTELLIGENCE_LOGGER_ENABLED
+  const legalMoves = needsSnapshot
     ? createPlayLogSnapshot(adapter, stateBefore, playerIndex).legalMoves
     : null;
 

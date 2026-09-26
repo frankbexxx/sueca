@@ -44,6 +44,7 @@ export type PersonalizeScreenId =
 export type MoreScreenId =
   | 'hub'
   | 'online'
+  | 'diagnostic'
   | { type: 'rules'; screen: RulesScreenId }
   | { type: 'settings'; screen: SettingsScreenId }
   | { type: 'profile'; screen: ProfileScreenId };

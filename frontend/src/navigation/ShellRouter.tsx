@@ -29,6 +29,7 @@ import {
   MoreHubScreen,
   PersonalizeHubScreen
 } from '../components/screens/PrimaryHubScreens';
+import { DiagnosticExportScreen } from '../components/screens/DiagnosticExportScreen';
 import type { RulesPresetId } from '../constants/rulesPresets';
 
 export interface ShellRouterProps {
@@ -170,8 +171,12 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
           onOpenProfile={() =>
             onPush({ tab: 'more', screen: { type: 'profile', screen: 'hub' } })
           }
+          onOpenDiagnostic={() => onPush({ tab: 'more', screen: 'diagnostic' })}
         />
       );
+    }
+    if (route.screen === 'diagnostic') {
+      return <DiagnosticExportScreen showBack={canGoBack} onBack={onBack} />;
     }
     if (route.screen === 'online') {
       return (
