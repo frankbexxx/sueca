@@ -151,9 +151,9 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
-| REL-HOME-01 | Landing / Home | DONE | Production Home approved: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped via hubs. Setup redesign → READY FOR USER VISUAL REVIEW. Still open: REL-PLAYERS-01 · REL-DIFF-01 · REL-PERS-01 | P1 | YES | DONE |
-| REL-PLAYERS-01 | Player names | READY FOR USER TEST | P1 global profile identity · P2–P4 per-game bots (editable, always `IA`) · migration from `sueca-player-names` · Setup + Profile share P1. **Not DONE** — user test pending | P1 | YES | READY FOR USER TEST |
-| REL-DIFF-01 | Difficulty UX | READY FOR USER TEST | Per-game Easy/Medium/Hard segmented control in Setup · migration from `sueca-ai-difficulty` · Home has no difficulty. **Not DONE** — user test pending | P1 | YES | READY FOR USER TEST |
+| REL-HOME-01 | Landing / Home | DONE | Production Home approved: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped via hubs. Setup redesign closed. Remaining product UX: `REL-PERS-01` | P1 | YES | DONE |
+| REL-PLAYERS-01 | Player names | DONE | P1 global profile identity · P2–P4 per-game bots (editable, always `IA`) · migration from `sueca-player-names` · Setup + Profile share P1. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
+| REL-DIFF-01 | Difficulty UX | DONE | Per-game Easy/Medium/Hard segmented control in Setup · migration from `sueca-ai-difficulty` · Home has no difficulty. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
 | REL-HIST-01 | History / Stats / Persistence | TODO | Separate modes by `rulesPresetId` (King vs Sintético; Spades presets); avoid continue/stats collision | P1 | YES | TODO |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
@@ -250,9 +250,9 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 
 **Home notes (`REL-HOME-01`):** **DONE** — compact Suecão header · active-session Continue · 2×2 game grid · King contextual mode sheet · quiet Última actividade line · 4-tab bottom nav.
 
-**Setup redesign:** **READY FOR USER VISUAL REVIEW** — Compact Confirm + “Preparar a mesa”; King mode read-only after Home; Sueca distribution copy; Spades Normal/Nil in Setup; sticky Começar. Personalizar hub label: `Mão e Cartas`.
+**Setup redesign:** **DONE** — Compact Confirm + “Preparar a mesa”; King mode read-only after Home; Sueca distribution copy; Spades Normal/Nil in Setup; sticky Começar; bottom nav hidden in Setup. Personalizar hub label: `Mão e Cartas`. Evidence: focused Setup/nav tests + OPPO Reno13 real-device smoke PASS (`010882f`).
 
-**REL-PLAYERS-01 / REL-DIFF-01:** **READY FOR USER TEST** — P1 global · P2–P4 per game · per-game difficulty · migrations from legacy keys. Remaining product UX: Personalisation redesign (`REL-PERS-01`).
+**REL-PLAYERS-01 / REL-DIFF-01:** **DONE** — P1 global · TU/IA badges · P2–P4 per game · per-game difficulty · legacy migrations. Evidence: automated prefs/Setup tests + OPPO Reno13 Setup smoke PASS (P1 global, per-game bots/difficulty, start config). Remaining product UX: Personalisation redesign (`REL-PERS-01`).
 
 ---
 
