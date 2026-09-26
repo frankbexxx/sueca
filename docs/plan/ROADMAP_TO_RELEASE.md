@@ -40,7 +40,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 | **P2** | Desirable polish; may defer |
 | **FUTURE** | Explicit post-release / extra scope |
 
-**Item workflow states:** `TODO` · `IN PROGRESS` · `BLOCKED` · `READY FOR TEST` · `DONE` · `DEFERRED`
+**Item workflow states:** `TODO` · `READY FOR DESIGN` · `READY FOR IMPLEMENTATION` · `IN PROGRESS` · `BLOCKED` · `READY FOR TEST` · `DONE` · `DEFERRED` · `SUPERSEDED`
 
 ---
 
@@ -52,6 +52,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 4. **Multiplayer production posture** — `.env.production` has `VITE_MULTIPLAYER_ENABLED=true` while Android is solo-off; Online tab always visible → **DECISION REQUIRED**.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
+7. **Durable local data safety (`REL-DATA-01`)** — career stats / sessions lack safe schema versioning; parse failure can surface as empty user data. Harden before larger history/sync work.
 
 ---
 
@@ -90,14 +91,15 @@ Do **not** reopen without new evidence:
 
 - [ ] **v1 Solo vs Multiplayer** (see Multiplayer block)
 - [ ] **Personalisation UX / Stage 10** enters v1? (architecture DONE; UX incomplete — **PRODUCT DECISION PENDING**)
-- [ ] Difficulty on Home vs Setup only
-- [ ] Player names global vs per-setup; bot naming policy
-- [ ] Stats / continue / history keyed by `rulesPresetId` (King vs Sintético, Spades modes)
-- [ ] King / King Sintético selector UX on Landing/Home
+- [x] Difficulty on Home vs Setup only → **closed:** Setup only (`REL-DIFF-01` DONE)
+- [x] Player names global vs per-setup; bot naming → **closed:** P1 global · P2–P4 per game (`REL-PLAYERS-01` DONE)
+- [ ] Stats / continue / history keyed by `rulesPresetId` (King vs Sintético, Spades modes) → tracked under `REL-DATA-02`
+- [x] King / King Sintético selector UX on Landing/Home → **closed:** Home King mode sheet (`REL-HOME-01` DONE)
 - [ ] Spades variant selector UX (nil vs future COSPE/CPOES naming)
 - [ ] COSPE / CPOES in v1 or Future
 - [ ] OXS branding mandatory before first release
 - [ ] Android portrait lock
+- [ ] Optional Google account / cloud backup posture (`REL-AUTH-01` / `REL-SYNC-01`) — guest play remains mandatory; login never required
 
 ---
 
@@ -151,11 +153,16 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
+| REL-DATA-01 | Durable local data safety | READY FOR IMPLEMENTATION | Version durable schemas; protect `sueca-local-stats` + saved sessions; backup raw before destructive migrate; parse failures must not silently become empty user data; recovery path; migration tests; document retention; preserve unknown/old data until migration succeeds | P0 | NO | READY FOR IMPLEMENTATION |
+| REL-DATA-02 | Real match history | BLOCKED | Per-match history records (id · game · rulesPresetId · timestamp · result · scores · difficulty · schemaVersion · build); explicit retention; no silent career truncation; migrate from aggregate stats + 3-summary finished list; user history ≠ technical replay; backup/export. **Depends on `REL-DATA-01`** | P0 | YES (retention UX) | BLOCKED |
 | REL-HOME-01 | Landing / Home | DONE | Production Home approved: Continue strip · Jogar 2×2 Material Classic · King mode sheet · 4-tab nav (Home · Actividade · Personalizar · Mais); legacy remapped via hubs. Setup redesign closed. Remaining product UX: `REL-PERS-01` | P1 | YES | DONE |
 | REL-PLAYERS-01 | Player names | DONE | P1 global profile identity · P2–P4 per-game bots (editable, always `IA`) · migration from `sueca-player-names` · Setup + Profile share P1. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-DIFF-01 | Difficulty UX | DONE | Per-game Easy/Medium/Hard segmented control in Setup · migration from `sueca-ai-difficulty` · Home has no difficulty. Closed: focused tests + OPPO Reno13 Setup smoke PASS (`010882f`) | P1 | YES | DONE |
 | REL-KING-01 | King Sintético / Festa smoke | DONE | Full Synthetic smoke + follow-ups closed on OPPO: live Festa HUD · auction ceilings · final sheet until Concluir. Later debt: `AI-KING-FESTA-PLAY-01` (Festa positive card-play strategy review) | P1 | NO | DONE |
-| REL-HIST-01 | History / Stats / Persistence | TODO | Separate modes by `rulesPresetId` (King vs Sintético; Spades presets); avoid continue/stats collision | P1 | YES | TODO |
+| REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | BLOCKED | Technical export (debug / AI analysis / regression), separate from user history: mode · difficulty · build · hands · ordered actions · bids/auction/Festa · scores; investigate seeded RNG (`Math.random` today). **Depends on `REL-DATA-01`**; can parallel Auth/Sync later | P1 | NO | BLOCKED |
+| REL-AUTH-01 | Optional account / Google sign-in | READY FOR DESIGN | Login **not** mandatory; local guest play; optional Google link preserving local progress; Google proves identity → backend validates → Suecão session/JWT (not Google ID token as app session); separate Web/Android Google clients. TVDE handoff for patterns only — no TVDE roles/phone/onboarding copy | P1 | YES | READY FOR DESIGN |
+| REL-SYNC-01 | Cloud backup and sync | BLOCKED | Sync history · stats · profile/P1 · per-game names · difficulty · selected prefs; local-first; safe guest→account adoption; never destructive auto-merge; append-only matches by stable id. **No** music cache / sessionStorage / ads counters. Mid-game sync out of v1 unless promoted. **Depends on `REL-AUTH-01` + `REL-DATA-02`** | P1 | YES | BLOCKED |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
@@ -183,8 +190,75 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |
+| REL-DATA-01 | Durable local data safety (schemas · parse recovery · migration backups) | P0 |
+| REL-DATA-02 | Real match history (depends on DATA-01) | P0 |
 
-**Exit criteria:** legal pack shippable; MP posture explicit; Play policies path clear; smoke checklist green for declared v1 scope.
+**Exit criteria:** legal pack shippable; MP posture explicit; Play policies path clear; smoke checklist green for declared v1 scope; durable local data safety in place before cloud/history expansion.
+
+---
+
+## DATA / AUTH / SYNC / REPLAY
+
+**Product sequence (current):**
+
+1. `REL-DATA-01` — harden local durable storage  
+2. `REL-DATA-02` — real match history  
+3. `REL-REPLAY-01` and/or `REL-AUTH-01` as appropriate (replay after DATA-01; auth design can start in parallel)  
+4. `REL-SYNC-01` — cloud backup after AUTH + DATA-02  
+5. Personalisation redesign (`REL-PERS-01`) resumes afterwards unless priorities change  
+
+**Dependency order:**
+
+```
+REL-DATA-01
+  → REL-DATA-02 → REL-SYNC-01
+  → REL-REPLAY-01 (parallel with Auth/Sync after DATA-01)
+REL-AUTH-01 → REL-SYNC-01
+```
+
+| ID | Summary | Priority | Status |
+|----|---------|----------|--------|
+| REL-DATA-01 | Durable local data safety | P0 | READY FOR IMPLEMENTATION |
+| REL-DATA-02 | Real match history | P0 | BLOCKED by DATA-01 |
+| REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | BLOCKED by DATA-01 |
+| REL-AUTH-01 | Optional Google / Suecão account | P1 | READY FOR DESIGN |
+| REL-SYNC-01 | Cloud backup and sync | P1 | BLOCKED by AUTH-01 + DATA-02 |
+
+### Persistence audit findings (2026-09-26)
+
+Do **not** overstate the tester “~160 King games lost” report as proven app wipe-on-update.
+
+| Finding | Note |
+|---------|------|
+| Storage surface | Almost all durable user data is WebView **localStorage**; no cloud history backup today |
+| Career counters | `sueca-local-stats` is the main long-term career store (unversioned) |
+| Finished list | `sueca-finished-games-v1` retains only **3** summaries (`MAX_FINISHED`) — never a career archive |
+| ~160 matches | App never stored ~160 individual King match records; a high King count is only plausible as **stats** (`byVariant.king.played`) |
+| Parse failure | Corrupt JSON can currently surface as **empty** stats/sessions (catch → defaults) |
+| Update wipe | No evidence of intentional stats wipe on normal `install -r` / same-package update |
+| Clear data | Uninstall / Android “Clear storage” / site-data clear **does** remove local data |
+| Replay | Production shuffle uses `Math.random()`; deterministic replay capability is incomplete |
+
+### Data safety rules (release)
+
+1. Never delete old/unknown durable data before successful migration.  
+2. Backup raw payload before destructive migration.  
+3. Durable schemas must have explicit `schemaVersion`.  
+4. Parse failure must preserve recoverable raw data.  
+5. Career history must have explicit retention policy.  
+6. No silent reset-to-zero for recoverable user data.  
+7. Migration tests must cover old/corrupt representative fixtures.  
+8. User history and technical replay logs are **separate** concepts.
+
+### Auth / sync product notes
+
+- Login is **optional**; guest play always works.  
+- Google link must **preserve** local progress (no destructive duplicate account).  
+- Google proves identity; app issues its own session — do not persist Google ID token as app session.  
+- Sync candidates: match history · stats · P1/profile · per-game names · difficulty · selected prefs.  
+- Do **not** sync: music binaries/cache · sessionStorage · ads counters · disposable caches.  
+- Mid-game resume sync stays out of v1 unless explicitly promoted.  
+- `AI-KING-FESTA-PLAY-01` remains later AI quality work (can consume diagnostic exports from `REL-REPLAY-01`).
 
 ---
 
@@ -192,11 +266,11 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-HOME-01 | Landing redesign + mode selectors | P1 |
-| REL-PLAYERS-01 | Names UX | P1 |
-| REL-DIFF-01 | Difficulty UX | P1 |
-| REL-KING-01 | King Sintético / Festa device smoke | P1 |
-| REL-HIST-01 | History / stats / persistence by preset | P1 |
+| REL-HOME-01 | Landing redesign + mode selectors | P1 · DONE |
+| REL-PLAYERS-01 | Names UX | P1 · DONE |
+| REL-DIFF-01 | Difficulty UX | P1 · DONE |
+| REL-KING-01 | King Sintético / Festa device smoke | P1 · DONE |
+| REL-HIST-01 | History / stats / persistence by preset | SUPERSEDED → `REL-DATA-02` |
 | REL-OXS-01 | OXS branding | P1 |
 | REL-ANDROID-01 | Android release posture | P1 |
 | REL-WEB-01 | Web/Vercel production polish | P1 |
@@ -252,7 +326,7 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 
 **Setup redesign:** **DONE** — Compact Confirm + “Preparar a mesa”; King mode read-only after Home; Sueca distribution copy; Spades Normal/Nil in Setup; sticky Começar; bottom nav hidden in Setup. Personalizar hub label: `Mão e Cartas`. Evidence: focused Setup/nav tests + OPPO Reno13 real-device smoke PASS (`010882f`).
 
-**REL-PLAYERS-01 / REL-DIFF-01:** **DONE** — P1 global · TU/IA badges · P2–P4 per game · per-game difficulty · legacy migrations. Evidence: automated prefs/Setup tests + OPPO Reno13 Setup smoke PASS (P1 global, per-game bots/difficulty, start config). Remaining product UX: Personalisation redesign (`REL-PERS-01`).
+**REL-PLAYERS-01 / REL-DIFF-01:** **DONE** — P1 global · TU/IA badges · P2–P4 per game · per-game difficulty · legacy migrations. Evidence: automated prefs/Setup tests + OPPO Reno13 Setup smoke PASS (P1 global, per-game bots/difficulty, start config). Remaining product UX: Personalisation redesign (`REL-PERS-01`) after Data/Auth/Sync sequence unless priorities change.
 
 ---
 
@@ -260,7 +334,7 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-PERS-01 | Personalisation UX / Stage 10 | DECISION → P2 or P1 |
+| REL-PERS-01 | Personalisation UX / Stage 10 | DECISION → P2 or P1 (resume after Data/Auth/Sync unless promoted earlier) |
 | REL-DECK-01 | Deck / card back curation | P2 |
 | REL-AUDIO-01 | Music/SFX web + CDN | P2 |
 | REL-AI-01 | AI polish (not core) | P2 |
@@ -292,11 +366,13 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 
 | Priority | Count |
 |----------|-------|
-| **P0** | 4 (`REL-LEGAL-01`, `REL-MP-01`, `REL-PLAY-01`, `REL-QA-01`) |
-| **P1** | 9 |
+| **P0** | 6 (`REL-LEGAL-01`, `REL-MP-01`, `REL-PLAY-01`, `REL-QA-01`, `REL-DATA-01`, `REL-DATA-02`) |
+| **P1** | 12 open+done tracking rows (`REL-HOME/PLAYERS/DIFF/KING` DONE · `REL-HIST` SUPERSEDED · `REL-REPLAY/AUTH/SYNC` new · `REL-OXS/ANDROID/WEB/DOCS` open) |
 | **P2** | 4 (+ `REL-PERS-01` if kept deferred as P2-class) |
 | **FUTURE** | 3 |
-| **Product decisions** | 10 open checkboxes (+ MP + Personalisation pendings) |
+| **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); MP + Personalisation + Auth/Sync posture still pending |
+
+Open **implementation-ready / blocked** Data–Sync set: `REL-DATA-01` READY · `REL-DATA-02`/`REL-REPLAY-01`/`REL-SYNC-01` BLOCKED · `REL-AUTH-01` READY FOR DESIGN.
 
 ---
 
@@ -317,4 +393,4 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 
 ---
 
-*Consolidated 2026-09-24 from PDF wall checklist + repo audit. Update this file as items move; keep IDs stable.*
+*Consolidated 2026-09-24 from PDF wall checklist + repo audit. Data/Auth/Sync/Replay items added 2026-09-26 from persistence audit. Update this file as items move; keep IDs stable.*
