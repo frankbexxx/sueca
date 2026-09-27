@@ -1,12 +1,20 @@
 /**
  * SYNC-01A/01C — clear all local sync-related metadata (not gameplay DATA).
  * Removes keys only — does not rewrite empty envelopes.
+ *
+ * Imports storage keys from the leaf module so authState can call this without
+ * forming an init cycle through syncablePrefsRevision → syncEnqueue → authState.
  */
-import { LEGACY_STATS_SEED_KEY, clearLegacyStatsSeed } from './legacyStatsSeed';
-import { SYNC_META_KEY } from './syncMetadata';
-import { SYNCABLE_PREFS_META_KEY } from './syncablePrefsRevision';
-import { SYNC_OUTBOX_KEY, clearAllOutbox } from './syncOutbox';
-import { FIRST_LINK_SESSION_KEY, clearFirstLinkSession } from './syncFirstLinkSession';
+import {
+  SYNC_META_KEY,
+  SYNCABLE_PREFS_META_KEY,
+  LEGACY_STATS_SEED_KEY,
+  SYNC_OUTBOX_KEY,
+  FIRST_LINK_SESSION_KEY,
+  ACCOUNT_SNAPSHOT_PREFIX
+} from './syncStorageKeys';
+import { clearAllOutbox } from './syncOutbox';
+import { clearFirstLinkSession } from './syncFirstLinkSession';
 
 export function clearAllSyncLocalState(): void {
   try {
@@ -20,32 +28,28 @@ export function clearAllSyncLocalState(): void {
   }
   clearFirstLinkSession();
   try {
-    // Account Class A snapshots
     const toRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i += 1) {
       const k = localStorage.key(i);
-      if (k && k.startsWith('sueca-sync-account-snapshot-v1:')) toRemove.push(k);
+      if (k && k.startsWith(ACCOUNT_SNAPSHOT_PREFIX)) toRemove.push(k);
     }
     for (const k of toRemove) localStorage.removeItem(k);
   } catch {
     /* ignore */
   }
-  try {
-    localStorage.removeItem(SYNC_META_KEY);
-  } catch {
-    /* ignore */
+  for (const key of [
+    SYNC_META_KEY,
+    SYNCABLE_PREFS_META_KEY,
+    FIRST_LINK_SESSION_KEY,
+    LEGACY_STATS_SEED_KEY
+  ]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
   }
-  try {
-    localStorage.removeItem(SYNCABLE_PREFS_META_KEY);
-  } catch {
-    /* ignore */
-  }
-  try {
-    localStorage.removeItem(FIRST_LINK_SESSION_KEY);
-  } catch {
-    /* ignore */
-  }
-  clearLegacyStatsSeed();
+  // Lazy: syncEngine may pull auth; only needed for in-memory engine cleanup.
   try {
     void import('./syncEngine').then((m) => m.onLocalWipeSyncCleanup());
   } catch {

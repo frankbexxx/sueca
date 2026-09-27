@@ -1,6 +1,8 @@
 /**
- * Sync Android with LAN/dev mixed-content allowed (OPPO local smoke only).
- * Release/default sync: npm run cap:sync:android (allowMixedContent false).
+ * OPTIONAL multi-device LAN sync (not default).
+ * Prefer: npm run android:dev:prepare (adb reverse → http://127.0.0.1:8787).
+ *
+ * LAN path still needs DHCP IP + inbound firewall + cleartext/mixed-content.
  */
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -8,6 +10,10 @@ import { fileURLToPath } from 'node:url';
 
 const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.env.SUECAO_ANDROID_ALLOW_MIXED_CONTENT = 'true';
+
+console.warn(
+  '[cap-sync-android-lan] Prefer android:dev:prepare (adb reverse). LAN is for multi-device only.'
+);
 
 function run(cmd, args) {
   const r = spawnSync(cmd, args, {

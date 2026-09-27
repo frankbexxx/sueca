@@ -24,9 +24,10 @@ import { buildSyncablePrefsDocument, type SyncablePrefsDocumentV1 } from './sync
 import { applyRemoteSyncablePrefs } from './syncApply';
 import { runWithoutSyncEnqueue } from './syncablePrefsRevision';
 import { SETUP_PREFS_KEY } from './setupPreferences';
+import { ACCOUNT_SNAPSHOT_PREFIX } from './syncStorageKeys';
 
 export function accountSnapshotKey(accountId: string): string {
-  return `sueca-sync-account-snapshot-v1:${accountId.trim()}`;
+  return `${ACCOUNT_SNAPSHOT_PREFIX}${accountId.trim()}`;
 }
 
 export type AccountClassASnapshotV1 = {

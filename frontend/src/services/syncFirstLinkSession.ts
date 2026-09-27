@@ -11,8 +11,9 @@ import {
   writeDurableEnvelope
 } from './durableLocalStorage';
 import type { FirstLinkCase } from './syncFirstLinkResolver';
+import { FIRST_LINK_SESSION_KEY } from './syncStorageKeys';
 
-export const FIRST_LINK_SESSION_KEY = 'sueca-sync-first-link-v1';
+export { FIRST_LINK_SESSION_KEY };
 
 export type FirstLinkPhase =
   | 'PENDING'

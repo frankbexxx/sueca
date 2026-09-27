@@ -117,6 +117,8 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
     else if (reason === 'network') setErrorKey('network');
     else if (reason === 'backend') setErrorKey('backend');
     else if (reason === 'storage') setErrorKey('storage');
+    else if (reason === 'pending_delete') setErrorKey('pending_delete');
+    else if (reason === 'invalid_credential') setErrorKey('invalid_credential');
     else setErrorKey('error');
     if (remountGis && webPlatform) {
       invalidateGoogleSignInSession();
@@ -365,11 +367,15 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
               ? copy.errorBackend
               : errorKey === 'storage'
                 ? copy.errorStorage
-                : errorKey === 'deleteFailed'
-                  ? copy.errorDelete
-                  : errorKey
-                    ? copy.errorGeneric
-                    : null;
+                : errorKey === 'pending_delete'
+                  ? copy.errorPendingDelete
+                  : errorKey === 'invalid_credential'
+                    ? copy.errorInvalidCredential
+                    : errorKey === 'deleteFailed'
+                      ? copy.errorDelete
+                      : errorKey
+                        ? copy.errorGeneric
+                        : null;
 
   const statusText =
     auth.status === 'authenticated'

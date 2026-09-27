@@ -9,8 +9,9 @@ import {
   writeDurableEnvelope
 } from './durableLocalStorage';
 import { tryEnqueuePrefsAfterLocalMutation } from './syncEnqueue';
+import { SYNCABLE_PREFS_META_KEY } from './syncStorageKeys';
 
-export const SYNCABLE_PREFS_META_KEY = 'sueca-syncable-prefs-v1';
+export { SYNCABLE_PREFS_META_KEY };
 
 export type SyncablePrefsMetaV1 = {
   schemaVersion: 1;

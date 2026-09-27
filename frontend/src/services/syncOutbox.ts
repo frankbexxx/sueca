@@ -8,8 +8,9 @@ import {
   writeDurableEnvelope
 } from './durableLocalStorage';
 import { writeSyncMetadata, getSyncMetadata } from './syncMetadata';
+import { SYNC_OUTBOX_KEY } from './syncStorageKeys';
 
-export const SYNC_OUTBOX_KEY = 'sueca-sync-outbox-v1';
+export { SYNC_OUTBOX_KEY };
 
 export type SyncOutboxDomain = 'history' | 'prefs' | 'legacy_seed';
 export type SyncOutboxOperation =

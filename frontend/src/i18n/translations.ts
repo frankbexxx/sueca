@@ -217,6 +217,8 @@ export interface Translations {
     errorNetwork: string;
     errorBackend: string;
     errorStorage: string;
+    errorPendingDelete: string;
+    errorInvalidCredential: string;
     errorDelete: string;
     errorGeneric: string;
     /** SYNC-01D Conta sync */
@@ -546,6 +548,8 @@ export const translations: Record<Language, Translations> = {
       errorNetwork: 'Sem ligação. Tenta outra vez.',
       errorBackend: 'Não foi possível validar a conta. Tenta outra vez.',
       errorStorage: 'Não foi possível guardar a sessão com segurança.',
+      errorPendingDelete: 'Esta conta está marcada para apagar. Não é possível voltar a ligar.',
+      errorInvalidCredential: 'Credencial Google inválida ou rejeitada. Tenta outra vez.',
       errorDelete: 'Não foi possível apagar a conta. Tenta outra vez.',
       errorGeneric: 'Não foi possível iniciar sessão com Google.',
       syncSectionTitle: 'Sincronização',
@@ -978,6 +982,8 @@ export const translations: Record<Language, Translations> = {
       errorNetwork: 'No connection. Try again.',
       errorBackend: 'Could not validate the account. Try again.',
       errorStorage: 'Could not securely store the session.',
+      errorPendingDelete: 'This account is marked for deletion. Sign-in is blocked.',
+      errorInvalidCredential: 'Google credential invalid or rejected. Try again.',
       errorDelete: 'Could not delete the account. Try again.',
       errorGeneric: 'Could not sign in with Google.',
       syncSectionTitle: 'Sync',

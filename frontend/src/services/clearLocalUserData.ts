@@ -19,11 +19,14 @@ import {
   DURABLE_QUARANTINE_KEY
 } from './durableLocalStorage';
 import { MUSIC_SETTINGS_KEY, LEGACY_MUSIC_MODE_KEY } from '../audio/musicSettings';
-import { SYNC_META_KEY } from './syncMetadata';
-import { SYNCABLE_PREFS_META_KEY } from './syncablePrefsRevision';
-import { LEGACY_STATS_SEED_KEY } from './legacyStatsSeed';
-import { SYNC_OUTBOX_KEY } from './syncOutbox';
-import { FIRST_LINK_SESSION_KEY } from './syncFirstLinkSession';
+import {
+  SYNC_META_KEY,
+  SYNCABLE_PREFS_META_KEY,
+  LEGACY_STATS_SEED_KEY,
+  SYNC_OUTBOX_KEY,
+  FIRST_LINK_SESSION_KEY,
+  ACCOUNT_SNAPSHOT_PREFIX
+} from './syncStorageKeys';
 
 /** Custom themes storage key (customThemeStorage). */
 export const CUSTOM_THEMES_KEY = 'suecao-custom-themes';
@@ -111,7 +114,7 @@ export function clearLocalUserData(): ClearLocalUserDataResult {
     const toRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i += 1) {
       const k = localStorage.key(i);
-      if (k && k.startsWith('sueca-sync-account-snapshot-v1:')) toRemove.push(k);
+      if (k && k.startsWith(ACCOUNT_SNAPSHOT_PREFIX)) toRemove.push(k);
     }
     for (const k of toRemove) {
       if (removeKey(k)) removedKeys.push(k);

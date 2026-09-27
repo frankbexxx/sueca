@@ -61,6 +61,27 @@ async function parseJson(res: Response): Promise<unknown> {
   }
 }
 
+function errorCodeFromBody(data: unknown, fallback: string): string {
+  if (!data || typeof data !== 'object') return fallback;
+  const d = data as Record<string, unknown>;
+  if (typeof d.code === 'string' && d.code.trim()) return d.code.trim();
+  if (typeof d.error === 'string') {
+    const e = d.error.trim().toLowerCase();
+    if (e === 'pending_delete' || e === 'account_pending_delete') return 'pending_delete';
+    if (e === 'unauthorized') return fallback;
+  }
+  return fallback;
+}
+
+function authApiDebug(event: string, detail?: Record<string, unknown>): void {
+  if (typeof console === 'undefined' || typeof console.info !== 'function') return;
+  try {
+    console.info(`[auth-api] ${event}`, detail ?? {});
+  } catch {
+    // ignore
+  }
+}
+
 function asSession(data: unknown): AuthSessionResponse {
   if (!data || typeof data !== 'object') {
     throw new AccountAuthApiError('Malformed session', 500, 'malformed');
@@ -93,9 +114,17 @@ export async function signInWithGoogleIdToken(
   fetchFn: FetchFn = fetch
 ): Promise<AuthSessionResponse> {
   const base = baseUrlOrThrow();
+  const url = `${base}/auth/google/id-token`;
+  authApiDebug('post_start', { path: '/auth/google/id-token', baseHost: (() => {
+    try {
+      return new URL(base).host;
+    } catch {
+      return 'invalid';
+    }
+  })() });
   let res: Response;
   try {
-    res = await fetchFn(`${base}/auth/google/id-token`, {
+    res = await fetchFn(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -104,19 +133,26 @@ export async function signInWithGoogleIdToken(
         localGuestId: getLocalGuestId()
       })
     });
-  } catch {
+  } catch (err) {
+    authApiDebug('post_transport_fail', {
+      path: '/auth/google/id-token',
+      name: err instanceof Error ? err.name : 'unknown'
+    });
     throw new AccountAuthApiError('Network error', 0, 'network');
   }
   const data = await parseJson(res);
   if (!res.ok) {
-    const code =
+    const fallback =
       res.status === 401
         ? 'unauthorized'
         : res.status === 503
           ? 'misconfigured'
           : 'request_failed';
+    const code = errorCodeFromBody(data, fallback);
+    authApiDebug('post_http_fail', { path: '/auth/google/id-token', status: res.status, code });
     throw new AccountAuthApiError('Sign-in failed', res.status, code);
   }
+  authApiDebug('post_ok', { path: '/auth/google/id-token', status: res.status });
   return asSession(data);
 }
 

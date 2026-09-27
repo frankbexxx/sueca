@@ -1,6 +1,6 @@
 # Suecão Sync v1 Contract (REL-SYNC-01 / SYNC-01A)
 
-**Status:** SYNC-01A–**01D DONE** · **SYNC-01E READY FOR IMPLEMENTATION**.
+**Status:** SYNC-01A–**01D DONE** · **SYNC-01E MINIMALLY VALIDATED** (OPPO Case A + force-stop/reopen) · multi-device / full A–E device matrix **NOT** completed · Auth/Sync work parked.
 **First-link UX:** **SYNC-01D DONE** (Conta setup · cases A–E · account snapshots).
 **Auth baseline:** REL-AUTH-01 DONE (`AUTH_RELEASE_BASELINE_01F.md`).
 **Prefs storage strategy:** **A — adapter layer** — existing keys remain UX source of truth; `sueca-syncable-prefs-v1` stores only `localPrefsRevision` / `localUpdatedAt`; `buildSyncablePrefsDocument()` assembles the future sync payload. Chosen as smallest safe approach (no destructive migration).
@@ -327,6 +327,17 @@ Local-only → PUT · Cloud-only → adopt · Same → continue · **Different �
 - Network fail: soft error · preserve choice · gameplay available · retry
 - Account pending_delete / 401 during first-link: abort · clear first-link session + sync binding · preserve local gameplay data (auth Guest path)
 
-## SYNC-01E (next)
+## SYNC-01E (status)
 
-Multi-device conflict polish · OPPO validation of Conta first-link · any remaining outbox UX.
+**Minimally validated (OPPO Reno13):**
+- Case A (cloud empty → bind + upload prefs/seed; history empty on this device run) · Conta “Sincronizado”
+- Force-stop / reopen: session restore · sync binding persists · no duplicate history · local DATA preserved
+- Optional idempotent `Sincronizar agora` on same state
+
+**Not completed (deferred):**
+- Multi-device conflict polish
+- Full real-device Cases B / C / E matrix
+- Account-switch device scenarios beyond unit coverage
+- Remaining outbox UX polish
+
+**Dev transport note:** 1-device Android Account API smoke uses `adb reverse` → `http://127.0.0.1:8787` (`npm run android:dev:prepare`). LAN IP is for multi-device/staging only.

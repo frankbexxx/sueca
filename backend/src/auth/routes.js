@@ -71,7 +71,10 @@ export function createAccountAuthRouter(config) {
       if (!account || account.status !== 'active') {
         // AUTH-01E Policy B: reject while pending_delete (do not reactivate / do not create duplicate).
         audit('google_login_denied', { reason: 'inactive_account' });
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({
+          error: 'Unauthorized',
+          code: account?.status === 'pending_delete' ? 'pending_delete' : 'inactive_account'
+        });
       }
 
       const accessToken = signAccessToken(account, {
@@ -96,9 +99,9 @@ export function createAccountAuthRouter(config) {
       const code = err?.code || 'invalid_token';
       audit('google_login_fail', { reason: code });
       if (code === 'misconfigured') {
-        return res.status(503).json({ error: 'Account auth unavailable' });
+        return res.status(503).json({ error: 'Account auth unavailable', code: 'misconfigured' });
       }
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized', code });
     }
   });
 

@@ -13,8 +13,9 @@ import {
 } from './durableLocalStorage';
 import { loadLocalStats, type LocalStats } from './gameSessionStorage';
 import { loadMatchHistory, type MatchHistoryRecord } from './matchHistoryStorage';
+import { LEGACY_STATS_SEED_KEY } from './syncStorageKeys';
 
-export const LEGACY_STATS_SEED_KEY = 'sueca-legacy-stats-seed-v1';
+export { LEGACY_STATS_SEED_KEY };
 
 const VARIANTS: GameVariant[] = ['sueca', 'hearts', 'spades', 'king'];
 

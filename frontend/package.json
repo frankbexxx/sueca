@@ -28,7 +28,9 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "dependency-cruiser": "^18.4.0",
     "jsdom": "^26.0.0",
+    "playwright": "^1.63.0",
     "vite": "^6.2.0",
     "vitest": "^3.0.8"
   },
@@ -45,6 +47,10 @@
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build:android && npx cap sync android && node scripts/apply-android-debug-cleartext.mjs",
     "cap:sync:android:lan": "node scripts/cap-sync-android-lan.mjs",
+    "android:dev:prepare": "node scripts/android-dev-prepare.mjs",
+    "android:dev:prepare:install": "node scripts/android-dev-prepare.mjs --install",
+    "check:deps": "depcruise --config dependency-cruiser.cjs src",
+    "test:smoke:boot": "node scripts/smoke-boot.mjs",
     "release:android": "npm run cap:sync:android && echo 'Next: npm run cap:open:android → Build → Generate Signed Bundle (docs/ANDROID_SIGNING.md)'",
     "cap:open:android": "npx cap open android",
     "generate:cards": "node ../tools/generate-card-placeholders.mjs"

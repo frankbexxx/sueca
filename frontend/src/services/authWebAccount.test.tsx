@@ -123,7 +123,7 @@ describe('AUTH-01C web account auth', () => {
     if (result.ok) expect(result.state.status).toBe('authenticated');
   });
 
-  it('failure: backend 401 / network; guest remains usable', async () => {
+  it('failure: 401 invalid_credential / network; guest remains usable', async () => {
     process.env.VITE_GOOGLE_WEB_CLIENT_ID = 'web-client';
     process.env.VITE_AUTH_API_BASE_URL = 'http://auth.test';
     const guestId = getLocalGuestId();
@@ -134,7 +134,7 @@ describe('AUTH-01C web account auth', () => {
       nonce: createGoogleSignInNonce()
     });
     expect(backend.ok).toBe(false);
-    if (!backend.ok) expect(backend.reason).toBe('backend');
+    if (!backend.ok) expect(backend.reason).toBe('invalid_credential');
     expect(getAuthState().status).toBe('guest');
     expect(getLocalGuestId()).toBe(guestId);
 

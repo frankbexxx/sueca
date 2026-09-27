@@ -45,6 +45,7 @@ import {
 import { isAndroidAuthPlatform } from '../platform/authPlatform';
 import { requestAndroidGoogleIdToken } from './googleAndroidSignIn';
 import { clearLocalUserDataAsync } from './clearLocalUserData';
+import { clearAllSyncLocalState } from './clearSyncLocalState';
 
 export type AuthAccountInfo = {
   id: string;
@@ -63,20 +64,34 @@ export type AuthState =
 
 export type AuthStateListener = (state: AuthState) => void;
 
+export type SignInFailureReason =
+  | 'cancelled'
+  | 'unavailable'
+  | 'misconfigured'
+  | 'backend'
+  | 'network'
+  | 'storage'
+  | 'pending_delete'
+  | 'invalid_credential'
+  | 'error';
+
 export type SignInResult =
   | { ok: true; state: AuthState }
   | {
       ok: false;
-      reason:
-        | 'cancelled'
-        | 'unavailable'
-        | 'misconfigured'
-        | 'backend'
-        | 'network'
-        | 'storage'
-        | 'error';
+      reason: SignInFailureReason;
       message?: string;
     };
+
+/** Safe auth diagnostics — never logs tokens or raw credentials. */
+function authDebug(event: string, detail?: Record<string, unknown>): void {
+  if (typeof console === 'undefined' || typeof console.info !== 'function') return;
+  try {
+    console.info(`[auth] ${event}`, detail ?? {});
+  } catch {
+    // ignore
+  }
+}
 
 const listeners = new Set<AuthStateListener>();
 
@@ -263,14 +278,24 @@ export async function signInWithGoogleCredential(input: {
   ensureAuthInitialized();
   if (isAndroidAuthPlatform()) {
     if (!isAndroidGoogleAuthConfigured()) {
+      authDebug('credential_rejected', { stage: 'config', reason: 'misconfigured' });
       return { ok: false, reason: 'misconfigured' };
     }
   } else if (!isWebGoogleAuthConfigured()) {
+    authDebug('credential_rejected', { stage: 'config', reason: 'misconfigured' });
     return { ok: false, reason: 'misconfigured' };
   }
   if (!input.idToken || !input.nonce) {
-    return { ok: false, reason: 'error', message: 'Missing Google credential' };
+    authDebug('credential_rejected', { stage: 'local', reason: 'missing_credential' });
+    return { ok: false, reason: 'invalid_credential', message: 'Missing Google credential' };
   }
+
+  authDebug('id_token_exchange_start', {
+    platform: isAndroidAuthPlatform() ? 'android' : 'web',
+    hasIdToken: true,
+    hasNonce: true,
+    idTokenChars: input.idToken.length
+  });
 
   try {
     const session = await signInWithGoogleIdToken({
@@ -278,16 +303,39 @@ export async function signInWithGoogleCredential(input: {
       nonce: input.nonce
     });
     const state = await applySession(session);
+    authDebug('id_token_exchange_ok', {
+      accountId: session.account.id,
+      linkResult: session.linkResult ?? null
+    });
     return { ok: true, state };
   } catch (err) {
     if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'storage') {
+      authDebug('session_persist_failed', { reason: 'storage' });
       return { ok: false, reason: 'storage', message: 'Secure refresh storage failed' };
     }
     if (err instanceof AccountAuthApiError) {
+      authDebug('id_token_exchange_fail', {
+        code: err.code,
+        status: err.status
+      });
       if (err.code === 'network') return { ok: false, reason: 'network', message: err.message };
       if (err.code === 'misconfigured') return { ok: false, reason: 'misconfigured' };
+      if (err.code === 'pending_delete') {
+        return { ok: false, reason: 'pending_delete', message: err.message };
+      }
+      if (
+        err.code === 'invalid_token' ||
+        err.code === 'invalid_audience' ||
+        err.code === 'invalid_nonce' ||
+        err.code === 'invalid_issuer' ||
+        err.code === 'email_unverified' ||
+        err.code === 'unauthorized'
+      ) {
+        return { ok: false, reason: 'invalid_credential', message: err.message };
+      }
       return { ok: false, reason: 'backend', message: err.message };
     }
+    authDebug('id_token_exchange_fail', { code: 'unknown' });
     return { ok: false, reason: 'error' };
   }
 }
@@ -301,13 +349,24 @@ export async function signInWithAndroidGoogle(): Promise<SignInResult> {
     return { ok: false, reason: 'error', message: 'Native Google only on Android' };
   }
   if (!isAndroidGoogleAuthConfigured()) {
+    authDebug('android_native_rejected', { stage: 'config', reason: 'misconfigured' });
     return { ok: false, reason: 'misconfigured' };
   }
 
+  authDebug('android_native_chooser_start', {});
   const native = await requestAndroidGoogleIdToken();
   if (!native.ok) {
+    authDebug('android_native_chooser_fail', {
+      reason: native.reason,
+      hasMessage: Boolean(native.message)
+    });
     return { ok: false, reason: native.reason, message: native.message };
   }
+  authDebug('android_native_credential_ok', {
+    hasIdToken: true,
+    hasNonce: true,
+    idTokenChars: native.idToken.length
+  });
   return signInWithGoogleCredential({
     idToken: native.idToken,
     nonce: native.nonce
@@ -406,7 +465,6 @@ export async function deleteAccount(options: {
           clearAuthSessionStorage();
         }
         clearLinkedAccountId();
-        const { clearAllSyncLocalState } = await import('./clearSyncLocalState');
         clearAllSyncLocalState();
         notify();
         return { ok: false, reason: 'unauthorized', message: err.message };
@@ -424,7 +482,6 @@ export async function deleteAccount(options: {
   }
   // Account is pending_delete — drop historical link metadata + sync binding.
   clearLinkedAccountId();
-  const { clearAllSyncLocalState } = await import('./clearSyncLocalState');
   clearAllSyncLocalState();
 
   let wipedLocal = false;

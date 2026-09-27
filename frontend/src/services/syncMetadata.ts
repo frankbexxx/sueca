@@ -10,8 +10,9 @@ import {
   loadDurableJson,
   writeDurableEnvelope
 } from './durableLocalStorage';
+import { SYNC_META_KEY } from './syncStorageKeys';
 
-export const SYNC_META_KEY = 'sueca-sync-meta-v1';
+export { SYNC_META_KEY };
 
 export const SYNC_META_SCHEMA_VERSION = 1;
 

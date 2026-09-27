@@ -165,7 +165,7 @@ describe('AUTH-01D Android native Google auth', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 401 }));
     const backend = await signInWithAndroidGoogle();
     expect(backend.ok).toBe(false);
-    if (!backend.ok) expect(backend.reason).toBe('backend');
+    if (!backend.ok) expect(backend.reason).toBe('invalid_credential');
     expect(getAuthState().status).toBe('guest');
     expect(getLocalGuestId()).toBe(guestId);
   });
