@@ -3,9 +3,11 @@
  * Faces (`deckId`) and backs (`backId`) are independent so themes can
  * swap either without coupling. Default faces remain `casino`; `cardmeister`
  * is available via registry / `?deck=` without theme assignment.
+ * User Personalizar overrides win over theme when set (see resolveEffective*).
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
+import { STORAGE_KEYS } from './gameConstants';
 
 export type CardDeckDefinition = {
   id: string;
@@ -145,12 +147,13 @@ export function parseDeckOverrideFromQuery(
 }
 
 /**
- * Effective face deck: query `?deck=` → theme deckId → casino.
- * Pure when `search` is passed (tests); otherwise reads `window.location.search`.
+ * Effective face deck: query `?deck=` → user front override → theme deckId → casino.
+ * Pure when `search` / `userFront` are passed (tests).
  */
 export function resolveEffectiveDeck(
   themeId?: string | null,
-  search?: string | null
+  search?: string | null,
+  userFront?: string | null
 ): CardDeckDefinition {
   const resolvedSearch =
     search !== undefined
@@ -160,7 +163,37 @@ export function resolveEffectiveDeck(
         : null;
   const fromQuery = parseDeckOverrideFromQuery(resolvedSearch);
   if (fromQuery) return CARD_DECKS[fromQuery];
+
+  const frontPref =
+    userFront !== undefined
+      ? userFront
+      : typeof localStorage !== 'undefined'
+        ? localStorage.getItem(STORAGE_KEYS.CARD_FRONT)
+        : null;
+  if (frontPref && frontPref !== 'theme' && isCardDeckId(frontPref)) {
+    return CARD_DECKS[frontPref];
+  }
   return resolveCardDeckForTheme(themeId);
+}
+
+/**
+ * Effective card back: user back override → theme backId → suecao-navy.
+ * Independent of face deck. Pass `userBack` to avoid localStorage in tests.
+ */
+export function resolveEffectiveBack(
+  themeId?: string | null,
+  userBack?: string | null
+): CardBackDefinition {
+  const backPref =
+    userBack !== undefined
+      ? userBack
+      : typeof localStorage !== 'undefined'
+        ? localStorage.getItem(STORAGE_KEYS.CARD_BACK)
+        : null;
+  if (backPref && backPref !== 'theme' && isCardBackId(backPref)) {
+    return CARD_BACKS[backPref];
+  }
+  return resolveCardBackForTheme(themeId);
 }
 
 export function isCardBackId(id: string | null | undefined): id is CardBackId {

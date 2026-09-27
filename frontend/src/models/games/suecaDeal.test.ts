@@ -3,7 +3,8 @@ import { Card } from '../../types/game';
 import {
   dealSuecaFromCardOrder,
   suecaDealOthersOrder,
-  suecaDealSeatOrder
+  suecaDealSeatOrder,
+  suecaPhysicalRightOf
 } from './suecaDeal';
 
 function makeDeck40(): Card[] {
@@ -19,64 +20,57 @@ function makeDeck40(): Card[] {
   return cards;
 }
 
-describe('suecaDeal', () => {
-  it('seat order left starts at dealer+1; right at dealer-1', () => {
-    expect(suecaDealSeatOrder(0, 'left')).toEqual([1, 2, 3, 0]);
+describe('suecaDeal — block contract', () => {
+  it('seat order: right = physical-right first; left = physical-left first', () => {
     expect(suecaDealSeatOrder(0, 'right')).toEqual([3, 2, 1, 0]);
-    expect(suecaDealOthersOrder(0, 'left')).toEqual([1, 2, 3]);
+    expect(suecaDealSeatOrder(0, 'left')).toEqual([1, 2, 3, 0]);
     expect(suecaDealOthersOrder(0, 'right')).toEqual([3, 2, 1]);
+    expect(suecaDealOthersOrder(0, 'left')).toEqual([1, 2, 3]);
+    expect(suecaPhysicalRightOf(0)).toBe(3);
   });
 
-  it('Method A left vs right invert assignment for the same deck', () => {
+  it('Method A deals 10-card blocks (not round-robin)', () => {
     const deck = makeDeck40();
-    const dealer = 0;
-    const left = dealSuecaFromCardOrder(deck, dealer, 'A', 'left');
-    const right = dealSuecaFromCardOrder(deck, dealer, 'A', 'right');
-
-    // First card of the deck goes to first seat in order
-    expect(left.hands[1][0].id).toBe('c0');
-    expect(right.hands[3][0].id).toBe('c0');
-
-    // Same cards overall, different owners
-    const leftIds = left.hands.flat().map((c) => c.id).sort();
-    const rightIds = right.hands.flat().map((c) => c.id).sort();
-    expect(leftIds).toEqual(rightIds);
-    expect(left.hands[1].map((c) => c.id)).not.toEqual(right.hands[1].map((c) => c.id));
-
-    left.hands.forEach((h) => expect(h).toHaveLength(10));
-    right.hands.forEach((h) => expect(h).toHaveLength(10));
-    expect(left.hands.flat()).toHaveLength(40);
-    expect(new Set(leftIds).size).toBe(40);
-
-    // Method A trump = last dealt card (40th) — display copy keeps suit/rank
-    expect(left.trumpCard?.suit).toBe('spades');
-    expect(left.trumpCard?.rank).toBe('A');
-    expect(right.trumpCard?.suit).toBe(left.trumpCard?.suit);
-    expect(right.trumpCard?.rank).toBe(left.trumpCard?.rank);
-    expect(left.hands.flat().some((c) => c.id === 'c39')).toBe(true);
+    const dealt = dealSuecaFromCardOrder(deck, 0, 'A', 'right');
+    // First 10 consecutive → seat 3 (physical right of 0)
+    expect(dealt.hands[3].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i}`)
+    );
+    expect(dealt.hands[2].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i + 10}`)
+    );
+    expect(dealt.hands[1].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i + 20}`)
+    );
+    expect(dealt.hands[0].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i + 30}`)
+    );
+    expect(dealt.trumpCard?.suit).toBe(deck[39].suit);
+    expect(dealt.trumpCard?.rank).toBe(deck[39].rank);
   });
 
-  it('Method B: dealer keeps trump; others order flips with direction', () => {
+  it('Method B: dealer first 10-block; trump = top; others as blocks', () => {
     const deck = makeDeck40();
     const left = dealSuecaFromCardOrder(deck, 0, 'B', 'left');
-    const right = dealSuecaFromCardOrder(deck, 0, 'B', 'right');
-
-    expect(left.hands[0][0].id).toBe('c0'); // trump to dealer
-    expect(right.hands[0][0].id).toBe('c0');
+    expect(left.hands[0].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i}`)
+    );
     expect(left.trumpSuit).toBe(deck[0].suit);
+    expect(left.hands[1].map((c) => c.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `c${i + 10}`)
+    );
+    expect(left.hands[2][0].id).toBe('c20');
+    expect(left.hands[3][0].id).toBe('c30');
 
-    // After dealer took 10 cards (c0–c9), next is c10
-    expect(left.hands[1][0].id).toBe('c10');
+    const right = dealSuecaFromCardOrder(deck, 0, 'B', 'right');
+    expect(right.hands[0][0].id).toBe('c0');
     expect(right.hands[3][0].id).toBe('c10');
-
-    left.hands.forEach((h) => expect(h).toHaveLength(10));
-    right.hands.forEach((h) => expect(h).toHaveLength(10));
   });
 
   it('Game setDealingDirection is applied on startRound (integration)', () => {
     const game = new Game(['A', 'B', 'C', 'D'], 'A');
-    game.setDealingDirection('right');
-    expect(game.getState().dealingDirection).toBe('right');
+    game.setDealingDirection('left');
+    expect(game.getState().dealingDirection).toBe('left');
     game.setDealingMethod('A');
     game.startRound();
     const state = game.getState();

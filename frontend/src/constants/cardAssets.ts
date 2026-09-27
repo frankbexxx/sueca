@@ -1,8 +1,7 @@
 /**
  * Public card image assets (Vite serves from public/).
- * Faces: theme deck via `resolveCardDeckForTheme` (default casino → cards3),
- * optional dev override `?deck=cardmeister`.
- * Back: resolved per theme via `resolveCardBackForTheme` (fallback suecao-navy).
+ * Faces: user override → theme deck → casino; optional `?deck=` wins.
+ * Back: user override → theme back → suecao-navy.
  * deckId and backId are independent.
  */
 import {
@@ -10,7 +9,7 @@ import {
   readActiveThemeIdFromDom,
   resolveActiveBack,
   resolveActiveDeck,
-  resolveCardBackForTheme,
+  resolveEffectiveBack,
   resolveEffectiveDeck
 } from './cardDeckRegistry';
 import { publicUrl, readViteEnv } from '../config/runtimeEnv';
@@ -26,7 +25,7 @@ const CARD_EXT = readViteEnv('VITE_CARD_EXT') === 'svg' ? 'svg' : 'png';
 
 /**
  * Default back path (suecao-navy). Prefer `getCardBackPath()` / theme resolution
- * at render time so theme changes swap backs.
+ * at render time so theme / user overrides swap backs.
  */
 export const CARD_BACK_PATH = `${resolveActiveBack(DEFAULT_CARD_BACK_ID).assetPathBase}.${CARD_EXT}`;
 export const CARD_BACK_TEXTURE_KEY = 'card-back';
@@ -43,23 +42,27 @@ export function getPublicAssetPath(
 }
 
 /**
- * Face directory for a theme (falls back to casino).
+ * Face directory (user override → theme → casino).
  * Honors optional `?deck=` query when `search` omitted (browser) or passed (tests).
  */
 export function getCardAssetsDir(
   themeId?: string | null,
-  search?: string | null
+  search?: string | null,
+  userFront?: string | null
 ): string {
-  return resolveEffectiveDeck(themeId, search).facePath;
+  return resolveEffectiveDeck(themeId, search, userFront).facePath;
 }
 
-/** Relative public path for a theme's card back (with extension). */
-export function getCardBackPath(themeId?: string | null): string {
-  const back = resolveCardBackForTheme(themeId);
+/** Relative public path for effective card back (user override → theme). */
+export function getCardBackPath(
+  themeId?: string | null,
+  userBack?: string | null
+): string {
+  const back = resolveEffectiveBack(themeId, userBack);
   return `${back.assetPathBase}.${CARD_EXT}`;
 }
 
-/** Back path for the currently active shell theme. */
+/** Back path for the currently active shell theme (+ user override). */
 export function getActiveThemeCardBackPath(
   root?: Element | null
 ): string {
@@ -68,7 +71,7 @@ export function getActiveThemeCardBackPath(
 
 /**
  * Builds the public URL for a card face image.
- * Uses effective deck resolver (theme + optional `?deck=`).
+ * Uses effective deck resolver (user / theme / optional `?deck=`).
  * Back assets must use getCardBackPath / CARD_BACK_PATH, not this helper.
  */
 export function getCardImagePath(

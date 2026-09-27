@@ -106,8 +106,8 @@ Método
 ○ Dealer First
 
 Direcção
-● Esquerda (anti-horário)
-○ Direita (horário)
+○ Esquerda (horário)
+● Direita (anti-horário)
 
 [ Iniciar Jogo ]
 ```

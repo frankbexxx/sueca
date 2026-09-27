@@ -1,24 +1,52 @@
 import { Card, DealingDirection, DealingMethod } from '../../types/game';
 
 /**
- * Seat order for one full pass around the table (4 seats), starting after the dealer.
- * - left (anti-horário): dealer+1, +2, +3, dealer
- * - right (horário): dealer-1, -2, -3, dealer
+ * Sueca seat geometry (UX-SEAT-01 / tableLayout):
+ *   index 0 = South, 1 = West, 2 = North, 3 = East
+ *
+ * From a seated dealer facing the table centre:
+ *   physical RIGHT = East when dealer is South = (dealer + 3) % 4
+ *   physical LEFT  = West when dealer is South = (dealer + 1) % 4
+ *
+ * Anti-clockwise around the table (viewed from above) = to the dealer's right
+ * = index steps of -1 / +3.
+ *
+ * DealingDirection storage (legacy names — do not flip without migration):
+ *   'right' = anti-clockwise / to the right — traditional default (dealer+3 first)
+ *   'left'  = clockwise / to the left — alternative deal sense (dealer+1 first)
+ */
+
+/** Player physically to the dealer's right (Sueca first recipient / first leader). */
+export function suecaPhysicalRightOf(dealerIndex: number): number {
+  return (dealerIndex + 3) % 4;
+}
+
+/** Next seat anti-clockwise (play progression / "to the right"). */
+export function suecaNextAntiClockwise(playerIndex: number): number {
+  return (playerIndex + 3) % 4;
+}
+
+/**
+ * Seat order for one full deal pass (4 seats).
+ * - right (anti-clockwise, traditional): physical-right first → … → dealer last
+ * - left (clockwise, alternative sense): physical-left first → … → dealer last
  */
 export function suecaDealSeatOrder(
   dealerIndex: number,
-  direction: DealingDirection = 'left'
+  direction: DealingDirection = 'right'
 ): number[] {
-  if (direction === 'right') {
-    return [0, 1, 2, 3].map((i) => (dealerIndex - 1 - i + 8) % 4);
+  if (direction === 'left') {
+    // Clockwise: dealer+1, +2, +3, dealer
+    return [0, 1, 2, 3].map((i) => (dealerIndex + 1 + i) % 4);
   }
-  return [0, 1, 2, 3].map((i) => (dealerIndex + 1 + i) % 4);
+  // Anti-clockwise: dealer-1, -2, -3, dealer
+  return [0, 1, 2, 3].map((i) => (dealerIndex - 1 - i + 8) % 4);
 }
 
 /** Non-dealer seats in dealing direction (Method B remainder). */
 export function suecaDealOthersOrder(
   dealerIndex: number,
-  direction: DealingDirection = 'left'
+  direction: DealingDirection = 'right'
 ): number[] {
   return suecaDealSeatOrder(dealerIndex, direction).filter((i) => i !== dealerIndex);
 }
@@ -31,13 +59,14 @@ export interface SuecaDealResult {
 
 /**
  * Pure Sueca deal from a fixed 40-card sequence (index 0 dealt first).
+ * BLOCK dealing: each player receives 10 consecutive cards before the next seat.
  * Does not shuffle — caller supplies the post-cut order.
  */
 export function dealSuecaFromCardOrder(
   cards: Card[],
   dealerIndex: number,
   method: DealingMethod,
-  direction: DealingDirection = 'left'
+  direction: DealingDirection = 'right'
 ): SuecaDealResult {
   if (cards.length !== 40) {
     throw new Error(`Sueca deal expects 40 cards, got ${cards.length}`);
@@ -50,15 +79,21 @@ export function dealSuecaFromCardOrder(
     return card;
   };
 
+  const giveBlock = (playerIndex: number, count: number): Card | null => {
+    let last: Card | null = null;
+    for (let i = 0; i < count; i++) {
+      const card = take();
+      hands[playerIndex].push(card);
+      last = card;
+    }
+    return last;
+  };
+
   if (method === 'A') {
     const order = suecaDealSeatOrder(dealerIndex, direction);
     let lastCard: Card | null = null;
-    for (let round = 0; round < 10; round++) {
-      for (const playerIndex of order) {
-        const card = take();
-        hands[playerIndex].push(card);
-        lastCard = card;
-      }
+    for (const playerIndex of order) {
+      lastCard = giveBlock(playerIndex, 10);
     }
     const trumpCard = lastCard
       ? {
@@ -70,7 +105,8 @@ export function dealSuecaFromCardOrder(
     return { hands, trumpSuit: trumpCard?.suit ?? null, trumpCard };
   }
 
-  // Method B: dealer gets trump first, then 9 more; others by direction
+  // Method B (alternative): dealer receives first 10-card block; trump = first/top card.
+  // Remaining seats get 10-card blocks in the configured deal direction.
   const trumpOriginal = take();
   hands[dealerIndex].push(trumpOriginal);
   const trumpCard: Card = {
@@ -82,10 +118,8 @@ export function dealSuecaFromCardOrder(
     hands[dealerIndex].push(take());
   }
   const others = suecaDealOthersOrder(dealerIndex, direction);
-  for (let round = 0; round < 10; round++) {
-    for (const playerIndex of others) {
-      hands[playerIndex].push(take());
-    }
+  for (const playerIndex of others) {
+    giveBlock(playerIndex, 10);
   }
   return { hands, trumpSuit: trumpCard.suit, trumpCard };
 }

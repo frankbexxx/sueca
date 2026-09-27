@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +16,7 @@ import {
   resolveCardBackFromId,
   resolveCardDeckForTheme,
   resolveCardDeckFromId,
+  resolveEffectiveBack,
   resolveEffectiveDeck
 } from './cardDeckRegistry';
 import {
@@ -38,6 +39,9 @@ const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'K
 const SUITS = ['Clubs', 'Diamonds', 'Hearts', 'Spades'] as const;
 
 describe('cardDeckRegistry + theme card visuals', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it('registers casino + cardmeister face decks; default remains casino', () => {
     expect(Object.keys(CARD_DECKS).sort()).toEqual(['cardmeister', 'casino']);
     expect(DEFAULT_CARD_DECK_ID).toBe('casino');
@@ -114,6 +118,16 @@ describe('cardDeckRegistry + theme card visuals', () => {
       'cardmeister'
     );
     expect(resolveCardBackForTheme('midnight').id).toBe('casino-06');
+  });
+
+  it('applies user front/back overrides independently without coupling', () => {
+    expect(resolveEffectiveDeck('midnight', '', 'cardmeister').id).toBe('cardmeister');
+    expect(resolveEffectiveBack('midnight', 'casino-08').id).toBe('casino-08');
+    // Front override does not change back
+    expect(resolveEffectiveBack('midnight', 'theme').id).toBe('casino-06');
+    // Back override does not change front
+    expect(resolveEffectiveDeck('midnight', '', 'theme').id).toBe('casino');
+    expect(getCardBackPath('midnight', 'casino-05')).toContain('card_back_casino_05');
   });
 
   it('falls back to suecao-navy when theme has no cardVisuals', () => {

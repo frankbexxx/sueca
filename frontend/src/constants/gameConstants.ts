@@ -58,7 +58,10 @@ export const STORAGE_KEYS = {
   SORT_HAND: 'sueca-sort-hand',
   HAND_SUIT_ORDER: 'sueca-hand-suit-order',
   TRUMP_POSITION: 'sueca-trump-position',
-  AUTO_PAUSE_TRICK: 'sueca-auto-pause-trick'
+  AUTO_PAUSE_TRICK: 'sueca-auto-pause-trick',
+  CARD_FRONT: 'suecao-card-front',
+  CARD_BACK: 'suecao-card-back',
+  DEAL_ANIMATION_SPEED: 'suecao-deal-animation-speed'
 } as const;
 
 // Default values

@@ -504,11 +504,11 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Configurações',
-      subtitle: 'Som, idioma, mão e pausa automática',
+      subtitle: 'Som, idioma e preferências',
       hubGeneral: 'Geral',
-      hubGeneralHint: 'Som, modo escuro, idioma e pausa',
-      hubHand: 'Mão',
-      hubHandHint: 'Ordenar cartas, naipes e trunfo Sueca'
+      hubGeneralHint: 'Som, música e idioma',
+      hubHand: 'Mão e Cartas',
+      hubHandHint: 'Baralho, verso, ordenação e ritmo'
     },
     profileScreen: {
       title: 'Perfil',
@@ -841,8 +841,8 @@ export const translations: Record<Language, Translations> = {
       dealingDirectionLabel: 'Direcção',
       dealingMethodA: 'Standard',
       dealingMethodB: 'Dealer First',
-      dealingDirLeft: 'Esquerda (anti-horário)',
-      dealingDirRight: 'Direita (horário)',
+      dealingDirLeft: 'Esquerda (horário)',
+      dealingDirRight: 'Direita (anti-horário)',
       newGame: 'Novo Jogo',
       heartsRoundTitle: 'Fim da ronda',
       heartsRoundPoints: 'Pontos desta ronda',
@@ -939,11 +939,11 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Settings',
-      subtitle: 'Sound, language, hand sorting and auto-pause',
+      subtitle: 'Sound, language and preferences',
       hubGeneral: 'General',
-      hubGeneralHint: 'Sound, dark mode, language and pause',
-      hubHand: 'Hand',
-      hubHandHint: 'Sort cards, suits and Sueca trump'
+      hubGeneralHint: 'Sound, music and language',
+      hubHand: 'Hand & Cards',
+      hubHandHint: 'Deck, backs, sorting and pace'
     },
     profileScreen: {
       title: 'Profile',
@@ -1275,8 +1275,8 @@ export const translations: Record<Language, Translations> = {
       dealingDirectionLabel: 'Direction',
       dealingMethodA: 'Standard',
       dealingMethodB: 'Dealer First',
-      dealingDirLeft: 'Left (counter-clockwise)',
-      dealingDirRight: 'Right (clockwise)',
+      dealingDirLeft: 'Left (clockwise)',
+      dealingDirRight: 'Right (counter-clockwise)',
       newGame: 'Start New Game',
       heartsRoundTitle: 'Round complete',
       heartsRoundPoints: 'Points this round',

@@ -167,7 +167,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
 | REL-DOCS-01 | Docs / cleanup | TODO | Refresh STATUS / Essentials / README; hide incomplete UX; stale copy | P1 | NO | TODO |
-| REL-PERS-01 | Themes / Personalisation UX | IN PROGRESS | **Temas DONE** (registry · Personalizar hub · global coverage audit). Remaining: Mão e Cartas · Música e Som (Idioma / Auto entre vazas moves later). Architecture already DONE | P2 or P1* | **YES — PARTIAL** | IN PROGRESS |
+| REL-PERS-01 | Themes / Personalisation UX | IN PROGRESS | **Temas DONE** · **Mão e Cartas DONE** (independent front/back · hand sort · deal animation · auto-pause; Sueca block-deal + physical-right / anti-clockwise play contract). Remaining: Música e Som (Idioma → Mais later). Architecture already DONE | P2 or P1* | **YES — PARTIAL** | IN PROGRESS |
 | REL-DECK-01 | Deck / Card Back | TODO | CardMeister theme assignment; licence attribution for exposed decks | P2 | YES | TODO |
 | REL-AUDIO-01 | Music / SFX | TODO | Web prod remote optional; offline/fallback validation; CDN domain later | P2 | NO | TODO |
 | REL-AI-01 | AI polish | TODO | Spades nil-aware play; King auction difficulty; Sueca signals/docs; Hearts optional | P2 | YES (nil marketing) | TODO |
@@ -449,7 +449,7 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-PERS-01 | Personalisation UX / Stage 10 | **Temas DONE**; remaining Mão e Cartas · Música e Som (P2 or P1*) |
+| REL-PERS-01 | Personalisation UX / Stage 10 | **Temas DONE** · **Mão e Cartas DONE**; remaining Música e Som (P2 or P1*) |
 | REL-DECK-01 | Deck / card back curation | P2 |
 | REL-AUDIO-01 | Music/SFX web + CDN | P2 |
 | REL-AI-01 | AI polish (not core) | P2 |

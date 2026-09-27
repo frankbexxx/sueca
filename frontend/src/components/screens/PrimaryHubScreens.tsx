@@ -81,7 +81,7 @@ export const PersonalizeHubScreen: React.FC<PersonalizeHubScreenProps> = ({
           {
             id: 'hand',
             label: 'Mão e Cartas',
-            hint: 'Ordem de naipes, baralho e verso',
+            hint: 'Baralho, verso, ordenação e ritmo',
             onClick: onOpenHand
           },
           {

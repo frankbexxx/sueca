@@ -1,7 +1,11 @@
 import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty } from '../types/game';
 import { Deck } from './Deck';
 import { applyHandSortToState } from '../utils/handSort';
-import { dealSuecaFromCardOrder } from './games/suecaDeal';
+import {
+  dealSuecaFromCardOrder,
+  suecaNextAntiClockwise,
+  suecaPhysicalRightOf
+} from './games/suecaDeal';
 import { cloneGameState } from './games/cloneGameState';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
 
@@ -106,12 +110,13 @@ export class Game {
 
   /**
    * Deal cards using Method A/B and left/right direction around the table.
+   * Allocation is BLOCK dealing (10 consecutive cards per seat) — see suecaDeal.ts.
    */
   private dealCards(
     players: Player[],
     dealerIndex: number,
     method: DealingMethod,
-    direction: DealingDirection = 'left'
+    direction: DealingDirection = 'right'
   ): { suit: Suit | null; card: Card | null } {
     this.deck = new Deck();
     // According to Sueca rules: after shuffling, the deck is cut by the partner of the shuffler
@@ -161,7 +166,8 @@ export class Game {
     
     // Find dealer index in seated order
     const dealerIndex = seatedOrder.indexOf(dealerName);
-    const firstTrickStarter = (dealerIndex + 1) % 4;
+    // First leader = player physically to the dealer's right (tableLayout east when dealer south).
+    const firstTrickStarter = suecaPhysicalRightOf(dealerIndex);
 
     return {
       players,
@@ -182,7 +188,7 @@ export class Game {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: dealingMethod,
-      dealingDirection: 'left',
+      dealingDirection: 'right',
       waitingForRoundStart: true, // Pause before starting (show trump card)
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -273,28 +279,9 @@ export class Game {
     // Track this card as played
     this.state.playedCards.push(card);
 
-    // Calculate next player
-    let nextPlayerIndex: number;
-    
-    if (this.state.isFirstTrick) {
-      // Special rule for first trick: dealer plays last
-      // Order: (dealer+1), (dealer+2), (dealer+3), dealer
-      const dealerIndex = this.state.dealerIndex;
-      const cardsPlayed = this.state.currentTrick.length;
-      
-      if (cardsPlayed < 3) {
-        // First three players: dealer+1, dealer+2, dealer+3
-        nextPlayerIndex = (dealerIndex + cardsPlayed + 1) % 4;
-      } else {
-        // Last player is always the dealer
-        nextPlayerIndex = dealerIndex;
-      }
-    } else {
-      // Standard counterclockwise rotation (to the right)
-      nextPlayerIndex = (this.state.currentPlayerIndex + 1) % 4;
-    }
-
-    this.state.currentPlayerIndex = nextPlayerIndex;
+    // Calculate next player — always anti-clockwise (to the dealer's right).
+    // First leader is already physical-right of dealer; no separate first-trick path.
+    this.state.currentPlayerIndex = suecaNextAntiClockwise(this.state.currentPlayerIndex);
 
     // If trick is complete, evaluate it
     if (this.state.currentTrick.length === 4) {
@@ -520,7 +507,7 @@ export class Game {
     this.state.currentTrick = [];
     this.state.playedCards = [];
 
-    this.state.dealerIndex = (this.state.dealerIndex + 1) % 4;
+    this.state.dealerIndex = suecaPhysicalRightOf(this.state.dealerIndex);
 
     this.state.players.forEach((p) => {
       p.hand = [];
@@ -528,7 +515,7 @@ export class Game {
     this.state.trumpSuit = null;
     this.state.trumpCard = null;
 
-    const firstTrickStarter = (this.state.dealerIndex + 1) % 4;
+    const firstTrickStarter = suecaPhysicalRightOf(this.state.dealerIndex);
     this.state.currentPlayerIndex = firstTrickStarter;
     this.state.trickLeader = firstTrickStarter;
     this.state.lastTrickWinner = null;
@@ -546,7 +533,7 @@ export class Game {
           this.state.players,
           this.state.dealerIndex,
           this.state.dealingMethod,
-          this.state.dealingDirection ?? 'left'
+          this.state.dealingDirection ?? 'right'
         );
         this.state.trumpSuit = trumpResult.suit;
         this.state.trumpCard = trumpResult.card;

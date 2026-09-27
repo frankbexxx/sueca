@@ -40,25 +40,41 @@ Date: 2026-04-24
 
 ## 4) Distribuicao e trunfo
 
-As regras variam por mesa. Para este projeto, definimos dois modos suportados explicitamente:
+Geometria de lugares (motor / UX-SEAT-01): indice `0` Sul, `1` Oeste, `2` Norte, `3` Este.
+A **direita fisica** do dealer e `(dealer + 3) % 4` (ex.: Sul → Este).
+A **esquerda fisica** do dealer e `(dealer + 1) % 4` (ex.: Sul → Oeste).
 
-## Metodo A (padrao de implementacao inicial)
+Distribuicao e **sempre em blocos de 10 cartas** por jogador (cada um recebe as 10
+antes de passar ao seguinte). A animacao pode mostrar cartas uma a uma; a ordem
+de atribuicao no motor e a do bloco.
 
-- Distribui-se 1 carta de cada vez ate 10 por jogador.
-- Ordem de distribuicao definida pela implementacao (consistente e documentada no motor).
-- Sentido: **esquerda (anti-horario, padrao)** = dealer+1 primeiro; **direita (horario)** = dealer-1 primeiro (escolha no modal de distribuicao).
-- O naipe de trunfo e determinado pela carta de referencia definida no processo (na implementacao atual: ultima carta distribuida).
+### Sentido de distribuicao (apenas a distribuicao)
 
-## Metodo B (variante suportada)
+| Valor no motor | Sentido | Primeiro a receber (Metodo A) |
+|----------------|---------|--------------------------------|
+| `right` (padrao) | Anti-horario / a direita | Direita fisica do dealer |
+| `left` | Horario / a esquerda | Esquerda fisica do dealer |
 
-- O dealer recebe primeiro a carta que fixa o trunfo.
-- Completa-se a distribuicao ate todos terem 10 cartas.
+O sentido de distribuicao **nao** controla o sentido de jogo nem quem abre.
 
-## Requisito canonico para ambos
+### Metodo A (tradicional / padrao)
+
+1. Bloco de 10 ao jogador a **direita fisica** do dealer.
+2. Seguinte anti-horario: bloco de 10.
+3. Seguinte: bloco de 10.
+4. Dealer: bloco de 10.
+5. **Trunfo** = ultima carta distribuida (ultima do ultimo bloco).
+
+### Metodo B (variante alternativa)
+
+1. Dealer recebe o **primeiro** bloco de 10; **trunfo** = primeira / topo do baralho.
+2. Os restantes recebem blocos de 10 no sentido configurado (tipicamente horario / `left`).
+3. Depois da distribuicao: quem abre e o sentido de jogo **nao mudam**.
+
+### Requisito canonico para ambos
 
 - No inicio da mao, cada jogador tem exatamente 10 cartas.
 - O trunfo da mao fica fixo ate ao fim da mao.
-- Qualquer detalhe de ordem (sentido, primeiro a receber) deve ser deterministicamente especificado pelo ruleset e testado.
 
 ## 5) Ordem de jogo da vaza
 
@@ -66,10 +82,21 @@ As regras variam por mesa. Para este projeto, definimos dois modos suportados ex
 - O jogador que abre (lidera) define o naipe da vaza.
 - Os restantes jogam em ordem de turno.
 
-## Quem abre
+### Sentido de jogo (independente da distribuicao)
 
-- Primeira vaza: regra configurada pelo ruleset (neste projeto, atualmente: jogador a direita do dealer).
-- VazAs seguintes: vence a vaza anterior, abre a proxima.
+- Padrao: **anti-horario / a direita** = `(jogador + 3) % 4` na geometria acima.
+- Nao e alterado pelo Metodo A/B nem pelo sentido de distribuicao.
+
+### Quem abre
+
+- Primeira vaza: **sempre** o jogador a **direita fisica** do dealer (`(dealer + 3) % 4`).
+- Vazas seguintes: quem venceu a vaza anterior abre a proxima.
+
+### Rotacao do dealer
+
+- Entre maos, o dealer passa a **direita fisica**: `novoDealer = (dealer + 3) % 4`.
+- Sequencia de exemplo a partir do Sul: Sul → Este → Norte → Oeste → Sul.
+- Consistente com o sentido de jogo (anti-horario / a direita); independente do Metodo A/B.
 
 ## 6) Regra de seguir naipe (obrigatoria)
 

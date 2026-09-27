@@ -1,14 +1,14 @@
 /**
  * Minimal Phaser table theme tokens from the active CSS theme (or defaults).
  * UX-P3.1 Premium Classic Table defaults; CSS theme can still tint accents.
- * Card back follows theme via cardDeckRegistry (fallback suecao-navy).
+ * Card back follows user override → theme via cardDeckRegistry (fallback suecao-navy).
  */
 
 import { getCardBackPath } from '../../constants/cardAssets';
 import {
   DEFAULT_CARD_BACK_ID,
   readActiveThemeIdFromDom,
-  resolveCardBackForTheme
+  resolveEffectiveBack
 } from '../../constants/cardDeckRegistry';
 import { PREMIUM_TABLE } from './phaserPremiumLayout';
 
@@ -90,7 +90,7 @@ export function resolvePhaserThemeFromDom(
     : null
 ): PhaserThemeView {
   const themeId = readActiveThemeIdFromDom(root);
-  const back = resolveCardBackForTheme(themeId);
+  const back = resolveEffectiveBack(themeId);
   const cardBackPath = getCardBackPath(themeId);
 
   if (!root || typeof window === 'undefined' || !window.getComputedStyle) {
@@ -110,6 +110,7 @@ export function resolvePhaserThemeFromDom(
 
   // UX-P3.1: keep Premium Classic felt/exterior as the table identity.
   // Accents/text may still follow the active app theme.
+  // Card back: user Personalizar override → theme → default.
   return {
     ...DEFAULT_THEME,
     text,

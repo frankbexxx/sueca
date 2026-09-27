@@ -17,13 +17,13 @@ import { getCardImagePath } from '../constants/cardAssets';
 import { isDevMode, publicUrl } from '../config/runtimeEnv';
 import {
   AI_PLAY_DELAY_MS,
-  DEAL_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
   ROUND_START_SFX_DELAY_MS,
   SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
+import { getDealDelayMs } from '../constants/dealAnimationPreferences';
 import { createGameOverExitController, shouldAutoExitAfterGameOver } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
@@ -130,7 +130,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   
   const { playerNames, dealingMethod, aiDifficulty, gameVariant, rulesPresetId } = config;
   const [roundDealingMethod, setRoundDealingMethod] = useState(dealingMethod);
-  const [dealingDirection, setDealingDirection] = useState<DealingDirection>('left');
+  const [dealingDirection, setDealingDirection] = useState<DealingDirection>('right');
   const multiplayerSessionCode = (config.multiplayerSessionId ?? '').trim();
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const isMultiplayerActive = isMultiplayer && multiplayerSessionCode.length > 0;
@@ -186,7 +186,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: 'A',
-      dealingDirection: 'left',
+      dealingDirection: 'right',
       waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -390,7 +390,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     dealTimerRef.current = window.setTimeout(() => {
       playDealSoundRef.current();
       dealTimerRef.current = null;
-    }, DEAL_DELAY_MS);
+    }, getDealDelayMs());
     roundStartTimerRef.current = window.setTimeout(() => {
       playRoundStartSoundRef.current();
       roundStartTimerRef.current = null;

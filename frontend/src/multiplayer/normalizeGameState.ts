@@ -72,7 +72,7 @@ export function normalizeGameState(
     nextTrickLeader: source.nextTrickLeader ?? null,
     isFirstTrick: source.isFirstTrick ?? true,
     dealingMethod: (source.dealingMethod ?? 'A') as DealingMethod,
-    dealingDirection: (source.dealingDirection ?? 'left') as DealingDirection,
+    dealingDirection: (source.dealingDirection ?? 'right') as DealingDirection,
     waitingForRoundStart: source.waitingForRoundStart ?? false,
     waitingForRoundEnd: source.waitingForRoundEnd ?? false,
     waitingForGameStart: source.waitingForGameStart ?? false,
