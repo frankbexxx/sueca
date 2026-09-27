@@ -42,14 +42,16 @@
   gap: 10px;
   padding: 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sc-surface);
+  border: 1px solid transparent;
 }
 
 .online-slot-num {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(var(--sc-accent-rgb), 0.18);
+  color: var(--sc-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,8 +83,9 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
   cursor: pointer;
   font-size: 1rem;
   display: flex;
@@ -92,13 +95,13 @@
 }
 
 .online-toggle-btn.active {
-  background: rgba(126, 200, 247, 0.25);
-  border-color: rgba(126, 200, 247, 0.5);
+  background: rgba(var(--sc-accent-rgb), 0.25);
+  border-color: rgba(var(--sc-accent-rgb), 0.5);
 }
 
 .online-slot-ai-label {
   font-size: 0.85rem;
-  color: rgba(233, 238, 247, 0.6);
+  color: var(--sc-text-muted);
   font-style: italic;
 }
 
@@ -111,13 +114,13 @@
 }
 
 .online-slot-badge--host {
-  background: rgba(126, 200, 247, 0.2);
-  color: #7ec8f7;
+  background: rgba(var(--sc-accent-rgb), 0.2);
+  color: var(--sc-accent);
 }
 
 .online-slot-badge--you {
-  background: rgba(100, 220, 140, 0.2);
-  color: #64dc8c;
+  background: color-mix(in srgb, var(--sc-game-us) 22%, transparent);
+  color: var(--sc-game-us);
 }
 
 /* Code input */
@@ -144,11 +147,11 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sc-surface);
 }
 
 .online-lobby-slot.joined {
-  background: rgba(100, 220, 140, 0.08);
+  background: color-mix(in srgb, var(--sc-game-us) 12%, transparent);
 }
 
 .online-lobby-slot.waiting {
@@ -167,11 +170,11 @@
 
 .online-lobby-slot-status {
   font-size: 0.78rem;
-  color: rgba(233, 238, 247, 0.6);
+  color: var(--sc-text-muted);
 }
 
 .online-unavailable {
   padding: 24px;
   text-align: center;
-  color: rgba(233, 238, 247, 0.6);
+  color: var(--sc-text-muted);
 }

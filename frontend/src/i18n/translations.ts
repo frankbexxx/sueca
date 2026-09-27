@@ -270,6 +270,7 @@ export interface Translations {
     title: string;
     subtitle: string;
     active: string;
+    currentLabel: string;
     iapNote: string;
   };
 
@@ -601,8 +602,9 @@ export const translations: Record<Language, Translations> = {
     },
     themesScreen: {
       title: 'Temas',
-      subtitle: 'Aparência visual da app',
+      subtitle: 'Aparência da mesa e do ambiente',
       active: 'Activo',
+      currentLabel: 'Tema actual',
       iapNote: 'Temas premium disponíveis em breve na Play Store.'
     },
     dashboard: {
@@ -1035,8 +1037,9 @@ export const translations: Record<Language, Translations> = {
     },
     themesScreen: {
       title: 'Themes',
-      subtitle: 'Visual appearance of the app',
+      subtitle: 'Table and atmosphere appearance',
       active: 'Active',
+      currentLabel: 'Current theme',
       iapNote: 'Premium themes coming soon on the Play Store.'
     },
     dashboard: {

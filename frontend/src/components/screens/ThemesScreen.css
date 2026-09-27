@@ -16,9 +16,51 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   font-style: italic;
-  opacity: 0.38;
+  color: var(--sc-text-muted);
+  opacity: 0.92;
   padding: 10px 8px 2px;
   list-style: none;
+}
+
+.themes-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--sc-accent-rgb), 0.35);
+  background: rgba(var(--sc-accent-rgb), 0.1);
+}
+
+.themes-current-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.themes-current-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.themes-current-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--sc-text-title);
+}
+
+.themes-current-zone {
+  font-size: 0.78rem;
+  opacity: 0.55;
+}
+
+.themes-list {
+  gap: 6px;
 }
 
 .themes-list-item {
@@ -32,43 +74,58 @@
   align-items: center;
   border: 1px solid var(--sc-surface-border);
   color: var(--sc-text);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .themes-card--active {
   border-color: rgba(var(--sc-accent-rgb), 0.55);
   background: rgba(var(--sc-accent-rgb), 0.12);
+  box-shadow: inset 3px 0 0 var(--sc-accent);
 }
 
 .themes-card-select {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   background: transparent;
   border: none;
   color: inherit;
   cursor: pointer;
   text-align: left;
-  padding: var(--sueca-space-md, 12px) var(--sueca-space-md, 12px);
+  padding: 8px 10px;
   font-family: inherit;
-  min-height: var(--sueca-touch-min, 48px);
+  min-height: 48px;
+}
+
+.themes-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
 }
 
 .themes-card-name {
-  font-weight: 700;
+  font-weight: 650;
+  font-size: 0.95rem;
 }
 
 .themes-card-badge {
-  font-size: 0.75rem;
-  opacity: 0.85;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--sc-accent);
+  opacity: 0.95;
 }
 
 .themes-card-info {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  margin-right: 8px;
+  margin-right: 6px;
   border-radius: 50%;
   border: 1px solid var(--sc-surface-border);
   background: var(--sc-surface);
@@ -100,14 +157,14 @@
   font-size: 0.8rem;
   line-height: 1.6;
   font-style: italic;
-  opacity: 0.75;
+  color: var(--sc-text);
+  opacity: 0.92;
   border-left: 2px solid rgba(var(--sc-accent-rgb), 0.4);
   margin-left: 4px;
   margin-right: 4px;
   margin-top: 2px;
 }
 
-/* Custom themes group header with create button */
 .themes-group-header--custom {
   display: flex;
   align-items: center;
@@ -119,51 +176,46 @@
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
   color: inherit;
   cursor: pointer;
-  transition: background 0.15s;
   font-family: inherit;
-}
-
-.themes-create-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Edit / delete buttons on custom theme cards */
-.themes-card-edit,
-.themes-card-delete {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: inherit;
-  opacity: 0.5;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  transition: opacity 0.15s, background 0.15s;
-}
-
-.themes-card-edit:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.themes-card-delete:hover {
-  opacity: 1;
-  background: rgba(220, 80, 80, 0.2);
-  border-color: rgba(220, 80, 80, 0.4);
 }
 
 .themes-custom-empty {
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  opacity: 0.45;
   list-style: none;
+  font-size: 0.85rem;
+  opacity: 0.55;
+  padding: 4px 8px 8px;
+}
+
+.themes-card-edit,
+.themes-card-delete {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-right: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  font-family: inherit;
+}
+
+.themes-card-delete {
+  margin-right: 8px;
+}
+
+@media (max-width: 380px) {
+  .theme-preview-chip {
+    width: 46px;
+    height: 36px;
+  }
+
+  .themes-card-name {
+    font-size: 0.9rem;
+  }
 }

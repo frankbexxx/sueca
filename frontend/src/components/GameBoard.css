@@ -1406,9 +1406,9 @@
   height: 36px; /* 70% of 52px */
   border-radius: 3px; /* 70% of 4px */
   object-fit: cover;
-  border: 1px solid #fff; /* 70% of 2px */
+  border: 1px solid var(--sc-surface-border);
   box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 70% scaling */
-  background: #2a3a52;
+  background: var(--sc-surface-modal);
 }
 
 .card-count {

@@ -4,22 +4,28 @@
  */
 
 import { bumpSyncablePrefsRevision } from './syncablePrefsRevision';
+import { isBuiltInThemeId, type BuiltInThemeId } from '../constants/themeRegistry';
+import { getCustomTheme } from './customThemeStorage';
 
-export type BuiltInThemeId =
-  | 'classic' | 'forest' | 'midnight'
-  | 'thebes' | 'tikal' | 'thule'
-  | 'knossos' | 'xanadu' | 'yamatai'
-  | 'shambhala' | 'rapanui' | 'babylon' | 'ur' | 'nanmadol'
-  | 'hyperborea' | 'skara-brae' | 'avalon'
-  | 'cartago' | 'atlantida'
-  | 'petra' | 'persepolis'
-  | 'axum' | 'meroe' | 'great-zimbabwe'
-  | 'mohenjo-daro' | 'angkor'
-  | 'teotihuacan' | 'tiwanaku' | 'caral' | 'el-dorado';
+export type { BuiltInThemeId };
 
 // Allow custom theme IDs (prefixed 'custom_') alongside built-in ones.
 // The `string & {}` trick preserves autocomplete for BuiltInThemeId values.
 export type ThemeId = BuiltInThemeId | (string & {});
+
+const CUSTOM_THEME_ID_RE = /^custom_[A-Za-z0-9_-]+$/;
+
+export function isCustomThemeId(id: string): boolean {
+  return CUSTOM_THEME_ID_RE.test(id);
+}
+
+/** Resolve saved theme; invalid / missing custom falls back to classic. */
+export function resolveActiveTheme(raw?: string | null): ThemeId {
+  const id = (raw ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('suecao-theme') : null) ?? 'classic').trim();
+  if (isBuiltInThemeId(id)) return id;
+  if (isCustomThemeId(id) && getCustomTheme(id)) return id;
+  return 'classic';
+}
 
 export const THEME_PRODUCTS: { id: string; theme: ThemeId; label: string }[] = [
   { id: 'theme_forest',    theme: 'forest',    label: 'Forest' },
@@ -60,11 +66,16 @@ export async function purchaseProduct(_productId: string): Promise<boolean> {
 }
 
 export function getActiveTheme(): ThemeId {
-  return localStorage.getItem('suecao-theme') || 'classic';
+  return resolveActiveTheme();
 }
 
 export function setActiveTheme(theme: ThemeId): void {
-  localStorage.setItem('suecao-theme', theme as string);
+  const id = String(theme);
+  const next: ThemeId =
+    isBuiltInThemeId(id) || (isCustomThemeId(id) && Boolean(getCustomTheme(id)))
+      ? id
+      : 'classic';
+  localStorage.setItem('suecao-theme', next as string);
   // SYNC-01A — local prefs mutation counter (not cross-device authority).
   bumpSyncablePrefsRevision();
 }

@@ -6,26 +6,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { BuiltInThemeId } from '../services/billingService';
 import { THEME_CARD_VISUALS } from '../constants/themeCardVisuals';
 import { THEME_MUSIC_FAMILY } from '../constants/musicThemeMap';
+import { BUILT_IN_THEME_IDS } from '../constants/themeRegistry';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const themesCssPath = join(here, 'themes.css');
 const tokensCssPath = join(here, 'design-tokens.css');
-
-const BUILT_IN_THEME_IDS = [
-  'classic', 'forest', 'midnight',
-  'thebes', 'tikal', 'thule',
-  'knossos', 'xanadu', 'yamatai',
-  'shambhala', 'rapanui', 'babylon', 'ur', 'nanmadol',
-  'hyperborea', 'skara-brae', 'avalon',
-  'cartago', 'atlantida',
-  'petra', 'persepolis',
-  'axum', 'meroe', 'great-zimbabwe',
-  'mohenjo-daro', 'angkor',
-  'teotihuacan', 'tiwanaku', 'caral', 'el-dorado'
-] as const satisfies readonly BuiltInThemeId[];
 
 const CONTRACT_TOKENS = [
   '--sc-canvas-from',

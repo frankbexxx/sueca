@@ -69,14 +69,14 @@
 
 .account-error {
   margin: 0.25rem 0 0;
-  color: #b42318;
+  color: var(--sc-danger);
   font-size: 0.9rem;
 }
 
 .account-sync-section {
   margin-top: 0.5rem;
   padding-top: 0.65rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid var(--sc-surface-border);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;

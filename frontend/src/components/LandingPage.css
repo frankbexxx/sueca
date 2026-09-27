@@ -196,7 +196,7 @@
   font-weight: 700;
   border-radius: var(--sueca-radius-md, 10px);
   cursor: pointer;
-  color: #fff;
+  color: var(--sc-text-title);
 }
 
 .landing-footer {

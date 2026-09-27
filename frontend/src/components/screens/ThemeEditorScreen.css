@@ -86,26 +86,27 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--sc-surface);
+  color: var(--sc-text);
   cursor: pointer;
   text-align: left;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .theme-editor-swatch-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--sc-accent-rgb), 0.1);
 }
 
 .theme-editor-swatch-row--active {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--sc-accent-rgb), 0.14);
+  border-color: rgba(var(--sc-accent-rgb), 0.35);
 }
 
 .theme-editor-swatch {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid var(--sc-surface-border);
   flex-shrink: 0;
   display: block;
 }
@@ -192,9 +193,9 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: inherit;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
   font-size: 0.95rem;
   font-family: inherit;
   box-sizing: border-box;
@@ -204,11 +205,11 @@
 
 .theme-editor-input:focus,
 .theme-editor-textarea:focus {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(var(--sc-accent-rgb), 0.55);
 }
 
 .theme-editor-input--error {
-  border-color: rgba(220, 80, 80, 0.6) !important;
+  border-color: color-mix(in srgb, var(--sc-danger) 70%, transparent) !important;
 }
 
 .theme-editor-textarea {
@@ -218,7 +219,7 @@
 
 .theme-editor-hint {
   font-size: 0.78rem;
-  color: #f08080;
+  color: var(--sc-danger);
   margin: 4px 0 0;
 }
 
