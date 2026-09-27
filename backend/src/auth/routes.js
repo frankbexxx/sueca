@@ -69,6 +69,7 @@ export function createAccountAuthRouter(config) {
       });
 
       if (!account || account.status !== 'active') {
+        // AUTH-01E Policy B: reject while pending_delete (do not reactivate / do not create duplicate).
         audit('google_login_denied', { reason: 'inactive_account' });
         return res.status(401).json({ error: 'Unauthorized' });
       }

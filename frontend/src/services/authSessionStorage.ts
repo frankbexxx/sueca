@@ -3,7 +3,8 @@
  *
  * Access token: memory only (all platforms).
  * Refresh token:
- *   Web: temporary localStorage `sueca-auth-refresh-v1` (XSS trade-off).
+ *   Web: temporary localStorage `sueca-auth-refresh-v1` (XSS trade-off; NOT final hardened storage —
+ *       httpOnly cookie depends on production topology; see AUTH_RELEASE_BASELINE_01F).
  *   Android: Android Keystore via @aparajita/capacitor-secure-storage (NOT Preferences).
  * Google ID token: NEVER persisted.
  *

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { useLanguage } from '../../i18n/useLanguage';
 import {
+  deleteAccount,
   getAuthState,
   mapGoogleProviderFailure,
   signInWithAndroidGoogle,
@@ -17,6 +18,7 @@ import {
 } from '../../config/authConfig';
 import { mountGoogleSignInButton, invalidateGoogleSignInSession } from '../../services/googleWebSignIn';
 import { isAndroidAuthPlatform, isWebAuthPlatform } from '../../platform/authPlatform';
+import { AccountDeleteDialog, type AccountDeleteChoice } from './AccountDeleteDialog';
 import '../../styles/shell-screens.css';
 import './MoreScreen.css';
 import './AccountScreen.css';
@@ -34,6 +36,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
   const [ui, setUi] = useState<UiStatus>('idle');
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [gisEpoch, setGisEpoch] = useState(0);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const buttonHostRef = useRef<HTMLDivElement | null>(null);
   const signingInRef = useRef(false);
   const androidPlatform = isAndroidAuthPlatform();
@@ -150,6 +153,32 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
     setUi('idle');
   }, [ui]);
 
+  const onDeleteConfirm = useCallback(
+    async (choice: AccountDeleteChoice) => {
+      if (ui === 'loading') return;
+      setUi('loading');
+      setErrorKey(null);
+      const result = await deleteAccount({ wipeLocalData: choice === 'wipe_local' });
+      if (result.ok) {
+        setDeleteOpen(false);
+        setAuth(result.state);
+        setUi('idle');
+        return;
+      }
+      // Failed server delete: stay signed in when session still valid; never wipe.
+      setDeleteOpen(false);
+      setUi('error');
+      if (result.reason === 'network') setErrorKey('network');
+      else if (result.reason === 'misconfigured') setErrorKey('misconfigured');
+      else if (result.reason === 'unauthorized') {
+        // Session already dead — auth facade dropped to guest.
+        setAuth(getAuthState());
+        setErrorKey('deleteFailed');
+      } else setErrorKey('deleteFailed');
+    },
+    [ui]
+  );
+
   const copy = t.accountScreen;
   const errorText =
     errorKey === 'cancelled'
@@ -164,9 +193,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
               ? copy.errorBackend
               : errorKey === 'storage'
                 ? copy.errorStorage
-                : errorKey
-                  ? copy.errorGeneric
-                  : null;
+                : errorKey === 'deleteFailed'
+                  ? copy.errorDelete
+                  : errorKey
+                    ? copy.errorGeneric
+                    : null;
 
   return (
     <div className="shell-screen screen-account" data-testid="account-screen">
@@ -234,14 +265,26 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
             )}
             <button
               type="button"
-              className="sueca-btn sueca-btn-secondary account-action"
+              className="sueca-btn sueca-btn--secondary account-action"
               data-testid="account-sign-out"
               disabled={ui === 'loading'}
               onClick={() => void onLogout()}
             >
               {ui === 'loading' ? copy.loading : copy.signOut}
             </button>
-            <p className="account-delete-hint">{copy.deleteLater}</p>
+            <button
+              type="button"
+              className="sueca-btn sueca-btn--danger account-action account-delete-action"
+              data-testid="account-delete"
+              disabled={ui === 'loading'}
+              onClick={() => {
+                setErrorKey(null);
+                setDeleteOpen(true);
+              }}
+            >
+              {copy.deleteAccount}
+            </button>
+            <p className="account-delete-hint">{copy.deleteExplain}</p>
           </>
         )}
 
@@ -251,6 +294,26 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
           </p>
         )}
       </div>
+
+      <AccountDeleteDialog
+        open={deleteOpen}
+        busy={ui === 'loading'}
+        copy={{
+          title: copy.deleteConfirmTitle,
+          body: copy.deleteConfirmBody,
+          keepLocal: copy.deleteKeepLocal,
+          wipeLocal: copy.deleteWipeLocal,
+          cancel: t.gameMenu.cancel,
+          wipeConfirmTitle: copy.deleteWipeConfirmTitle,
+          wipeConfirmBody: copy.deleteWipeConfirmBody,
+          wipeConfirmAction: copy.deleteWipeConfirmAction
+        }}
+        onCancel={() => {
+          if (ui === 'loading') return;
+          setDeleteOpen(false);
+        }}
+        onConfirm={(choice) => void onDeleteConfirm(choice)}
+      />
     </div>
   );
 };

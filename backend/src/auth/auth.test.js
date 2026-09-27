@@ -318,6 +318,42 @@ test('AUTH-01B account auth', async (t) => {
     );
   });
 
+  // AUTH-01E Policy B: same Google subject while pending_delete is rejected (no duplicate Account).
+  await t.test('pending_delete Google re-login rejected (Policy B)', async () => {
+    const sub = `pend-${crypto.randomBytes(3).toString('hex')}`;
+    const login = await json('POST', '/auth/google/id-token', {
+      idToken: asToken(mockPayload({ sub }))
+    });
+    assert.equal(login.status, 200);
+    const accountId = login.data.account.id;
+    const del = await json('DELETE', '/auth/account', undefined, {
+      Authorization: `Bearer ${login.data.accessToken}`
+    });
+    assert.equal(del.status, 200);
+    assert.equal(del.data.status, 'pending_delete');
+
+    const again = await json('POST', '/auth/google/id-token', {
+      idToken: asToken(mockPayload({ sub }))
+    });
+    assert.equal(again.status, 401);
+
+    // Same Google subject must still map to the same Account row (no duplicate).
+    const { getPool } = await import('../db/pool.js');
+    const pool = getPool();
+    const { rows } = await pool.query(
+      `SELECT a.id, a.status, COUNT(*)::int AS identity_count
+       FROM external_identities ei
+       JOIN accounts a ON a.id = ei.account_id
+       WHERE ei.provider = 'google' AND ei.provider_subject = $1
+       GROUP BY a.id, a.status`,
+      [sub]
+    );
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].id, accountId);
+    assert.equal(rows[0].status, 'pending_delete');
+    assert.equal(rows[0].identity_count, 1);
+  });
+
   await t.test('MP guest JWT unchanged and separate', async () => {
     const guest = await json('POST', '/auth/guest', { displayName: 'GuestMP' });
     assert.equal(guest.status, 200);

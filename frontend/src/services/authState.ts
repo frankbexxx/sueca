@@ -5,6 +5,7 @@
  * Refresh token: Web localStorage · Android Keystore secure storage.
  * Logout clears session only — keeps localGuestId and local game DATA.
  * linkedAccountId is kept after logout as historical link metadata.
+ * AUTH-01E: account delete clears linkedAccountId; optional keyed local wipe.
  */
 
 import {
@@ -17,6 +18,7 @@ import {
 import {
   signInWithGoogleIdToken,
   logoutSession,
+  deleteAccountOnServer,
   AccountAuthApiError,
   type AccountSummary
 } from './accountAuthApi';
@@ -30,7 +32,11 @@ import {
   setAccessTokenMemory,
   writeRefreshTokenDurable
 } from './authSessionStorage';
-import { fetchMeWithSession, refreshAccessTokenOnce } from './accountAuthFetch';
+import {
+  fetchMeWithSession,
+  refreshAccessTokenOnce,
+  ensureValidAccessToken
+} from './accountAuthFetch';
 import {
   isAndroidGoogleAuthConfigured,
   isWebGoogleAuthConfigured,
@@ -38,6 +44,7 @@ import {
 } from '../config/authConfig';
 import { isAndroidAuthPlatform } from '../platform/authPlatform';
 import { requestAndroidGoogleIdToken } from './googleAndroidSignIn';
+import { clearLocalUserDataAsync } from './clearLocalUserData';
 
 export type AuthAccountInfo = {
   id: string;
@@ -334,11 +341,84 @@ export async function signOut(): Promise<AuthState> {
   return getAuthState();
 }
 
-export {
-  clearLinkedAccountId,
-  getLocalGuestIdentity,
-  setLinkedAccountId
-} from './localGuestIdentity';
+export type DeleteAccountResult =
+  | { ok: true; state: AuthState; wipedLocal: boolean }
+  | {
+      ok: false;
+      reason: 'unauthorized' | 'backend' | 'network' | 'misconfigured' | 'error';
+      message?: string;
+    };
+
+/**
+ * AUTH-01E — soft-delete Suecão Account, then clear client session.
+ *
+ * - On success: Guest · clear linkedAccountId · keep localGuestId + DATA unless wipeLocalData
+ * - On backend failure: do NOT wipe local DATA; keep session if still valid
+ * - Local wipe runs only after successful server delete when requested
+ *
+ * pending_delete Google re-login is rejected server-side (no duplicate Account).
+ */
+export async function deleteAccount(options: {
+  wipeLocalData: boolean;
+}): Promise<DeleteAccountResult> {
+  ensureAuthInitialized();
+  if (!getAuthApiBaseUrl()) {
+    return { ok: false, reason: 'misconfigured' };
+  }
+
+  let access: string | null = null;
+  try {
+    access = await ensureValidAccessToken();
+  } catch {
+    access = null;
+  }
+  if (!access) {
+    return { ok: false, reason: 'unauthorized' };
+  }
+
+  try {
+    await deleteAccountOnServer(access);
+  } catch (err) {
+    if (err instanceof AccountAuthApiError) {
+      if (err.code === 'network') return { ok: false, reason: 'network', message: err.message };
+      if (err.code === 'misconfigured') return { ok: false, reason: 'misconfigured' };
+      if (err.code === 'unauthorized') {
+        // Session already dead (e.g. pending_delete) — drop to guest, keep DATA.
+        accountMemory = null;
+        try {
+          await clearAuthSessionStorageDurable();
+        } catch {
+          clearAuthSessionStorage();
+        }
+        clearLinkedAccountId();
+        notify();
+        return { ok: false, reason: 'unauthorized', message: err.message };
+      }
+      return { ok: false, reason: 'backend', message: err.message };
+    }
+    return { ok: false, reason: 'error' };
+  }
+
+  accountMemory = null;
+  try {
+    await clearAuthSessionStorageDurable();
+  } catch {
+    clearAuthSessionStorage();
+  }
+  // Account is pending_delete — drop historical link metadata.
+  clearLinkedAccountId();
+
+  let wipedLocal = false;
+  if (options.wipeLocalData) {
+    await clearLocalUserDataAsync();
+    wipedLocal = true;
+  }
+
+  notify();
+  return { ok: true, state: getAuthState(), wipedLocal };
+}
+
+export { getLocalGuestIdentity, setLinkedAccountId, clearLinkedAccountId };
 
 /** Test-only */
 export function __resetAuthStateForTests(): void {

@@ -201,7 +201,15 @@ export interface Translations {
     linkGoogle: string;
     signedInStatus: string;
     signOut: string;
-    deleteLater: string;
+    deleteAccount: string;
+    deleteExplain: string;
+    deleteConfirmTitle: string;
+    deleteConfirmBody: string;
+    deleteKeepLocal: string;
+    deleteWipeLocal: string;
+    deleteWipeConfirmTitle: string;
+    deleteWipeConfirmBody: string;
+    deleteWipeConfirmAction: string;
     loading: string;
     errorCancelled: string;
     errorMisconfigured: string;
@@ -209,6 +217,7 @@ export interface Translations {
     errorNetwork: string;
     errorBackend: string;
     errorStorage: string;
+    errorDelete: string;
     errorGeneric: string;
   };
 
@@ -487,12 +496,23 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Conta Google opcional',
       guestStatus: 'Jogar sem conta',
       guestExplain:
-        'A conta é opcional. O backup e a sincronização entre dispositivos chegarão mais tarde — ainda não estão activos.',
+        'A conta é opcional. Podes jogar localmente sem conta. Backup e sincronização ainda não estão activos.',
       configMissing: 'Ligação Google ainda não configurada neste ambiente.',
       linkGoogle: 'Ligar conta Google',
       signedInStatus: 'Conta ligada',
       signOut: 'Terminar sessão',
-      deleteLater: 'Apagar conta estará disponível em breve.',
+      deleteAccount: 'Apagar conta',
+      deleteExplain:
+        'Terminar sessão mantém a conta. Apagar conta desactiva a conta no servidor — diferente de limpar dados locais.',
+      deleteConfirmTitle: 'Apagar conta?',
+      deleteConfirmBody:
+        'A ligação Google / conta Suecão será desactivada no servidor. Os dados de jogo neste dispositivo podem ficar intactos.',
+      deleteKeepLocal: 'Manter dados neste dispositivo',
+      deleteWipeLocal: 'Também apagar dados locais',
+      deleteWipeConfirmTitle: 'Apagar também os dados locais?',
+      deleteWipeConfirmBody:
+        'Isto remove estatísticas, histórico, partidas guardadas e preferências deste dispositivo. Não dá para anular.',
+      deleteWipeConfirmAction: 'Apagar conta e dados locais',
       loading: 'Aguarde…',
       errorCancelled: 'Início de sessão cancelado.',
       errorMisconfigured: 'Google Auth não está configurado.',
@@ -500,6 +520,7 @@ export const translations: Record<Language, Translations> = {
       errorNetwork: 'Sem ligação. Tenta outra vez.',
       errorBackend: 'Não foi possível validar a conta. Tenta outra vez.',
       errorStorage: 'Não foi possível guardar a sessão com segurança.',
+      errorDelete: 'Não foi possível apagar a conta. Tenta outra vez.',
       errorGeneric: 'Não foi possível iniciar sessão com Google.'
     },
     historyScreen: {
@@ -880,12 +901,23 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Optional Google account',
       guestStatus: 'Play without an account',
       guestExplain:
-        'An account is optional. Backup and cross-device sync will come later — they are not active yet.',
+        'An account is optional. Local play works without one. Backup and sync are not active yet.',
       configMissing: 'Google linking is not configured in this environment.',
       linkGoogle: 'Link Google account',
       signedInStatus: 'Account linked',
       signOut: 'Sign out',
-      deleteLater: 'Account deletion will be available soon.',
+      deleteAccount: 'Delete account',
+      deleteExplain:
+        'Sign out keeps the account. Delete account disables the server account — distinct from clearing local data.',
+      deleteConfirmTitle: 'Delete account?',
+      deleteConfirmBody:
+        'Your Google link / Suecão account will be disabled on the server. Game data on this device can stay intact.',
+      deleteKeepLocal: 'Keep data on this device',
+      deleteWipeLocal: 'Also delete local data',
+      deleteWipeConfirmTitle: 'Also delete local data?',
+      deleteWipeConfirmBody:
+        'This removes stats, history, saved games, and preferences on this device. It cannot be undone.',
+      deleteWipeConfirmAction: 'Delete account and local data',
       loading: 'Please wait…',
       errorCancelled: 'Sign-in cancelled.',
       errorMisconfigured: 'Google Auth is not configured.',
@@ -893,6 +925,7 @@ export const translations: Record<Language, Translations> = {
       errorNetwork: 'No connection. Try again.',
       errorBackend: 'Could not validate the account. Try again.',
       errorStorage: 'Could not securely store the session.',
+      errorDelete: 'Could not delete the account. Try again.',
       errorGeneric: 'Could not sign in with Google.'
     },
     historyScreen: {

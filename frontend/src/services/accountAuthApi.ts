@@ -191,3 +191,43 @@ export async function logoutSession(
   const d = (data || {}) as { ok?: boolean; revoked?: boolean };
   return { ok: d.ok !== false, revoked: d.revoked };
 }
+
+export type DeleteAccountResponse = {
+  deleted: boolean;
+  status?: string;
+  note?: string;
+};
+
+/**
+ * Soft-delete the authenticated Suecão Account.
+ * Uses access Bearer only — no client-supplied account id.
+ */
+export async function deleteAccountOnServer(
+  accessToken: string,
+  fetchFn: FetchFn = fetch
+): Promise<DeleteAccountResponse> {
+  const base = baseUrlOrThrow();
+  let res: Response;
+  try {
+    res = await fetchFn(`${base}/auth/account`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  } catch {
+    throw new AccountAuthApiError('Network error', 0, 'network');
+  }
+  const data = await parseJson(res);
+  if (!res.ok) {
+    throw new AccountAuthApiError(
+      'Delete failed',
+      res.status,
+      res.status === 401 ? 'unauthorized' : 'request_failed'
+    );
+  }
+  const d = (data || {}) as DeleteAccountResponse;
+  return {
+    deleted: d.deleted !== false,
+    status: typeof d.status === 'string' ? d.status : undefined,
+    note: typeof d.note === 'string' ? d.note : undefined
+  };
+}

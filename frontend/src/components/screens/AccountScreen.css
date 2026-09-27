@@ -34,6 +34,21 @@
   margin-top: 0.35rem;
 }
 
+.account-delete-action {
+  margin-top: 0.75rem;
+}
+
+.account-delete-actions {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.account-delete-dialog .account-delete-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .account-gis-host {
   margin-top: 0.35rem;
   min-height: 44px;
