@@ -3,6 +3,8 @@
  * Implement with @capacitor-community/in-app-purchases or native plugin.
  */
 
+import { bumpSyncablePrefsRevision } from './syncablePrefsRevision';
+
 export type BuiltInThemeId =
   | 'classic' | 'forest' | 'midnight'
   | 'thebes' | 'tikal' | 'thule'
@@ -63,4 +65,6 @@ export function getActiveTheme(): ThemeId {
 
 export function setActiveTheme(theme: ThemeId): void {
   localStorage.setItem('suecao-theme', theme as string);
+  // SYNC-01A — local prefs mutation counter (not cross-device authority).
+  bumpSyncablePrefsRevision();
 }

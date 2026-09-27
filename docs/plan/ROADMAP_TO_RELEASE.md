@@ -162,7 +162,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | DONE | LEVEL 1 reconstructable diagnostic logs · IndexedDB + LS fallback · newest 50 · King auction/Festa/AI decisions · Hearts PASS · Spades BID · JSON export + anonymise · real OPPO export/share smoke · deterministic LEVEL 2 explicitly NOT implemented. Closed on device validation | P1 | NO | DONE |
 | REL-AUTH-01 | Optional account / Google sign-in | DONE | AUTH-01A–F closed. Login optional · LocalGuest · Google proof only · Suecão Account + session · Conta UI · logout · soft-delete Policy B · Web GIS + Android Capgo · secure Android refresh · Web refresh temporary localStorage (XSS caveat). See `AUTH_RELEASE_BASELINE_01F.md` | P1 | YES | DONE |
-| REL-SYNC-01 | Cloud backup and sync | READY | UNBLOCKED by AUTH · **NOT STARTED**. Sync history · stats · profile/P1 · per-game names · difficulty · selected prefs; local-first; safe guest→account adoption; never destructive auto-merge; append-only matches by stable id. **No** music cache / sessionStorage / ads counters | P1 | YES | READY / NOT STARTED |
+| REL-SYNC-01 | Cloud backup and sync | IN PROGRESS | Design + **SYNC-01A DONE** (contract · local meta · binding guards · prefs revision · legacyStatsSeed · zero network). **SYNC-01B READY FOR IMPLEMENTATION** (network sync). Class A: history · setup/hand/theme prefs. Stats = seed + history. See `SYNC_V1_CONTRACT.md` | P1 | YES | IN PROGRESS |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
@@ -205,7 +205,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 2. `REL-DATA-02` — real match history — **DONE**
 3. `REL-REPLAY-01` — diagnostic logs — **DONE**
 4. `REL-AUTH-01` — optional Google / Suecão account — **DONE** (AUTH-01A–F)
-5. `REL-SYNC-01` — cloud backup after AUTH — **READY / UNBLOCKED · NOT STARTED**
+5. `REL-SYNC-01` — cloud backup after AUTH — **IN PROGRESS** (`SYNC-01A` DONE · `SYNC-01B` READY)
 6. Personalisation redesign (`REL-PERS-01`) resumes afterwards unless priorities change
 
 **Dependency order:**
@@ -214,7 +214,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 REL-DATA-01
   → REL-DATA-02 → REL-SYNC-01
   → REL-REPLAY-01 (DONE; parallel path closed)
-REL-AUTH-01 (DONE) → REL-SYNC-01 (READY / NOT STARTED)
+REL-AUTH-01 (DONE) → REL-SYNC-01 (IN PROGRESS · SYNC-01A DONE)
 ```
 
 | ID | Summary | Priority | Status |
@@ -223,7 +223,7 @@ REL-AUTH-01 (DONE) → REL-SYNC-01 (READY / NOT STARTED)
 | REL-DATA-02 | Real match history | P0 | DONE |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | DONE |
 | REL-AUTH-01 | Optional Google / Suecão account | P1 | DONE |
-| REL-SYNC-01 | Cloud backup and sync | P1 | READY / UNBLOCKED · NOT STARTED |
+| REL-SYNC-01 | Cloud backup and sync | P1 | IN PROGRESS (SYNC-01A DONE · SYNC-01B READY) |
 
 ### Persistence audit findings (2026-09-26)
 
@@ -257,7 +257,7 @@ Do **not** overstate the tester “~160 King games lost” report as proven app 
 
 ### Auth / sync product notes (approved architecture)
 
-**Status:** `REL-AUTH-01` → **DONE**. `REL-SYNC-01` → **READY / UNBLOCKED · NOT STARTED**. Final notes: `docs/plan/AUTH_RELEASE_BASELINE_01F.md`.
+**Status:** `REL-AUTH-01` → **DONE**. `REL-SYNC-01` → **IN PROGRESS** (`SYNC-01A` DONE · `SYNC-01B` READY FOR IMPLEMENTATION). Contract: `docs/plan/SYNC_V1_CONTRACT.md`. Auth baseline: `docs/plan/AUTH_RELEASE_BASELINE_01F.md`.
 
 #### Product decisions
 
@@ -354,10 +354,19 @@ LocalGuest → user chooses Google → backend validates Google
 - Google consent · privacy URL · support contact · Data Safety review
 - Postgres hosting · auth backend deployment/env
 
-#### Sync boundary (`REL-SYNC-01`) — READY / NOT STARTED
+#### Sync boundary (`REL-SYNC-01`) — IN PROGRESS
 
-- Sync candidates: match history · stats · P1/profile · per-game names · difficulty · selected prefs.
-- Do **not** sync: music binaries/cache · sessionStorage · ads counters · diagnostic logs · disposable caches.
+| Slice | Status |
+|-------|--------|
+| **SYNC-01A** | **DONE** — v1 contract · `sueca-sync-meta-v1` · binding guards · logout keeps bind · delete/wipe clears bind · syncable prefs adapter + `localPrefsRevision` · `legacyStatsSeed` · first-link state model · **zero** sync HTTP |
+| **SYNC-01B** | **READY FOR IMPLEMENTATION** — network sync / first-link UX / server revisions |
+| **SYNC-01C+** | Outbox / offline queue (later) |
+
+- Class A sync: match history · setup prefs · hand/card/table prefs · active theme.
+- Stats **not** synced directly: `legacyStatsSeed + derived history`.
+- Do **not** sync: career aggregates · sessions · pinned · finished UI · custom themes · music/SFX · language · diagnostics · LocalGuest · tokens · MP guest · caches · quarantine.
+- First-link: history always append+dedupe; prefs single choice (device vs cloud).
+- Conflict authority: server monotonic revision (not client wall-clock).
 - Mid-game resume sync stays out of v1 unless explicitly promoted.
 - `AI-KING-FESTA-PLAY-01` remains later AI quality work (can consume diagnostic exports from `REL-REPLAY-01`).
 
@@ -471,9 +480,9 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 | **P1** | 12 open+done tracking rows (`REL-HOME/PLAYERS/DIFF/KING` DONE · `REL-HIST` SUPERSEDED · `REL-REPLAY/AUTH/SYNC` new · `REL-OXS/ANDROID/WEB/DOCS` open) |
 | **P2** | 4 (+ `REL-PERS-01` if kept deferred as P2-class) |
 | **FUTURE** | 3 |
-| **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); Auth (`REL-AUTH-01`) DONE; Sync READY/NOT STARTED; MP + Personalisation still pending |
+| **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); Auth (`REL-AUTH-01`) DONE; Sync IN PROGRESS (01A DONE); MP + Personalisation still pending |
 
-Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01`/`REL-AUTH-01` DONE · `REL-SYNC-01` READY / UNBLOCKED · NOT STARTED.
+Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01`/`REL-AUTH-01` DONE · `REL-SYNC-01` IN PROGRESS (`SYNC-01A` DONE · `SYNC-01B` READY).
 
 **`REL-REPLAY-01` evidence:** LEVEL 1 reconstruct (not LEVEL 2) · IndexedDB + LS fallback · retention 50 · King auction/Festa/AI · Hearts PASS · Spades BID · Mais → Exportar dados de diagnóstico · Android share sheet · anonymise · OPPO `adb install -r` export smoke.
 
@@ -492,6 +501,8 @@ Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01`/`REL-AUTH-01` 
 | [`THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md`](./THEME_ARCHITECTURE_STAGE_14_RELEASE_GATE.md) | Architecture gate PASS |
 | [`POST_ARCHITECTURE_UX_DIRECTION.md`](./POST_ARCHITECTURE_UX_DIRECTION.md) | Post-arch UX directions |
 | [`ROADMAP_REBASE_SEPTEMBER_2026.md`](./ROADMAP_REBASE_SEPTEMBER_2026.md) | Historical September rebase — **superseded for release tracking** |
+| [`SYNC_V1_CONTRACT.md`](./SYNC_V1_CONTRACT.md) | Sync v1 contract (SYNC-01A) |
+| [`AUTH_RELEASE_BASELINE_01F.md`](./AUTH_RELEASE_BASELINE_01F.md) | Auth release baseline |
 | [`../RELEASE_CHECK.md`](../RELEASE_CHECK.md) | Smoke checklist |
 | [`../ASSETS.md`](../ASSETS.md) | Casino licence status |
 | [`../ANDROID_SIGNING.md`](../ANDROID_SIGNING.md) | AAB signing |

@@ -319,7 +319,7 @@ export function mapGoogleProviderFailure(reason: string, message?: string): Sign
 
 /**
  * Revoke refresh when possible; clear Suecão session; stay guest.
- * Keeps localGuestId, game DATA, and linkedAccountId metadata.
+ * Keeps localGuestId, game DATA, linkedAccountId, and syncBoundAccountId (SYNC-01A).
  * Android also clears Keystore refresh token.
  */
 export async function signOut(): Promise<AuthState> {
@@ -391,6 +391,8 @@ export async function deleteAccount(options: {
           clearAuthSessionStorage();
         }
         clearLinkedAccountId();
+        const { clearAllSyncLocalState } = await import('./clearSyncLocalState');
+        clearAllSyncLocalState();
         notify();
         return { ok: false, reason: 'unauthorized', message: err.message };
       }
@@ -405,8 +407,10 @@ export async function deleteAccount(options: {
   } catch {
     clearAuthSessionStorage();
   }
-  // Account is pending_delete — drop historical link metadata.
+  // Account is pending_delete — drop historical link metadata + sync binding.
   clearLinkedAccountId();
+  const { clearAllSyncLocalState } = await import('./clearSyncLocalState');
+  clearAllSyncLocalState();
 
   let wipedLocal = false;
   if (options.wipeLocalData) {

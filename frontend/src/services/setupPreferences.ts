@@ -13,6 +13,7 @@
 import { AIDifficulty, GameVariant } from '../types/game';
 import { DEFAULT_AI_DIFFICULTY, DEFAULT_PLAYER_NAMES, STORAGE_KEYS } from '../constants/gameConstants';
 import { quarantineCorruptRaw } from './durableLocalStorage';
+import { bumpSyncablePrefsRevision } from './syncablePrefsRevision';
 
 export const SETUP_PREFS_KEY = 'sueca-setup-prefs-v1';
 const LAST_CONFIG_KEY = 'sueca-last-config';
@@ -159,6 +160,8 @@ export function persistSetupPrefs(prefs: SetupPrefsV1, syncLegacyForVariant?: Ga
   const assembled = assemblePlayerNames(prefs, variant);
   localStorage.setItem(STORAGE_KEYS.PLAYER_NAMES, JSON.stringify(assembled));
   localStorage.setItem(STORAGE_KEYS.AI_DIFFICULTY, prefs.difficultyByVariant[variant]);
+  // SYNC-01A — local prefs mutation counter (not cross-device authority).
+  bumpSyncablePrefsRevision();
 }
 
 export function assemblePlayerNames(prefs: SetupPrefsV1, variant: GameVariant): string[] {

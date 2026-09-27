@@ -1,5 +1,6 @@
 import { Suit } from '../types/game';
 import { STORAGE_KEYS } from './gameConstants';
+import { bumpSyncablePrefsRevision } from '../services/syncablePrefsRevision';
 
 export type TrumpPosition = 'left' | 'right' | 'natural';
 
@@ -74,5 +75,13 @@ export function saveHandPreferences(prefs: Partial<HandPreferences>): void {
   }
   if (prefs.trumpPosition !== undefined) {
     localStorage.setItem(STORAGE_KEYS.TRUMP_POSITION, prefs.trumpPosition);
+  }
+  // SYNC-01A — local prefs mutation counter (not cross-device authority).
+  if (
+    prefs.sortEnabled !== undefined ||
+    prefs.suitOrderPreset !== undefined ||
+    prefs.trumpPosition !== undefined
+  ) {
+    bumpSyncablePrefsRevision();
   }
 }

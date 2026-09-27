@@ -19,6 +19,9 @@ import {
   DURABLE_QUARANTINE_KEY
 } from './durableLocalStorage';
 import { MUSIC_SETTINGS_KEY, LEGACY_MUSIC_MODE_KEY } from '../audio/musicSettings';
+import { SYNC_META_KEY } from './syncMetadata';
+import { SYNCABLE_PREFS_META_KEY } from './syncablePrefsRevision';
+import { LEGACY_STATS_SEED_KEY } from './legacyStatsSeed';
 
 /** Custom themes storage key (customThemeStorage). */
 export const CUSTOM_THEMES_KEY = 'suecao-custom-themes';
@@ -36,6 +39,10 @@ export const LOCAL_USER_DATA_KEYS: readonly string[] = [
   // Identity + account link metadata
   LOCAL_GUEST_KEY,
   AUTH_REFRESH_STORAGE_KEY,
+  // Sync metadata (SYNC-01A)
+  SYNC_META_KEY,
+  SYNCABLE_PREFS_META_KEY,
+  LEGACY_STATS_SEED_KEY,
   // Career / history / sessions
   STATS_KEY,
   MATCH_HISTORY_KEY,
@@ -51,12 +58,14 @@ export const LOCAL_USER_DATA_KEYS: readonly string[] = [
   STORAGE_KEYS.DEALING_METHOD,
   STORAGE_KEYS.SORT_HAND,
   STORAGE_KEYS.HAND_SUIT_ORDER,
+  `${STORAGE_KEYS.HAND_SUIT_ORDER}-custom`,
   STORAGE_KEYS.TRUMP_POSITION,
   STORAGE_KEYS.AUTO_PAUSE_TRICK,
   'sueca-game-variant',
   'sueca-rules-preset',
   // Themes
   CUSTOM_THEMES_KEY,
+  'suecao-theme',
   // Audio prefs (not language)
   MUSIC_SETTINGS_KEY,
   LEGACY_MUSIC_MODE_KEY,

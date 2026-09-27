@@ -18,6 +18,7 @@ import {
   setDifficultyForVariant
 } from '../services/setupPreferences';
 import { DEFAULT_PLAYER_NAMES } from '../constants/gameConstants';
+import { bumpSyncablePrefsRevision } from '../services/syncablePrefsRevision';
 
 export function useGameSetup(
   initialVariant?: GameVariant,
@@ -111,7 +112,12 @@ export function useGameSetup(
   };
 
   useEffect(() => {
+    const prev = localStorage.getItem('sueca-dealing-method');
     localStorage.setItem('sueca-dealing-method', dealingMethod);
+    // SYNC-01A — bump only on real user change, not first hydrate.
+    if (prev !== null && prev !== dealingMethod) {
+      bumpSyncablePrefsRevision();
+    }
   }, [dealingMethod]);
 
   useEffect(() => {
