@@ -1,11 +1,12 @@
 /**
- * SYNC-01A — match history sync readiness helpers (no mutation of stored history).
+ * SYNC-01A/01D — match history sync readiness + merge helpers.
  */
 
 import {
   loadMatchHistory,
   type MatchHistoryRecord
 } from './matchHistoryStorage';
+import { mergeMatchHistoryForFirstLink } from './syncHistoryMerge';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -47,35 +48,13 @@ export function assessMatchHistorySyncReadiness(
 
 /**
  * Merge two history lists by append + dedupe (primary id, secondary idempotencyKey).
- * Pure helper for future sync — does not write storage.
+ * Accepts UUID and legacy migrated-finished-* ids. Pure — does not write storage.
  */
 export function mergeMatchHistoryDedupe(
   local: MatchHistoryRecord[],
   remote: MatchHistoryRecord[]
 ): MatchHistoryRecord[] {
-  const byId = new Map<string, MatchHistoryRecord>();
-  const byIdem = new Map<string, string>();
-
-  const consider = (r: MatchHistoryRecord) => {
-    if (!isStableMatchHistoryId(r.id)) {
-      // Blocker records are skipped from merge output rather than rewritten.
-      return;
-    }
-    if (r.idempotencyKey) {
-      const existingId = byIdem.get(r.idempotencyKey);
-      if (existingId && existingId !== r.id) {
-        // Prefer first-seen; skip duplicate completion event under different id.
-        return;
-      }
-      byIdem.set(r.idempotencyKey, r.id);
-    }
-    if (!byId.has(r.id)) byId.set(r.id, r);
-  };
-
-  for (const r of local) consider(r);
-  for (const r of remote) consider(r);
-
-  return Array.from(byId.values()).sort((a, b) =>
-    String(b.completedAt).localeCompare(String(a.completedAt))
-  );
+  return mergeMatchHistoryForFirstLink(local, remote).merged;
 }
+
+export { mergeMatchHistoryForFirstLink } from './syncHistoryMerge';

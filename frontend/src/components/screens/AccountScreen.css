@@ -72,3 +72,24 @@
   color: #b42318;
   font-size: 0.9rem;
 }
+
+.account-sync-section {
+  margin-top: 0.5rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.account-sync-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.account-sync-status {
+  margin: 0;
+  font-size: 0.88rem;
+  opacity: 0.85;
+}

@@ -6,6 +6,7 @@ import { LEGACY_STATS_SEED_KEY, clearLegacyStatsSeed } from './legacyStatsSeed';
 import { SYNC_META_KEY } from './syncMetadata';
 import { SYNCABLE_PREFS_META_KEY } from './syncablePrefsRevision';
 import { SYNC_OUTBOX_KEY, clearAllOutbox } from './syncOutbox';
+import { FIRST_LINK_SESSION_KEY, clearFirstLinkSession } from './syncFirstLinkSession';
 
 export function clearAllSyncLocalState(): void {
   try {
@@ -17,6 +18,18 @@ export function clearAllSyncLocalState(): void {
       /* ignore */
     }
   }
+  clearFirstLinkSession();
+  try {
+    // Account Class A snapshots
+    const toRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('sueca-sync-account-snapshot-v1:')) toRemove.push(k);
+    }
+    for (const k of toRemove) localStorage.removeItem(k);
+  } catch {
+    /* ignore */
+  }
   try {
     localStorage.removeItem(SYNC_META_KEY);
   } catch {
@@ -24,6 +37,11 @@ export function clearAllSyncLocalState(): void {
   }
   try {
     localStorage.removeItem(SYNCABLE_PREFS_META_KEY);
+  } catch {
+    /* ignore */
+  }
+  try {
+    localStorage.removeItem(FIRST_LINK_SESSION_KEY);
   } catch {
     /* ignore */
   }
@@ -35,4 +53,10 @@ export function clearAllSyncLocalState(): void {
   }
 }
 
-export { SYNC_META_KEY, SYNCABLE_PREFS_META_KEY, LEGACY_STATS_SEED_KEY, SYNC_OUTBOX_KEY };
+export {
+  SYNC_META_KEY,
+  SYNCABLE_PREFS_META_KEY,
+  LEGACY_STATS_SEED_KEY,
+  SYNC_OUTBOX_KEY,
+  FIRST_LINK_SESSION_KEY
+};

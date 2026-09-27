@@ -66,9 +66,12 @@ describe('SYNC-01A matchHistorySync', () => {
 
     const merged = mergeMatchHistoryDedupe([a, migrated], [aDup, bSameKey, c]);
     const ids = merged.map((r) => r.id).sort();
+    // SYNC-01D: legacy migrated-* ids are preserved (not dropped).
+    // Secondary idempotencyKey drops bSameKey (same key as a).
     expect(ids).toEqual([
       'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-      'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+      'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      'migrated-finished-sueca-1'
     ]);
     expect(merged.find((r) => r.id === a.id)?.summary).toBe('x');
   });

@@ -162,7 +162,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-HIST-01 | History / Stats / Persistence | SUPERSEDED | Career history + preset-keyed records absorbed by `REL-DATA-02`. Do not implement separately. | P1 | — | SUPERSEDED |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | DONE | LEVEL 1 reconstructable diagnostic logs · IndexedDB + LS fallback · newest 50 · King auction/Festa/AI decisions · Hearts PASS · Spades BID · JSON export + anonymise · real OPPO export/share smoke · deterministic LEVEL 2 explicitly NOT implemented. Closed on device validation | P1 | NO | DONE |
 | REL-AUTH-01 | Optional account / Google sign-in | DONE | AUTH-01A–F closed. Login optional · LocalGuest · Google proof only · Suecão Account + session · Conta UI · logout · soft-delete Policy B · Web GIS + Android Capgo · secure Android refresh · Web refresh temporary localStorage (XSS caveat). See `AUTH_RELEASE_BASELINE_01F.md` | P1 | YES | DONE |
-| REL-SYNC-01 | Cloud backup and sync | IN PROGRESS | **SYNC-01A/01B/01C DONE** (local meta · backend API · client engine/outbox). **SYNC-01D READY** (first-link UX). See `SYNC_V1_CONTRACT.md` | P1 | YES | IN PROGRESS |
+| REL-SYNC-01 | Cloud backup and sync | IN PROGRESS | **SYNC-01A/01B/01C/01D DONE**. **SYNC-01E READY FOR DEVICE / MULTI-DEVICE VALIDATION**. See `SYNC_V1_CONTRACT.md` | P1 | YES | IN PROGRESS |
 | REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
@@ -205,7 +205,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 2. `REL-DATA-02` — real match history — **DONE**
 3. `REL-REPLAY-01` — diagnostic logs — **DONE**
 4. `REL-AUTH-01` — optional Google / Suecão account — **DONE** (AUTH-01A–F)
-5. `REL-SYNC-01` — cloud backup after AUTH — **IN PROGRESS** (`SYNC-01A`/`01B`/`01C` DONE · `SYNC-01D` READY)
+5. `REL-SYNC-01` — cloud backup after AUTH — **IN PROGRESS** (`SYNC-01A`/`01B`/`01C`/`01D` DONE · `SYNC-01E` READY)
 6. Personalisation redesign (`REL-PERS-01`) resumes afterwards unless priorities change
 
 **Dependency order:**
@@ -214,7 +214,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 REL-DATA-01
   → REL-DATA-02 → REL-SYNC-01
   → REL-REPLAY-01 (DONE; parallel path closed)
-REL-AUTH-01 (DONE) → REL-SYNC-01 (IN PROGRESS · SYNC-01A/01B/01C DONE · SYNC-01D READY)
+REL-AUTH-01 (DONE) → REL-SYNC-01 (IN PROGRESS · SYNC-01A/01B/01C/01D DONE · SYNC-01E READY)
 ```
 
 | ID | Summary | Priority | Status |
@@ -223,7 +223,7 @@ REL-AUTH-01 (DONE) → REL-SYNC-01 (IN PROGRESS · SYNC-01A/01B/01C DONE · SYNC
 | REL-DATA-02 | Real match history | P0 | DONE |
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | P1 | DONE |
 | REL-AUTH-01 | Optional Google / Suecão account | P1 | DONE |
-| REL-SYNC-01 | Cloud backup and sync | P1 | IN PROGRESS (SYNC-01A/01B/01C DONE · SYNC-01D READY) |
+| REL-SYNC-01 | Cloud backup and sync | P1 | IN PROGRESS (SYNC-01A/01B/01C/01D DONE · SYNC-01E READY) |
 
 ### Persistence audit findings (2026-09-26)
 
@@ -257,7 +257,7 @@ Do **not** overstate the tester “~160 King games lost” report as proven app 
 
 ### Auth / sync product notes (approved architecture)
 
-**Status:** `REL-AUTH-01` → **DONE**. `REL-SYNC-01` → **IN PROGRESS** (`SYNC-01A`/`01B`/`01C` DONE · `SYNC-01D` READY FOR IMPLEMENTATION). Contract: `docs/plan/SYNC_V1_CONTRACT.md`. Auth baseline: `docs/plan/AUTH_RELEASE_BASELINE_01F.md`.
+**Status:** `REL-AUTH-01` → **DONE**. `REL-SYNC-01` → **IN PROGRESS** (`SYNC-01A`/`01B`/`01C`/`01D` DONE · `SYNC-01E` READY FOR DEVICE / MULTI-DEVICE VALIDATION). Contract: `docs/plan/SYNC_V1_CONTRACT.md`. Auth baseline: `docs/plan/AUTH_RELEASE_BASELINE_01F.md`.
 
 #### Product decisions
 
@@ -361,7 +361,8 @@ LocalGuest → user chooses Google → backend validates Google
 | **SYNC-01A** | **DONE** — v1 contract · `sueca-sync-meta-v1` · binding guards · logout keeps bind · delete/wipe clears bind · syncable prefs adapter + `localPrefsRevision` · `legacyStatsSeed` · first-link state model · **zero** client sync HTTP |
 | **SYNC-01B** | **DONE** — Postgres `sync_*` tables · `/sync/status|snapshot|history|prefs|legacy-stats-seed` · server revisions · CAS prefs · immutable seed · Account isolation · **no client activation** |
 | **SYNC-01C** | **DONE** — sync API client · `sueca-sync-outbox-v1` · engine states · pull/push · retries · account/first-link guards · **no first-link UX** |
-| **SYNC-01D** | **READY FOR IMPLEMENTATION** — first-link / account-switch resolution UX |
+| **SYNC-01D** | **DONE** — first-link cases A–E · meaningful data rules · history merge · Conta setup dialog · account Class A snapshots · crash-recoverable session · seed mismatch block · manual sync CTA |
+| **SYNC-01E** | **READY FOR DEVICE / MULTI-DEVICE VALIDATION** — OPPO Conta first-link · multi-device polish |
 | **SYNC-01D+** | Outbox polish / Conta sync controls (later) |
 
 - Class A sync: match history · setup prefs · hand/card/table prefs · active theme.
@@ -484,7 +485,7 @@ Optional device smoke for GLOBAL-UI-02/03 / CARDS / King density may ride with `
 | **FUTURE** | 3 |
 | **Product decisions** | open checkboxes reduced (players/difficulty/King Home selector closed); Auth (`REL-AUTH-01`) DONE; Sync IN PROGRESS (01A/01B/01C DONE); MP + Personalisation still pending |
 
-Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01`/`REL-AUTH-01` DONE · `REL-SYNC-01` IN PROGRESS (`SYNC-01A`/`01B`/`01C` DONE · `SYNC-01D` READY).
+Open Data–Sync set: `REL-DATA-01`/`REL-DATA-02`/`REL-REPLAY-01`/`REL-AUTH-01` DONE · `REL-SYNC-01` IN PROGRESS (`SYNC-01A`/`01B`/`01C`/`01D` DONE · `SYNC-01E` READY).
 
 **`REL-REPLAY-01` evidence:** LEVEL 1 reconstruct (not LEVEL 2) · IndexedDB + LS fallback · retention 50 · King auction/Festa/AI · Hearts PASS · Spades BID · Mais → Exportar dados de diagnóstico · Android share sheet · anonymise · OPPO `adb install -r` export smoke.
 

@@ -219,6 +219,32 @@ export interface Translations {
     errorStorage: string;
     errorDelete: string;
     errorGeneric: string;
+    /** SYNC-01D Conta sync */
+    syncSectionTitle: string;
+    syncStatusSetupRequired: string;
+    syncStatusSynced: string;
+    syncStatusSyncing: string;
+    syncStatusOffline: string;
+    syncStatusError: string;
+    syncStatusAccountMismatch: string;
+    syncConfigureCta: string;
+    syncNowCta: string;
+    syncInfoABody: string;
+    syncInfoAConfirm: string;
+    syncPrefsTitle: string;
+    syncPrefsBody: string;
+    syncPrefsDevice: string;
+    syncPrefsCloud: string;
+    syncSwitchTitle: string;
+    syncSwitchBody: string;
+    syncSwitchUseCloud: string;
+    syncSwitchStay: string;
+    syncSeedMismatchTitle: string;
+    syncSeedMismatchBody: string;
+    syncBusy: string;
+    syncError: string;
+    syncRetry: string;
+    syncCancel: string;
   };
 
   historyScreen: {
@@ -496,7 +522,7 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Conta Google opcional',
       guestStatus: 'Jogar sem conta',
       guestExplain:
-        'A conta é opcional. Podes jogar localmente sem conta. Backup e sincronização ainda não estão activos.',
+        'A conta é opcional. Podes jogar localmente sem conta. Depois de ligares a conta, podes configurar a sincronização quando quiseres.',
       configMissing: 'Ligação Google ainda não configurada neste ambiente.',
       linkGoogle: 'Ligar conta Google',
       signedInStatus: 'Conta ligada',
@@ -521,7 +547,34 @@ export const translations: Record<Language, Translations> = {
       errorBackend: 'Não foi possível validar a conta. Tenta outra vez.',
       errorStorage: 'Não foi possível guardar a sessão com segurança.',
       errorDelete: 'Não foi possível apagar a conta. Tenta outra vez.',
-      errorGeneric: 'Não foi possível iniciar sessão com Google.'
+      errorGeneric: 'Não foi possível iniciar sessão com Google.',
+      syncSectionTitle: 'Sincronização',
+      syncStatusSetupRequired: 'Sincronização por configurar',
+      syncStatusSynced: 'Sincronizado',
+      syncStatusSyncing: 'A sincronizar…',
+      syncStatusOffline: 'Sem ligação',
+      syncStatusError: 'Erro de sincronização',
+      syncStatusAccountMismatch: 'Conta diferente neste dispositivo',
+      syncConfigureCta: 'Configurar sincronização',
+      syncNowCta: 'Sincronizar agora',
+      syncInfoABody: 'Os dados deste dispositivo serão associados à tua conta.',
+      syncInfoAConfirm: 'Continuar',
+      syncPrefsTitle: 'Que preferências queres manter?',
+      syncPrefsBody:
+        'O histórico das partidas será combinado automaticamente. Esta escolha afecta apenas preferências visuais/de jogo sincronizáveis.',
+      syncPrefsDevice: 'As deste dispositivo',
+      syncPrefsCloud: 'As da cloud',
+      syncSwitchTitle: 'Usar esta conta neste dispositivo?',
+      syncSwitchBody: 'Este dispositivo tem dados associados a outra conta.',
+      syncSwitchUseCloud: 'Usar os dados desta conta',
+      syncSwitchStay: 'Continuar sem sincronizar',
+      syncSeedMismatchTitle: 'Não foi possível concluir a sincronização',
+      syncSeedMismatchBody:
+        'Há dados de estatísticas antigas diferentes neste dispositivo e na conta. Contacta o suporte ou resolve noutro dispositivo — não são misturados automaticamente.',
+      syncBusy: 'A configurar sincronização…',
+      syncError: 'Não foi possível configurar a sincronização. Tenta outra vez.',
+      syncRetry: 'Tentar outra vez',
+      syncCancel: 'Cancelar'
     },
     historyScreen: {
       title: 'Histórico',
@@ -901,7 +954,7 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Optional Google account',
       guestStatus: 'Play without an account',
       guestExplain:
-        'An account is optional. Local play works without one. Backup and sync are not active yet.',
+        'An account is optional. Local play works without one. After you link an account, you can set up sync whenever you want.',
       configMissing: 'Google linking is not configured in this environment.',
       linkGoogle: 'Link Google account',
       signedInStatus: 'Account linked',
@@ -926,7 +979,34 @@ export const translations: Record<Language, Translations> = {
       errorBackend: 'Could not validate the account. Try again.',
       errorStorage: 'Could not securely store the session.',
       errorDelete: 'Could not delete the account. Try again.',
-      errorGeneric: 'Could not sign in with Google.'
+      errorGeneric: 'Could not sign in with Google.',
+      syncSectionTitle: 'Sync',
+      syncStatusSetupRequired: 'Sync not set up',
+      syncStatusSynced: 'Synced',
+      syncStatusSyncing: 'Syncing…',
+      syncStatusOffline: 'No connection',
+      syncStatusError: 'Sync error',
+      syncStatusAccountMismatch: 'Different account on this device',
+      syncConfigureCta: 'Set up sync',
+      syncNowCta: 'Sync now',
+      syncInfoABody: 'Data on this device will be linked to your account.',
+      syncInfoAConfirm: 'Continue',
+      syncPrefsTitle: 'Which preferences do you want to keep?',
+      syncPrefsBody:
+        'Match history will be combined automatically. This choice only affects syncable visual/game preferences.',
+      syncPrefsDevice: 'This device’s',
+      syncPrefsCloud: 'The cloud’s',
+      syncSwitchTitle: 'Use this account on this device?',
+      syncSwitchBody: 'This device has data linked to another account.',
+      syncSwitchUseCloud: 'Use this account’s data',
+      syncSwitchStay: 'Continue without syncing',
+      syncSeedMismatchTitle: 'Could not finish sync setup',
+      syncSeedMismatchBody:
+        'Legacy stats on this device and on the account differ. Contact support or resolve on another device — they are not merged automatically.',
+      syncBusy: 'Setting up sync…',
+      syncError: 'Could not set up sync. Try again.',
+      syncRetry: 'Try again',
+      syncCancel: 'Cancel'
     },
     historyScreen: {
       title: 'History',

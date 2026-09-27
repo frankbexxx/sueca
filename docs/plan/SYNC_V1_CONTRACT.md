@@ -1,7 +1,7 @@
 # Suecão Sync v1 Contract (REL-SYNC-01 / SYNC-01A)
 
-**Status:** SYNC-01A DONE · SYNC-01B DONE · **SYNC-01C DONE** (client engine + outbox).
-**First-link UX:** not started (**SYNC-01D READY FOR IMPLEMENTATION**).
+**Status:** SYNC-01A–**01D DONE** · **SYNC-01E READY FOR IMPLEMENTATION**.
+**First-link UX:** **SYNC-01D DONE** (Conta setup · cases A–E · account snapshots).
 **Auth baseline:** REL-AUTH-01 DONE (`AUTH_RELEASE_BASELINE_01F.md`).
 **Prefs storage strategy:** **A — adapter layer** — existing keys remain UX source of truth; `sueca-syncable-prefs-v1` stores only `localPrefsRevision` / `localUpdatedAt`; `buildSyncablePrefsDocument()` assembles the future sync payload. Chosen as smallest safe approach (no destructive migration).
 
@@ -239,6 +239,94 @@ Authenticated startup/resume **only if** READY_INCREMENTAL · match complete enq
 
 History backend idempotency · prefs CAS · seed create-once. Resend after kill is safe.
 
-## SYNC-01D (next)
+## SYNC-01D — first-link + account-switch UX
 
-First-link / account-switch resolution UX (prefs choice, seed conflict UI).
+**Status: DONE** (service + Conta UI + focused tests; no OPPO required for this slice).
+
+### Meaningful Class A data
+
+**Local meaningful when any of:**
+- match history count > 0
+- `legacyStatsSeed` metrics non-zero
+- syncable prefs differ from product defaults (setup / hand / theme / dealing / auto-pause)
+
+**Not meaningful:** LocalGuest id alone · auth/session metadata · default prefs.
+
+**Cloud meaningful when any of:**
+- history rows > 0
+- `prefsRevision > 0` or prefs document present
+- `hasLegacyStatsSeed` / non-zero cloud seed
+
+Account existence alone ≠ cloud DATA.
+
+### Cases (deterministic resolver)
+
+| Case | Condition | Behaviour |
+|------|-----------|-----------|
+| **A** `CLOUD_EMPTY_LOCAL_HAS_DATA` | local meaningful · cloud empty | no chooser · informational Conta copy · bind · upload history/prefs/seed · mark first-link complete |
+| **B** `CLOUD_HAS_DATA_LOCAL_EMPTY` | cloud meaningful · local trivial | no chooser · download/apply cloud · bind · complete (preserve LocalGuest) |
+| **C** `BOTH_HAVE_DATA` | both meaningful | history **always** merge+dedupe · **one** prefs question (device vs cloud) · no replace-history · no third option |
+| **D** `SAME_ACCOUNT_RESUME` | bound == auth · first-link done | no chooser · incremental SYNC-01C |
+| **E** `ACCOUNT_SWITCH` | bound ≠ auth | block A outbox upload to B · explicit Conta resolution · **no** A→B merge |
+
+### Case C prefs
+
+- **Device:** keep local prefs · PUT with server `baseRevision` · stale → refetch + retry once keeping intent
+- **Cloud:** apply cloud prefs · do not upload superseded local prefs
+- Pending `prefsChoice` persisted in `sueca-sync-first-link-v1` until COMPLETE
+
+### Account-switch (E) — HARD GATE
+
+Class A keys are still **device-global**. Before applying B’s cloud view:
+
+1. Snapshot A under `sueca-sync-account-snapshot-v1:<accountId>` (history · prefs doc · seed · revisions)
+2. Prefer restore of prior B snapshot if present; else clear visible Class A to defaults then apply B cloud
+3. Rebind only after explicit “Usar os dados desta conta”
+4. A-bound outbox retained locally; never sent while bound to B
+5. Option “Continuar sem sincronizar” leaves sync unresolved (no mutation)
+6. A’s snapshot remains on device so a future return to A can restore that Class A view
+
+No cross-account merge in v1.
+
+### Account Class A snapshot store
+
+| Key | `sueca-sync-account-snapshot-v1:<accountId>` |
+|-----|-----------------------------------------------|
+| Contents | history (≤2000) · syncable prefs document · `legacyStatsSeed` · `historyRevision` / `prefsRevision` · `savedAt` |
+| **Never** stored | auth/access/refresh tokens · Google tokens · email · LocalGuest id · MP credentials · diagnostics · music/cache · non–Class-A keys |
+| Retention | one snapshot per Account id; `saveAccountClassASnapshot` **overwrites** that Account’s prior snapshot |
+| Delete Account | `clearAllSyncLocalState` removes **all** `sueca-sync-account-snapshot-v1:*` keys + first-link session (keep-local gameplay Class A keys untouched unless wipe) |
+| Full local wipe | same snapshot/session keys removed via keyed wipe (no `localStorage.clear()`) |
+
+### First-link session state machine
+
+Key: `sueca-sync-first-link-v1`
+
+Phases: `PENDING` → `SNAPSHOT_FETCHED` → `HISTORY_MERGED` → `PREFS_RESOLVED` → `BOUND` → `COMPLETE`
+(+ `BLOCKED_SEED_MISMATCH` · `ERROR`)
+
+Never mark first-link complete before local apply + binding succeed. Crash resume re-fetches cloud; preserves prefs choice; does not upload to wrong Account.
+
+### Legacy seed
+
+Local-only → PUT · Cloud-only → adopt · Same → continue · **Different → block finalisation** (`seed_mismatch`). **v1 explicit conflict** — no COMPLETE / no upload until future recovery UX or support path; never silently combine.
+
+### History merge helper
+
+`mergeMatchHistoryForFirstLink`: primary dedupe by `id` · secondary `idempotencyKey` · same id + differing payload → conflict · stable legacy ids kept · newest 2000 retention · non-mutating sources.
+
+### Conta UX
+
+- Status copy: por configurar · Sincronizado · A sincronizar… · Sem ligação · Erro · Conta diferente
+- CTA `Configurar sincronização` when unresolved (does **not** interrupt gameplay on login)
+- `Sincronizar agora` only when authenticated + same-account bound + first-link complete
+- Guest: no sync button
+
+### Offline / pending_delete
+
+- Network fail: soft error · preserve choice · gameplay available · retry
+- Account pending_delete / 401 during first-link: abort · clear first-link session + sync binding · preserve local gameplay data (auth Guest path)
+
+## SYNC-01E (next)
+
+Multi-device conflict polish · OPPO validation of Conta first-link · any remaining outbox UX.
