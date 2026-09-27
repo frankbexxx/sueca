@@ -22,6 +22,7 @@ import { MUSIC_SETTINGS_KEY, LEGACY_MUSIC_MODE_KEY } from '../audio/musicSetting
 import { SYNC_META_KEY } from './syncMetadata';
 import { SYNCABLE_PREFS_META_KEY } from './syncablePrefsRevision';
 import { LEGACY_STATS_SEED_KEY } from './legacyStatsSeed';
+import { SYNC_OUTBOX_KEY } from './syncOutbox';
 
 /** Custom themes storage key (customThemeStorage). */
 export const CUSTOM_THEMES_KEY = 'suecao-custom-themes';
@@ -39,10 +40,11 @@ export const LOCAL_USER_DATA_KEYS: readonly string[] = [
   // Identity + account link metadata
   LOCAL_GUEST_KEY,
   AUTH_REFRESH_STORAGE_KEY,
-  // Sync metadata (SYNC-01A)
+  // Sync metadata (SYNC-01A/01C)
   SYNC_META_KEY,
   SYNCABLE_PREFS_META_KEY,
   LEGACY_STATS_SEED_KEY,
+  SYNC_OUTBOX_KEY,
   // Career / history / sessions
   STATS_KEY,
   MATCH_HISTORY_KEY,

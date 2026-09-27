@@ -20,6 +20,7 @@ import {
   MAX_FINISHED,
   loadFinishedGames
 } from './gameHistoryStorage';
+import { tryEnqueueMatchAfterLocalWrite } from './syncEnqueue';
 
 export const MATCH_HISTORY_KEY = 'sueca-match-history-v1';
 
@@ -400,6 +401,8 @@ export function recordMatchHistory(
       }
       return null;
     }
+    // SYNC-01C — local-first; enqueue only when sync-ready.
+    tryEnqueueMatchAfterLocalWrite(record);
     return record;
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {

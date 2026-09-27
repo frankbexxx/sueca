@@ -129,6 +129,10 @@ async function applySession(session: {
   setLinkedAccountId(session.account.id);
   const state = getAuthState();
   notify();
+  // SYNC-01C — only runs when already READY_INCREMENTAL (no first-link push).
+  void import('./syncEngine')
+    .then((m) => m.maybeSyncOnAuthenticatedStart())
+    .catch(() => undefined);
   return state;
 }
 
@@ -226,6 +230,10 @@ export async function restoreAuthSession(): Promise<AuthState> {
       };
       setLinkedAccountId(me.id);
       notify();
+      // SYNC-01C — startup sync only if already READY_INCREMENTAL.
+      void import('./syncEngine')
+        .then((m) => m.maybeSyncOnAuthenticatedStart())
+        .catch(() => undefined);
       return getAuthState();
     } catch {
       accountMemory = null;
@@ -323,6 +331,13 @@ export function mapGoogleProviderFailure(reason: string, message?: string): Sign
  * Android also clears Keystore refresh token.
  */
 export async function signOut(): Promise<AuthState> {
+  // SYNC-01C — cancel in-flight sync; keep outbox + binding for same Account resume.
+  try {
+    const { stopSyncEngine } = await import('./syncEngine');
+    stopSyncEngine();
+  } catch {
+    /* ignore */
+  }
   const refresh = readRefreshToken();
   if (refresh) {
     try {

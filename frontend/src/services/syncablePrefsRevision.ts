@@ -8,6 +8,7 @@ import {
   loadDurableJson,
   writeDurableEnvelope
 } from './durableLocalStorage';
+import { tryEnqueuePrefsAfterLocalMutation } from './syncEnqueue';
 
 export const SYNCABLE_PREFS_META_KEY = 'sueca-syncable-prefs-v1';
 
@@ -59,14 +60,36 @@ function persistMeta(meta: SyncablePrefsMetaV1): SyncablePrefsMetaV1 {
   return meta;
 }
 
-/** Increment local prefs mutation revision (not server authority). */
+/** When > 0, local prefs mutations must not enqueue sync outbox (remote apply). */
+let syncEnqueueSuppressDepth = 0;
+
+export function runWithoutSyncEnqueue<T>(fn: () => T): T {
+  syncEnqueueSuppressDepth += 1;
+  try {
+    return fn();
+  } finally {
+    syncEnqueueSuppressDepth -= 1;
+  }
+}
+
+export function isSyncEnqueueSuppressed(): boolean {
+  return syncEnqueueSuppressDepth > 0;
+}
+
+/** Increment local prefs mutation revision (not cross-device authority). */
 export function bumpSyncablePrefsRevision(): SyncablePrefsMetaV1 {
+  // Remote snapshot apply suppresses both revision bumps and outbox enqueue.
+  if (isSyncEnqueueSuppressed()) {
+    return getSyncablePrefsMeta();
+  }
   const current = getSyncablePrefsMeta();
-  return persistMeta({
+  const next = persistMeta({
     schemaVersion: 1,
     localPrefsRevision: current.localPrefsRevision + 1,
     localUpdatedAt: Date.now()
   });
+  tryEnqueuePrefsAfterLocalMutation(next.localPrefsRevision);
+  return next;
 }
 
 export function getLocalPrefsRevision(): number {

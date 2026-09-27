@@ -20,6 +20,17 @@ void restoreAuthSession().catch(() => {
   /* ignore — remain guest */
 });
 
+// SYNC-01C — debounced resume sync (no-op unless READY_INCREMENTAL).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      void import('./services/syncEngine')
+        .then((m) => m.maybeSyncOnResume())
+        .catch(() => undefined);
+    }
+  });
+}
+
 if (CARD_INTELLIGENCE_DEBUG) {
   void import('./cardIntelligence/debug/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {
     installCardIntelligenceDebugConsole();

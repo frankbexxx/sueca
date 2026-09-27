@@ -1,7 +1,7 @@
 # Suecão Sync v1 Contract (REL-SYNC-01 / SYNC-01A)
 
-**Status:** SYNC-01A DONE · **SYNC-01B DONE** (backend storage + API).
-**Client sync engine:** not started (**SYNC-01C READY FOR IMPLEMENTATION**).
+**Status:** SYNC-01A DONE · SYNC-01B DONE · **SYNC-01C DONE** (client engine + outbox).
+**First-link UX:** not started (**SYNC-01D READY FOR IMPLEMENTATION**).
 **Auth baseline:** REL-AUTH-01 DONE (`AUTH_RELEASE_BASELINE_01F.md`).
 **Prefs storage strategy:** **A — adapter layer** — existing keys remain UX source of truth; `sueca-syncable-prefs-v1` stores only `localPrefsRevision` / `localUpdatedAt`; `buildSyncablePrefsDocument()` assembles the future sync payload. Chosen as smallest safe approach (no destructive migration).
 
@@ -187,6 +187,58 @@ Auth: Account JWT only. MP guest rejected. `pending_delete` → **401** (same as
 
 `invalid_payload` (400) · `Unauthorized` (401) · `stale_revision` (409) · `immutable_seed_conflict` (409) · `history_record_conflict` (409) · `batch_too_large` / `payload_too_large` (413) · `db_unavailable` (503).
 
-## SYNC-01C (next)
+## SYNC-01C — client sync engine + outbox
 
-Client sync engine: first-link UX, outbox, call these APIs. **Not** started in 01B.
+**First-link chooser UI is SYNC-01D.** Engine never silently first-link merges or replaces history.
+
+### Outbox
+
+| Key | `sueca-sync-outbox-v1` (durable envelope) |
+|-----|------------------------------------------|
+| Domains | `APPEND_MATCH` · `PUT_PREFS` (coalesced) · `PUT_LEGACY_STATS_SEED` |
+| Binding | Every item has `boundAccountId`; never send if ≠ current Account |
+| Truth | Local history/prefs remain source of truth; outbox is reliability |
+
+### Engine states
+
+`IDLE` · `SYNCING` · `OFFLINE` · `AUTH_REQUIRED` · `FIRST_LINK_REQUIRED` · `ACCOUNT_MISMATCH` · `ERROR`
+
+### Network policy
+
+| Condition | Reads | Mutations |
+|-----------|-------|-----------|
+| Guest | none | none |
+| First-link unresolved / account mismatch | **none** (01C) | **none** |
+| `READY_INCREMENTAL` | status + snapshot | history / prefs / seed |
+
+### Push order
+
+1. legacy seed (if needed)
+2. history batches (≤100)
+3. prefs (`baseRevision` = known server prefs revision)
+
+### Pull apply order
+
+Validate response → merge history (append+dedupe) → apply prefs only if READY → update local server revisions **last**.
+
+### Retry
+
+Backoff: 1m → 2m → 5m → 15m → 30m cap. No polling loop. 401 → `AUTH_REQUIRED`. 409 not blind-retried. Network/503 → `OFFLINE` + keep outbox.
+
+### Triggers
+
+Authenticated startup/resume **only if** READY_INCREMENTAL · match complete enqueue · prefs coalesce+debounce · `syncNow()`.
+
+### Logout / delete / wipe
+
+- Logout: stop engine; **keep** binding + outbox for same Account.
+- Account delete: clear binding + outbox + sync meta.
+- Local wipe: clear outbox + sync keys (keyed wipe).
+
+### Crash safety
+
+History backend idempotency · prefs CAS · seed create-once. Resend after kill is safe.
+
+## SYNC-01D (next)
+
+First-link / account-switch resolution UX (prefs choice, seed conflict UI).
