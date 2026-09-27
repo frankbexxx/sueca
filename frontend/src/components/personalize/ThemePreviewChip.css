@@ -1,7 +1,14 @@
+/* `.app-shell` specificity beats a lone `.theme-preview-chip` if shell CSS loads later. */
+.app-shell.theme-preview-chip,
 .theme-preview-chip {
+  /* Token host reuses `.app-shell[data-theme]` — neutralize shell viewport layout. */
   flex-shrink: 0;
+  box-sizing: border-box;
   width: 52px;
   height: 40px;
+  min-height: 0;
+  max-height: 40px;
+  padding: 0;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -52,7 +59,10 @@
   background: var(--sc-accent);
 }
 
+.themes-current .app-shell.theme-preview-chip,
 .themes-current .theme-preview-chip {
   width: 64px;
   height: 48px;
+  min-height: 0;
+  max-height: 48px;
 }

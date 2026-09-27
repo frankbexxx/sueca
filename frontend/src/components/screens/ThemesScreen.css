@@ -31,6 +31,11 @@
   border-radius: 12px;
   border: 1px solid rgba(var(--sc-accent-rgb), 0.35);
   background: rgba(var(--sc-accent-rgb), 0.1);
+  /* Compact header row — never grow with nested .app-shell preview chip. */
+  flex-grow: 0;
+  min-height: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .themes-current-text {
@@ -213,6 +218,15 @@
   .theme-preview-chip {
     width: 46px;
     height: 36px;
+    min-height: 0;
+    max-height: 36px;
+  }
+
+  .themes-current .theme-preview-chip {
+    width: 56px;
+    height: 42px;
+    min-height: 0;
+    max-height: 42px;
   }
 
   .themes-card-name {

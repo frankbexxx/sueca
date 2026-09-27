@@ -2,11 +2,17 @@
  * @vitest-environment jsdom
  */
 import React from 'react';
+import fs from 'fs';
+import path from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { ThemesScreen } from '../screens/ThemesScreen';
 import { PersonalizeHubScreen } from '../screens/PrimaryHubScreens';
 import { getActiveTheme } from '../../services/billingService';
+
+function readCss(relFromSrc: string): string {
+  return fs.readFileSync(path.join(__dirname, '..', relFromSrc), 'utf8');
+}
 
 vi.mock('../../i18n/useLanguage', () => ({
   useLanguage: () => ({
@@ -44,6 +50,22 @@ describe('ThemesScreen / Personalizar', () => {
     render(<ThemesScreen showBack onBack={() => undefined} />);
     expect(screen.getAllByTestId('theme-preview-classic').length).toBeGreaterThanOrEqual(1);
     expect(document.querySelector('canvas')).toBeNull();
+  });
+
+  it('preview chip CSS neutralizes .app-shell 100dvh so Tema actual stays compact', () => {
+    const chip = readCss('personalize/ThemePreviewChip.css');
+    const themes = readCss('screens/ThemesScreen.css');
+    const shell = fs.readFileSync(
+      path.join(__dirname, '../../styles/app-shell.css'),
+      'utf8'
+    );
+    expect(shell).toMatch(/min-height:\s*100dvh/);
+    expect(chip).toMatch(/\.app-shell\.theme-preview-chip/);
+    expect(chip).toMatch(/min-height:\s*0/);
+    expect(chip).toMatch(/max-height:\s*40px/);
+    expect(chip).toMatch(/max-height:\s*48px/);
+    expect(themes).toMatch(/\.themes-current\s*\{[^}]*flex-grow:\s*0/s);
+    expect(themes).not.toMatch(/\.themes-current\s*\{[^}]*min-height:\s*100/s);
   });
 
   it('Personalizar hub lists Temas then Mão then Música', () => {
