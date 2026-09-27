@@ -1,15 +1,24 @@
 import { vi } from 'vitest';
-import { CARD_PLAY_VARIANTS, SFX_PATHS } from '../constants/sfxAssets';
+import {
+  BUNDLED_SFX_FILENAMES,
+  CARD_PLAY_VARIANTS,
+  MISSING_SFX_ASSET_IDS,
+  SFX_PATHS
+} from '../constants/sfxAssets';
 import { coreTrackPath } from '../constants/musicAssets';
 import { FALLBACK_MUSIC_TRACK_ID } from '../constants/musicCatalog';
 import {
   getCurrentMusicTrack,
   getMusicMode,
+  getMusicVolumeLevel,
+  getSfxVolumeLevel,
   isSoundEnabled,
+  isSfxPlayable,
   playDealSound,
   playGameLoseSound,
   playGameWinSound,
   playMusic,
+  playRandomCardPlay,
   playRoundEndSound,
   playRoundStartSound,
   playShuffleSound,
@@ -20,9 +29,13 @@ import {
   resetAudioServiceForTests,
   setMusicMode,
   setMusicTrack,
+  setMusicVolumeLevel,
+  setSfxVolumeLevel,
   setSoundEnabled,
   stopMusic,
-  syncMusicToTheme
+  syncMusicToTheme,
+  __getUnavailableSfxForTests,
+  __markSfxUnavailableForTests
 } from './audioService';
 
 function makeAudioMock() {
@@ -57,7 +70,7 @@ describe('audioService', () => {
     vi.useRealTimers();
   });
 
-  it('exports non-empty sfx paths including deal, shuffle, trick-collect, round/game cues', () => {
+  it('exports bundled sfx paths only (deal, shuffle, trick-collect, round/game cues)', () => {
     Object.values(SFX_PATHS).forEach((path) => {
       expect(path).toMatch(/\/assets\/sfx\/.*\.ogg$/);
     });
@@ -68,7 +81,12 @@ describe('audioService', () => {
     expect(SFX_PATHS.roundEnd).toMatch(/\/round-end\.ogg$/);
     expect(SFX_PATHS.gameWin).toMatch(/\/game-win\.ogg$/);
     expect(SFX_PATHS.gameLose).toMatch(/\/game-lose\.ogg$/);
+    expect(Object.keys(BUNDLED_SFX_FILENAMES)).toHaveLength(7);
     expect(CARD_PLAY_VARIANTS).toHaveLength(3);
+    for (const id of MISSING_SFX_ASSET_IDS) {
+      expect(SFX_PATHS[id]).toBeUndefined();
+      expect(isSfxPlayable(id)).toBe(false);
+    }
   });
 
   it('does not expose trick-win path', () => {

@@ -30,13 +30,21 @@ import {
 } from '../../constants/dealAnimationPreferences';
 import { getCardBackPath, getPublicAssetPath, CARD_BACK_PATH } from '../../constants/cardAssets';
 import { loadAutoPauseTrick, saveAutoPauseTrick } from '../../utils/trickAutoContinue';
-import { isSoundEnabled, setSoundEnabled } from '../../services/audioService';
+import {
+  getMusicVolumeLevel,
+  getSfxVolumeLevel,
+  setMusicVolumeLevel,
+  setSfxVolumeLevel
+} from '../../services/audioService';
+import type { AudioVolumeLevel } from '../../constants/audioVolumePreferences';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
 import { MusicSettingsControls } from './MusicSettingsControls';
+import { AudioVolumeControl } from './AudioVolumeControl';
 import '../../styles/shell-screens.css';
 import './MoreScreen.css';
 import './HandCardsScreen.css';
+import './AudioVolumeControl.css';
 
 interface SettingsHubScreenProps {
   showBack: boolean;
@@ -84,33 +92,21 @@ interface SettingsGeneralScreenProps {
   onBack: () => void;
 }
 
-/** Sound / music / language — Auto entre vazas lives under Mão e Cartas. */
+/** Mais → Definições → Geral — Idioma only (audio lives under Personalizar → Música e Som). */
 export const SettingsGeneralScreen: React.FC<SettingsGeneralScreenProps> = ({
   showBack,
   onBack
 }) => {
   const { language, setLanguage, t } = useLanguage();
-  const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
-
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabledState(next);
-    setSoundEnabled(next);
-  };
 
   return (
-    <div className="shell-screen screen-settings">
+    <div className="shell-screen screen-settings" data-testid="settings-general-screen">
       <ShellHeader
         title={t.settingsScreen.hubGeneral}
         showBack={showBack}
         onBack={onBack}
       />
       <section className="shell-panel">
-        <label className="more-toggle">
-          <input type="checkbox" checked={soundEnabled} onChange={toggleSound} />
-          <span>{t.moreScreen.sound}</span>
-        </label>
-        <MusicSettingsControls />
         <div className="more-lang">
           <span>{t.moreScreen.language}</span>
           <div className="language-selector">
@@ -130,6 +126,64 @@ export const SettingsGeneralScreen: React.FC<SettingsGeneralScreenProps> = ({
             </button>
           </div>
         </div>
+      </section>
+    </div>
+  );
+};
+
+interface SettingsAudioScreenProps {
+  showBack: boolean;
+  onBack: () => void;
+}
+
+/** Personalizar → Música e Som — audio only (no Idioma / auto-pause). */
+export const SettingsAudioScreen: React.FC<SettingsAudioScreenProps> = ({
+  showBack,
+  onBack
+}) => {
+  const { language, t } = useLanguage();
+  const [musicLevel, setMusicLevel] = useState<AudioVolumeLevel>(() =>
+    getMusicVolumeLevel()
+  );
+  const [sfxLevel, setSfxLevel] = useState<AudioVolumeLevel>(() => getSfxVolumeLevel());
+
+  return (
+    <div className="shell-screen screen-settings" data-testid="audio-settings-screen">
+      <ShellHeader
+        title={language === 'pt' ? 'Música e Som' : 'Music & Sound'}
+        subtitle={
+          language === 'pt'
+            ? 'Volumes e preferências de música'
+            : 'Volumes and music preferences'
+        }
+        showBack={showBack}
+        onBack={onBack}
+      />
+      <section className="shell-panel">
+        <AudioVolumeControl
+          label={language === 'pt' ? 'Música' : 'Music'}
+          value={musicLevel}
+          testIdPrefix="music-volume"
+          onChange={(level) => {
+            setMusicVolumeLevel(level);
+            setMusicLevel(getMusicVolumeLevel());
+          }}
+        />
+        <AudioVolumeControl
+          label={language === 'pt' ? 'Efeitos sonoros' : 'Sound effects'}
+          value={sfxLevel}
+          testIdPrefix="sfx-volume"
+          onChange={(level) => {
+            setSfxVolumeLevel(level);
+            setSfxLevel(getSfxVolumeLevel());
+          }}
+        />
+        <p className="hand-cards-hint" style={{ marginTop: 8 }}>
+          {language === 'pt'
+            ? '0 = silêncio nesse canal. Música e efeitos são independentes.'
+            : '0 = mute for that channel. Music and effects are independent.'}
+        </p>
+        <MusicSettingsControls />
       </section>
     </div>
   );

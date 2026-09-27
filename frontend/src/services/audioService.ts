@@ -1,4 +1,9 @@
-import { CARD_PLAY_VARIANTS, SfxId, SFX_PATHS } from '../constants/sfxAssets';
+import {
+  CARD_PLAY_VARIANTS,
+  getSfxPath,
+  isSfxBundled,
+  SfxId
+} from '../constants/sfxAssets';
 import {
   FALLBACK_MUSIC_TRACK_ID,
   MUSIC_VOLUME,
@@ -25,13 +30,22 @@ import {
   saveMusicSettings
 } from '../audio/musicSettings';
 import {
+  audioLevelToGain,
+  loadMusicVolumeLevel,
+  loadSfxVolumeLevel,
+  normalizeAudioVolumeLevel,
+  saveMusicVolumeLevel,
+  saveSfxVolumeLevel,
+  type AudioVolumeLevel
+} from '../constants/audioVolumePreferences';
+import {
   FAMILY_CORE_TRACK,
   getThemeMusicPreference
 } from '../constants/musicThemeMap';
 import type { ThemeId } from './billingService';
 import { getActiveTheme } from './billingService';
 
-export type { MusicMode, MusicSettings };
+export type { MusicMode, MusicSettings, AudioVolumeLevel };
 
 const SOUND_ENABLED_KEY = 'sueca-sound-enabled';
 const FADE_MS = 450;
@@ -52,6 +66,8 @@ const DEFAULT_VOLUMES: Record<SfxId, number> = {
 };
 
 const audioPool = new Map<SfxId, HTMLAudioElement>();
+/** Runtime load failures — skip further network/play attempts for that id. */
+const sfxUnavailable = new Set<SfxId>();
 let preloaded = false;
 
 let musicAudio: HTMLAudioElement | null = null;
@@ -69,6 +85,58 @@ export function isSoundEnabled(): boolean {
   return localStorage.getItem(SOUND_ENABLED_KEY) !== 'false';
 }
 
+/** Bed loudness after user music level (0–1 HTML volume). */
+export function getEffectiveMusicVolume(): number {
+  if (!isSoundEnabled()) return 0;
+  return MUSIC_VOLUME * audioLevelToGain(loadMusicVolumeLevel());
+}
+
+/** Multiplier for SFX base volumes (0–1). */
+export function getSfxGainMultiplier(): number {
+  if (!isSoundEnabled()) return 0;
+  return audioLevelToGain(loadSfxVolumeLevel());
+}
+
+export function getMusicVolumeLevel(): AudioVolumeLevel {
+  return loadMusicVolumeLevel();
+}
+
+export function getSfxVolumeLevel(): AudioVolumeLevel {
+  return loadSfxVolumeLevel();
+}
+
+export function setMusicVolumeLevel(level: AudioVolumeLevel | number): AudioVolumeLevel {
+  const next = saveMusicVolumeLevel(
+    normalizeAudioVolumeLevel(level) as AudioVolumeLevel
+  );
+  if (next > 0 && !isSoundEnabled()) {
+    localStorage.setItem(SOUND_ENABLED_KEY, 'true');
+  }
+  applyMusicVolumeToElement();
+  if (next > 0 && getMusicMode() !== 'off') {
+    void applyMusicFromSettings();
+  } else if (next === 0) {
+    stopMusic();
+  }
+  return next;
+}
+
+export function setSfxVolumeLevel(level: AudioVolumeLevel | number): AudioVolumeLevel {
+  const next = saveSfxVolumeLevel(
+    normalizeAudioVolumeLevel(level) as AudioVolumeLevel
+  );
+  if (next > 0 && !isSoundEnabled()) {
+    localStorage.setItem(SOUND_ENABLED_KEY, 'true');
+  }
+  return next;
+}
+
+function applyMusicVolumeToElement(): void {
+  if (musicAudio) {
+    musicAudio.volume = getEffectiveMusicVolume();
+  }
+}
+
 export function getMusicSettings(): MusicSettings {
   return loadMusicSettings();
 }
@@ -78,7 +146,11 @@ export function getMusicMode(): MusicMode {
 }
 
 function isMusicDesired(): boolean {
-  return isSoundEnabled() && getMusicMode() !== 'off';
+  return (
+    isSoundEnabled() &&
+    getMusicMode() !== 'off' &&
+    loadMusicVolumeLevel() > 0
+  );
 }
 
 function usesLoopingBed(mode: MusicMode): boolean {
@@ -112,6 +184,11 @@ export function setMusicMode(mode: MusicMode): void {
   void applyMusicFromSettings();
 }
 
+/**
+ * Master audio kill-switch (`sueca-sound-enabled`).
+ * Off → immediate global silence (music + SFX).
+ * On → resumes music per mode/volume; does NOT rewrite music/SFX levels or music mode.
+ */
 export function setSoundEnabled(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
@@ -130,7 +207,7 @@ export async function applyMusicFromSettings(): Promise<void> {
   if (typeof window === 'undefined') return;
   const settings = loadMusicSettings();
 
-  if (settings.mode === 'off' || !isSoundEnabled()) {
+  if (settings.mode === 'off' || !isSoundEnabled() || loadMusicVolumeLevel() <= 0) {
     stopMusic();
     return;
   }
@@ -187,7 +264,7 @@ function ensureMusicAudio(): HTMLAudioElement {
     musicAudio = new Audio(getMusicTrackUrl(FALLBACK_MUSIC_TRACK_ID));
     musicAudio.loop = true;
     musicAudio.preload = 'auto';
-    musicAudio.volume = MUSIC_VOLUME;
+    musicAudio.volume = getEffectiveMusicVolume();
     musicAudio.addEventListener('error', () => {
       void handleMusicPlaybackError();
     });
@@ -290,13 +367,13 @@ function applySrcToAudio(
       .then(() => {
         if (token !== switchToken) return;
         musicPlaying = true;
-        fadeTo(audio, MUSIC_VOLUME, FADE_MS);
+        fadeTo(audio, getEffectiveMusicVolume(), FADE_MS);
       })
       .catch(() => {
         musicPlaying = false;
       });
   } else {
-    audio.volume = MUSIC_VOLUME;
+    audio.volume = getEffectiveMusicVolume();
   }
 }
 
@@ -453,7 +530,7 @@ export function playMusic(): void {
   try {
     const audio = ensureMusicAudio();
     if (musicPlaying && !audio.paused) return;
-    audio.volume = MUSIC_VOLUME;
+    audio.volume = getEffectiveMusicVolume();
     void audio
       .play()
       .then(() => {
@@ -492,37 +569,73 @@ export function stopAmbiance(): void {
   stopMusic();
 }
 
+function markSfxUnavailable(id: SfxId): void {
+  sfxUnavailable.add(id);
+  audioPool.delete(id);
+}
+
+/** True when a bundled asset is registered and has not failed to load. */
+export function isSfxPlayable(id: SfxId): boolean {
+  return isSfxBundled(id) && !sfxUnavailable.has(id);
+}
+
 export function preloadSfx(): void {
   if (typeof window === 'undefined' || preloaded) return;
   preloaded = true;
 
-  (Object.keys(SFX_PATHS) as SfxId[]).forEach((id) => {
-    const audio = new Audio(SFX_PATHS[id]);
-    audio.preload = 'auto';
-    audioPool.set(id, audio);
+  (Object.keys(DEFAULT_VOLUMES) as SfxId[]).forEach((id) => {
+    const path = getSfxPath(id);
+    if (!path || sfxUnavailable.has(id)) return;
+    try {
+      const audio = new Audio(path);
+      audio.preload = 'auto';
+      audio.addEventListener(
+        'error',
+        () => {
+          markSfxUnavailable(id);
+        },
+        { once: true }
+      );
+      audioPool.set(id, audio);
+    } catch {
+      markSfxUnavailable(id);
+    }
   });
 }
 
 export function playSfx(id: SfxId, options?: { volume?: number }): void {
   if (!isSoundEnabled()) return;
+  const gain = getSfxGainMultiplier();
+  if (gain <= 0) return;
+  if (!isSfxPlayable(id)) return;
 
   try {
     preloadSfx();
     const template = audioPool.get(id);
-    if (!template) return;
+    if (!template || sfxUnavailable.has(id)) return;
 
     const audio = template.cloneNode(true) as HTMLAudioElement;
-    audio.volume = options?.volume ?? DEFAULT_VOLUMES[id];
-    void audio.play().catch(() => {
-      /* autoplay restrictions or missing file */
+    const base = options?.volume ?? DEFAULT_VOLUMES[id];
+    audio.volume = Math.max(0, Math.min(1, base * gain));
+    void audio.play().catch((err: unknown) => {
+      /* Autoplay block — keep asset; do not mark unavailable. */
+      const name =
+        err && typeof err === 'object' && 'name' in err
+          ? String((err as { name?: string }).name)
+          : '';
+      if (name === 'NotAllowedError') return;
+      /* Media decode / missing file after unexpected 404 */
+      markSfxUnavailable(id);
     });
   } catch {
-    /* silently ignore */
+    /* silently ignore — never block gameplay */
   }
 }
 
 export function playRandomCardPlay(): void {
-  const id = CARD_PLAY_VARIANTS[Math.floor(Math.random() * CARD_PLAY_VARIANTS.length)];
+  const available = CARD_PLAY_VARIANTS.filter(isSfxPlayable);
+  if (available.length === 0) return;
+  const id = available[Math.floor(Math.random() * available.length)];
   playSfx(id);
 }
 
@@ -567,6 +680,7 @@ export function resetAudioServiceForTests(): void {
   stopMusic();
   clearFade();
   audioPool.clear();
+  sfxUnavailable.clear();
   musicAudio = null;
   musicPlaying = false;
   currentTrackId = FALLBACK_MUSIC_TRACK_ID;
@@ -574,6 +688,16 @@ export function resetAudioServiceForTests(): void {
   switchToken = 0;
   fallbackUsedForToken = -1;
   endedHandlerAttached = false;
+}
+
+/** Test helper — ids that failed media load/play (not autoplay). */
+export function __getUnavailableSfxForTests(): SfxId[] {
+  return [...sfxUnavailable];
+}
+
+/** Test helper — force an id into the unavailable set. */
+export function __markSfxUnavailableForTests(id: SfxId): void {
+  markSfxUnavailable(id);
 }
 
 /** Exposed for tests — resolve playable target with one remote attempt. */

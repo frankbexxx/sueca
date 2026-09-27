@@ -44,7 +44,7 @@ function modeLabel(
 }
 
 /**
- * Compact music mode controls for More / Settings General.
+ * Compact music mode controls for Personalizar → Música e Som (and in-game quick settings).
  */
 export const MusicSettingsControls: React.FC = () => {
   const { t } = useLanguage();

@@ -68,6 +68,12 @@ describe('theme coverage — shell / personalize surfaces use tokens', () => {
     expect(read('components/screens/MusicSettingsControls.css')).toMatch(
       /--sc-text/
     );
+    expect(read('components/screens/AudioVolumeControl.css')).toMatch(
+      /--sc-text/
+    );
+    expect(read('components/screens/AudioVolumeControl.css')).toMatch(
+      /--sc-accent-rgb/
+    );
     expect(read('components/screens/ThemeEditorScreen.css')).toMatch(
       /--sc-surface/
     );

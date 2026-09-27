@@ -61,7 +61,9 @@ export const STORAGE_KEYS = {
   AUTO_PAUSE_TRICK: 'sueca-auto-pause-trick',
   CARD_FRONT: 'suecao-card-front',
   CARD_BACK: 'suecao-card-back',
-  DEAL_ANIMATION_SPEED: 'suecao-deal-animation-speed'
+  DEAL_ANIMATION_SPEED: 'suecao-deal-animation-speed',
+  MUSIC_VOLUME: 'suecao-music-volume',
+  SFX_VOLUME: 'suecao-sfx-volume'
 } as const;
 
 // Default values

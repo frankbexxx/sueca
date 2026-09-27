@@ -504,9 +504,9 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Configurações',
-      subtitle: 'Som, idioma e preferências',
+      subtitle: 'Idioma e preferências',
       hubGeneral: 'Geral',
-      hubGeneralHint: 'Som, música e idioma',
+      hubGeneralHint: 'Idioma',
       hubHand: 'Mão e Cartas',
       hubHandHint: 'Baralho, verso, ordenação e ritmo'
     },
@@ -939,9 +939,9 @@ export const translations: Record<Language, Translations> = {
     },
     settingsScreen: {
       title: 'Settings',
-      subtitle: 'Sound, language and preferences',
+      subtitle: 'Language and preferences',
       hubGeneral: 'General',
-      hubGeneralHint: 'Sound, music and language',
+      hubGeneralHint: 'Language',
       hubHand: 'Hand & Cards',
       hubHandHint: 'Deck, backs, sorting and pace'
     },

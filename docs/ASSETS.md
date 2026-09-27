@@ -147,11 +147,12 @@ Staging de referência (gitignored `_temp/`):
 
 ## SFX (runtime)
 
+Path: `frontend/public/assets/sfx/`. Catalog: `frontend/src/constants/sfxAssets.ts`. Playback: `audioService` only.
+
+### Bundled on disk
+
 | Ficheiro | Origem | Uso |
 |----------|--------|-----|
-| `card-play-1.ogg` | Kenney Casino Audio · card-place-2 | Jogar carta |
-| `card-play-2.ogg` | Kenney Casino Audio · card-place-1 | Variação |
-| `card-play-3.ogg` | Kenney Casino Audio · card-slide-3 | Variação |
 | `card-shuffle.ogg` | Freesound BMacZero 96130 (CC0) | Baralhar (após mãos) |
 | `deal-1.ogg` | Freesound el_boss 571576 (CC0) | Deal / entrada de mão |
 | `trick-collect.ogg` | Freesound KevinHilt 196541 crop (CC0) | Vaza completa |
@@ -159,10 +160,20 @@ Staging de referência (gitignored `_temp/`):
 | `round-end.ogg` | Suecão NumPy synth + FFmpeg (original) | Fim de ronda intermédia |
 | `game-win.ogg` | Suecão NumPy synth + FFmpeg (original) | Vitória final |
 | `game-lose.ogg` | Suecão NumPy synth + FFmpeg (original) | Derrota final |
-| `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal |
-| `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI |
 
-Toggle: `localStorage` key `sueca-sound-enabled` (MoreScreen / Settings). Código: `frontend/src/services/audioService.ts`.
+### Audio asset debt (not on disk — API kept, no runtime URL)
+
+Live UX calls remain; `audioService` does not request these files until sourced. Planned Kenney origins below are licensing context only — **do not invent placeholders**.
+
+| Ficheiro | Origem planeada | Uso |
+|----------|-----------------|-----|
+| `card-play-1.ogg` | Kenney Casino Audio · card-place-2 | Jogar carta |
+| `card-play-2.ogg` | Kenney Casino Audio · card-place-1 | Variação |
+| `card-play-3.ogg` | Kenney Casino Audio · card-slide-3 | Variação |
+| `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal (visual feedback is primary) |
+| `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI (`.sueca-btn`, `.lang-btn`) |
+
+Master mute: `localStorage` key `sueca-sound-enabled`. Discrete music/SFX levels: `suecao-music-volume` / `suecao-sfx-volume` (`0|25|50|75|100`). Personalizar → Música e Som.
 
 ## Música de ambiente (core v1 — híbrido)
 

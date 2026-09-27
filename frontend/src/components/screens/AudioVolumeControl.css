@@ -1,0 +1,44 @@
+.audio-volume {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.audio-volume__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sc-text);
+}
+
+.audio-volume__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.audio-volume__btn {
+  flex: 1;
+  min-width: 48px;
+  min-height: var(--sueca-touch-min, 48px);
+  border-radius: 10px;
+  border: 1px solid var(--sc-surface-border);
+  background: var(--sc-surface);
+  color: var(--sc-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.audio-volume__btn--active {
+  border-color: rgba(var(--sc-accent-rgb), 0.55);
+  background: rgba(var(--sc-accent-rgb), 0.16);
+  color: var(--sc-text-title);
+  box-shadow: inset 0 0 0 1px rgba(var(--sc-accent-rgb), 0.2);
+}
+
+.audio-volume__btn:focus-visible {
+  outline: 2px solid var(--sc-focus-ring, rgba(255, 255, 255, 0.5));
+  outline-offset: 2px;
+}

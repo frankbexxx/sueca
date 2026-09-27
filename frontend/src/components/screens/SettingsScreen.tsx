@@ -2,5 +2,6 @@
 export {
   SettingsHubScreen,
   SettingsGeneralScreen,
+  SettingsAudioScreen,
   SettingsHandScreen
 } from './SettingsScreens';

@@ -16,6 +16,7 @@ import { ThemeEditorScreen } from '../components/screens/ThemeEditorScreen';
 import { RulesHubScreen } from '../components/screens/RulesHubScreen';
 import { RulesDetailScreen } from '../components/screens/RulesDetailScreen';
 import {
+  SettingsAudioScreen,
   SettingsGeneralScreen,
   SettingsHandScreen,
   SettingsHubScreen
@@ -128,7 +129,7 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
       );
     }
     if (route.screen === 'audio') {
-      return <SettingsGeneralScreen showBack={canGoBack} onBack={onBack} />;
+      return <SettingsAudioScreen showBack={canGoBack} onBack={onBack} />;
     }
     if (route.screen === 'hand') {
       return <SettingsHandScreen showBack={canGoBack} onBack={onBack} />;
