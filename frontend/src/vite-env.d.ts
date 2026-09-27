@@ -26,6 +26,16 @@ interface ImportMetaEnv {
   readonly VITE_MUSIC_REMOTE_BASE_URL?: string;
   /** Optional same-origin smoke when base URL unset. */
   readonly VITE_MUSIC_REMOTE_SMOKE?: string;
+  /** AUTH-01C — Google Identity Services Web client ID (OAuth Web client). */
+  readonly VITE_GOOGLE_WEB_CLIENT_ID?: string;
+  /**
+   * AUTH-01D — Google Android OAuth client ID (package + SHA in Cloud Console).
+   * Capgo Credential Manager still uses the Web client as webClientId/serverClientId;
+   * this Android client ID is required for config readiness + backend audiences.
+   */
+  readonly VITE_GOOGLE_ANDROID_CLIENT_ID?: string;
+  /** AUTH-01C/D — Suecão Account auth API base (e.g. http://127.0.0.1:8787). */
+  readonly VITE_AUTH_API_BASE_URL?: string;
   readonly BASE_URL: string;
   readonly MODE: string;
   readonly DEV: boolean;

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@aparajita/capacitor-secure-storage": "^6.0.1",
     "@capacitor/app": "^6.0.2",
     "@capacitor/core": "^6.2.0",
     "@capacitor/filesystem": "^6.0.4",
@@ -11,6 +12,7 @@
     "@capacitor/share": "^6.0.4",
     "@capacitor/splash-screen": "^6.0.3",
     "@capacitor/status-bar": "^6.0.2",
+    "@capgo/capacitor-social-login": "^6.0.1",
     "firebase": "^12.14.0",
     "phaser": "^3.80.1",
     "react": "^18.2.0",
@@ -41,7 +43,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "cap:sync": "npm run build && npx cap sync",
-    "cap:sync:android": "npm run build:android && npx cap sync android",
+    "cap:sync:android": "npm run build:android && npx cap sync android && node scripts/apply-android-debug-cleartext.mjs",
+    "cap:sync:android:lan": "node scripts/cap-sync-android-lan.mjs",
     "release:android": "npm run cap:sync:android && echo 'Next: npm run cap:open:android → Build → Generate Signed Bundle (docs/ANDROID_SIGNING.md)'",
     "cap:open:android": "npx cap open android",
     "generate:cards": "node ../tools/generate-card-placeholders.mjs"

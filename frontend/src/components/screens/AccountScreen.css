@@ -1,0 +1,59 @@
+.screen-account .account-panel {
+  margin: 0.75rem 1rem 1.5rem;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.account-status {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.account-explain,
+.account-config-hint,
+.account-delete-hint,
+.account-email,
+.account-identity {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.account-config-hint,
+.account-delete-hint {
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+
+.account-action {
+  align-self: stretch;
+  margin-top: 0.35rem;
+}
+
+.account-gis-host {
+  margin-top: 0.35rem;
+  min-height: 44px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.account-gis-host iframe {
+  /* Do not restyle Google's button chrome */
+  max-width: 100%;
+}
+
+.account-loading {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.account-error {
+  margin: 0.25rem 0 0;
+  color: #b42318;
+  font-size: 0.9rem;
+}

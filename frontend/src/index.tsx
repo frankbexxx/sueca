@@ -6,14 +6,19 @@ import './styles/sueca-buttons.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CARD_INTELLIGENCE_DEBUG, CARD_INTELLIGENCE_DEV_LAB } from './config/features';
-import { ensureAuthInitialized } from './services/authState';
+import { ensureAuthInitialized, restoreAuthSession } from './services/authState';
 
-// AUTH-01A: durable LocalGuest before render — offline, sync, no UI delay.
+// AUTH-01A/C: durable LocalGuest before render — offline, sync, no UI delay.
 try {
   ensureAuthInitialized();
 } catch {
   /* app remains playable; auth helpers retry on demand */
 }
+
+// AUTH-01C: async session restore (refresh+/me). Guest stays usable if it fails.
+void restoreAuthSession().catch(() => {
+  /* ignore — remain guest */
+});
 
 if (CARD_INTELLIGENCE_DEBUG) {
   void import('./cardIntelligence/debug/debugConsole').then(({ installCardIntelligenceDebugConsole }) => {

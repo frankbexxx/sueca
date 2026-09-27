@@ -310,16 +310,22 @@ LocalGuest → user chooses Google → backend validates Google
 |-------|--------|
 | **AUTH-01A** | Durable `localGuestId` (DATA-01 envelope) · auth-state facade · signed-out/guest · **no network** — **DONE** |
 | **AUTH-01B** | Account backend + Postgres · ExternalIdentity · refresh/session · Google ID-token verify · Suecão token issuance · `/me` · logout/revocation — **DONE** |
-| **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout — **READY FOR IMPLEMENTATION** |
-| **AUTH-01D** | Android native Google / Credential Manager · nonce · Android OAuth client · **secure** refresh-token storage · reopen/restore |
-| **AUTH-01E** | Mais → Conta UI — Guest: Jogar sem conta · Ligar conta Google; Signed in: identity · Terminar sessão · Apagar conta scaffolding |
+| **AUTH-01C** | Web Google Identity Services · backend verify · guest→account link · session restore/logout — **DONE** |
+| **AUTH-01D** | Android native Google / Credential Manager · nonce · Android OAuth client · **secure** refresh-token storage · reopen/restore — **DONE** |
+| **AUTH-01E** | Mais → Conta UI — Guest: Jogar sem conta · Ligar conta Google; Signed in: identity · Terminar sessão · Apagar conta scaffolding — **READY FOR IMPLEMENTATION** |
 | **AUTH-01F** | Web + OPPO smoke · update-in-place · zero local data loss · offline guest · sign-in/reopen/logout |
 
 **AUTH-01A evidence (DONE):** durable key `sueca-local-guest-v1` · DATA-01 envelope · UUID via `crypto.randomUUID` (+ fallback) · no PII · independent of P1 · `linkedAccountId` helpers without inventing accounts · auth-state facade guest-only · no network · existing DATA stores untouched · focused + full suite/tsc/build PASS · OPPO `adb install -r` smoke PASS (stable guest across reload + force-stop/reopen; stats/history preserved; no Conta UI).
 
 **AUTH-01B evidence (DONE):** real local Postgres (`db:up` :5433) · migration `001_auth_accounts.sql` idempotent via `schema_migrations` · tables `accounts` / `external_identities` / `refresh_tokens` with PK + `UNIQUE(provider,provider_subject)` + FKs · Suecão access JWT + opaque refresh hash + rotate/revoke · concurrent first-login → 1 Account · `/me` · soft-delete scaffolding · MP guest JWT/WS isolated · secret/log review PASS · backend auth+MP tests PASS · real-DB smoke PASS.
 
-**AUTH-01C** is next (Web Google UI). Google Cloud OAuth clients required for AUTH-01C+.
+**AUTH-01C evidence (DONE):** GIS Web ID-token via official `renderButton` (no FedCM / One Tap `prompt()`) · `VITE_GOOGLE_WEB_CLIENT_ID` / `VITE_AUTH_API_BASE_URL` · backend `.env` load for Google audiences · raw Web nonce (Android nonce helper kept separate; Capgo Credential Manager also embeds raw) · Account API client · access memory-first · refresh temporary `sueca-auth-refresh-v1` localStorage (XSS trade-off; httpOnly cookie later) · Google ID token never persisted · Mais → Conta · linkedAccountId on sign-in · logout keeps LocalGuest + DATA + linkedAccountId metadata · session restore via refresh+/me · Mais version/build footer (`-dirty` when worktree dirty) · MP client untouched · automated tests with mocked GIS · **real Google Web smoke PASS** (chooser → Conta ligada · Account+ExternalIdentity+refresh hash · no duplicate provider/sub · DB stores token_hash only).
+
+**AUTH-01C** closed on real Web Google validation (OPPO not required for this phase).
+
+**AUTH-01D** → **DONE** (OPPO Reno13 real-device smoke PASS). Evidence: Capgo Credential Manager native chooser (no Web GIS / no origin_mismatch) · Android OAuth client + Web serverClientId · secure Keystore refresh · force-stop reopen restore · logout/relogin same Account · localGuestId + DATA preserved · ExternalIdentity unique · **cleartext/mixed-content is debug/LAN opt-in only** (`src/debug` cleartext overlay + `SUECAO_ANDROID_ALLOW_MIXED_CONTENT` for sync; release defaults deny global cleartext / mixed content).
+
+**AUTH-01E** is **READY FOR IMPLEMENTATION** (Conta UI polish / delete scaffolding — Conta already exists from 01C/01D).
 
 #### DONE definition (`REL-AUTH-01`)
 

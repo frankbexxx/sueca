@@ -1,6 +1,12 @@
 /**
- * Google ID token verification for AUTH-01B.
+ * Google ID token verification for AUTH-01B/C.
  * Real verifier uses google-auth-library; tests inject a mock.
+ *
+ * Nonce:
+ * - Web GIS (AUTH-01C): raw string → `initialize({ nonce })` → token claim equals raw
+ * - Android Capgo Credential Manager (AUTH-01D): raw string → `setNonce` → token claim equals raw
+ * - Backend compares `opts.nonce === ticketPayload.nonce` (no hashing) for both
+ * - Keep frontend nonce helpers platform-separated; do not silently SHA-256 Web nonce
  */
 import { OAuth2Client } from 'google-auth-library';
 import { googleAudiences } from '../config.js';

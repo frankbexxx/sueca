@@ -11,12 +11,14 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import { loadConfig } from './config.js';
+import { loadConfig, googleAudiences } from './config.js';
+import { loadLocalEnv } from './loadEnv.js';
 import { initDb, closeDb, isDbConfigured, getPool } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
 import { createAccountAuthRouter, trySoftDeleteAccount } from './auth/routes.js';
 import { setGoogleVerifierForTests } from './auth/deps.js';
 
+loadLocalEnv();
 const config = loadConfig();
 const PORT = config.port;
 
@@ -33,7 +35,8 @@ app.use(createAccountAuthRouter(config));
 app.get('/health', (_req, res) =>
   res.json({
     ok: true,
-    accountAuthDb: Boolean(getPool())
+    accountAuthDb: Boolean(getPool()),
+    googleAudiencesConfigured: googleAudiences(config).length > 0
   })
 );
 
@@ -200,12 +203,16 @@ export async function shutdownAccountAuth() {
 export { setGoogleVerifierForTests };
 
 if (process.env.NODE_ENV !== 'test') {
+  // Bind all interfaces so Android devices on LAN can reach Account auth (not loopback-only).
+  const HOST = process.env.HOST || '0.0.0.0';
   bootstrapAccountAuth()
     .catch((err) => {
       console.error('[auth] bootstrap failed', err);
     })
     .finally(() => {
-      server.listen(PORT, () => console.log(`suecao-backend listening on ${PORT}`));
+      server.listen(PORT, HOST, () =>
+        console.log(`suecao-backend listening on ${HOST}:${PORT}`)
+      );
     });
 }
 

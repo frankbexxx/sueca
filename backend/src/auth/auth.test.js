@@ -199,6 +199,50 @@ test('AUTH-01B account auth', async (t) => {
     assert.equal(res.status, 200);
   });
 
+  await t.test('wrong Android audience rejected; Web audience still accepted', async () => {
+    assert.equal(
+      (
+        await json('POST', '/auth/google/id-token', {
+          idToken: asToken(
+            mockPayload({
+              sub: `bad-and-${crypto.randomBytes(2).toString('hex')}`,
+              aud: 'wrong-android-client.apps.googleusercontent.com'
+            })
+          )
+        })
+      ).status,
+      401
+    );
+
+    const webOk = await json('POST', '/auth/google/id-token', {
+      idToken: asToken(
+        mockPayload({ sub: `web-ok-${crypto.randomBytes(2).toString('hex')}`, aud: WEB_AUD })
+      )
+    });
+    assert.equal(webOk.status, 200);
+  });
+
+  await t.test('Android nonce validated on id-token path', async () => {
+    const sub = `and-n-${crypto.randomBytes(3).toString('hex')}`;
+    const bad = await json('POST', '/auth/google/id-token', {
+      idToken: asToken(mockPayload({ sub, aud: ANDROID_AUD, nonce: 'and-n1' })),
+      nonce: 'and-n2'
+    });
+    assert.equal(bad.status, 401);
+
+    const ok = await json('POST', '/auth/google/id-token', {
+      idToken: asToken(
+        mockPayload({
+          sub: `and-n-ok-${crypto.randomBytes(2).toString('hex')}`,
+          aud: ANDROID_AUD,
+          nonce: 'and-raw-nonce'
+        })
+      ),
+      nonce: 'and-raw-nonce'
+    });
+    assert.equal(ok.status, 200);
+  });
+
   await t.test('/me with access token; MP guest rejected', async () => {
     const login = await json('POST', '/auth/google/id-token', {
       idToken: asToken(mockPayload({ sub: `me-${crypto.randomBytes(3).toString('hex')}` }))

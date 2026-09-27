@@ -192,6 +192,26 @@ export interface Translations {
     exitConfirm: string;
   };
 
+  accountScreen: {
+    title: string;
+    subtitle: string;
+    guestStatus: string;
+    guestExplain: string;
+    configMissing: string;
+    linkGoogle: string;
+    signedInStatus: string;
+    signOut: string;
+    deleteLater: string;
+    loading: string;
+    errorCancelled: string;
+    errorMisconfigured: string;
+    errorUnavailable: string;
+    errorNetwork: string;
+    errorBackend: string;
+    errorStorage: string;
+    errorGeneric: string;
+  };
+
   historyScreen: {
     title: string;
     subtitle: string;
@@ -461,6 +481,26 @@ export const translations: Record<Language, Translations> = {
       feedback: 'Feedback / reportar bug',
       exitApp: 'Sair da aplicação',
       exitConfirm: 'Voltar ao ecrã inicial? A app será recarregada.'
+    },
+    accountScreen: {
+      title: 'Conta',
+      subtitle: 'Conta Google opcional',
+      guestStatus: 'Jogar sem conta',
+      guestExplain:
+        'A conta é opcional. O backup e a sincronização entre dispositivos chegarão mais tarde — ainda não estão activos.',
+      configMissing: 'Ligação Google ainda não configurada neste ambiente.',
+      linkGoogle: 'Ligar conta Google',
+      signedInStatus: 'Conta ligada',
+      signOut: 'Terminar sessão',
+      deleteLater: 'Apagar conta estará disponível em breve.',
+      loading: 'Aguarde…',
+      errorCancelled: 'Início de sessão cancelado.',
+      errorMisconfigured: 'Google Auth não está configurado.',
+      errorUnavailable: 'Serviço Google indisponível.',
+      errorNetwork: 'Sem ligação. Tenta outra vez.',
+      errorBackend: 'Não foi possível validar a conta. Tenta outra vez.',
+      errorStorage: 'Não foi possível guardar a sessão com segurança.',
+      errorGeneric: 'Não foi possível iniciar sessão com Google.'
     },
     historyScreen: {
       title: 'Histórico',
@@ -834,6 +874,26 @@ export const translations: Record<Language, Translations> = {
       feedback: 'Feedback / report a bug',
       exitApp: 'Exit app',
       exitConfirm: 'Return to the start screen? The app will reload.'
+    },
+    accountScreen: {
+      title: 'Account',
+      subtitle: 'Optional Google account',
+      guestStatus: 'Play without an account',
+      guestExplain:
+        'An account is optional. Backup and cross-device sync will come later — they are not active yet.',
+      configMissing: 'Google linking is not configured in this environment.',
+      linkGoogle: 'Link Google account',
+      signedInStatus: 'Account linked',
+      signOut: 'Sign out',
+      deleteLater: 'Account deletion will be available soon.',
+      loading: 'Please wait…',
+      errorCancelled: 'Sign-in cancelled.',
+      errorMisconfigured: 'Google Auth is not configured.',
+      errorUnavailable: 'Google service unavailable.',
+      errorNetwork: 'No connection. Try again.',
+      errorBackend: 'Could not validate the account. Try again.',
+      errorStorage: 'Could not securely store the session.',
+      errorGeneric: 'Could not sign in with Google.'
     },
     historyScreen: {
       title: 'History',

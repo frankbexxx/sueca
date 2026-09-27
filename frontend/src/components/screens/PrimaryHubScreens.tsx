@@ -1,7 +1,10 @@
 import React from 'react';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
+import { formatAppBuildLabel } from '../../config/appBuildInfo';
+import { useLanguage } from '../../i18n/useLanguage';
 import '../../styles/shell-screens.css';
+import './MoreScreen.css';
 
 interface ActivityHubScreenProps {
   showBack: boolean;
@@ -100,6 +103,7 @@ interface MoreHubScreenProps {
   onOpenRules: () => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
+  onOpenAccount: () => void;
   onOpenDiagnostic: () => void;
 }
 
@@ -110,10 +114,14 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
   onOpenRules,
   onOpenSettings,
   onOpenProfile,
+  onOpenAccount,
   onOpenDiagnostic
 }) => {
+  const { language } = useLanguage();
+  const buildLabel = formatAppBuildLabel(language === 'en' ? 'en' : 'pt');
+
   return (
-    <div className="shell-screen screen-more-hub">
+    <div className="shell-screen screen-more-hub" data-testid="more-hub-screen">
       <ShellHeader
         title="Mais"
         subtitle="Online, regras, definições e perfil"
@@ -147,6 +155,12 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
             onClick: onOpenProfile
           },
           {
+            id: 'account',
+            label: 'Conta',
+            hint: 'Conta Google opcional',
+            onClick: onOpenAccount
+          },
+          {
             id: 'diagnostic',
             label: 'Exportar dados de diagnóstico',
             hint: 'Logs técnicos para análise (não é o histórico)',
@@ -154,6 +168,9 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
           }
         ]}
       />
+      <p className="more-build-meta" data-testid="more-build-meta">
+        {buildLabel}
+      </p>
     </div>
   );
 };

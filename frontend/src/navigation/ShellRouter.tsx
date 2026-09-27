@@ -24,6 +24,7 @@ import { ProfileHubScreen } from '../components/screens/ProfileHubScreen';
 import { ProfileNameScreen } from '../components/screens/ProfileNameScreen';
 import { ProfileCreditsScreen } from '../components/screens/ProfileCreditsScreen';
 import { OnlineScreen } from '../components/screens/OnlineScreen';
+import { AccountScreen } from '../components/screens/AccountScreen';
 import {
   ActivityHubScreen,
   MoreHubScreen,
@@ -171,9 +172,13 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
           onOpenProfile={() =>
             onPush({ tab: 'more', screen: { type: 'profile', screen: 'hub' } })
           }
+          onOpenAccount={() => onPush({ tab: 'more', screen: 'account' })}
           onOpenDiagnostic={() => onPush({ tab: 'more', screen: 'diagnostic' })}
         />
       );
+    }
+    if (route.screen === 'account') {
+      return <AccountScreen showBack={canGoBack} onBack={onBack} />;
     }
     if (route.screen === 'diagnostic') {
       return <DiagnosticExportScreen showBack={canGoBack} onBack={onBack} />;

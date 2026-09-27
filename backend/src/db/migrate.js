@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createPool, isDbConfigured } from './pool.js';
+import { loadLocalEnv } from '../loadEnv.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = path.resolve(__dirname, '../../migrations');
@@ -53,6 +54,7 @@ export async function runMigrations(databaseUrl = process.env.DATABASE_URL) {
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
+  loadLocalEnv();
   runMigrations()
     .then(() => {
       console.log('[migrate] done');

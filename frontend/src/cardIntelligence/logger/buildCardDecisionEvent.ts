@@ -50,6 +50,13 @@ function resolveLedSuit(trickBefore: Card[], chosenCard: Card): Suit | null {
   return null;
 }
 
+function isCardIntelligenceUnitTestEnv(): boolean {
+  // Vitest sets VITEST=true but often leaves NODE_ENV as development under Vite 6.
+  // Explicit production (including the unit test that simulates it) must still throw.
+  if (process.env.NODE_ENV === 'production') return false;
+  return process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+}
+
 function resolveLegalMoves(
   legalMovesInput: Card[] | undefined,
   gameAdapter: GameAdapter,
@@ -59,7 +66,7 @@ function resolveLegalMoves(
   if (legalMovesInput) {
     return legalMovesInput;
   }
-  if (process.env.NODE_ENV === 'test') {
+  if (isCardIntelligenceUnitTestEnv()) {
     return extractLegalMoves(gameAdapter, stateBefore, playerIndex);
   }
   throw new Error('legalMoves required outside unit tests');

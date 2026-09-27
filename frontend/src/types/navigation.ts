@@ -45,6 +45,7 @@ export type MoreScreenId =
   | 'hub'
   | 'online'
   | 'diagnostic'
+  | 'account'
   | { type: 'rules'; screen: RulesScreenId }
   | { type: 'settings'; screen: SettingsScreenId }
   | { type: 'profile'; screen: ProfileScreenId };

@@ -9,7 +9,7 @@
     "migrate": "node src/db/migrate.js",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "test": "node --test src/server.test.js src/auth/*.test.js",
+    "test": "node --test src/server.test.js src/auth/*.test.js src/loadEnv.test.js",
     "test:auth": "node --test src/auth/*.test.js",
     "test:mp": "node --test src/server.test.js"
   },
