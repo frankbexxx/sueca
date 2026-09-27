@@ -16,6 +16,7 @@ import { loadLocalEnv } from './loadEnv.js';
 import { initDb, closeDb, isDbConfigured, getPool } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
 import { createAccountAuthRouter, trySoftDeleteAccount } from './auth/routes.js';
+import { createSyncRouter } from './sync/routes.js';
 import { setGoogleVerifierForTests } from './auth/deps.js';
 
 loadLocalEnv();
@@ -25,12 +26,16 @@ const PORT = config.port;
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
-app.use(express.json({ limit: '32kb' }));
+// 256kb: sync history batches (SYNC-01B); auth payloads remain small.
+app.use(express.json({ limit: '256kb' }));
 
 const rooms = new Map();
 
 /** Account auth routes always mounted; DB required for handlers to succeed. */
 app.use(createAccountAuthRouter(config));
+
+/** SYNC-01B — account sync storage API (no client auto-activation). */
+app.use('/sync', createSyncRouter(config));
 
 app.get('/health', (_req, res) =>
   res.json({

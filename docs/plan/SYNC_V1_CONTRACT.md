@@ -1,7 +1,7 @@
 # Suecão Sync v1 Contract (REL-SYNC-01 / SYNC-01A)
 
-**Status:** SYNC-01A DONE (local contract + metadata).
-**Network sync:** not started (SYNC-01B READY FOR IMPLEMENTATION).
+**Status:** SYNC-01A DONE · **SYNC-01B DONE** (backend storage + API).
+**Client sync engine:** not started (**SYNC-01C READY FOR IMPLEMENTATION**).
 **Auth baseline:** REL-AUTH-01 DONE (`AUTH_RELEASE_BASELINE_01F.md`).
 **Prefs storage strategy:** **A — adapter layer** — existing keys remain UX source of truth; `sueca-syncable-prefs-v1` stores only `localPrefsRevision` / `localUpdatedAt`; `buildSyncablePrefsDocument()` assembles the future sync payload. Chosen as smallest safe approach (no destructive migration).
 
@@ -114,4 +114,79 @@ Custom themes · music prefs · session sync · realtime · hard-delete retentio
 ## SYNC-01A deliverable
 
 Local contract + `sueca-sync-meta-v1` + binding guards + prefs mutation revision + legacyStatsSeed helper + first-link state model.
-**Zero** sync HTTP calls.
+**Zero** client sync HTTP calls (01A).
+
+## SYNC-01B — backend storage + API
+
+**Client remains network-silent for sync** until SYNC-01C. No login/startup/outbox upload in the app.
+
+### Tables (Postgres)
+
+| Table | Role |
+|-------|------|
+| `sync_account_state` | Per-Account `global_revision`, `history_revision`, `prefs_revision`, `updated_at` |
+| `sync_match_history` | Per-Account match rows; `match_id TEXT` PK with account; optional `idempotency_key`; `payload JSONB`; `server_revision`; soft `deleted_at` reserved |
+| `sync_prefs` | Per-Account prefs document + `server_revision` |
+| `sync_legacy_stats_seed` | Per-Account immutable seed (create-once) |
+
+FK → `accounts(id) ON DELETE CASCADE`. Soft-delete (`pending_delete`) does **not** wipe sync rows in 01B.
+
+### Revision model
+
+- Server monotonic revisions are authoritative (not client wall-clock).
+- Successful history insert increments `history_revision` (+ `global_revision`).
+- Successful prefs write increments `prefs_revision` (+ `global_revision`).
+- Prefs PUT requires `baseRevision === current prefs_revision` (initial create: `0` or `null`→0); mismatch → **409** `stale_revision`.
+- History append is idempotent (same id + same payload → dedupe; no destructive overwrite).
+
+### Legacy match id policy
+
+- `match_id` is **TEXT** (not UUID-typed).
+- Legacy `migrated-finished-*` ids are **accepted**.
+- New client records should remain UUID-style.
+- No server-side rewrite of legacy ids.
+
+### HTTP API (Suecão Account Bearer only)
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `GET` | `/sync/status` | `eligible`, revisions, `hasLegacyStatsSeed`, `updatedAt` |
+| `GET` | `/sync/snapshot` | Full snapshot; optional `sinceHistoryRevision` / `sincePrefsRevision` |
+| `POST` | `/sync/history` | `{ records: [{ id, idempotencyKey?, schemaVersion, payload }] }` → accepted / deduped / conflicts + `historyRevision` |
+| `PUT` | `/sync/prefs` | `{ schemaVersion, baseRevision, payload }` |
+| `PUT` | `/sync/legacy-stats-seed` | Create-once; same payload → idempotent; different → **409** `immutable_seed_conflict` |
+
+Auth: Account JWT only. MP guest rejected. `pending_delete` → **401** (same as `/me`). Account id never taken from body.
+
+### Limits (v1)
+
+| Limit | Value |
+|-------|-------|
+| History retained / Account | newest **2000** (see retention below) |
+| History batch max | **100** |
+| History payload / record | **8 KiB** |
+| Prefs payload | **16 KiB** |
+| Legacy seed payload | **4 KiB** |
+| Tombstones | column reserved; user-delete tombstones = future |
+
+### Retention semantics (history)
+
+- After a successful batch that inserts new rows, prune each Account to the **newest 2000** rows (`ORDER BY created_at DESC, match_id DESC`, drop the rest).
+- Prune is **per-Account only** — never touches another Account’s rows.
+- `history_revision` / `global_revision` are **monotonic** and **never decrease** when rows are pruned (gaps are OK).
+- Pruned `match_id`s are gone from the server; a later client re-upload of the same id+payload is treated as a **new accept** (or idempotent if somehow still present) — not a silent cross-account leak.
+- Incremental clients should treat `sinceHistoryRevision` as “rows still present with `server_revision > N`”; pruned older revisions simply do not appear.
+
+### Snapshot semantics
+
+- Default: full history (≤2000), current prefs, legacy seed if any, current revisions.
+- `sinceHistoryRevision=N`: only rows with `server_revision > N`.
+- `sincePrefsRevision=N`: omit prefs body when unchanged (`prefsUnchanged: true`).
+
+### Error codes
+
+`invalid_payload` (400) · `Unauthorized` (401) · `stale_revision` (409) · `immutable_seed_conflict` (409) · `history_record_conflict` (409) · `batch_too_large` / `payload_too_large` (413) · `db_unavailable` (503).
+
+## SYNC-01C (next)
+
+Client sync engine: first-link UX, outbox, call these APIs. **Not** started in 01B.

@@ -9,7 +9,10 @@ Multiplayer guest auth + WebSocket rooms, plus **Account auth** (AUTH-01B) on Po
 | MP guest | `POST /auth/guest`, `WS /ws` — `JWT_SECRET`, claim `guest: true` |
 | Account | `/auth/google/id-token`, `/auth/session/refresh`, `/auth/logout`, `GET /me` — `JWT_SIGNING_KEY` + Postgres |
 
-Do **not** reuse guest JWT as Account session. Do **not** upload game data here (REL-SYNC-01).
+Do **not** reuse guest JWT as Account session.
+
+**SYNC-01B** adds Account-scoped `/sync/*` storage API (history · prefs · legacyStatsSeed).
+The **client does not call these yet** (SYNC-01C).
 
 ## Local Postgres
 
@@ -32,6 +35,16 @@ npm start
 - `GET /me` — Bearer Suecão access JWT
 - `DELETE /auth/account` — Account soft-delete (`pending_delete`) **or** MP guest stub if guest JWT
 
+## Sync endpoints (SYNC-01B — Account Bearer only)
+
+- `GET /sync/status` — revisions + seed presence
+- `GET /sync/snapshot` — prefs · seed · history (optional `sinceHistoryRevision` / `sincePrefsRevision`)
+- `POST /sync/history` — append/dedupe batch (max 100; retain newest 2000)
+- `PUT /sync/prefs` — CAS via `baseRevision` (0/null = create)
+- `PUT /sync/legacy-stats-seed` — immutable create-once
+
+MP guest JWT and `pending_delete` Accounts are rejected. See `docs/plan/SYNC_V1_CONTRACT.md`.
+
 ## Multiplayer endpoints (unchanged)
 
 - `POST /auth/guest` — `{ displayName }` → `{ token, userId }`
@@ -48,6 +61,7 @@ See `.env.example`: `DATABASE_URL`, `JWT_SIGNING_KEY`, `JWT_SECRET`, `ACCESS_TOK
 npm run db:up
 # export DATABASE_URL=...
 npm test
+npm run test:sync   # SYNC-01B only
 ```
 
-Auth tests mock Google verification; they need Postgres. MP tests do not require DB.
+Auth/sync tests mock Google verification; they need Postgres. MP tests do not require DB.
