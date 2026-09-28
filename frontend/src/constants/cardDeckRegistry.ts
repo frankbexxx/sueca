@@ -1,7 +1,7 @@
 /**
  * Central card deck / back registry.
  * Faces (`deckId`) and backs (`backId`) are independent.
- * Shipping decks (REL-DECK-01D Batch 3): 8 fronts; ~19 backs. Casino removed.
+ * Shipping decks (REL-DECK-02B Batch 4): 10 fronts; ~25 backs. Casino removed.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -65,6 +65,16 @@ export const CARD_DECKS = {
     id: 'webisso',
     facePath: '/assets/cards/webisso',
     label: 'Webisso'
+  },
+  'openclipart-bordered': {
+    id: 'openclipart-bordered',
+    facePath: '/assets/cards/openclipart-bordered',
+    label: 'Bordered'
+  },
+  minicards: {
+    id: 'minicards',
+    facePath: '/assets/cards/minicards',
+    label: 'Mini'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 
@@ -166,6 +176,36 @@ export const CARD_BACKS = {
     id: 'suecao-gold',
     assetPathBase: '/assets/card-backs/suecao-gold',
     label: 'Suecão gold'
+  },
+  'openclipart-01': {
+    id: 'openclipart-01',
+    assetPathBase: '/assets/card-backs/openclipart-01',
+    label: 'OpenClipart A'
+  },
+  'openclipart-01-red': {
+    id: 'openclipart-01-red',
+    assetPathBase: '/assets/card-backs/openclipart-01-red',
+    label: 'OpenClipart A red'
+  },
+  'openclipart-02': {
+    id: 'openclipart-02',
+    assetPathBase: '/assets/card-backs/openclipart-02',
+    label: 'OpenClipart B'
+  },
+  'openclipart-03': {
+    id: 'openclipart-03',
+    assetPathBase: '/assets/card-backs/openclipart-03',
+    label: 'OpenClipart C'
+  },
+  'openclipart-04': {
+    id: 'openclipart-04',
+    assetPathBase: '/assets/card-backs/openclipart-04',
+    label: 'OpenClipart D'
+  },
+  'openclipart-05': {
+    id: 'openclipart-05',
+    assetPathBase: '/assets/card-backs/openclipart-05',
+    label: 'OpenClipart E'
   }
 } as const satisfies Record<string, CardBackDefinition>;
 

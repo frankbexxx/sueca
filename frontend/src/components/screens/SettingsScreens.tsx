@@ -293,7 +293,9 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
                         fourcolour: '4 Cores',
                         accessible: 'Acessível',
                         kenney: 'Kenney',
-                        webisso: 'Webisso'
+                        webisso: 'Webisso',
+                        'openclipart-bordered': 'Contornado',
+                        minicards: 'Mini'
                       } as const
                     )[id]
                   : deck.label;

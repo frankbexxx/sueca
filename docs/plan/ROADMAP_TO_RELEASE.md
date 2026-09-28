@@ -46,7 +46,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 
 ## CURRENT RELEASE BLOCKERS
 
-1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library complete at 8 fronts + 19 backs (Batch 3).
+1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library at **10 fronts / 25 backs** (Batch 4 optional expansion).
 2. **Repo legal baseline** — root `NOTICE` added (REL-LEGAL-01B); root `LICENSE` / `TRADEMARKS` still unresolved; privacy/terms contact still placeholder; product copyright owner of record not established.
 3. **Credits / attribution (REL-LEGAL-01B)** — **PARTIAL DONE**: runtime Credits + NOTICE match shipping decks/SFX/music families; Hazmat/DOBO/Casino pack removed from UI. Privacy / Terms / Data Safety / product LICENSE remain open under REL-LEGAL-01.
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
@@ -153,7 +153,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
 | REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits/NOTICE DONE (uncommitted):** runtime Credits match shipping assets; root NOTICE with Webisso MIT notice; soft `Suecão · 2026`. Still open: root LICENSE choice, TRADEMARKS, privacy/terms/contact, product owner of record, music store clearance, Play Data Safety | P0 | YES (license model) | IN PROGRESS |
-| REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE:** 8 fronts (default cardmeister); 19 backs; Hayeah skipped. Credits polish → REL-LEGAL-01B | P1 | YES | DONE |
+| REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE.** **Batch 4 (REL-DECK-02B) DONE uncommitted:** +openclipart-bordered +minicards +6 OCAL backs (Back01/02 blue+red pair + 4 other motifs) → **10 fronts / 25 backs**. Skipped: Bellot/Knoll/Noto/ornamental; other red twins | P1 | YES | DONE |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
@@ -190,7 +190,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Summary | Priority |
 |----|---------|----------|
 | REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish (**01B Credits/NOTICE done; LICENSE/Privacy open**) | P0 |
-| REL-DECK-01 | Deck library Batches 1–3 DONE · Credits polish separate | P1 · **DONE (assets)** |
+| REL-DECK-01 | Deck library Batches 1–4 · **10 fronts / 25 backs** (Batch 4 optional expansion) | P1 · **DONE (assets)** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |

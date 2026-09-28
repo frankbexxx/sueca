@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   ACTIVE_CARD_DECK_ID,
@@ -50,6 +51,8 @@ const SHIPPING_DECK_IDS = [
   'fourcolour',
   'jumbo-2',
   'kenney',
+  'minicards',
+  'openclipart-bordered',
   'pd-ornate',
   'webisso',
   'woodcut'
@@ -92,30 +95,36 @@ function assertFaceFiles(deckId: keyof typeof CARD_DECKS) {
   }
 }
 
-describe('cardDeckRegistry + theme card visuals (REL-DECK-01D)', () => {
+describe('cardDeckRegistry + theme card visuals (REL-DECK-02B)', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('registers eight fronts; default cardmeister; no Casino', () => {
+  it('registers ten fronts; default cardmeister; no Casino', () => {
     expect(Object.keys(CARD_DECKS).sort()).toEqual([...SHIPPING_DECK_IDS]);
     expect(DEFAULT_CARD_DECK_ID).toBe('cardmeister');
     expect(ACTIVE_CARD_DECK_ID).toBe('cardmeister');
     expect(isCardDeckId('casino')).toBe(false);
     expect(isCardDeckId('kenney')).toBe(true);
     expect(isCardDeckId('webisso')).toBe(true);
+    expect(isCardDeckId('openclipart-bordered')).toBe(true);
+    expect(isCardDeckId('minicards')).toBe(true);
     expect(isCardDeckId('hayeah')).toBe(false);
+    expect(isCardDeckId('noto')).toBe(false);
     expect(resolveActiveDeck().facePath).toBe('/assets/cards-cardmeister');
     expect(CARD_ASSETS_DIR).toBe('/assets/cards-cardmeister');
   });
 
-  it('registers 19 backs including Batch 3; no Casino/hazmat', () => {
-    expect(Object.keys(CARD_BACKS)).toHaveLength(19);
+  it('registers 25 backs including Batch 4 OpenClipart pair; no Casino/hazmat', () => {
+    expect(Object.keys(CARD_BACKS)).toHaveLength(25);
     expect(isCardBackId('casino-05')).toBe(false);
     expect(isCardBackId('hazmat-red')).toBe(false);
     expect(isCardBackId('kenney-01')).toBe(true);
     expect(isCardBackId('suecao-burgundy')).toBe(true);
     expect(isCardBackId('suecao-gold')).toBe(true);
+    expect(isCardBackId('openclipart-01')).toBe(true);
+    expect(isCardBackId('openclipart-01-red')).toBe(true);
+    expect(isCardBackId('openclipart-05')).toBe(true);
     expect(CARD_BACKS['suecao-navy'].assetPathBase).toBe(
       '/assets/card-backs/suecao-navy'
     );
@@ -246,10 +255,37 @@ describe('cardDeckRegistry + theme card visuals (REL-DECK-01D)', () => {
     expect(
       getCardImagePath('Jack', 'Clubs', '', 'classic', '?deck=webisso')
     ).toBe('/assets/cards/webisso/Jack_of_Clubs.png');
+    expect(
+      getCardImagePath('Ace', 'Spades', '', 'classic', '?deck=openclipart-bordered')
+    ).toBe('/assets/cards/openclipart-bordered/Ace_of_Spades.png');
+    expect(
+      getCardImagePath('King', 'Spades', '', 'classic', '?deck=minicards')
+    ).toBe('/assets/cards/minicards/King_of_Spades.png');
     expect(getCardBackPath('classic')).toBe('/assets/card-backs/suecao-navy.png');
     expect(getCardBackPath('midnight', 'kenney-01')).toBe(
       '/assets/card-backs/kenney-01.png'
     );
+    expect(getCardBackPath('classic', 'openclipart-01')).toBe(
+      '/assets/card-backs/openclipart-01.png'
+    );
+    expect(getCardBackPath('classic', 'openclipart-01-red')).toBe(
+      '/assets/card-backs/openclipart-01-red.png'
+    );
+  });
+
+  it('OpenClipart Batch 4 backs are unique by SHA-256 vs all shipping backs', () => {
+    const hashes = new Map<string, string>();
+    for (const back of Object.values(CARD_BACKS)) {
+      const file = path.join(
+        PUBLIC,
+        `${back.assetPathBase.replace(/^\//, '')}.png`
+      );
+      const hash = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+      expect(hashes.has(hash), `${back.id} duplicates ${hashes.get(hash)}`).toBe(
+        false
+      );
+      hashes.set(hash, back.id);
+    }
   });
 
   it('falls back to suecao-navy when theme has no cardVisuals', () => {
