@@ -291,7 +291,9 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
                         woodcut: 'Woodcut',
                         'jumbo-2': 'Jumbo',
                         fourcolour: '4 Cores',
-                        accessible: 'Acessível'
+                        accessible: 'Acessível',
+                        kenney: 'Kenney',
+                        webisso: 'Webisso'
                       } as const
                     )[id]
                   : deck.label;

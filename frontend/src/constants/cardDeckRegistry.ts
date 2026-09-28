@@ -1,7 +1,7 @@
 /**
  * Central card deck / back registry.
  * Faces (`deckId`) and backs (`backId`) are independent.
- * Shipping decks (REL-DECK-01C Batch 2): cardmeister + pd-ornate + woodcut + Saul Spatz ×3.
+ * Shipping decks (REL-DECK-01D Batch 3): 8 fronts; ~19 backs. Casino removed.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -55,6 +55,16 @@ export const CARD_DECKS = {
     id: 'accessible',
     facePath: '/assets/cards/accessible',
     label: 'Accessible'
+  },
+  kenney: {
+    id: 'kenney',
+    facePath: '/assets/cards/kenney',
+    label: 'Kenney'
+  },
+  webisso: {
+    id: 'webisso',
+    facePath: '/assets/cards/webisso',
+    label: 'Webisso'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 
@@ -131,6 +141,31 @@ export const CARD_BACKS = {
     id: 'ornate-red-02',
     assetPathBase: '/assets/card-backs/ornate-red-02',
     label: 'Ornate red B'
+  },
+  'kenney-01': {
+    id: 'kenney-01',
+    assetPathBase: '/assets/card-backs/kenney-01',
+    label: 'Kenney'
+  },
+  'suecao-burgundy': {
+    id: 'suecao-burgundy',
+    assetPathBase: '/assets/card-backs/suecao-burgundy',
+    label: 'Suecão burgundy'
+  },
+  'suecao-forest': {
+    id: 'suecao-forest',
+    assetPathBase: '/assets/card-backs/suecao-forest',
+    label: 'Suecão forest'
+  },
+  'suecao-charcoal': {
+    id: 'suecao-charcoal',
+    assetPathBase: '/assets/card-backs/suecao-charcoal',
+    label: 'Suecão charcoal'
+  },
+  'suecao-gold': {
+    id: 'suecao-gold',
+    assetPathBase: '/assets/card-backs/suecao-gold',
+    label: 'Suecão gold'
   }
 } as const satisfies Record<string, CardBackDefinition>;
 

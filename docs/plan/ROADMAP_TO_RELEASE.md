@@ -46,7 +46,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 
 ## CURRENT RELEASE BLOCKERS
 
-1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01B/C)**: Casino removed; shipping fronts = CardMeister + pd-ornate + woodcut + Saul×3; backs = 14 cleared.
+1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library complete at 8 fronts + 19 backs (Batch 3).
 2. **Repo legal baseline** — no root `LICENSE` / `NOTICE` / `TRADEMARKS`; privacy/terms contact still placeholder.
 3. **Credits stale** — UI may still mention Hazmat/old audio lines; deck set now CardMeister / pd-ornate (Credits polish follows deck batches).
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
@@ -152,7 +152,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
 | REL-LEGAL-01 | Legal / licences | TODO | Root LICENSE + NOTICE + TRADEMARKS (OXS baseline); real privacy/terms + contact; Credits polish after decks; Casino **removed** from shipping (REL-DECK-01B) | P0 | YES (license model) | TODO |
-| REL-DECK-01 | Deck / Card Back | IN PROGRESS | **Batch 1–2 DONE:** 6 fronts (default cardmeister); 14 backs; woodcut + Saul Spatz + ornate backs. Batch 3: Kenney/Webisso/hayeah/colourways | P1 | YES | IN PROGRESS |
+| REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE:** 8 fronts (default cardmeister); 19 backs; Hayeah skipped. Credits polish remains separate under REL-LEGAL | P1 | YES | DONE |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
@@ -189,7 +189,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Summary | Priority |
 |----|---------|----------|
 | REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish | P0 |
-| REL-DECK-01 | Deck curation Batch 1–2 DONE · Batch 3 remaining | P1 · **IN PROGRESS** |
+| REL-DECK-01 | Deck library Batches 1–3 DONE · Credits polish separate | P1 · **DONE (assets)** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |
