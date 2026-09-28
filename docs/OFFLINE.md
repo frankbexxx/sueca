@@ -4,7 +4,7 @@
 
 All four variants run **entirely in the browser** (no server required for rules or local AI).
 
-- Set `REACT_APP_USE_LOCAL_AI_ONLY=true` (default in `.env.example`).
+- Set `VITE_USE_LOCAL_AI_ONLY=true` (default in `.env.example`).
 - Card images ship in `frontend/public/assets/cards2/` (SVG placeholders until commercial pack).
 
 ## What needs network
@@ -13,7 +13,7 @@ All four variants run **entirely in the browser** (no server required for rules 
 |---------|---------|
 | Sueca / Spades / Hearts / King vs bots | Yes |
 | External AI (`/play`) | No (disabled) |
-| Multiplayer | No (requires `REACT_APP_MULTIPLAYER_ENABLED` + backend) |
+| Multiplayer | No (public v1 soft-hides Online; needs `VITE_MULTIPLAYER_ENABLED=true` + Firebase RTDB) |
 | Ads | No (loads SDK when enabled) |
 
 ## Capacitor

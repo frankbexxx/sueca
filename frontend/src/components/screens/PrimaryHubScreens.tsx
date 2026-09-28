@@ -3,8 +3,10 @@ import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
 import { formatAppBuildLabel } from '../../config/appBuildInfo';
 import { useLanguage } from '../../i18n/useLanguage';
+import { MULTIPLAYER_ENABLED } from '../../config/features';
 import '../../styles/shell-screens.css';
 import './MoreScreen.css';
+
 
 interface ActivityHubScreenProps {
   showBack: boolean;
@@ -120,54 +122,62 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
   const { language } = useLanguage();
   const buildLabel = formatAppBuildLabel(language === 'en' ? 'en' : 'pt');
 
-  return (
-    <div className="shell-screen screen-more-hub" data-testid="more-hub-screen">
-      <ShellHeader
-        title="Mais"
-        subtitle="Online, regras, definições e perfil"
-        showBack={showBack}
-        onBack={onBack}
-      />
-      <ShellHubList
-        items={[
+  const items = [
+    ...(MULTIPLAYER_ENABLED
+      ? [
           {
             id: 'online',
             label: 'Online',
             hint: 'Sessões multijogador',
             onClick: onOpenOnline
-          },
-          {
-            id: 'rules',
-            label: 'Regras',
-            hint: 'Regras por jogo',
-            onClick: onOpenRules
-          },
-          {
-            id: 'settings',
-            label: 'Definições',
-            hint: 'Geral e mão',
-            onClick: onOpenSettings
-          },
-          {
-            id: 'profile',
-            label: 'Perfil',
-            hint: 'Nome, créditos e sair',
-            onClick: onOpenProfile
-          },
-          {
-            id: 'account',
-            label: 'Conta',
-            hint: 'Conta Google opcional',
-            onClick: onOpenAccount
-          },
-          {
-            id: 'diagnostic',
-            label: 'Exportar dados de diagnóstico',
-            hint: 'Logs técnicos para análise (não é o histórico)',
-            onClick: onOpenDiagnostic
           }
-        ]}
+        ]
+      : []),
+    {
+      id: 'rules',
+      label: 'Regras',
+      hint: 'Regras por jogo',
+      onClick: onOpenRules
+    },
+    {
+      id: 'settings',
+      label: 'Definições',
+      hint: 'Geral e mão',
+      onClick: onOpenSettings
+    },
+    {
+      id: 'profile',
+      label: 'Perfil',
+      hint: 'Nome, créditos e sair',
+      onClick: onOpenProfile
+    },
+    {
+      id: 'account',
+      label: 'Conta',
+      hint: 'Conta Google opcional',
+      onClick: onOpenAccount
+    },
+    {
+      id: 'diagnostic',
+      label: 'Exportar dados de diagnóstico',
+      hint: 'Logs técnicos para análise (não é o histórico)',
+      onClick: onOpenDiagnostic
+    }
+  ];
+
+  return (
+    <div className="shell-screen screen-more-hub" data-testid="more-hub-screen">
+      <ShellHeader
+        title="Mais"
+        subtitle={
+          MULTIPLAYER_ENABLED
+            ? 'Online, regras, definições e perfil'
+            : 'Regras, definições e perfil'
+        }
+        showBack={showBack}
+        onBack={onBack}
       />
+      <ShellHubList items={items} />
       <p className="more-build-meta" data-testid="more-build-meta">
         {buildLabel}
       </p>

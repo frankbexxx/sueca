@@ -34,7 +34,7 @@ vercel --prod
 - [ ] Trunfo visível na primeira ronda
 - [ ] IA joga automaticamente
 - [ ] Testar em viewport mobile (360×800) — ver [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
-- [ ] MoreScreen / Configurações: ordenar mão on/off; ordem naipes; trunfo Sueca; som on/off
+- [ ] Mais → Definições: idioma; Personalizar → Mão e Cartas (ordenar mão / ritmo); Personalizar → Música e Som
 - [ ] Sueca: 10 cartas + trunfo à esquerda (se configurado)
 - [x] Selector mostra Sueca, Spades, Hearts e King
 - [ ] Smoke King PT: viragem K♥ automática · folha 10×4 · festa 13 cartas scroll + bottom sheet · aceitar 1 positiva · sem NÓS/ELES na mesa
@@ -56,14 +56,20 @@ vercel --prod
 - [ ] Ou manual: `npm run build:android` depois `npx cap sync android`
 - [ ] AAB assinado (`docs/ANDROID_SIGNING.md`) — internal track Play Console
 - [ ] Legal: `/legal/privacy.html` e `/legal/terms.html` no deploy
-- [ ] `REACT_APP_USE_LOCAL_AI_ONLY=true` no build mobile
+- [ ] `VITE_USE_LOCAL_AI_ONLY=true` no build mobile (`npm run build:android` / `.env.android`)
 - [ ] Maestro smoke (`.maestro/smoke.yaml`) no emulador
-- [ ] Backend v1: `REACT_APP_API_URL` + `wss://` se multiplayer ativo
+- [ ] Conta / Auth API: `VITE_AUTH_API_BASE_URL` HTTPS em produção se Conta estiver em uso
+
+## Multiplayer (REL-MP-01 Option C — soft-hide)
+
+- [x] Public v1: `VITE_MULTIPLAYER_ENABLED=false` em `.env.production` e `.env.android`
+- [x] Mais → Online **hidden** when flag is false (code retained; enable only for internal/dev)
+- [ ] Confirm production deploy does **not** show Online under Mais
 
 ## Serviços opcionais
 
-- [ ] `REACT_APP_AI_SERVICE_URL` configurado no Vercel **ou** confirmado fallback para IA local
-- [ ] `REACT_APP_MULTIPLAYER_URL` configurado **ou** multiplayer desligado em produção
+- [ ] `VITE_AI_SERVICE_URL` configurado no Vercel **ou** confirmado fallback para IA local
+- [ ] Multiplayer: leave `VITE_MULTIPLAYER_ENABLED=false` for public v1 (soft-hide). Do **not** require a separate `*_MULTIPLAYER_URL` — MP uses Firebase RTDB client config when re-enabled
 - [ ] `.env.local` **não** commitado (está em `.gitignore`)
 
 ## Git antes do push

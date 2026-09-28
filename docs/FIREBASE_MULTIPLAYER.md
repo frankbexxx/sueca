@@ -8,23 +8,27 @@ Online Sueca uses **Firebase Realtime Database** — not the legacy WebSocket ba
 - **Joiners** push intents to `sessions/{code}/actions/{pushId}`; they never write `state`.
 - Lobby meta lives at `sessions/{code}` (`variant`, `slots`, `status`).
 
-## Vercel environment variables
+## Public v1 posture (REL-MP-01 Option C)
 
-Set these on the frontend project (Preview + Production):
+Public production keeps **`VITE_MULTIPLAYER_ENABLED=false`** (Web + Android). Online is soft-hidden under Mais; MP/Firebase client code is retained. Firebase initializes only when multiplayer code calls `getFirebaseApp()` / `getFirebaseDatabase()` — not on ordinary app startup when MP is off.
+
+## Vercel / Vite environment variables
+
+Set these on the frontend project when re-enabling Online (Preview / Production):
 
 | Variable | Example | Notes |
 |----------|---------|--------|
-| `REACT_APP_MULTIPLAYER_ENABLED` | `true` | Must be literal `true` to show Online |
-| `REACT_APP_FIREBASE_API_KEY` | `AIza…` | Firebase web app |
-| `REACT_APP_FIREBASE_DATABASE_URL` | `https://PROJECT-default-rtdb.REGION.firebasedatabase.app` | RTDB URL |
-| `REACT_APP_FIREBASE_PROJECT_ID` | `suecao` | Project id |
-| `REACT_APP_FIREBASE_APP_ID` | `1:…:web:…` | Web app id |
+| `VITE_MULTIPLAYER_ENABLED` | `true` | Must be literal `true` to show Mais → Online |
+| `VITE_FIREBASE_API_KEY` | `AIza…` | Firebase web app |
+| `VITE_FIREBASE_DATABASE_URL` | `https://PROJECT-default-rtdb.REGION.firebasedatabase.app` | RTDB URL |
+| `VITE_FIREBASE_PROJECT_ID` | `suecao` | Project id |
+| `VITE_FIREBASE_APP_ID` | `1:…:web:…` | Web app id |
 
 Optional debug logging:
 
 | Variable | Value |
 |----------|--------|
-| `REACT_APP_DEBUG_MP` | `true` | Enables `[MP]` console logs in production builds |
+| `VITE_DEBUG_MP` | `true` | Enables `[MP]` console logs in production builds |
 
 In the browser console (including production):
 
@@ -60,8 +64,8 @@ Stale rooms: ended sessions should be deleted periodically (manual cleanup or a 
 ## Local development
 
 1. Copy Firebase vars into `frontend/.env.development`.
-2. Set `REACT_APP_MULTIPLAYER_ENABLED=true`.
-3. `npm start` in `frontend/`.
+2. Set `VITE_MULTIPLAYER_ENABLED=true` (already true in committed `.env.development` / `.env.test`).
+3. `npm run dev` in `frontend/`.
 4. Test with two browser profiles or devices using the 5-letter room code.
 
 ## Acceptance checklist

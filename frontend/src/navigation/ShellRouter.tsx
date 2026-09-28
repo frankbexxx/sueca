@@ -33,6 +33,7 @@ import {
 } from '../components/screens/PrimaryHubScreens';
 import { DiagnosticExportScreen } from '../components/screens/DiagnosticExportScreen';
 import type { RulesPresetId } from '../constants/rulesPresets';
+import { MULTIPLAYER_ENABLED } from '../config/features';
 
 export interface ShellRouterProps {
   route: ShellRoute;
@@ -185,10 +186,11 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
       return <DiagnosticExportScreen showBack={canGoBack} onBack={onBack} />;
     }
     if (route.screen === 'online') {
+      // Soft-hide: deep link keeps a safe disabled panel; no lobby UI / no Firebase.
       return (
         <OnlineScreen
           showBack={canGoBack}
-          onBack={onBack}
+          onBack={MULTIPLAYER_ENABLED ? onBack : () => onPush({ tab: 'more', screen: 'hub' })}
           onStartGame={(config) => onStartGame(config)}
         />
       );

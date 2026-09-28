@@ -49,7 +49,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 1. **Casino deck commercial licence** — redistribute rights unresolved (`docs/ASSETS.md`: indeterminada).
 2. **Repo legal baseline** — no root `LICENSE` / `NOTICE` / `TRADEMARKS`; privacy/terms contact still placeholder.
 3. **Credits wrong** — UI still attributes **Hazmat**; runtime deck is **Casino**.
-4. **Multiplayer production posture** — `.env.production` has `VITE_MULTIPLAYER_ENABLED=true` while Android is solo-off; Online tab always visible → **DECISION REQUIRED**.
+4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
 7. **Durable local data safety (`REL-DATA-01`)** — **DONE**. **`REL-DATA-02` real match history — DONE** (OPPO `install -r` smoke PASS).
@@ -103,21 +103,23 @@ Do **not** reopen without new evidence:
 
 ---
 
-## MULTIPLAYER — DECISION REQUIRED
+## MULTIPLAYER — V1 POSTURE (REL-MP-01)
 
-| Option | Consequence |
-|--------|-------------|
-| **A — v1 SOLO** | `VITE_MULTIPLAYER_ENABLED=false` in production web; hide Online tab; full MP → **FUTURE** |
-| **B — v1 with multiplayer** | Multiplayer becomes a large **P0/P1** workstream (lobby, sync, reconnect, Sueca-only scope, backend) |
+| Decision | **OPTION C — SOFT HIDE** |
+|----------|---------------------------|
+| Public v1 | `VITE_MULTIPLAYER_ENABLED=false` (Web production + Android) |
+| Navigation | Mais → **Online hidden** when flag is false |
+| Code | Multiplayer / Firebase client **retained** for future / internal (`VITE_MULTIPLAYER_ENABLED=true` in `.env.development` / `.env.test`) |
+| Full MP | Tracked as `REL-MP-FULL-01` (reconnect, rules harden, multi-device, etc.) |
 
-**Do not decide in this document.** Track as `REL-MP-01`.
+**Do not reopen Option B for public v1** without a new product decision.
 
 Current facts:
 
-- Android: MP already **off** (`.env.android`)
-- Web prod: MP **on** (`.env.production`)
-- Online tab always in `BottomNav` (not flag-gated)
-- Firebase client exists; Node `backend/` / Python realtime largely unused by shipping FE
+- Android: MP **off** (`.env.android`)
+- Web production: MP **off** (`.env.production`) — soft-hide
+- Online entry lives under **Mais** (not BottomNav); gated by `MULTIPLAYER_ENABLED`
+- Firebase client exists (lazy); Node `backend/` / Python realtime unused by shipping FE MP path
 
 ---
 
@@ -150,7 +152,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
 | REL-LEGAL-01 | Legal / licences | TODO | Root LICENSE + NOTICE + TRADEMARKS (OXS baseline); real privacy/terms + contact; fix Credits (Casino not Hazmat); confirm Casino commercial licence | P0 | YES (license model) | TODO |
-| REL-MP-01 | Multiplayer posture | BLOCKED | Decide A solo vs B full MP; if A: MP false in web prod + hide Online; if B: scope MP as P0/P1 | P0 | **YES — REQUIRED** | BLOCKED |
+| REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
 | REL-DATA-01 | Durable local data safety | DONE | Versioned envelopes · backup-before-migrate · quarantine/recovery · migration idempotence · King played=160 fixture · corruption + quarantine/backup write-failure protection · full tests/build · OPPO `adb install -r` update PASS (prefs/stats/sessions preserved). Closed on device validation | P0 | NO | DONE |
@@ -187,7 +189,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | ID | Summary | Priority |
 |----|---------|----------|
 | REL-LEGAL-01 | Casino licence · LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits | P0 |
-| REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 |
+| REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |
 | REL-DATA-01 | Durable local data safety (schemas · parse recovery · migration backups) | P0 · DONE |
