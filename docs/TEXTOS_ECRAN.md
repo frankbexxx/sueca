@@ -44,8 +44,9 @@ Este documento lista todos os textos que são exibidos na interface do jogo, org
   - EN: `"Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João."`
 
 - **Variável:** `t.landing.copyright`
-  - PT: `"© 2025 Todos os direitos reservados."`
-  - EN: `"© 2025 All rights reserved."`
+  - PT: `"Suecão · 2026"`
+  - EN: `"Suecão · 2026"`
+  - Nota (REL-LEGAL-01C): runtime mantém esta linha curta; copyright titular Francisco Bexiga está em `LICENSE` / `NOTICE`. Branding in-app “Suecão by OXS” → `REL-OXS-01`.
 
 ---
 
@@ -346,7 +347,7 @@ Este documento lista todos os textos que são exibidos na interface do jogo, org
 - **Hardcoded:** `"4 jogos"` (meta)
 - **Hardcoded:** `"Agradecimentos"` (título da seção)
 - **Hardcoded:** `"Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João."` (texto de agradecimento)
-- **Hardcoded:** `"© 2025 Todos os direitos reservados."` (copyright)
+- **Hardcoded:** `"Suecão · 2026"` (copyright curto; titular em LICENSE/NOTICE)
 - **Hardcoded:** `"Fechar"` (aria-label do botão de fechar)
 
 ---

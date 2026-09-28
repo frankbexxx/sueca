@@ -1,12 +1,29 @@
-Suecão — third-party notices
-============================
+Suecão — notices
+================
 
-This file records attribution and licence notices for third-party material
-shipped with or used by Suecão. It is not a product licence for Suecão itself
-(root LICENSE remains unresolved as of REL-LEGAL-01B).
+Suecão is a product by OXS — Oeiras Xtreme Software.
+Copyright © 2026 Francisco Bexiga
+
+OXS is a personal brand / project identity of the copyright holder.
+It is not described here as a separate legal company or corporate entity.
+
+Original Suecão software, documentation and project-specific materials are
+copyright © 2026 Francisco Bexiga, except where otherwise stated below.
+
+Use of original Suecão material is governed by the OXS Non-Commercial Source
+License v1.0 included in the LICENSE file.
+
+Source Available — Non-Commercial Use Only.
+
+Third-party software, fonts, libraries, images, audio, data and other
+materials remain subject to their respective licences, copyright notices and
+terms. This NOTICE does not re-licence third-party material.
 
 Runtime Credits in the app are a short courtesy summary. Pack-level provenance
 lives under docs/legal/assets/.
+
+For commercial licensing or other permissions, contact the copyright holder
+through an official OXS or Suecão project communication channel.
 
 --------------------------------------------------------------------------
 Playing-card faces
@@ -66,18 +83,30 @@ Webisso LLC — playing-cards
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 
+OpenClipart bordered (Nicu Buculei)
+  Path: frontend/public/assets/cards/openclipart-bordered/
+  Licence: CC0 1.0 — docs/legal/assets/openclipart-bordered/
+
+Minicards / SVG playing cards 5 (ToasterCoder)
+  Path: frontend/public/assets/cards/minicards/
+  Licence: CC0 1.0 — docs/legal/assets/minicards/
+
 --------------------------------------------------------------------------
 Card backs (additional)
 --------------------------------------------------------------------------
 
 Suecão original navy + colourways (burgundy, forest, charcoal, gold)
   Path: frontend/public/assets/card-backs/suecao-*.png
-  Licence: Suecão product original / derived colourways
+  Licence: original Suecão / Francisco Bexiga material (product colourways)
   Ledger: docs/legal/assets/suecao-backs/
 
 Sylly / Cards Pack backs (OpenGameArt; pack credits Andrew Tidey)
   Path: frontend/public/assets/card-backs/sylly-0{1..6}.png
   Licence: CC0 — docs/legal/assets/sylly/
+
+OpenClipart backs (Nicu Buculei; curated subset)
+  Path: frontend/public/assets/card-backs/openclipart-*.png
+  Licence: CC0 — docs/legal/assets/openclipart-backs/
 
 --------------------------------------------------------------------------
 Sound effects
@@ -94,7 +123,7 @@ Freesound (CC0 claimed in historical project docs)
   Courtesy credit in Credits; formal store redistribution review remains open.
 
 Suecão — generated/synth SFX (round/game cues)
-  Original project assets.
+  Original project assets (Francisco Bexiga / Suecão).
 
 --------------------------------------------------------------------------
 Music
@@ -119,6 +148,7 @@ Typography
 
 Plus Jakarta Sans — loaded from Google Fonts (SIL Open Font License).
   Runtime Credits do not list this; notice recorded here only.
+  OXS / Suecão do not claim ownership of Plus Jakarta Sans or Google Fonts.
 
 --------------------------------------------------------------------------
 Frameworks / libraries (NOTICE-only)
@@ -139,10 +169,11 @@ Hayeah playing-cards-assets — evaluated and skipped (visual duplication).
   See docs/legal/assets/hayeah-SKIPPED.md.
 
 --------------------------------------------------------------------------
-Product copyright
+Product copyright / runtime
 --------------------------------------------------------------------------
 
-Runtime line: “Suecão · 2026”
-Legal owner / company of record for the Suecão product itself is not yet
-established in this repository (OXS branding planned under REL-OXS-01).
-Do not invent ownership wording beyond the product name + year.
+Runtime Credits line (unchanged in this slice): “Suecão · 2026”
+In-app “Suecão by OXS” branding assets remain under REL-OXS-01.
+
+See LICENSE for the product source-available licence and TRADEMARKS.md for
+brand usage policy.

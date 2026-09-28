@@ -71,6 +71,21 @@ sueca/
 
 4 jogadores · 40 cartas · 61/120 pontos · trunfo · equipas. Detalhe: [docs/rules/sueca.md](docs/rules/sueca.md).
 
-## Licença
+## Branding
 
-Uso pessoal / open source conforme repositório.
+**Suecão** is the product. **OXS — Oeiras Xtreme Software** is the parent / personal brand of Francisco Bexiga.
+
+## License
+
+This project is released under the **OXS Non-Commercial Source License v1.0**.
+
+**Source Available — Non-Commercial Use Only.**
+
+Source code is available for personal, educational, research, evaluation and other non-commercial use subject to the terms of the licence.
+
+Commercial use, commercial redistribution, SaaS use, incorporation into commercial products, or substantial use in business operations requires prior written permission from the copyright holder.
+
+Copyright © 2026 Francisco Bexiga
+Suecão by OXS — Oeiras Xtreme Software
+
+See [LICENSE](LICENSE) for the full terms, [NOTICE](NOTICE) for attribution and third-party notices, and [TRADEMARKS.md](TRADEMARKS.md) for brand usage policy.

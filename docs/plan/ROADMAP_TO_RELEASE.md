@@ -47,8 +47,8 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 ## CURRENT RELEASE BLOCKERS
 
 1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library at **10 fronts / 25 backs** (Batch 4 optional expansion).
-2. **Repo legal baseline** — root `NOTICE` added (REL-LEGAL-01B); root `LICENSE` / `TRADEMARKS` still unresolved; privacy/terms contact still placeholder; product copyright owner of record not established.
-3. **Credits / attribution (REL-LEGAL-01B)** — **PARTIAL DONE**: runtime Credits + NOTICE match shipping decks/SFX/music families; Hazmat/DOBO/Casino pack removed from UI. Privacy / Terms / Data Safety / product LICENSE remain open under REL-LEGAL-01.
+2. **Repo legal baseline** — **PARTIAL (REL-LEGAL-01C)**: root `LICENSE` (OXS NCSL v1.0) · `NOTICE` · `TRADEMARKS.md` · README source-available wording · owner = Francisco Bexiga. Still open: Privacy/Terms contact, Play Data Safety, music/R2 formal clearance, in-app OXS branding (`REL-OXS-01`).
+3. **Credits / attribution (REL-LEGAL-01B)** — **DONE**: runtime Credits + NOTICE match shipping decks/SFX/music families; Hazmat/DOBO/Casino pack removed from UI. Privacy / Terms / Data Safety remain open under REL-LEGAL-01.
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
@@ -142,7 +142,7 @@ PDF marked the personalisation hub as `FUTURE*`. That is **not definitive**. If 
 - `E:\APPSHOPLIST\shopping_list` — `LICENSE`, `NOTICE`, `TRADEMARKS.md`, brand guide
 - `E:\OXS_brand_review` — logo/mark inventory (2023 + 2026)
 
-**Suecão gaps:** OXS mark/logo · `Suecão by OXS` · About · legal baseline alignment · NOTICE · TRADEMARKS · favicon · app icon alignment · README branding · links.
+**Suecão gaps (REL-OXS-01):** OXS mark/logo import · `Suecão by OXS` in About/UI · favicon · app icon alignment · brand guide. Legal baseline (LICENSE/NOTICE/TRADEMARKS/README) handled under REL-LEGAL-01C.
 
 In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product work (`REL-OXS-01`).
 
@@ -152,7 +152,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
-| REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits/NOTICE DONE (uncommitted):** runtime Credits match shipping assets; root NOTICE with Webisso MIT notice; soft `Suecão · 2026`. Still open: root LICENSE choice, TRADEMARKS, privacy/terms/contact, product owner of record, music store clearance, Play Data Safety | P0 | YES (license model) | IN PROGRESS |
+| REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits DONE · 01C OXS legal model DONE (uncommitted):** owner Francisco Bexiga · root LICENSE (OXS NCSL v1.0) · NOTICE · TRADEMARKS.md · README source-available. Still open: Privacy/Terms/contact · Play Data Safety · music/R2 clearance · REL-OXS-01 UI/assets | P0 | YES (done for owner/licence) | IN PROGRESS |
 | REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE.** **Batch 4 (REL-DECK-02B) DONE uncommitted:** +openclipart-bordered +minicards +6 OCAL backs (Back01/02 blue+red pair + 4 other motifs) → **10 fronts / 25 backs**. Skipped: Bellot/Knoll/Noto/ornamental; other red twins | P1 | YES | DONE |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
@@ -167,7 +167,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-REPLAY-01 | Diagnostic match logs / replay foundation | DONE | LEVEL 1 reconstructable diagnostic logs · IndexedDB + LS fallback · newest 50 · King auction/Festa/AI decisions · Hearts PASS · Spades BID · JSON export + anonymise · real OPPO export/share smoke · deterministic LEVEL 2 explicitly NOT implemented. Closed on device validation | P1 | NO | DONE |
 | REL-AUTH-01 | Optional account / Google sign-in | DONE | AUTH-01A–F closed. Login optional · LocalGuest · Google proof only · Suecão Account + session · Conta UI · logout · soft-delete Policy B · Web GIS + Android Capgo · secure Android refresh · Web refresh temporary localStorage (XSS caveat). See `AUTH_RELEASE_BASELINE_01F.md` | P1 | YES | DONE |
 | REL-SYNC-01 | Cloud backup and sync | IN PROGRESS | **SYNC-01A/01B/01C/01D DONE**. **SYNC-01E MINIMALLY VALIDATED** (Case A OPPO + force-stop/reopen) · multi-device / full A–E device matrix **NOT** done · Auth/Sync parked. See `SYNC_V1_CONTRACT.md` | P1 | YES | IN PROGRESS |
-| REL-OXS-01 | OXS branding | TODO | Apply MarketFlow baseline: mark, Suecão by OXS, About, links, favicon/app-icon | P1 | YES | TODO |
+| REL-OXS-01 | OXS branding | TODO | Import OXS brand assets; Suecão by OXS in About/UI; favicon/app-icon alignment; links — legal baseline already under REL-LEGAL-01C | P1 | YES | TODO |
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
 | REL-DOCS-01 | Docs / cleanup | TODO | Refresh STATUS / Essentials / README; hide incomplete UX; stale copy | P1 | NO | TODO |
@@ -189,7 +189,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish (**01B Credits/NOTICE done; LICENSE/Privacy open**) | P0 |
+| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS (**01C done**) · privacy/terms · music clearance · Data Safety | P0 |
 | REL-DECK-01 | Deck library Batches 1–4 · **10 fronts / 25 backs** (Batch 4 optional expansion) | P1 · **DONE (assets)** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
