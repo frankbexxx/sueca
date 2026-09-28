@@ -3,24 +3,181 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SUECÂO — Privacy Policy</title>
-  <style>body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.5}</style>
+  <title>Suecão — Privacy Policy</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 1.5rem 1.1rem 3rem;
+      line-height: 1.55;
+      color: #1a1a1a;
+      background: #f7f4ef;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #eee; background: #141414; }
+      a { color: #9ec5ff; }
+      nav a { color: inherit; }
+    }
+    h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.15rem; margin: 1.75rem 0 0.5rem; }
+    p, li { font-size: 1rem; }
+    ul { padding-left: 1.2rem; }
+    .meta { font-family: system-ui, sans-serif; font-size: 0.9rem; opacity: 0.85; }
+    nav {
+      font-family: system-ui, sans-serif;
+      font-size: 0.9rem;
+      margin: 1rem 0 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+    }
+    a { color: #1a4a8a; }
+    .footer { margin-top: 2.5rem; font-family: system-ui, sans-serif; font-size: 0.9rem; }
+  </style>
 </head>
 <body>
-  <h1>Privacy Policy — SUECÂO</h1>
-  <p><strong>Last updated:</strong> May 2026</p>
-  <h2>Summary</h2>
-  <p>Solo play runs on your device. We do not sell personal data.</p>
-  <h2>Data we may process</h2>
+  <h1>Privacy Policy — Suecão</h1>
+  <p class="meta"><strong>Effective date:</strong> 28 September 2026</p>
+  <nav>
+    <a href="./terms.html">Terms of Use</a>
+    <a href="mailto:frankbex.dev@gmail.com">Contact</a>
+  </nav>
+
+  <p>
+    This Privacy Policy describes how <strong>Suecão</strong> handles information in the
+    current Play Store v1 release (guest / local-first). If a future release adds accounts,
+    cloud sync, multiplayer, advertising, analytics or remote media, this policy will be
+    updated <strong>before</strong> those features are publicly offered.
+  </p>
+
+  <h2>1. Who operates Suecão</h2>
+  <p>
+    Suecão is operated by <strong>Francisco Bexiga</strong>.
+    <strong>OXS — Oeiras Xtreme Software</strong> is the project brand used for Suecão.
+    It is not described here as a registered company or separate legal entity.
+  </p>
+  <p>Privacy questions: <a href="mailto:frankbex.dev@gmail.com">frankbex.dev@gmail.com</a></p>
+
+  <h2>2. Summary (Play v1)</h2>
   <ul>
-    <li><strong>Guest account (multiplayer):</strong> random user id and display name.</li>
-    <li><strong>Local settings:</strong> player names, preferences (stored on device).</li>
-    <li><strong>Ads (if enabled):</strong> Google AdMob may collect advertising identifiers — see Google policies.</li>
-    <li><strong>Crash/logs:</strong> optional anonymous diagnostics if enabled later.</li>
+    <li>Gameplay, history and preferences are stored <strong>on your device</strong>.</li>
+    <li>Suecão’s own Play v1 app features do <strong>not</strong> send personal information to Suecão-operated servers.</li>
+    <li>There is <strong>no</strong> public Suecão account, cloud sync, multiplayer lobby, advertising or developer analytics in this release.</li>
+    <li>Android / Google Play may process installation and device information under <strong>their own</strong> policies; that is separate from Suecão’s in-app data flows.</li>
   </ul>
-  <h2>Your rights (GDPR)</h2>
-  <p>Request access or deletion via the in-app “Delete guest account” or email the developer.</p>
-  <h2>Contact</h2>
-  <p>Replace with your support email before Play Store submission.</p>
+
+  <h2>3. Information processed on your device</h2>
+  <p>Suecão stores information locally so the app can work offline and remember your progress. Categories include:</p>
+  <ul>
+    <li>Match history and statistics</li>
+    <li>Saved or resumable games (where offered)</li>
+    <li>Preferences such as language, theme, card face and card back, audio and music settings</li>
+    <li>A local guest identifier used only on the device</li>
+    <li>Optional on-device diagnostic information (not sent to Suecão as remote telemetry in Play v1)</li>
+  </ul>
+  <p><strong>Purpose:</strong> run the games, remember settings, show history/statistics, and support local diagnostics.</p>
+
+  <h2>4. Information sent by Suecão app features (Play v1)</h2>
+  <p>
+    Through Suecão’s shipping Play v1 application features, personal information is
+    <strong>not</strong> collected onto Suecão-operated servers. There is no Suecão account login,
+    no cloud backup of history, and no Suecão analytics or crash-reporting SDK in this release.
+  </p>
+  <p>
+    This does <strong>not</strong> mean that “nothing ever leaves the device” in every technical sense:
+  </p>
+  <ul>
+    <li><strong>Google Play / Android</strong> may process install, update, device or usage-related metadata under Google’s own terms and privacy policy.</li>
+    <li>The app declares the usual <strong>INTERNET</strong> permission as part of the WebView / network stack; Play v1 does not use that permission to upload your game history or preferences to Suecão.</li>
+  </ul>
+
+  <h2>5. Accounts</h2>
+  <p>
+    Play v1 does <strong>not</strong> offer a public Suecão account.
+    Suecão does not collect Google account identity, email or display name through Play v1 features.
+  </p>
+  <p>
+    Future versions may introduce optional account or sync features. If so, this policy will be
+    updated before those features ship publicly.
+  </p>
+
+  <h2>6. Multiplayer and online play</h2>
+  <p>Multiplayer / online rooms are <strong>not enabled</strong> in Play v1.</p>
+
+  <h2>7. Analytics, advertising and identifiers</h2>
+  <p>In Suecão Play v1:</p>
+  <ul>
+    <li>No developer-integrated analytics SDK</li>
+    <li>No crash-reporting SDK</li>
+    <li>No in-app advertising</li>
+    <li>No use of advertising identifiers by Suecão</li>
+  </ul>
+  <p>Google Play or the operating system may still perform their own measurement under Google’s policies.</p>
+
+  <h2>8. Music and remote content</h2>
+  <p>
+    Play v1 uses <strong>bundled / on-device</strong> music and sound.
+    Suecão does not use a remote music CDN for this frozen configuration.
+  </p>
+
+  <h2>9. Permissions (Android)</h2>
+  <p>Suecão Play v1 uses:</p>
+  <ul>
+    <li><strong>INTERNET</strong> — standard networking / WebView capability (not used in Play v1 to upload your local game data to Suecão)</li>
+  </ul>
+  <p>Suecão Play v1 does <strong>not</strong> request camera, microphone, location, contacts, or broad media/storage access.</p>
+
+  <h2>10. Retention and deletion</h2>
+  <p>Local data generally remains until you clear the app’s data in system settings or uninstall the app.</p>
+  <p>
+    Some in-app reset actions (if offered) may remove part of that data. Not every preference is
+    necessarily cleared by every internal reset. Clearing app data or uninstalling is the reliable
+    way to remove on-device Suecão data in Play v1.
+  </p>
+  <p>Because there is no public Suecão account in Play v1, there is no separate “delete my cloud account” flow for this release.</p>
+
+  <h2>11. Security</h2>
+  <p>
+    Reasonable technical measures are used in the application. Local data is primarily protected by
+    your device and platform security. No method of storage is perfectly secure, and no special
+    security certification is claimed.
+  </p>
+
+  <h2>12. Children</h2>
+  <p>
+    Suecão is <strong>not specifically directed to children</strong>. Play v1 does not include an age gate.
+    Parents and guardians remain responsible for complying with any age or consent rules that apply to them.
+  </p>
+
+  <h2>13. Third-party and platform services</h2>
+  <p>
+    Distribution and device services (for example Google Play and Android) are governed by the
+    providers’ own terms and privacy policies. Suecão does not control how those platforms process information.
+  </p>
+
+  <h2>14. Your rights (EU / GDPR context)</h2>
+  <p>
+    Depending on applicable law (including the GDPR where it applies), you may have rights such as
+    access, rectification, erasure, restriction, objection or complaint to a supervisory authority.
+  </p>
+  <p>
+    For Play v1, Suecão does not hold remote personal-data profiles from the app’s own features.
+    On-device information is typically removed by clearing app data or uninstalling.
+  </p>
+  <p>Privacy contact: <a href="mailto:frankbex.dev@gmail.com">frankbex.dev@gmail.com</a></p>
+
+  <h2>15. Changes</h2>
+  <p>
+    This policy may be updated when the product changes. Material changes will receive a new
+    effective date. You can review the latest version from the in-app legal links or the published privacy URL.
+  </p>
+
+  <div class="footer">
+    <p><strong>Francisco Bexiga</strong> · Suecão / OXS</p>
+    <p><a href="mailto:frankbex.dev@gmail.com">frankbex.dev@gmail.com</a></p>
+    <p><a href="./terms.html">Terms of Use</a></p>
+  </div>
 </body>
 </html>

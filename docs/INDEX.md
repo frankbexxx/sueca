@@ -62,8 +62,9 @@
 | [rules/hearts.md](rules/hearts.md) | Hearts US · modo normal |
 | [rules/king.md](rules/king.md) | King PT · modo normal |
 | [TEXTOS_ECRAN.md](TEXTOS_ECRAN.md) | Textos UI |
-| [PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md) | Privacidade |
-| [TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md) | Termos |
+| [PRIVACY_POLICY_TEMPLATE.md](PRIVACY_POLICY_TEMPLATE.md) | **SUPERSEDED** — use [legal/PRIVACY_POLICY.md](legal/PRIVACY_POLICY.md) |
+| [TERMS_OF_SERVICE_TEMPLATE.md](TERMS_OF_SERVICE_TEMPLATE.md) | **SUPERSEDED** — use [legal/TERMS_OF_USE.md](legal/TERMS_OF_USE.md) |
+| [legal/README.md](legal/README.md) | Legal index (Privacy, Terms, Play v1 posture, assets) |
 
 ## Outros
 

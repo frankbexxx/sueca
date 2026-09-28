@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../i18n/useLanguage';
 import { publicUrl } from '../config/runtimeEnv';
+import { legalPageHref } from '../config/legalPages';
 
 type CreditsBodyProps = {
   /** Modal uses h1; profile screen uses h2. */
@@ -86,6 +87,19 @@ export const CreditsBody: React.FC<CreditsBodyProps> = ({
         <div className="credits-acknowledgments">
           <h3 className="credits-ack-title">{t.credits.acknowledgmentsTitle}</h3>
           <p className="credits-ack-text">{t.credits.acknowledgmentsText}</p>
+        </div>
+
+        <div className="credits-legal" data-testid="credits-legal-links">
+          <h3 className="credits-ack-title">{t.profileScreen.legalSectionHint}</h3>
+          <p className="credits-ack-text">
+            <a href={legalPageHref('privacy')} data-testid="credits-legal-privacy">
+              {t.profileScreen.privacyPolicy}
+            </a>
+            {' · '}
+            <a href={legalPageHref('terms')} data-testid="credits-legal-terms">
+              {t.profileScreen.termsOfUse}
+            </a>
+          </p>
         </div>
 
         <div className="credits-copyright">{t.credits.copyright}</div>

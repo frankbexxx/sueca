@@ -187,6 +187,9 @@ export interface Translations {
     hubName: string;
     hubNameHint: string;
     hubCreditsHint: string;
+    privacyPolicy: string;
+    termsOfUse: string;
+    legalSectionHint: string;
     feedback: string;
     exitApp: string;
     exitConfirm: string;
@@ -523,6 +526,9 @@ export const translations: Record<Language, Translations> = {
       hubName: 'Nome',
       hubNameHint: 'Editar o teu nome local',
       hubCreditsHint: 'Autores, assets e agradecimentos',
+      privacyPolicy: 'Política de Privacidade',
+      termsOfUse: 'Termos de Utilização',
+      legalSectionHint: 'Documentos legais',
       feedback: 'Feedback / reportar bug',
       exitApp: 'Sair da aplicação',
       exitConfirm: 'Voltar ao ecrã inicial? A app será recarregada.'
@@ -970,6 +976,9 @@ export const translations: Record<Language, Translations> = {
       hubName: 'Name',
       hubNameHint: 'Edit your local name',
       hubCreditsHint: 'Authors, assets and thanks',
+      privacyPolicy: 'Privacy Policy',
+      termsOfUse: 'Terms of Use',
+      legalSectionHint: 'Legal documents',
       feedback: 'Feedback / report a bug',
       exitApp: 'Exit app',
       exitConfirm: 'Return to the start screen? The app will reload.'

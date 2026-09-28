@@ -1,14 +1,14 @@
 # Suecão — Play v1 Data Posture (REL-LEGAL-01D1)
 
-**Status:** FROZEN — internal release evidence (NOT a Privacy Policy)  
-**Product:** Suecão  
-**Owner:** Francisco Bexiga  
-**Brand:** OXS — Oeiras Xtreme Software  
-**Baseline:** `a6f14fde3e015074eea1bd899a3f07650f394d6d` + REL-LEGAL-01D1 changes  
-**Contact (internal):** `PRIVACY_CONTACT_TBD`  
-**Governing law (product Terms, when drafted):** Portugal + applicable EU law  
+**Status:** FROZEN — internal release evidence (NOT a Privacy Policy)
+**Product:** Suecão
+**Owner:** Francisco Bexiga
+**Brand:** OXS — Oeiras Xtreme Software
+**Baseline:** `a6f14fde3e015074eea1bd899a3f07650f394d6d` + REL-LEGAL-01D1 changes
+**Contact:** `frankbex.dev@gmail.com`
+**Governing law (product Terms):** Portugal + applicable EU law
 
-This document freezes the **shipping Play v1** privacy/data posture.  
+This document freezes the **shipping Play v1** privacy/data posture.
 Do not treat planned Auth/Sync/MP/ads/remote-music as current shipping behaviour.
 
 ---
@@ -128,13 +128,16 @@ No camera, microphone, location, contacts, or broad storage permissions in main 
 | Optional vs required | All cloud features absent | Core play works offline after install |
 | Deletion | Uninstall / clear app data | No cloud account to delete |
 
-`PRIVACY_CONTACT_TBD` — support email undecided; do not invent; do not show in UI.
+`frankbex.dev@gmail.com` — public privacy / support contact (REL-LEGAL-01D2).
+
+Privacy Policy / Terms: see `PRIVACY_POLICY.md` and `TERMS_OF_USE.md`. Console Data Safety remains open under REL-LEGAL-01D3.
 
 ---
 
 ## Related docs
 
-- `docs/plan/ROADMAP_TO_RELEASE.md` — REL-LEGAL-01  
-- `docs/plan/AUTH_RELEASE_BASELINE_01F.md` — Auth parked  
-- `docs/plan/SYNC_V1_CONTRACT.md` — Sync parked  
-- Privacy Policy / Terms / Console Data Safety — **not** completed by this freeze  
+- `docs/plan/ROADMAP_TO_RELEASE.md` — REL-LEGAL-01
+- `docs/plan/AUTH_RELEASE_BASELINE_01F.md` — Auth parked
+- `docs/plan/SYNC_V1_CONTRACT.md` — Sync parked
+- `docs/legal/PRIVACY_POLICY.md` · `docs/legal/TERMS_OF_USE.md` — public legal text (01D2)
+- Play Console Data Safety — **open** (REL-LEGAL-01D3)

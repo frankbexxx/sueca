@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../i18n/useLanguage';
 import { FEEDBACK_ISSUE_URL } from '../../constants/feedback';
+import { legalPageHref } from '../../config/legalPages';
 import { exitAppToLanding } from '../../services/appLifecycle';
 import { ShellHeader } from '../navigation/ShellHeader';
 import { ShellHubList } from '../navigation/ShellHubList';
@@ -55,6 +56,23 @@ export const ProfileHubScreen: React.FC<ProfileHubScreenProps> = ({
           }
         ]}
       />
+      <section className="shell-panel" data-testid="profile-legal-links">
+        <p className="more-legal-hint">{t.profileScreen.legalSectionHint}</p>
+        <a
+          href={legalPageHref('privacy')}
+          className="sueca-btn sueca-btn--ghost sueca-btn--block more-feedback-link"
+          data-testid="legal-privacy-link"
+        >
+          {t.profileScreen.privacyPolicy}
+        </a>
+        <a
+          href={legalPageHref('terms')}
+          className="sueca-btn sueca-btn--ghost sueca-btn--block more-feedback-link"
+          data-testid="legal-terms-link"
+        >
+          {t.profileScreen.termsOfUse}
+        </a>
+      </section>
       <section className="shell-panel">
         <a
           href={FEEDBACK_ISSUE_URL}

@@ -1,3 +1,6 @@
+> **SUPERSEDED (REL-LEGAL-01D2).** This placeholder is **not** the active Terms of Use.
+> Canonical: [`docs/legal/TERMS_OF_USE.md`](legal/TERMS_OF_USE.md) · Publishable: `/legal/terms.html`
+
 # Termos de Serviço - Sueca Card Game
 
 **Última atualização:** [DATA]

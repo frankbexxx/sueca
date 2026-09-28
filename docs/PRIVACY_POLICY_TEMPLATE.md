@@ -1,3 +1,6 @@
+> **SUPERSEDED (REL-LEGAL-01D2).** This placeholder is **not** the active Privacy Policy.
+> Canonical: [`docs/legal/PRIVACY_POLICY.md`](legal/PRIVACY_POLICY.md) · Publishable: `/legal/privacy.html`
+
 # Política de Privacidade - Sueca Card Game
 
 **Última atualização:** [DATA]

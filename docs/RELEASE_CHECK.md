@@ -55,7 +55,7 @@ vercel --prod
 - [ ] `npm run release:android` (build mobile + `cap sync android`) — ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 - [ ] Ou manual: `npm run build:android` depois `npx cap sync android`
 - [ ] AAB assinado (`docs/ANDROID_SIGNING.md`) — internal track Play Console
-- [ ] Legal: `/legal/privacy.html` e `/legal/terms.html` no deploy
+- [x] Legal: `/legal/privacy.html` e `/legal/terms.html` no deploy (REL-LEGAL-01D2; contact frankbex.dev@gmail.com)
 - [ ] `VITE_USE_LOCAL_AI_ONLY=true` no build mobile (`npm run build:android` / `.env.android`)
 - [ ] Maestro smoke (`.maestro/smoke.yaml`) no emulador
 - [ ] Conta / Auth API: `VITE_AUTH_API_BASE_URL` HTTPS em produção se Conta estiver em uso
