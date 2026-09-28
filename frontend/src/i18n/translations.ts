@@ -195,6 +195,8 @@ export interface Translations {
   accountScreen: {
     title: string;
     subtitle: string;
+    /** Soft-hide deep-link panel when Auth not configured (Play v1). */
+    unavailable: string;
     guestStatus: string;
     guestExplain: string;
     configMissing: string;
@@ -528,6 +530,7 @@ export const translations: Record<Language, Translations> = {
     accountScreen: {
       title: 'Conta',
       subtitle: 'Conta Google opcional',
+      unavailable: 'Conta não está disponível nesta versão.',
       guestStatus: 'Jogar sem conta',
       guestExplain:
         'A conta é opcional. Podes jogar localmente sem conta. Depois de ligares a conta, podes configurar a sincronização quando quiseres.',
@@ -974,6 +977,7 @@ export const translations: Record<Language, Translations> = {
     accountScreen: {
       title: 'Account',
       subtitle: 'Optional Google account',
+      unavailable: 'Account is not available in this build.',
       guestStatus: 'Play without an account',
       guestExplain:
         'An account is optional. Local play works without one. After you link an account, you can set up sync whenever you want.',

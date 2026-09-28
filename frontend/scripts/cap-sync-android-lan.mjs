@@ -28,3 +28,4 @@ function run(cmd, args) {
 run('npm', ['run', 'build:android']);
 run('npx', ['cap', 'sync', 'android']);
 run('node', ['scripts/apply-android-debug-cleartext.mjs']);
+run('node', ['scripts/apply-android-play-v1-permissions.mjs']);

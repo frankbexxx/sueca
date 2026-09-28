@@ -382,6 +382,19 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ showBack, onBack }
       ? syncStatusLabel(copy, linkState, engineState)
       : null;
 
+  // REL-LEGAL-01D1: deep link stays safe when Auth not configured (no GIS / Capgo / sync CTA).
+  // Already-authenticated sessions can still sign out / delete if reachable.
+  if (!configured && auth.status === 'guest') {
+    return (
+      <div className="shell-screen screen-account" data-testid="account-screen">
+        <ShellHeader title={copy.title} showBack={showBack} onBack={onBack} />
+        <div className="shell-panel account-unavailable" data-testid="account-unavailable">
+          <p>{copy.unavailable}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="shell-screen screen-account" data-testid="account-screen">
       <ShellHeader

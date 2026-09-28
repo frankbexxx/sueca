@@ -99,6 +99,7 @@ const buildEnv = {
 run('npm', ['run', 'build:android'], { env: buildEnv });
 run('npx', ['cap', 'sync', 'android'], { env: buildEnv });
 run('node', ['scripts/apply-android-debug-cleartext.mjs']);
+run('node', ['scripts/apply-android-play-v1-permissions.mjs']);
 
 log('assembleDebug…');
 run('.\\gradlew.bat', ['assembleDebug'], { cwd: path.join(frontendRoot, 'android') });

@@ -4,6 +4,7 @@ import { ShellHubList } from '../navigation/ShellHubList';
 import { formatAppBuildLabel } from '../../config/appBuildInfo';
 import { useLanguage } from '../../i18n/useLanguage';
 import { MULTIPLAYER_ENABLED } from '../../config/features';
+import { isGoogleAuthConfiguredForPlatform } from '../../config/authConfig';
 import '../../styles/shell-screens.css';
 import './MoreScreen.css';
 
@@ -122,6 +123,9 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
   const { language } = useLanguage();
   const buildLabel = formatAppBuildLabel(language === 'en' ? 'en' : 'pt');
 
+  // REL-LEGAL-01D1 / REL-MP-01: soft-hide Conta when Auth not configured (Play v1 guest-only).
+  const accountEnabled = isGoogleAuthConfiguredForPlatform();
+
   const items = [
     ...(MULTIPLAYER_ENABLED
       ? [
@@ -151,12 +155,16 @@ export const MoreHubScreen: React.FC<MoreHubScreenProps> = ({
       hint: 'Nome, créditos e sair',
       onClick: onOpenProfile
     },
-    {
-      id: 'account',
-      label: 'Conta',
-      hint: 'Conta Google opcional',
-      onClick: onOpenAccount
-    },
+    ...(accountEnabled
+      ? [
+          {
+            id: 'account',
+            label: 'Conta',
+            hint: 'Conta Google opcional',
+            onClick: onOpenAccount
+          }
+        ]
+      : []),
     {
       id: 'diagnostic',
       label: 'Exportar dados de diagnóstico',

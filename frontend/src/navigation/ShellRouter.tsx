@@ -34,6 +34,7 @@ import {
 import { DiagnosticExportScreen } from '../components/screens/DiagnosticExportScreen';
 import type { RulesPresetId } from '../constants/rulesPresets';
 import { MULTIPLAYER_ENABLED } from '../config/features';
+import { isGoogleAuthConfiguredForPlatform } from '../config/authConfig';
 
 export interface ShellRouterProps {
   route: ShellRoute;
@@ -180,7 +181,17 @@ export const ShellRouter: React.FC<ShellRouterProps> = ({
       );
     }
     if (route.screen === 'account') {
-      return <AccountScreen showBack={canGoBack} onBack={onBack} />;
+      // Soft-hide: deep link keeps a safe disabled panel; no Google / sync UI.
+      return (
+        <AccountScreen
+          showBack={canGoBack}
+          onBack={
+            isGoogleAuthConfiguredForPlatform()
+              ? onBack
+              : () => onPush({ tab: 'more', screen: 'hub' })
+          }
+        />
+      );
     }
     if (route.screen === 'diagnostic') {
       return <DiagnosticExportScreen showBack={canGoBack} onBack={onBack} />;

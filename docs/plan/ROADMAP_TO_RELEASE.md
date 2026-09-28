@@ -47,7 +47,7 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 ## CURRENT RELEASE BLOCKERS
 
 1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library at **10 fronts / 25 backs** (Batch 4 optional expansion).
-2. **Repo legal baseline** — **PARTIAL (REL-LEGAL-01C)**: root `LICENSE` (OXS NCSL v1.0) · `NOTICE` · `TRADEMARKS.md` · README source-available wording · owner = Francisco Bexiga. Still open: Privacy/Terms contact, Play Data Safety, music/R2 formal clearance, in-app OXS branding (`REL-OXS-01`).
+2. **Repo legal baseline** — **PARTIAL (REL-LEGAL-01C + 01D1)**: root `LICENSE` (OXS NCSL v1.0) · `NOTICE` · `TRADEMARKS.md` · README · **Play v1 data posture frozen** (`docs/legal/PLAY_V1_DATA_POSTURE.md`). Still open: Privacy/Terms URLs, `PRIVACY_CONTACT_TBD`, Play Data Safety submission, music formal clearance, in-app OXS branding (`REL-OXS-01`).
 3. **Credits / attribution (REL-LEGAL-01B)** — **DONE**: runtime Credits + NOTICE match shipping decks/SFX/music families; Hazmat/DOBO/Casino pack removed from UI. Privacy / Terms / Data Safety remain open under REL-LEGAL-01.
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
@@ -152,7 +152,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
-| REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits DONE · 01C OXS legal model DONE (uncommitted):** owner Francisco Bexiga · root LICENSE (OXS NCSL v1.0) · NOTICE · TRADEMARKS.md · README source-available. Still open: Privacy/Terms/contact · Play Data Safety · music/R2 clearance · REL-OXS-01 UI/assets | P0 | YES (done for owner/licence) | IN PROGRESS |
+| REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits DONE · 01C OXS legal DONE · 01D audit DONE · 01D1 Play v1 privacy posture FROZEN** (guest/local-first · Auth/Sync Conta soft-hide · MP/ads/remote-music OFF · AD_ID strip). Still open: Privacy Policy · Terms · Play Data Safety submission · `PRIVACY_CONTACT_TBD` · music rights clearance · REL-OXS-01 UI/assets. See `docs/legal/PLAY_V1_DATA_POSTURE.md` | P0 | YES (Play v1 posture) | IN PROGRESS |
 | REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE.** **Batch 4 (REL-DECK-02B) DONE uncommitted:** +openclipart-bordered +minicards +6 OCAL backs (Back01/02 blue+red pair + 4 other motifs) → **10 fronts / 25 backs**. Skipped: Bellot/Knoll/Noto/ornamental; other red twins | P1 | YES | DONE |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
@@ -189,7 +189,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS (**01C done**) · privacy/terms · music clearance · Data Safety | P0 |
+| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS (**01C done**) · **Play v1 posture frozen (01D1)** · privacy/terms draft · music clearance · Data Safety submit | P0 |
 | REL-DECK-01 | Deck library Batches 1–4 · **10 fronts / 25 backs** (Batch 4 optional expansion) | P1 · **DONE (assets)** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |

@@ -244,10 +244,11 @@ describe('AUTH-01C web account auth', () => {
     expect(localStorage.getItem(LOCAL_GUEST_KEY)).toBeTruthy();
   });
 
-  it('Conta UI: guest + config missing; no GIS host', () => {
+  it('Conta UI: Auth not configured → unavailable panel (no GIS)', () => {
     render(<AccountScreen showBack onBack={() => undefined} />);
-    expect(screen.getByTestId('account-status-guest')).toBeTruthy();
-    expect(screen.getByTestId('account-config-missing')).toBeTruthy();
+    expect(screen.getByTestId('account-unavailable')).toBeTruthy();
+    expect(screen.queryByTestId('account-status-guest')).toBeNull();
+    expect(screen.queryByTestId('account-config-missing')).toBeNull();
     expect(screen.queryByTestId('account-gis-host')).toBeNull();
   });
 

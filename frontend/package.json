@@ -45,7 +45,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "cap:sync": "npm run build && npx cap sync",
-    "cap:sync:android": "npm run build:android && npx cap sync android && node scripts/apply-android-debug-cleartext.mjs",
+    "cap:sync:android": "npm run build:android && npx cap sync android && node scripts/apply-android-debug-cleartext.mjs && node scripts/apply-android-play-v1-permissions.mjs",
     "cap:sync:android:lan": "node scripts/cap-sync-android-lan.mjs",
     "android:dev:prepare": "node scripts/android-dev-prepare.mjs",
     "android:dev:prepare:install": "node scripts/android-dev-prepare.mjs --install",
