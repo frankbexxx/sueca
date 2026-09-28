@@ -2,10 +2,7 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  MISSING_SFX_ASSET_IDS,
-  MISSING_SFX_PLANNED_FILES
-} from '../constants/sfxAssets';
+import { CARD_PLAY_VARIANTS, MISSING_SFX_ASSET_IDS } from '../constants/sfxAssets';
 import { getDealDelayMs } from '../constants/dealAnimationPreferences';
 import { STORAGE_KEYS } from '../constants/gameConstants';
 import {
@@ -34,6 +31,7 @@ import {
   updateMusicSettings
 } from '../services/audioService';
 import { MUSIC_VOLUME } from '../constants/musicCatalog';
+import { resolveUiClickTarget, UI_CLICK_SELECTOR } from '../uiClickSfx';
 
 function makeAudioMock() {
   const play = vi.fn().mockResolvedValue(undefined);
@@ -60,41 +58,61 @@ function makeAudioMock() {
   return { audioMock, play, pause, load, listeners };
 }
 
-describe('audio coverage / missing SFX', () => {
+describe('wired SFX coverage', () => {
   beforeEach(() => {
     resetAudioServiceForTests();
     localStorage.clear();
     vi.useRealTimers();
   });
 
-  it('documents planned files for every missing SFX gap', () => {
-    for (const id of MISSING_SFX_ASSET_IDS) {
-      expect(MISSING_SFX_PLANNED_FILES[id]).toMatch(/\.ogg$/);
-      expect(isSfxPlayable(id)).toBe(false);
+  it('has no missing mesa SFX ids; card-play / error / uiClick are playable', () => {
+    expect(MISSING_SFX_ASSET_IDS).toEqual([]);
+    for (const id of [...CARD_PLAY_VARIANTS, 'error', 'uiClick'] as const) {
+      expect(isSfxPlayable(id)).toBe(true);
     }
   });
 
-  it('missing SFX and card-play variants fail gracefully without constructing Audio', () => {
-    const ctor = vi.fn();
+  it('legal card-play variant plays through audioService from CARD_PLAY_VARIANTS', () => {
+    const { audioMock, play } = makeAudioMock();
+    const AudioCtor = vi.fn((src?: string) => {
+      audioMock.src = src ?? '';
+      return audioMock;
+    });
     // @ts-expect-error test mock
-    global.Audio = ctor;
-    expect(() => playRandomCardPlay()).not.toThrow();
-    expect(() => playErrorSound()).not.toThrow();
-    expect(() => playUiClick()).not.toThrow();
-    expect(() => playSfx('cardPlay1')).not.toThrow();
-    expect(() => playSfx('error')).not.toThrow();
-    expect(() => playSfx('uiClick')).not.toThrow();
-    expect(ctor).not.toHaveBeenCalled();
+    global.Audio = AudioCtor;
+    setSoundEnabled(true);
+    setSfxVolumeLevel(100);
+    play.mockClear();
+    playRandomCardPlay();
+    expect(play).toHaveBeenCalledTimes(1);
+    const constructed = AudioCtor.mock.calls.map((c) => String(c[0] ?? ''));
+    expect(constructed.some((p) => /card-play-[123]\.ogg/.test(p))).toBe(true);
   });
 
-  it('bundled deal SFX still plays through audioService', () => {
+  it('error and ui-click play when enabled; silence at SFX 0 and master off', () => {
     const { audioMock, play } = makeAudioMock();
     // @ts-expect-error test mock
     global.Audio = vi.fn(() => audioMock);
     setSoundEnabled(true);
     setSfxVolumeLevel(100);
-    playDealSound();
-    expect(play).toHaveBeenCalled();
+    play.mockClear();
+    playErrorSound();
+    playUiClick();
+    expect(play).toHaveBeenCalledTimes(2);
+
+    play.mockClear();
+    setSfxVolumeLevel(0);
+    playErrorSound();
+    playUiClick();
+    expect(play).not.toHaveBeenCalled();
+
+    setSfxVolumeLevel(50);
+    setSoundEnabled(false);
+    playErrorSound();
+    playUiClick();
+    playRandomCardPlay();
+    expect(play).not.toHaveBeenCalled();
+    expect(getSfxVolumeLevel()).toBe(50);
   });
 
   it('marks failed bundled SFX unavailable and does not retry play', () => {
@@ -113,12 +131,48 @@ describe('audio coverage / missing SFX', () => {
     expect(isSfxPlayable('deal')).toBe(false);
   });
 
-  it('deal cadence is independent of SFX availability', () => {
+  it('deal cadence is independent of SFX volume and availability', () => {
     localStorage.setItem(STORAGE_KEYS.DEAL_ANIMATION_SPEED, 'normal');
     const delay = getDealDelayMs();
+    setSfxVolumeLevel(0);
+    expect(getDealDelayMs()).toBe(delay);
     __markSfxUnavailableForTests('deal');
     expect(getDealDelayMs()).toBe(delay);
     expect(() => playDealSound()).not.toThrow();
+  });
+});
+
+describe('UI click targeting', () => {
+  it('keeps selector narrow to sueca-btn and lang-btn', () => {
+    expect(UI_CLICK_SELECTOR).toBe('.sueca-btn, .lang-btn');
+  });
+
+  it('resolves sueca-btn / lang-btn; skips unrelated, disabled, and .disabled', () => {
+    const btn = document.createElement('button');
+    btn.className = 'sueca-btn';
+    document.body.appendChild(btn);
+    expect(resolveUiClickTarget(btn)).toBe(btn);
+
+    const nest = document.createElement('span');
+    btn.appendChild(nest);
+    expect(resolveUiClickTarget(nest)).toBe(btn);
+
+    const lang = document.createElement('button');
+    lang.className = 'lang-btn';
+    document.body.appendChild(lang);
+    expect(resolveUiClickTarget(lang)).toBe(lang);
+
+    const plain = document.createElement('button');
+    document.body.appendChild(plain);
+    expect(resolveUiClickTarget(plain)).toBeNull();
+
+    btn.disabled = true;
+    expect(resolveUiClickTarget(btn)).toBeNull();
+
+    const soft = document.createElement('button');
+    soft.className = 'sueca-btn disabled';
+    document.body.appendChild(soft);
+    expect(resolveUiClickTarget(soft)).toBeNull();
   });
 });
 

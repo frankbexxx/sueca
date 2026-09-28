@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { describe, expect, it } from 'vitest';
 import {
   BUNDLED_SFX_FILENAMES,
@@ -5,31 +7,50 @@ import {
   getSfxPath,
   isSfxBundled,
   MISSING_SFX_ASSET_IDS,
-  MISSING_SFX_PLANNED_FILES,
-  SFX_PATHS
+  SFX_PATHS,
+  type SfxId
 } from './sfxAssets';
 
+const sfxDir = path.join(__dirname, '../../public/assets/sfx');
+
 describe('sfxAssets catalog', () => {
-  it('bundled ids have paths; gaps never appear in SFX_PATHS', () => {
-    for (const id of Object.keys(BUNDLED_SFX_FILENAMES) as Array<
-      keyof typeof BUNDLED_SFX_FILENAMES
-    >) {
+  it('wires every SfxId including card-play / error / ui-click', () => {
+    const expected: SfxId[] = [
+      'cardPlay1',
+      'cardPlay2',
+      'cardPlay3',
+      'shuffle',
+      'deal',
+      'trickCollect',
+      'roundStart',
+      'roundEnd',
+      'gameWin',
+      'gameLose',
+      'error',
+      'uiClick'
+    ];
+    expect(Object.keys(BUNDLED_SFX_FILENAMES).sort()).toEqual([...expected].sort());
+    expect(MISSING_SFX_ASSET_IDS).toEqual([]);
+    for (const id of expected) {
       expect(isSfxBundled(id)).toBe(true);
-      expect(getSfxPath(id)).toMatch(/\/assets\/sfx\//);
+      expect(getSfxPath(id)).toMatch(/\/assets\/sfx\/.+\.ogg$/);
       expect(SFX_PATHS[id]).toBe(getSfxPath(id));
-    }
-    for (const id of MISSING_SFX_ASSET_IDS) {
-      expect(isSfxBundled(id)).toBe(false);
-      expect(getSfxPath(id)).toBeNull();
-      expect(SFX_PATHS[id]).toBeUndefined();
-      expect(MISSING_SFX_PLANNED_FILES[id]).toBeTruthy();
     }
   });
 
-  it('card-play variants are documented gaps (no silent file reuse)', () => {
+  it('card-play variants are bundled (no silent gap)', () => {
     expect(CARD_PLAY_VARIANTS).toEqual(['cardPlay1', 'cardPlay2', 'cardPlay3']);
     for (const id of CARD_PLAY_VARIANTS) {
-      expect(MISSING_SFX_ASSET_IDS).toContain(id);
+      expect(isSfxBundled(id)).toBe(true);
+      expect(BUNDLED_SFX_FILENAMES[id]).toMatch(/^card-play-[123]\.ogg$/);
+    }
+  });
+
+  it('every bundled filename exists on disk under public/assets/sfx', () => {
+    for (const file of Object.values(BUNDLED_SFX_FILENAMES)) {
+      const full = path.join(sfxDir, file);
+      expect(fs.existsSync(full), full).toBe(true);
+      expect(fs.statSync(full).size).toBeGreaterThan(0);
     }
   });
 });

@@ -70,7 +70,7 @@ describe('audioService', () => {
     vi.useRealTimers();
   });
 
-  it('exports bundled sfx paths only (deal, shuffle, trick-collect, round/game cues)', () => {
+  it('exports all bundled sfx paths including card-play, error, ui-click', () => {
     Object.values(SFX_PATHS).forEach((path) => {
       expect(path).toMatch(/\/assets\/sfx\/.*\.ogg$/);
     });
@@ -81,11 +81,14 @@ describe('audioService', () => {
     expect(SFX_PATHS.roundEnd).toMatch(/\/round-end\.ogg$/);
     expect(SFX_PATHS.gameWin).toMatch(/\/game-win\.ogg$/);
     expect(SFX_PATHS.gameLose).toMatch(/\/game-lose\.ogg$/);
-    expect(Object.keys(BUNDLED_SFX_FILENAMES)).toHaveLength(7);
+    expect(SFX_PATHS.cardPlay1).toMatch(/\/card-play-1\.ogg$/);
+    expect(SFX_PATHS.error).toMatch(/\/error\.ogg$/);
+    expect(SFX_PATHS.uiClick).toMatch(/\/ui-click\.ogg$/);
+    expect(Object.keys(BUNDLED_SFX_FILENAMES)).toHaveLength(12);
     expect(CARD_PLAY_VARIANTS).toHaveLength(3);
-    for (const id of MISSING_SFX_ASSET_IDS) {
-      expect(SFX_PATHS[id]).toBeUndefined();
-      expect(isSfxPlayable(id)).toBe(false);
+    expect(MISSING_SFX_ASSET_IDS).toEqual([]);
+    for (const id of CARD_PLAY_VARIANTS) {
+      expect(isSfxPlayable(id)).toBe(true);
     }
   });
 

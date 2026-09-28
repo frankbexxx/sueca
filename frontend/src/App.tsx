@@ -28,6 +28,7 @@ import {
   preloadSfx,
   syncMusicToTheme
 } from './services/audioService';
+import { resolveUiClickTarget } from './uiClickSfx';
 import { useShellNavigation } from './navigation/useShellNavigation';
 import { bindCapacitorBackButton, useShellBrowserBack } from './navigation/useShellBrowserBack';
 import { useCustomThemeCSS } from './hooks/useCustomThemeCSS';
@@ -38,8 +39,6 @@ import './App.css';
 import './styles/app-shell.css';
 import './styles/shell-screens.css';
 import './styles/themes.css';
-
-const UI_CLICK_SELECTOR = '.sueca-btn, .lang-btn';
 
 function App() {
   const { t } = useLanguage();
@@ -61,10 +60,7 @@ function App() {
     void applyMusicFromSettings();
     const onClick = (event: MouseEvent) => {
       playMusic();
-      const target = (event.target as Element | null)?.closest(UI_CLICK_SELECTOR);
-      if (!target) return;
-      if (target instanceof HTMLButtonElement && target.disabled) return;
-      if (target.classList.contains('disabled')) return;
+      if (!resolveUiClickTarget(event.target)) return;
       playUiClick();
     };
     document.addEventListener('click', onClick);

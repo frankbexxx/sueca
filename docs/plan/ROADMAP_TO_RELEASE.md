@@ -126,7 +126,7 @@ Current facts:
 | Layer | Status |
 |-------|--------|
 | **Theme Architecture** (tokens, 30 themes, custom parity, shell/landing theming) | **DONE** |
-| **Personalisation UX / Stage 10** (Temas · Mão e Cartas · Música e Som hub) | **DONE** (REL-PERS-01); deck curation / SFX asset debt remain under REL-DECK / REL-AUDIO |
+| **Personalisation UX / Stage 10** (Temas · Mão e Cartas · Música e Som hub) | **DONE** (REL-PERS-01); deck curation remains under REL-DECK; remote music/CDN under REL-AUDIO |
 
 PDF marked the personalisation hub as `FUTURE*`. That is **not definitive**. If product wants the full redesign in v1, promote `REL-PERS-01` to **P1**. Until decided: keep as **DEFERRED / decision pending**, not as architecture debt.
 
@@ -167,9 +167,9 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-ANDROID-01 | Android | TODO | Portrait policy; validate release/signing; legal URLs; Capacitor project strategy (gitignored tree) | P1 | YES (portrait) | TODO |
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
 | REL-DOCS-01 | Docs / cleanup | TODO | Refresh STATUS / Essentials / README; hide incomplete UX; stale copy | P1 | NO | TODO |
-| REL-PERS-01 | Themes / Personalisation UX | DONE | **Temas DONE** · **Mão e Cartas DONE** · **Música e Som DONE** (discrete music/SFX volumes · master mute preserves prefs · missing SFX hardened). Idioma → Mais/Definições gerais; auto-pause → Mão e Cartas. Architecture already DONE. Asset debt (card-play×3 · error · ui-click) tracked under REL-AUDIO — not Sons polish | P2 or P1* | YES | DONE |
+| REL-PERS-01 | Themes / Personalisation UX | DONE | **Temas DONE** · **Mão e Cartas DONE** · **Música e Som DONE** (discrete music/SFX volumes · master mute preserves prefs). Idioma → Mais/Definições gerais; auto-pause → Mão e Cartas. Architecture already DONE. Mesa SFX wire tracked under REL-AUDIO | P2 or P1* | YES | DONE |
 | REL-DECK-01 | Deck / Card Back | TODO | CardMeister theme assignment; licence attribution for exposed decks | P2 | YES | TODO |
-| REL-AUDIO-01 | Music / SFX | TODO | Personalização volumes DONE. Remaining: source missing SFX (`card-play`×3 · `error` · `ui-click`); web prod remote optional; offline/fallback validation; CDN domain later. **Sons polish not complete** | P2 | NO | TODO |
+| REL-AUDIO-01 | Music / SFX | IN PROGRESS | Personalização volumes DONE. Mesa SFX catalog wired (`card-play`×3 · `error` · `ui-click` + existing table cues). Remaining: web prod remote optional; offline/fallback validation; CDN domain; audible device smoke. **Sons polish (profiles/EQ) not in scope** | P2 | NO | IN PROGRESS |
 | REL-AI-01 | AI polish | TODO | Spades nil-aware play; King auction difficulty; Sueca signals/docs; Hearts optional | P2 | YES (nil marketing) | TODO |
 | REL-A11Y-01 | Accessibility | TODO | Minimal audit: contrast, focus, labels, touch, keyboard where applicable | P2 | NO | TODO |
 | REL-SPADES-01 | Spades COSPE / CPOES | DEFERRED | Spec rules, presets, UI, AI, stats, persistence | FUTURE | YES | DEFERRED |
@@ -451,7 +451,7 @@ Full King Sintético smoke through **Jogo 5/5** recorded and follow-ups validate
 |----|---------|----------|
 | REL-PERS-01 | Personalisation UX / Stage 10 | **DONE** — Temas · Mão e Cartas · Música e Som |
 | REL-DECK-01 | Deck / card back curation | P2 |
-| REL-AUDIO-01 | Music/SFX web + CDN | P2 |
+| REL-AUDIO-01 | Music/SFX web + CDN · mesa SFX wired | P2 · IN PROGRESS |
 | REL-AI-01 | AI polish (not core) | P2 |
 | REL-A11Y-01 | Accessibility minimum | P2 |
 

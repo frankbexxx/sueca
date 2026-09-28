@@ -149,10 +149,13 @@ Staging de referência (gitignored `_temp/`):
 
 Path: `frontend/public/assets/sfx/`. Catalog: `frontend/src/constants/sfxAssets.ts`. Playback: `audioService` only.
 
-### Bundled on disk
+### Bundled on disk (wired)
 
-| Ficheiro | Origem | Uso |
-|----------|--------|-----|
+| Ficheiro | Origem (docs attribution) | Uso |
+|----------|---------------------------|-----|
+| `card-play-1.ogg` | Kenney Casino Audio · card-place-2 (CC0 claimed in Credits) | Jogar carta (variação) |
+| `card-play-2.ogg` | Kenney Casino Audio · card-place-1 | Variação |
+| `card-play-3.ogg` | Kenney Casino Audio · card-slide-3 | Variação |
 | `card-shuffle.ogg` | Freesound BMacZero 96130 (CC0) | Baralhar (após mãos) |
 | `deal-1.ogg` | Freesound el_boss 571576 (CC0) | Deal / entrada de mão |
 | `trick-collect.ogg` | Freesound KevinHilt 196541 crop (CC0) | Vaza completa |
@@ -160,20 +163,19 @@ Path: `frontend/public/assets/sfx/`. Catalog: `frontend/src/constants/sfxAssets.
 | `round-end.ogg` | Suecão NumPy synth + FFmpeg (original) | Fim de ronda intermédia |
 | `game-win.ogg` | Suecão NumPy synth + FFmpeg (original) | Vitória final |
 | `game-lose.ogg` | Suecão NumPy synth + FFmpeg (original) | Derrota final |
-
-### Audio asset debt (not on disk — API kept, no runtime URL)
-
-Live UX calls remain; `audioService` does not request these files until sourced. Planned Kenney origins below are licensing context only — **do not invent placeholders**.
-
-| Ficheiro | Origem planeada | Uso |
-|----------|-----------------|-----|
-| `card-play-1.ogg` | Kenney Casino Audio · card-place-2 | Jogar carta |
-| `card-play-2.ogg` | Kenney Casino Audio · card-place-1 | Variação |
-| `card-play-3.ogg` | Kenney Casino Audio · card-slide-3 | Variação |
-| `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal (visual feedback is primary) |
+| `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal (visual is primary) |
 | `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI (`.sueca-btn`, `.lang-btn`) |
 
-Master mute: `localStorage` key `sueca-sound-enabled`. Discrete music/SFX levels: `suecao-music-volume` / `suecao-sfx-volume` (`0|25|50|75|100`). Personalizar → Música e Som.
+**Licensing note:** Kenney / Freesound attributions above follow historical project Credits. Formal commercial licence review for store remains under `REL-LEGAL-01` — do not treat this table as legal clearance.
+
+Master mute: `sueca-sound-enabled`. Discrete music/SFX levels: `suecao-music-volume` / `suecao-sfx-volume` (`0|25|50|75|100`). Personalizar → Música e Som.
+
+### Remaining audio debt (not missing mesa files)
+
+- Web prod remote music CDN / custom domain (`REL-AUDIO-01` remainder)
+- Offline/fallback validation for remote beds
+- Audible OPPO smoke after wire
+- Broader “Sons polish” (per-surface mix, optional profiles) — **not** claimed done
 
 ## Música de ambiente (core v1 — híbrido)
 
