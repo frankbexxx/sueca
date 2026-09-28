@@ -1,0 +1,148 @@
+Suecão — third-party notices
+============================
+
+This file records attribution and licence notices for third-party material
+shipped with or used by Suecão. It is not a product licence for Suecão itself
+(root LICENSE remains unresolved as of REL-LEGAL-01B).
+
+Runtime Credits in the app are a short courtesy summary. Pack-level provenance
+lives under docs/legal/assets/.
+
+--------------------------------------------------------------------------
+Playing-card faces
+--------------------------------------------------------------------------
+
+CardMeister (Danny Engelman)
+  Path: frontend/public/assets/cards-cardmeister/
+  Licence: Unlicense — docs/legal/assets/cardmeister/
+  Attribution: not required (courtesy credit in Credits)
+
+AustinGabriel — Public Domain and CC0 Playing Cards (pd-ornate + ornate backs)
+  Path: frontend/public/assets/cards/pd-ornate/
+        frontend/public/assets/card-backs/ornate-*.png
+  Licence: CC0 1.0 — docs/legal/assets/pd-ornate/
+  Attribution: not required
+
+SONDLecT — woodcut-cards
+  Path: frontend/public/assets/cards/woodcut/
+        frontend/public/assets/card-backs/woodcut-01.png
+  Licence: CC0 1.0 — docs/legal/assets/woodcut/
+  Attribution: not required
+
+Saul Spatz — SVGCards (jumbo-2, fourcolour, accessible + saul backs)
+  Path: frontend/public/assets/cards/{jumbo-2,fourcolour,accessible}/
+        frontend/public/assets/card-backs/saul-*.png
+  Licence: public domain (author dedication) — docs/legal/assets/saul-svgcards/
+  Upstream graphics sources (Byron Knoll / Openclipart) stated PD by author.
+  Attribution: not required
+
+Kenney — Playing Cards Pack
+  Path: frontend/public/assets/cards/kenney/
+        frontend/public/assets/card-backs/kenney-01.png
+  Licence: CC0 1.0 — docs/legal/assets/kenney/License.txt
+  Attribution: not mandatory; courtesy credit welcome (www.kenney.nl)
+
+Webisso LLC — playing-cards
+  Path: frontend/public/assets/cards/webisso/
+  Licence: MIT — docs/legal/assets/webisso/LICENSE
+
+  Copyright (c) 2026 Webisso LLC
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+--------------------------------------------------------------------------
+Card backs (additional)
+--------------------------------------------------------------------------
+
+Suecão original navy + colourways (burgundy, forest, charcoal, gold)
+  Path: frontend/public/assets/card-backs/suecao-*.png
+  Licence: Suecão product original / derived colourways
+  Ledger: docs/legal/assets/suecao-backs/
+
+Sylly / Cards Pack backs (OpenGameArt; pack credits Andrew Tidey)
+  Path: frontend/public/assets/card-backs/sylly-0{1..6}.png
+  Licence: CC0 — docs/legal/assets/sylly/
+
+--------------------------------------------------------------------------
+Sound effects
+--------------------------------------------------------------------------
+
+Kenney.nl — game audio / interface sounds (CC0)
+  Used for card-play / error / UI click variants.
+  Attribution: not mandatory.
+
+Freesound (CC0 claimed in historical project docs)
+  BMacZero 96130 — shuffle
+  el_boss 571576 — deal
+  KevinHilt 196541 (crop) — trick collect
+  Courtesy credit in Credits; formal store redistribution review remains open.
+
+Suecão — generated/synth SFX (round/game cues)
+  Original project assets.
+
+--------------------------------------------------------------------------
+Music
+--------------------------------------------------------------------------
+
+Bundled core beds (frontend/public/assets/music/core/):
+  Pixabay Content License — casino-jazz, nordic-kalte, maghreb-oud, andes-peruvian
+    (historical ASSETS notes; Pixabay terms require following Pixabay Content License)
+  PeriTune — yamatai-shizima (Konohana / commercial OK; credit optional)
+  StockTune — meso-aztec-relic (PD/commercial per historical notes)
+
+Remote / CDN catalog:
+  Additional beds under the same licence families as configured in the hybrid
+  music catalog. Not duplicated here track-by-track.
+
+Status: historical licence notes exist; formal counsel clearance for store
+distribution is still a REL-LEGAL blocker (do not treat this NOTICE as clearance).
+
+--------------------------------------------------------------------------
+Typography
+--------------------------------------------------------------------------
+
+Plus Jakarta Sans — loaded from Google Fonts (SIL Open Font License).
+  Runtime Credits do not list this; notice recorded here only.
+
+--------------------------------------------------------------------------
+Frameworks / libraries (NOTICE-only)
+--------------------------------------------------------------------------
+
+React, Phaser, Firebase, Capacitor, Vite, and other npm dependencies:
+  See package-lock.json and each package licence. Not listed in runtime Credits.
+
+--------------------------------------------------------------------------
+Removed / not shipped
+--------------------------------------------------------------------------
+
+Hazmat Game Studios card pack — removed from shipping; do not credit at runtime.
+dobo_ui Vector UI Pack — not used in current runtime UI; do not credit at runtime.
+Commercial “Casino Normal” card pack (cards3) — removed from shipping.
+
+Hayeah playing-cards-assets — evaluated and skipped (visual duplication).
+  See docs/legal/assets/hayeah-SKIPPED.md.
+
+--------------------------------------------------------------------------
+Product copyright
+--------------------------------------------------------------------------
+
+Runtime line: “Suecão · 2026”
+Legal owner / company of record for the Suecão product itself is not yet
+established in this repository (OXS branding planned under REL-OXS-01).
+Do not invent ownership wording beyond the product name + year.

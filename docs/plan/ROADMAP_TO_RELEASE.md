@@ -47,12 +47,13 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 ## CURRENT RELEASE BLOCKERS
 
 1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01)**: Casino removed; shipping library complete at 8 fronts + 19 backs (Batch 3).
-2. **Repo legal baseline** — no root `LICENSE` / `NOTICE` / `TRADEMARKS`; privacy/terms contact still placeholder.
-3. **Credits stale** — UI may still mention Hazmat/old audio lines; deck set now CardMeister / pd-ornate (Credits polish follows deck batches).
+2. **Repo legal baseline** — root `NOTICE` added (REL-LEGAL-01B); root `LICENSE` / `TRADEMARKS` still unresolved; privacy/terms contact still placeholder; product copyright owner of record not established.
+3. **Credits / attribution (REL-LEGAL-01B)** — **PARTIAL DONE**: runtime Credits + NOTICE match shipping decks/SFX/music families; Hazmat/DOBO/Casino pack removed from UI. Privacy / Terms / Data Safety / product LICENSE remain open under REL-LEGAL-01.
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
 7. **Durable local data safety (`REL-DATA-01`)** — **DONE**. **`REL-DATA-02` real match history — DONE** (OPPO `install -r` smoke PASS).
+8. **Music store clearance** — historical Pixabay/PeriTune/StockTune notes exist; formal counsel clearance for store redistribution still open (do not treat NOTICE as clearance).
 
 ---
 
@@ -151,8 +152,8 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
-| REL-LEGAL-01 | Legal / licences | TODO | Root LICENSE + NOTICE + TRADEMARKS (OXS baseline); real privacy/terms + contact; Credits polish after decks; Casino **removed** from shipping (REL-DECK-01B) | P0 | YES (license model) | TODO |
-| REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE:** 8 fronts (default cardmeister); 19 backs; Hayeah skipped. Credits polish remains separate under REL-LEGAL | P1 | YES | DONE |
+| REL-LEGAL-01 | Legal / licences | IN PROGRESS | **01B Credits/NOTICE DONE (uncommitted):** runtime Credits match shipping assets; root NOTICE with Webisso MIT notice; soft `Suecão · 2026`. Still open: root LICENSE choice, TRADEMARKS, privacy/terms/contact, product owner of record, music store clearance, Play Data Safety | P0 | YES (license model) | IN PROGRESS |
+| REL-DECK-01 | Deck / Card Back | DONE (library) | **Batches 1–3 DONE:** 8 fronts (default cardmeister); 19 backs; Hayeah skipped. Credits polish → REL-LEGAL-01B | P1 | YES | DONE |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
@@ -188,7 +189,7 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish | P0 |
+| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish (**01B Credits/NOTICE done; LICENSE/Privacy open**) | P0 |
 | REL-DECK-01 | Deck library Batches 1–3 DONE · Credits polish separate | P1 · **DONE (assets)** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |

@@ -433,7 +433,7 @@ export interface Translations {
     thanks: string;
   };
   
-  // Credits Modal
+  // Credits Modal / Profile Credits
   credits: {
     title: string;
     subtitle: string;
@@ -447,9 +447,14 @@ export interface Translations {
     acknowledgmentsTitle: string;
     acknowledgmentsText: string;
     assetsTitle: string;
+    sectionCards: string;
     assetsCards: string;
-    assetsUi: string;
-    assetsAudio: string;
+    sectionBacks: string;
+    assetsBacks: string;
+    sectionSfx: string;
+    assetsSfx: string;
+    sectionMusic: string;
+    assetsMusic: string;
     copyright: string;
     close: string;
     imageAlt: string;
@@ -480,7 +485,7 @@ export const translations: Record<Language, Translations> = {
       metaGames: '4 jogos',
       tapHint: 'Entrar',
       credits: 'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
-      copyright: '© 2025 Todos os direitos reservados.',
+      copyright: 'Suecão · 2026',
       imageAlt: 'SUECÃO — capa do jogo'
     },
     menu: {
@@ -878,7 +883,8 @@ export const translations: Record<Language, Translations> = {
     credits: {
       title: 'SUECÃO',
       subtitle: 'Um jogo de Sueca',
-      description: 'Versão digital do clássico jogo de cartas português, pensada para jogar a solo contra a IA ou em modo cooperativo com amigos ao redor da mesa.',
+      description:
+        'Versão digital do clássico jogo de cartas português, pensada para jogar a solo contra a IA ou em modo cooperativo com amigos ao redor da mesa.',
       metaPlayers: '4 JOGADORES',
       metaTeams: '2 equipas',
       metaCards: '40 cartas',
@@ -886,12 +892,22 @@ export const translations: Record<Language, Translations> = {
       imagePlaceholderLabel: 'capa / animação',
       imagePlaceholderFormat: 'jpg · png · gif',
       acknowledgmentsTitle: 'Agradecimentos',
-      acknowledgmentsText: 'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
-      assetsTitle: 'Assets gráficos',
-      assetsCards: 'Cartas: Hand Drawn Playing Cards por Hazmat Game Studios (itch.io).',
-      assetsUi: 'Interface: Vector UI Pack por dobo_ui (itch.io).',
-      assetsAudio: 'Sons: Kenney.nl — Casino Audio e Interface Sounds (CC0).',
-      copyright: '© 2025 Todos os direitos reservados.',
+      acknowledgmentsText:
+        'Obrigado ao Cursor, ao Buga, ao Tico, à Maria Francisca e à Maria João.',
+      assetsTitle: 'Créditos de conteúdo',
+      sectionCards: 'Cartas',
+      assetsCards:
+        'CardMeister (Danny Engelman); AustinGabriel; woodcut-cards (SONDLecT); Saul Spatz SVGCards; Kenney; Webisso LLC.',
+      sectionBacks: 'Versos',
+      assetsBacks:
+        'Suecão (originais); Sylly / Andrew Tidey (OpenGameArt); woodcut-cards; Saul Spatz; AustinGabriel; Kenney.',
+      sectionSfx: 'Som',
+      assetsSfx:
+        'Kenney.nl (CC0); Freesound (BMacZero, el_boss, KevinHilt); Suecão (sons gerados).',
+      sectionMusic: 'Música',
+      assetsMusic:
+        'Faixas locais: Pixabay Content License, PeriTune e StockTune. Catálogo remoto adicional sob as mesmas famílias de licença. Detalhe no NOTICE do repositório.',
+      copyright: 'Suecão · 2026',
       close: 'Fechar',
       imageAlt: 'SUECÃO - Capa do Jogo'
     },
@@ -915,7 +931,7 @@ export const translations: Record<Language, Translations> = {
       metaGames: '4 games',
       tapHint: 'Enter',
       credits: 'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
-      copyright: '© 2025 All rights reserved.',
+      copyright: 'Suecão · 2026',
       imageAlt: 'SUECÃO — game cover'
     },
     menu: {
@@ -1312,7 +1328,8 @@ export const translations: Record<Language, Translations> = {
     credits: {
       title: 'SUECÃO',
       subtitle: 'A Sueca Game',
-      description: 'Digital version of the classic Portuguese card game, designed to play solo against AI or cooperatively with friends around the table.',
+      description:
+        'Digital version of the classic Portuguese card game, designed to play solo against AI or cooperatively with friends around the table.',
       metaPlayers: '4 PLAYERS',
       metaTeams: '2 teams',
       metaCards: '40 cards',
@@ -1320,12 +1337,22 @@ export const translations: Record<Language, Translations> = {
       imagePlaceholderLabel: 'cover / animation',
       imagePlaceholderFormat: 'jpg · png · gif',
       acknowledgmentsTitle: 'Acknowledgments',
-      acknowledgmentsText: 'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
-      assetsTitle: 'Graphic assets',
-      assetsCards: 'Playing cards: Hand Drawn Playing Cards by Hazmat Game Studios (itch.io).',
-      assetsUi: 'UI chrome: Vector UI Pack by dobo_ui (itch.io).',
-      assetsAudio: 'Sound effects: Kenney.nl — Casino Audio and Interface Sounds (CC0).',
-      copyright: '© 2025 All rights reserved.',
+      acknowledgmentsText:
+        'Thanks to Cursor, Buga, Tico, Maria Francisca and Maria João.',
+      assetsTitle: 'Content credits',
+      sectionCards: 'Card faces',
+      assetsCards:
+        'CardMeister (Danny Engelman); AustinGabriel; woodcut-cards (SONDLecT); Saul Spatz SVGCards; Kenney; Webisso LLC.',
+      sectionBacks: 'Card backs',
+      assetsBacks:
+        'Suecão (originals); Sylly / Andrew Tidey (OpenGameArt); woodcut-cards; Saul Spatz; AustinGabriel; Kenney.',
+      sectionSfx: 'Sound',
+      assetsSfx:
+        'Kenney.nl (CC0); Freesound (BMacZero, el_boss, KevinHilt); Suecão (generated sounds).',
+      sectionMusic: 'Music',
+      assetsMusic:
+        'Bundled beds: Pixabay Content License, PeriTune, and StockTune. Additional remote catalog tracks under the same licence families. See repository NOTICE.',
+      copyright: 'Suecão · 2026',
       close: 'Close',
       imageAlt: 'SUECÃO - Game Cover'
     },
