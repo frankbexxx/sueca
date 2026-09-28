@@ -46,9 +46,9 @@ Snapshot index/rules: [`roadmap-snapshots/README.md`](./roadmap-snapshots/README
 
 ## CURRENT RELEASE BLOCKERS
 
-1. **Casino deck commercial licence** — redistribute rights unresolved (`docs/ASSETS.md`: indeterminada).
+1. **Casino deck commercial licence** — **SUPERSEDED (REL-DECK-01B)**: Casino removed from shipping; replaced by CardMeister (default) + `pd-ornate` (CC0) + Sylly backs.
 2. **Repo legal baseline** — no root `LICENSE` / `NOTICE` / `TRADEMARKS`; privacy/terms contact still placeholder.
-3. **Credits wrong** — UI still attributes **Hazmat**; runtime deck is **Casino**.
+3. **Credits stale** — UI may still mention Hazmat/old audio lines; deck set now CardMeister / pd-ornate (Credits polish follows deck batches).
 4. **Multiplayer production posture** — **DONE (REL-MP-01 Option C)**: public v1 soft-hides Online; Web prod + Android `VITE_MULTIPLAYER_ENABLED=false`; code retained.
 5. **Play Store gate** — listing, Data Safety, legal URLs, screenshots incomplete.
 6. **QA release gate** — `docs/RELEASE_CHECK.md` major items still unchecked (4 games + King Sintético + Android + web).
@@ -151,7 +151,8 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Área | Estado | Falta fazer | Prioridade | Decisão produto | Estado |
 |----|------|--------|-------------|------------|-----------------|--------|
-| REL-LEGAL-01 | Legal / licences | TODO | Root LICENSE + NOTICE + TRADEMARKS (OXS baseline); real privacy/terms + contact; fix Credits (Casino not Hazmat); confirm Casino commercial licence | P0 | YES (license model) | TODO |
+| REL-LEGAL-01 | Legal / licences | TODO | Root LICENSE + NOTICE + TRADEMARKS (OXS baseline); real privacy/terms + contact; Credits polish after decks; Casino **removed** from shipping (REL-DECK-01B) | P0 | YES (license model) | TODO |
+| REL-DECK-01 | Deck / Card Back | IN PROGRESS | **Batch 1 DONE:** Casino out; CardMeister provenance; `pd-ornate`; Sylly×6 + suecao-navy; pref/theme migration. Batch 2+: woodcut/Saul/Kenney | P1 | YES | IN PROGRESS |
 | REL-MP-01 | Multiplayer posture | DONE | **Option C soft-hide for public v1**: prod Web + Android `VITE_MULTIPLAYER_ENABLED=false`; Mais → Online hidden; MP code retained; full MP → `REL-MP-FULL-01` | P0 | YES | DONE |
 | REL-PLAY-01 | Play Store | TODO | Listing, Data Safety, policies, screenshots, legal URLs | P0 | NO | TODO |
 | REL-QA-01 | QA release gate | TODO | Close `RELEASE_CHECK`: 4 games + King Sintético + Android + web + save/resume + audio/themes | P0 | NO | TODO |
@@ -170,7 +171,6 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 | REL-WEB-01 | Web / Vercel | TODO | Coherent MP flag; favicon/meta; production smoke; remote music on web? | P1 | NO (music optional) | TODO |
 | REL-DOCS-01 | Docs / cleanup | TODO | Refresh STATUS / Essentials / README; hide incomplete UX; stale copy | P1 | NO | TODO |
 | REL-PERS-01 | Themes / Personalisation UX | DONE | **Temas DONE** · **Mão e Cartas DONE** · **Música e Som DONE** (discrete music/SFX volumes · master mute preserves prefs). Idioma → Mais/Definições gerais; auto-pause → Mão e Cartas. Architecture already DONE. Mesa SFX wire tracked under REL-AUDIO | P2 or P1* | YES | DONE |
-| REL-DECK-01 | Deck / Card Back | TODO | CardMeister theme assignment; licence attribution for exposed decks | P2 | YES | TODO |
 | REL-AUDIO-01 | Music / SFX | IN PROGRESS | Personalização volumes DONE. Mesa SFX catalog wired (`card-play`×3 · `error` · `ui-click` + existing table cues). Remaining: web prod remote optional; offline/fallback validation; CDN domain; audible device smoke. **Sons polish (profiles/EQ) not in scope** | P2 | NO | IN PROGRESS |
 | REL-AI-01 | AI polish | TODO | Spades nil-aware play; King auction difficulty; Sueca signals/docs; Hearts optional | P2 | YES (nil marketing) | TODO |
 | REL-A11Y-01 | Accessibility | TODO | Minimal audit: contrast, focus, labels, touch, keyboard where applicable | P2 | NO | TODO |
@@ -188,7 +188,8 @@ In-app OXS was previously **removed** (Landing/Credits). Re-adoption is product 
 
 | ID | Summary | Priority |
 |----|---------|----------|
-| REL-LEGAL-01 | Casino licence · LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits | P0 |
+| REL-LEGAL-01 | LICENSE/NOTICE/TRADEMARKS · privacy/terms · Credits polish | P0 |
+| REL-DECK-01 | Deck curation Batch 1 DONE · Batch 2+ remaining | P1 · **IN PROGRESS** |
 | REL-MP-01 | Solo vs MP decision + env/UI consistency | P0 · **DONE (soft-hide)** |
 | REL-PLAY-01 | Play Store listing / Data Safety | P0 |
 | REL-QA-01 | RELEASE_CHECK gate | P0 |

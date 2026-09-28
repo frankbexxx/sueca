@@ -178,7 +178,7 @@ describe('UX-P3.1 premium table layout', () => {
   });
 
   it('card back path + texture key stay stable for swap', () => {
-    expect(CARD_BACK_PATH).toContain('/assets/cards3/card_back.');
+    expect(CARD_BACK_PATH).toContain('/assets/card-backs/suecao-navy.');
     expect(CARD_BACK_TEXTURE_KEY).toBe('card-back');
   });
 
@@ -186,7 +186,7 @@ describe('UX-P3.1 premium table layout', () => {
     expect(DEFAULT_THEME.cardBackId).toBe('suecao-navy');
     const theme = resolvePhaserThemeFromDom(null);
     expect(theme.cardBackId).toBe('suecao-navy');
-    expect(theme.cardBackPath).toContain('card_back');
+    expect(theme.cardBackPath).toContain('/assets/card-backs/suecao-navy');
   });
 
   it('landscape sanity: no inverted zones', () => {

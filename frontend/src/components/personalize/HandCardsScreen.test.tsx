@@ -63,18 +63,18 @@ describe('Mão e Cartas / SettingsHandScreen', () => {
     expect(screen.getByTestId('hand-cards-screen')).toBeTruthy();
 
     fireEvent.click(screen.getByTestId('card-front-cardmeister'));
-    fireEvent.click(screen.getByTestId('card-back-casino-06'));
+    fireEvent.click(screen.getByTestId('card-back-sylly-03'));
 
     expect(loadCardSkinPreferences()).toEqual({
       cardFrontId: 'cardmeister',
-      cardBackId: 'casino-06'
+      cardBackId: 'sylly-03'
     });
     expect(resolveEffectiveDeck('midnight', '', undefined).id).toBe('cardmeister');
-    expect(resolveEffectiveBack('midnight', undefined).id).toBe('casino-06');
+    expect(resolveEffectiveBack('midnight', undefined).id).toBe('sylly-03');
     // Changing front must not reset back
-    fireEvent.click(screen.getByTestId('card-front-casino'));
-    expect(loadCardSkinPreferences().cardFrontId).toBe('casino');
-    expect(loadCardSkinPreferences().cardBackId).toBe('casino-06');
+    fireEvent.click(screen.getByTestId('card-front-pd-ornate'));
+    expect(loadCardSkinPreferences().cardFrontId).toBe('pd-ornate');
+    expect(loadCardSkinPreferences().cardBackId).toBe('sylly-03');
   });
 
   it('persists hand sort, suit order, deal speed, auto-pause', () => {
@@ -108,9 +108,9 @@ describe('Mão e Cartas / SettingsHandScreen', () => {
 
   it('card skin cannot affect deal assignment', () => {
     localStorage.setItem(STORAGE_KEYS.CARD_FRONT, 'cardmeister');
-    localStorage.setItem(STORAGE_KEYS.CARD_BACK, 'casino-08');
+    localStorage.setItem(STORAGE_KEYS.CARD_BACK, 'sylly-02');
     const a = dealSuecaFromCardOrder(deck40(), 1, 'A', 'left');
-    localStorage.setItem(STORAGE_KEYS.CARD_FRONT, 'casino');
+    localStorage.setItem(STORAGE_KEYS.CARD_FRONT, 'pd-ornate');
     localStorage.setItem(STORAGE_KEYS.CARD_BACK, 'suecao-navy');
     const b = dealSuecaFromCardOrder(deck40(), 1, 'A', 'left');
     expect(a.hands.flat().map((c) => c.id)).toEqual(b.hands.flat().map((c) => c.id));

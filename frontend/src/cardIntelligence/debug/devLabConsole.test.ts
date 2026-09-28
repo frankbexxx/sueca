@@ -28,27 +28,40 @@ describe('devLabConsole', () => {
     return installCardIntelligenceDevLabConsole;
   }
 
-  it('does not install helpers when flags are off', async () => {
-    const install = await loadInstall();
-    install();
-    expect(window.__ciRunScenario).toBeUndefined();
-  });
+  // Dynamic import + resetModules can exceed 5s under full-suite load.
+  it(
+    'does not install helpers when flags are off',
+    async () => {
+      const install = await loadInstall();
+      install();
+      expect(window.__ciRunScenario).toBeUndefined();
+    },
+    15_000
+  );
 
-  it('does not install when only DEBUG is on', async () => {
-    mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
-    const install = await loadInstall();
-    install();
-    expect(window.__ciRunScenario).toBeUndefined();
-  });
+  it(
+    'does not install when only DEBUG is on',
+    async () => {
+      mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
+      const install = await loadInstall();
+      install();
+      expect(window.__ciRunScenario).toBeUndefined();
+    },
+    15_000
+  );
 
-  it('installs helpers when both flags are on', async () => {
-    mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
-    mockFeatures.CARD_INTELLIGENCE_DEV_LAB = true;
-    const install = await loadInstall();
-    install();
-    expect(typeof window.__ciListScenarios).toBe('function');
-    expect(typeof window.__ciRunScenario).toBe('function');
-    expect(typeof window.__ciRunSeededGame).toBe('function');
-    expect(window.__ciLab).toBeDefined();
-  });
+  it(
+    'installs helpers when both flags are on',
+    async () => {
+      mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
+      mockFeatures.CARD_INTELLIGENCE_DEV_LAB = true;
+      const install = await loadInstall();
+      install();
+      expect(typeof window.__ciListScenarios).toBe('function');
+      expect(typeof window.__ciRunScenario).toBe('function');
+      expect(typeof window.__ciRunSeededGame).toBe('function');
+      expect(window.__ciLab).toBeDefined();
+    },
+    15_000
+  );
 });

@@ -1,8 +1,8 @@
 /**
  * Public card image assets (Vite serves from public/).
- * Faces: user override → theme deck → casino; optional `?deck=` wins.
+ * Faces: user override → theme deck → default (cardmeister); optional `?deck=` wins.
  * Back: user override → theme back → suecao-navy.
- * deckId and backId are independent.
+ * deckId and backId are independent. Casino removed (REL-DECK-01B).
  */
 import {
   DEFAULT_CARD_BACK_ID,
@@ -15,7 +15,7 @@ import {
 import { publicUrl, readViteEnv } from '../config/runtimeEnv';
 
 /**
- * Default face pack directory (casino / cards3).
+ * Default face pack directory (cardmeister).
  * Prefer `getCardAssetsDir(themeId)` at call sites that may use per-theme decks.
  */
 export const CARD_ASSETS_DIR = resolveActiveDeck().facePath;
@@ -30,9 +30,6 @@ const CARD_EXT = readViteEnv('VITE_CARD_EXT') === 'svg' ? 'svg' : 'png';
 export const CARD_BACK_PATH = `${resolveActiveBack(DEFAULT_CARD_BACK_ID).assetPathBase}.${CARD_EXT}`;
 export const CARD_BACK_TEXTURE_KEY = 'card-back';
 
-/** Alternate back (Hazmat red) — future theme / IAP */
-export const CARD_BACK_RED_PATH = `${resolveActiveBack('hazmat-red').assetPathBase}.${CARD_EXT}`;
-
 export function getPublicAssetPath(
   relativePath: string,
   publicBase = publicUrl()
@@ -42,7 +39,7 @@ export function getPublicAssetPath(
 }
 
 /**
- * Face directory (user override → theme → casino).
+ * Face directory (user override → theme → default).
  * Honors optional `?deck=` query when `search` omitted (browser) or passed (tests).
  */
 export function getCardAssetsDir(

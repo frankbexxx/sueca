@@ -25,21 +25,26 @@ describe('devLabConsole T12', () => {
     delete window.__ciGameReport;
   });
 
-  it('uses same __ciScenarioReport reference as debugConsole', async () => {
-    mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
-    mockFeatures.CARD_INTELLIGENCE_DEV_LAB = true;
+  // Under full-suite load, dynamic imports can exceed the default 5s; keep assertion identical.
+  it(
+    'uses same __ciScenarioReport reference as debugConsole',
+    async () => {
+      mockFeatures.CARD_INTELLIGENCE_DEBUG = true;
+      mockFeatures.CARD_INTELLIGENCE_DEV_LAB = true;
 
-    const { installCardIntelligenceDebugConsole } = await import('../debugConsole');
-    const { installCardIntelligenceDevLabConsole } = await import('../devLabConsole');
-    const { ciScenarioReport } = await import('./buildScenarioReport');
+      const { installCardIntelligenceDebugConsole } = await import('../debugConsole');
+      const { installCardIntelligenceDevLabConsole } = await import('../devLabConsole');
+      const { ciScenarioReport } = await import('./buildScenarioReport');
 
-    installCardIntelligenceDebugConsole();
-    const fromDebug = window.__ciScenarioReport;
-    installCardIntelligenceDevLabConsole();
-    const fromLab = window.__ciScenarioReport;
+      installCardIntelligenceDebugConsole();
+      const fromDebug = window.__ciScenarioReport;
+      installCardIntelligenceDevLabConsole();
+      const fromLab = window.__ciScenarioReport;
 
-    expect(fromDebug).toBe(ciScenarioReport);
-    expect(fromLab).toBe(ciScenarioReport);
-    expect(fromLab).toBe(fromDebug);
-  });
+      expect(fromDebug).toBe(ciScenarioReport);
+      expect(fromLab).toBe(ciScenarioReport);
+      expect(fromLab).toBe(fromDebug);
+    },
+    15_000
+  );
 });

@@ -1,149 +1,109 @@
 # SUECÂO — Assets (cartas e UX)
 
-**Pesquisa packs (itch.io):** [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md)  
+**Pesquisa packs:** [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md) · **Legal ledgers:** [legal/assets/](legal/assets/)
 **Handoff técnico:** [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 
-## Estado no repositório
+## Estado no repositório (REL-DECK-01B Batch 1)
 
 | Pack | Path | Estado |
 |------|------|--------|
-| Cartas (activo) | `frontend/public/assets/cards3/*.png` | **Casino Normal** faces (352×512) — **único deck runtime** |
-| Costa (default) | `frontend/public/assets/cards3/card_back.png` | **Suecão navy** — fallback |
-| Costa Casino | `card_back_casino_05`…`08.png` | Disponíveis via `backId` por tema |
-| Costa reservada | `cards3/card_back_red.png` | `hazmat-red` (IAP / tema futuro) |
-| Staging import | `frontend/public/assets/cards-pack-import/` | Vazio / tools only (Hazmat pack removido do tree) |
-| UI StartMenu | `frontend/src/assets/ui/dobo/` | **DOBO** subset (bundled) |
-| UX chrome | `frontend/src/styles/design-tokens.css` + packs futuros | Tokens base |
-| SFX | `frontend/public/assets/sfx/*.ogg` | Kenney CC0 — ver secção abaixo |
-| Música core | `frontend/public/assets/music/core/*.ogg` | 6 beds tema (híbrido v1) — ver secção abaixo |
-| Ícones app | `image/ico/buga_ico_draw/` | Usado no Capacitor |
+| Faces default | `frontend/public/assets/cards-cardmeister/` | **CardMeister** (52 PNG 352×512) — default |
+| Faces selectable | `frontend/public/assets/cards/pd-ornate/` | **AustinGabriel CC0** ornate (52 PNG 366×512) |
+| Costa default | `frontend/public/assets/card-backs/suecao-navy.png` | Suecão navy (original) |
+| Costas Sylly | `card-backs/sylly-01`…`06.png` | OGA Cards Pack / CC0 (Andrew Tidey) |
+| Legal | `docs/legal/assets/{cardmeister,pd-ornate,sylly}/` | PROVENANCE + licence copies |
+| SFX | `frontend/public/assets/sfx/*.ogg` | Kenney / Freesound / Suecão — ver secção abaixo |
+| Música core | `frontend/public/assets/music/core/*.ogg` | 6 beds |
+| Ícones app | `image/ico/buga_ico_draw/` | Capacitor |
+
+**Removido do shipping (Batch 1):** `cards3/` Casino faces + Casino backs 05–08 + `hazmat-red`. Legacy prefs/themes migrate via `LEGACY_CARD_*_MIGRATION`.
 
 ### Registry
 
-Código: `frontend/src/constants/cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts`
+Código: `cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts` + `cardSkinPreferences.ts`
 
 | Id | Tipo | Path / notas |
 |----|------|----------------|
-| `casino` | deck (**default**) | `/assets/cards3` — 52 faces Normal |
-| `cardmeister` | deck (opcional; `?deck=cardmeister`) | `/assets/cards-cardmeister` — Classic Vector PNG |
-| `suecao-navy` | back (**fallback**) | `/assets/cards3/card_back` |
-| `casino-05` | back | red diamond |
-| `casino-06` | back | black/white star (alto contraste) |
-| `casino-07` | back | cyan wave |
-| `casino-08` | back | cube gradient |
-| `hazmat-red` | back (reservado) | `/assets/cards3/card_back_red` — IAP / tema futuro |
+| `cardmeister` | deck (**default**) | `/assets/cards-cardmeister` |
+| `pd-ornate` | deck | `/assets/cards/pd-ornate` |
+| `suecao-navy` | back (**fallback**) | `/assets/card-backs/suecao-navy` |
+| `sylly-01`…`06` | back | `/assets/card-backs/sylly-0N` |
 
-**Removido:** `cards1/` (unused), `cards2/` (legacy Hazmat faces), staging `cards-pack-import/hazmat/`.
+**API por tema:** `backId` activo (30 temas); `deckId` opcional → default `cardmeister`. Faces/backs independentes.
 
-**API por tema** (`THEME_CARD_VISUALS.cardVisuals`):
-
-| Campo | Estado | Notas |
-|-------|--------|--------|
-| `backId` | **activo** | 30 temas com valor explícito; inválido → `suecao-navy` |
-| `deckId` | **preparado** | opcional; ausência / inválido → `casino`. Decks registados: `casino`, `cardmeister`. Nenhum tema define `deckId` ainda. Dev: `?deck=cardmeister` |
-
-Resolvers (nunca crasham): `resolveCardDeckForTheme`, `resolveCardBackForTheme`.  
-`deckId` e `backId` são **independentes** — futuros decks faces não obrigam a mudar backs.  
-Novos decks registam-se em `CARD_DECKS` sem alterar esta API de tema.
-
-### Back por tema (THEME-CARD-BACK-02)
-
-Config: `THEME_CARD_VISUALS` em `themeCardVisuals.ts` — **todos os 30 temas built-in** têm `backId` explícito.  
-Resolver: `resolveCardBackForTheme(themeId)` — nunca crasha; tema ausente / `backId` inválido → `suecao-navy`.  
-`hazmat-red` permanece reservado (não atribuído).
-
-Critério: contraste com felt/mesa > coerência cromática > variedade.
+### Back por tema (após migração Casino → Sylly)
 
 | Tema | backId |
 |------|--------|
 | `classic` | `suecao-navy` |
-| `forest` | `casino-05` |
-| `midnight` | `casino-06` |
-| `thule` | `casino-05` |
-| `hyperborea` | `casino-08` |
-| `skara-brae` | `casino-08` |
-| `avalon` | `casino-07` |
-| `knossos` | `casino-05` |
-| `thebes` | `casino-07` |
-| `cartago` | `casino-07` |
-| `atlantida` | `casino-05` |
-| `babylon` | `casino-05` |
-| `ur` | `casino-08` |
-| `petra` | `casino-07` |
-| `persepolis` | `casino-08` |
-| `axum` | `casino-07` |
-| `meroe` | `casino-05` |
+| `forest` | `sylly-05` |
+| `midnight` | `sylly-03` |
+| `thule` | `sylly-05` |
+| `hyperborea` | `sylly-02` |
+| `skara-brae` | `sylly-02` |
+| `avalon` | `sylly-01` |
+| `knossos` | `sylly-05` |
+| `thebes` | `sylly-01` |
+| `cartago` | `sylly-01` |
+| `atlantida` | `sylly-05` |
+| `babylon` | `sylly-05` |
+| `ur` | `sylly-02` |
+| `petra` | `sylly-01` |
+| `persepolis` | `sylly-02` |
+| `axum` | `sylly-01` |
+| `meroe` | `sylly-05` |
 | `great-zimbabwe` | `suecao-navy` |
 | `xanadu` | `suecao-navy` |
-| `shambhala` | `casino-07` |
-| `mohenjo-daro` | `casino-08` |
-| `yamatai` | `casino-06` |
+| `shambhala` | `sylly-01` |
+| `mohenjo-daro` | `sylly-02` |
+| `yamatai` | `sylly-03` |
 | `angkor` | `suecao-navy` |
-| `tikal` | `casino-05` |
-| `teotihuacan` | `casino-06` |
-| `tiwanaku` | `casino-07` |
+| `tikal` | `sylly-05` |
+| `teotihuacan` | `sylly-03` |
+| `tiwanaku` | `sylly-01` |
 | `caral` | `suecao-navy` |
-| `el-dorado` | `casino-05` |
-| `rapanui` | `casino-08` |
-| `nanmadol` | `casino-06` |
+| `el-dorado` | `sylly-05` |
+| `rapanui` | `sylly-02` |
+| `nanmadol` | `sylly-03` |
 
-Distribuição: `suecao-navy` 5 · `casino-05` 8 · `casino-06` 4 · `casino-07` 7 · `casino-08` 6.  
-Piloto re-eval: `thebes`/`thule` trocados (cyan no felt quente; vermelho no felt azul). Phaser faz hot-swap do texture `card-back` ao mudar `data-theme`.
+### Legacy migration
 
-## Casino pack (CASINO-DECK-INTEGRATION-01)
+| Legacy ID | Replacement |
+|-----------|-------------|
+| `casino` (front) | `cardmeister` |
+| `casino-05` | `sylly-05` |
+| `casino-06` | `sylly-03` |
+| `casino-07` | `sylly-01` |
+| `casino-08` | `sylly-02` |
+| `hazmat-red` | `suecao-navy` |
 
-| Item | Decisão |
-|------|---------|
-| Faces no jogo | **Casino Normal** (`Cards/` 352×512) em `cards3/` |
-| SmallCards (66×96) | **Não** no gameplay Phaser — redesenhos jumbo; reservadas para UI compacta futura (históricos, mini-indicadores, logs de vazas) |
-| Back default | **Suecão navy** (fallback) |
-| Casino backs 05–08 | Integrados em `cards3/`; seleccionáveis por tema |
-| Casino backs 01–04 | Catalogados em `_temp` — não no produto |
-| SmallCards backs | **Não** integrados |
-| Chips / Dice | `_temp/.../future/` — **não** integrados |
-| Jokers | Não usados (Sueca/Spades/Hearts/King) |
-| Origem | `_temp/Casino_1` → `_temp/casino-pack-normalized/` |
-| Licença | **Não determinada** a partir dos ficheiros do pack — não redistribuir comercialmente até clarificar |
+### Planned later batches
 
-Staging de referência (gitignored `_temp/`):
+- Batch 2: woodcut + Saul Spatz jumbo / four-colour / accessible (+ more backs)
+- Batch 3: Kenney / Webisso polish; sharper Sylly vector re-export; Credits polish
 
-- `faces/normal/` — integrado
-- `faces/small/` — catalogado só
-- `backs/normal|small/` — catalogado só
-- `future/chips|dice/` — catalogado só
+## Critérios para pack de cartas (compra / import)
 
-## Critérios para pack de cartas (compra)
-
-- PNG transparente **ou** SVG; nomes mapeáveis para `{Rank}_of_{Suit}.png`
-- Baralho **52** (Spades/Hearts/King) + compatível com subset **40** Sueca
-- Resolução ≥ 512px largura; incluir **card back**
-- Licença comercial; créditos em `CreditsModal` se exigido
-
-**Fontes sugeridas:** itch.io, Kenney, Craftpix, GraphicRiver.
+- PNG transparente **ou** SVG; nomes `{Rank}_of_{Suit}.png`
+- Baralho **52** + subset **40** Sueca
+- Resolução ≥ ~350px largura; include **card back** separado
+- Licença comercial clara; ledger em `docs/legal/assets/<id>/`
 
 ## Integrar pack (novo baralho)
 
-1. Fonte local: `_temp/` (gitignored) ou `cards-pack-import/`
-2. Mapear: `node tools/map-card-pack.mjs --input … --output frontend/public/assets/cards3`
-3. Confirmar `DEFAULT_CARD_DECK_ID === 'casino'` / `resolveCardDeckForTheme(theme)` → `/assets/cards3`
+1. Fonte: `_temp/` (gitignored) ou download auditado
+2. Normalizar para `frontend/public/assets/cards/<deck-id>/`
+3. Registar em `CARD_DECKS`; ledger + LICENSE
 4. `npm test` + smoke visual
 
-> Nota: o pack Hazmat legado (`cards2/`) foi **removido** do runtime. Não reintroduzir sem decisão de produto explícita.
+## Checklist Batch 1
 
-### Figma / Penpot
-
-- Tokens: JSON → espelhar em `frontend/src/styles/design-tokens.css`
-- Não gerar React automático para a mesa; só assets + tokens
-- Ver [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
-
-## Checklist “pack integrado”
-
-- [x] 52 cartas PNG em `cards3/` (Casino Normal)
-- [x] `card_back.png` Suecão navy + `card_back_red.png` (reservado)
-- [x] Verso Suecão nos oponentes / face-down
-- [x] DOBO: StartMenu, GameMenu, RulesSheet, Credits
-- [ ] `npm run build` sem 404 de assets
-- [x] Licença / origem registada neste ficheiro (Casino: indeterminada)
+- [x] CardMeister documented under `docs/legal/assets/cardmeister/`
+- [x] 52 `pd-ornate` faces + provenance
+- [x] 6 Sylly backs + Suecão navy under `card-backs/`
+- [x] Casino `cards3/` removed from shipping
+- [x] Pref / theme migration
+- [ ] Credits UI polish (deferred — still may mention Hazmat historically)
 
 ## SFX (runtime)
 
@@ -166,48 +126,11 @@ Path: `frontend/public/assets/sfx/`. Catalog: `frontend/src/constants/sfxAssets.
 | `error.ogg` | Kenney Interface Sounds · error_001 | Jogada ilegal (visual is primary) |
 | `ui-click.ogg` | Kenney Interface Sounds · click_002 | Cliques UI (`.sueca-btn`, `.lang-btn`) |
 
-**Licensing note:** Kenney / Freesound attributions above follow historical project Credits. Formal commercial licence review for store remains under `REL-LEGAL-01` — do not treat this table as legal clearance.
-
-Master mute: `sueca-sound-enabled`. Discrete music/SFX levels: `suecao-music-volume` / `suecao-sfx-volume` (`0|25|50|75|100`). Personalizar → Música e Som.
-
-### Remaining audio debt (not missing mesa files)
-
-- Web prod remote music CDN / custom domain (`REL-AUDIO-01` remainder)
-- Offline/fallback validation for remote beds
-- Audible OPPO smoke after wire
-- Broader “Sons polish” (per-surface mix, optional profiles) — **not** claimed done
+**Licensing note:** Kenney / Freesound attributions follow historical project Credits. Formal commercial licence review remains under `REL-LEGAL-01` — do not treat this table as legal clearance.
 
 ## Música de ambiente (core v1 — híbrido)
 
 Arquitectura: **D — HYBRID** — 6 core bundled + **23 remote R2**; Android cache-first; web stream-direct.
-
-| Item | Valor |
-|------|--------|
-| Path core | `frontend/public/assets/music/core/*.ogg` |
-| Catálogo core | `frontend/src/constants/musicCatalog.ts` |
-| Theme → play | `resolveThemeMusic` → `playResolvedMusic` (`audioService`) |
-| Preferred + fallback | `THEME_PREFERRED_TRACK_ID` + core fallback (`MUSIC_THEME_DEFAULTS_PLAN`) |
-| Catálogo remoto mock | `remoteMusicCatalog.mock.ts` (23 ids; `.invalid` **nunca** fetch sem base URL) |
-| Base URL remota | `VITE_MUSIC_REMOTE_BASE_URL` (`musicRemoteConfig.ts`) — omitida = remoto desligado |
-| Fetch catálogo | `{base}/music/v1/catalog.json` → `musicRemoteCatalogFetch.ts` (23 entradas) |
-| Endpoint actual | `*.r2.dev` = **dev/smoke only** — custom domain ainda pendente |
-| Playback URL provider | `musicRemoteUrlProvider.ts` (overrides só teste/smoke) |
-| Prepare remoto | `musicRemotePrepare.ts` — Android download/cache on-demand; web stream |
-| Cache Android | `musicCacheService.ts` — `Directory.Data/music/` + SHA-256 (sem prefetch das 23) |
-| Local URI | `musicLocalUri.ts` — `getUri` + `convertFileSrc` |
-| Plugin | `@capacitor/filesystem` (Capacitor 6) |
-| Modos settings | **Theme default** / **Off** — advanced music UI ainda pendente |
-| Volume | `0.28` |
-| Smoke same-origin | `VITE_MUSIC_REMOTE_SMOKE=true` (só se base URL ausente) |
-
-### Playback
-
-| Plataforma | Comportamento |
-|------------|---------------|
-| **Android** | cache hit → tocar local; miss → download+SHA → cache → tocar; falha → core (stale válido mantém-se) |
-| **Web** | stream URL remota (HTTP cache); erro → core |
-| **Sem base URL** | preferred remote → core via fallback |
-| **Com base URL** | 23 remotes R2 activas (paths relativos resolvidos) |
 
 ### 6 faixas core (bundled)
 
@@ -220,27 +143,13 @@ Arquitectura: **D — HYBRID** — 6 core bundled + **23 remote R2**; Android ca
 | `meso-aztec-relic` | Mesoamerican | StockTune PD/commercial |
 | `andes-peruvian` | Andes / Mythic gold | Pixabay Content License |
 
-### Catálogo remoto + cache + playback
-
-- **6** core bundled + **23** remote RELEASE OK no R2 (`catalogVersion` 1).
-- Content ID = SIM (3): `whiskey-jazz`, `northern-glow`, `hawaii-relax` — metadata + exclusão em **Random Streaming Safe**; UI badge em faixa específica.
-- Advanced settings: Theme Default / Off / Random / Random Streaming Safe / Family / Specific Track.
-- Disponibilidade: `AVAILABLE_LOCAL_CORE` \| `AVAILABLE_LOCAL_CACHE` \| `REMOTE_AVAILABLE` \| `UNAVAILABLE`.
-- Theme Default: preferred pode ser core ou remote; fallback sempre core.
-- `VITE_MUSIC_REMOTE_BASE_URL` (dev/android); falha de fetch → core-only, sem retry loop, sem prefetch.
-- **CDN produção / custom domain:** ainda pendente — `r2.dev` é endpoint temporário de smoke/dev.
-- **Advanced settings:** Theme Default / Off / Random / Random Streaming Safe / Family / Specific Track — activos.
-
-Preparação / proveniência: `_temp/_musicas/` (gitignored).
-
-## Licenças
+## Licenças (cartas shipping)
 
 | Asset | Licença | Notas |
 |-------|---------|-------|
-| Casino Normal faces (`cards3`) | **Indeterminada** (pack sem LICENSE nos ficheiros) | Origem `_temp/Casino_1`; clarificar antes de distribuição comercial |
-| Suecão navy card back | Suecão / produto | Mantido como back activo |
-| Hazmat Hand Drawn Playing Cards | Comercial OK; no redistribute/resell | [itch.io](https://hazmat-game-studios.itch.io/hand-drawn-playing-cards) — **removido** do runtime (`cards2/` deleted); `hazmat-red` back reservado fica em `cards3/card_back_red.png` |
-| DOBO Vector UI Pack | Comercial OK; no resell/redistribute | [dobo-ui.itch.io](https://dobo-ui.itch.io/vector-ui-pack) — crédito recomendado |
-| Kenney Casino Audio + Interface Sounds | CC0 | [kenney.nl](https://kenney.nl) — crédito opcional |
-| Round/game cues (`round-start`, `round-end`, `game-win`, `game-lose`) | Suecão original | Synth NumPy + FFmpeg; sem asset externo |
-| Placeholder SVG (removido) | — | Substituído por Hazmat PNG Maio 2026 |
+| CardMeister faces | Unlicense | `docs/legal/assets/cardmeister/` |
+| pd-ornate faces | CC0 1.0 | AustinGabriel — `docs/legal/assets/pd-ornate/` |
+| Suecão navy back | Suecão / produto | Original |
+| Sylly backs 01–06 | CC0 | Pack License.txt (Andrew Tidey) — `docs/legal/assets/sylly/` |
+| Casino Normal (`cards3`) | **REMOVED from shipping** | Licence was indeterminada; `_temp/Casino_1` forensic only |
+| Hazmat faces / hazmat-red | **REMOVED from shipping** | Legacy / unresolved |

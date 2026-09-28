@@ -1,9 +1,7 @@
 /**
  * Central card deck / back registry.
- * Faces (`deckId`) and backs (`backId`) are independent so themes can
- * swap either without coupling. Default faces remain `casino`; `cardmeister`
- * is available via registry / `?deck=` without theme assignment.
- * User Personalizar overrides win over theme when set (see resolveEffective*).
+ * Faces (`deckId`) and backs (`backId`) are independent.
+ * Shipping decks (REL-DECK-01B): cardmeister + pd-ornate. Casino removed.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -26,64 +24,68 @@ export type CardBackDefinition = {
   label: string;
 };
 
-/** Available face decks — Casino default; CardMeister optional second deck. */
+/** Shipping face decks — Casino removed (REL-DECK-01B). */
 export const CARD_DECKS = {
-  casino: {
-    id: 'casino',
-    facePath: '/assets/cards3',
-    label: 'Casino Normal'
-  },
   cardmeister: {
     id: 'cardmeister',
     facePath: '/assets/cards-cardmeister',
     label: 'Classic Vector'
+  },
+  'pd-ornate': {
+    id: 'pd-ornate',
+    facePath: '/assets/cards/pd-ornate',
+    label: 'Ornate Public Domain'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 
 export type CardDeckId = keyof typeof CARD_DECKS;
 
-/** Available backs — independent of face deck. */
+/** Shipping backs — Casino / hazmat removed (REL-DECK-01B). */
 export const CARD_BACKS = {
   'suecao-navy': {
     id: 'suecao-navy',
-    assetPathBase: '/assets/cards3/card_back',
+    assetPathBase: '/assets/card-backs/suecao-navy',
     label: 'Suecão navy'
   },
-  'casino-05': {
-    id: 'casino-05',
-    assetPathBase: '/assets/cards3/card_back_casino_05',
-    label: 'Casino red diamond'
+  'sylly-01': {
+    id: 'sylly-01',
+    assetPathBase: '/assets/card-backs/sylly-01',
+    label: 'Sylly blue A'
   },
-  'casino-06': {
-    id: 'casino-06',
-    assetPathBase: '/assets/cards3/card_back_casino_06',
-    label: 'Casino black star'
+  'sylly-02': {
+    id: 'sylly-02',
+    assetPathBase: '/assets/card-backs/sylly-02',
+    label: 'Sylly blue B'
   },
-  'casino-07': {
-    id: 'casino-07',
-    assetPathBase: '/assets/cards3/card_back_casino_07',
-    label: 'Casino cyan wave'
+  'sylly-03': {
+    id: 'sylly-03',
+    assetPathBase: '/assets/card-backs/sylly-03',
+    label: 'Sylly grey A'
   },
-  'casino-08': {
-    id: 'casino-08',
-    assetPathBase: '/assets/cards3/card_back_casino_08',
-    label: 'Casino cube gradient'
+  'sylly-04': {
+    id: 'sylly-04',
+    assetPathBase: '/assets/card-backs/sylly-04',
+    label: 'Sylly grey B'
   },
-  /** Reserved / future IAP */
-  'hazmat-red': {
-    id: 'hazmat-red',
-    assetPathBase: '/assets/cards3/card_back_red',
-    label: 'Hazmat red (reserved)'
+  'sylly-05': {
+    id: 'sylly-05',
+    assetPathBase: '/assets/card-backs/sylly-05',
+    label: 'Sylly red A'
+  },
+  'sylly-06': {
+    id: 'sylly-06',
+    assetPathBase: '/assets/card-backs/sylly-06',
+    label: 'Sylly red B'
   }
 } as const satisfies Record<string, CardBackDefinition>;
 
 export type CardBackId = keyof typeof CARD_BACKS;
 
 /**
- * Default / fallback face deck when theme has no valid deckId.
- * Themes do not select `cardmeister` yet — default remains casino.
+ * Default face deck. CardMeister kept as least-disruptive default
+ * (already shipped + covered by existing tests); pd-ornate is selectable.
  */
-export const DEFAULT_CARD_DECK_ID: CardDeckId = 'casino';
+export const DEFAULT_CARD_DECK_ID: CardDeckId = 'cardmeister';
 
 /** @deprecated Prefer DEFAULT_CARD_DECK_ID — alias kept for existing call sites. */
 export const ACTIVE_CARD_DECK_ID: CardDeckId = DEFAULT_CARD_DECK_ID;
@@ -93,6 +95,37 @@ export const DEFAULT_CARD_BACK_ID: CardBackId = 'suecao-navy';
 
 /** @deprecated Prefer DEFAULT_CARD_BACK_ID — kept for call-site clarity. */
 export const ACTIVE_CARD_BACK_ID: CardBackId = DEFAULT_CARD_BACK_ID;
+
+/** Legacy Casino front → default front (Casino removed from shipping). */
+export const LEGACY_CARD_FRONT_MIGRATION: Readonly<Record<string, CardDeckId>> = {
+  casino: DEFAULT_CARD_DECK_ID
+};
+
+/**
+ * Legacy Casino backs → Sylly replacements (deterministic colour intent).
+ * red diamond → red A; black star → grey A; cyan wave → blue A; cube → blue B
+ */
+export const LEGACY_CARD_BACK_MIGRATION: Readonly<Record<string, CardBackId>> = {
+  'casino-05': 'sylly-05',
+  'casino-06': 'sylly-03',
+  'casino-07': 'sylly-01',
+  'casino-08': 'sylly-02',
+  'hazmat-red': DEFAULT_CARD_BACK_ID
+};
+
+export function migrateLegacyCardFrontId(
+  raw: string | null | undefined
+): string | null | undefined {
+  if (raw == null) return raw;
+  return LEGACY_CARD_FRONT_MIGRATION[raw] ?? raw;
+}
+
+export function migrateLegacyCardBackId(
+  raw: string | null | undefined
+): string | null | undefined {
+  if (raw == null) return raw;
+  return LEGACY_CARD_BACK_MIGRATION[raw] ?? raw;
+}
 
 export function isCardDeckId(id: string | null | undefined): id is CardDeckId {
   return typeof id === 'string' && Object.prototype.hasOwnProperty.call(CARD_DECKS, id);
@@ -107,13 +140,14 @@ export function resolveActiveDeck(
 export function resolveCardDeckFromId(
   raw?: string | null
 ): CardDeckDefinition {
-  if (isCardDeckId(raw)) return CARD_DECKS[raw];
+  const migrated = migrateLegacyCardFrontId(raw);
+  if (isCardDeckId(migrated)) return CARD_DECKS[migrated];
   return CARD_DECKS[DEFAULT_CARD_DECK_ID];
 }
 
 /**
  * Resolve face deck for a theme id.
- * Missing theme / missing cardVisuals / invalid deckId → casino.
+ * Missing theme / missing cardVisuals / invalid deckId → default.
  * Never throws.
  */
 export function resolveCardDeckForTheme(
@@ -129,7 +163,7 @@ export function resolveCardDeckForTheme(
 }
 
 /**
- * Dev/query override mirroring `?renderer=` — `?deck=cardmeister`.
+ * Dev/query override mirroring `?renderer=` — `?deck=cardmeister` / `pd-ornate`.
  * Invalid / absent → null (use theme / default).
  */
 export function parseDeckOverrideFromQuery(
@@ -140,14 +174,15 @@ export function parseDeckOverrideFromQuery(
     const raw = search.startsWith('?') ? search.slice(1) : search;
     const param = new URLSearchParams(raw).get('deck');
     if (!param) return null;
-    return isCardDeckId(param) ? param : null;
+    const migrated = migrateLegacyCardFrontId(param);
+    return isCardDeckId(migrated) ? migrated : null;
   } catch {
     return null;
   }
 }
 
 /**
- * Effective face deck: query `?deck=` → user front override → theme deckId → casino.
+ * Effective face deck: query `?deck=` → user front override → theme deckId → default.
  * Pure when `search` / `userFront` are passed (tests).
  */
 export function resolveEffectiveDeck(
@@ -170,8 +205,9 @@ export function resolveEffectiveDeck(
       : typeof localStorage !== 'undefined'
         ? localStorage.getItem(STORAGE_KEYS.CARD_FRONT)
         : null;
-  if (frontPref && frontPref !== 'theme' && isCardDeckId(frontPref)) {
-    return CARD_DECKS[frontPref];
+  const migratedFront = migrateLegacyCardFrontId(frontPref);
+  if (migratedFront && migratedFront !== 'theme' && isCardDeckId(migratedFront)) {
+    return CARD_DECKS[migratedFront];
   }
   return resolveCardDeckForTheme(themeId);
 }
@@ -190,8 +226,9 @@ export function resolveEffectiveBack(
       : typeof localStorage !== 'undefined'
         ? localStorage.getItem(STORAGE_KEYS.CARD_BACK)
         : null;
-  if (backPref && backPref !== 'theme' && isCardBackId(backPref)) {
-    return CARD_BACKS[backPref];
+  const migratedBack = migrateLegacyCardBackId(backPref);
+  if (migratedBack && migratedBack !== 'theme' && isCardBackId(migratedBack)) {
+    return CARD_BACKS[migratedBack];
   }
   return resolveCardBackForTheme(themeId);
 }
@@ -209,7 +246,8 @@ export function resolveActiveBack(
 export function resolveCardBackFromId(
   raw?: string | null
 ): CardBackDefinition {
-  if (isCardBackId(raw)) return CARD_BACKS[raw];
+  const migrated = migrateLegacyCardBackId(raw);
+  if (isCardBackId(migrated)) return CARD_BACKS[migrated];
   return CARD_BACKS[DEFAULT_CARD_BACK_ID];
 }
 
