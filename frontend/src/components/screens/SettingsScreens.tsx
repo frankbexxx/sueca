@@ -282,6 +282,19 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
             {SELECTABLE_CARD_FRONT_IDS.map((id) => {
               const deck = CARD_DECKS[id];
               const active = skins.cardFrontId === id;
+              const frontLabel =
+                language === 'pt'
+                  ? (
+                      {
+                        cardmeister: 'CardMeister',
+                        'pd-ornate': 'Ornate',
+                        woodcut: 'Woodcut',
+                        'jumbo-2': 'Jumbo',
+                        fourcolour: '4 Cores',
+                        accessible: 'Acessível'
+                      } as const
+                    )[id]
+                  : deck.label;
               return (
                 <button
                   key={id}
@@ -301,7 +314,7 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
                       />
                     ))}
                   </span>
-                  <span>{deck.label}</span>
+                  <span>{frontLabel}</span>
                 </button>
               );
             })}

@@ -3,20 +3,20 @@
 **Pesquisa packs:** [ASSET_PACK_RESEARCH.md](ASSET_PACK_RESEARCH.md) · **Legal ledgers:** [legal/assets/](legal/assets/)
 **Handoff técnico:** [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md)
 
-## Estado no repositório (REL-DECK-01B Batch 1)
+## Estado no repositório (REL-DECK-01C Batch 2)
 
 | Pack | Path | Estado |
 |------|------|--------|
-| Faces default | `frontend/public/assets/cards-cardmeister/` | **CardMeister** (52 PNG 352×512) — default |
-| Faces selectable | `frontend/public/assets/cards/pd-ornate/` | **AustinGabriel CC0** ornate (52 PNG 366×512) |
-| Costa default | `frontend/public/assets/card-backs/suecao-navy.png` | Suecão navy (original) |
-| Costas Sylly | `card-backs/sylly-01`…`06.png` | OGA Cards Pack / CC0 (Andrew Tidey) |
-| Legal | `docs/legal/assets/{cardmeister,pd-ornate,sylly}/` | PROVENANCE + licence copies |
-| SFX | `frontend/public/assets/sfx/*.ogg` | Kenney / Freesound / Suecão — ver secção abaixo |
-| Música core | `frontend/public/assets/music/core/*.ogg` | 6 beds |
-| Ícones app | `image/ico/buga_ico_draw/` | Capacitor |
+| Faces default | `frontend/public/assets/cards-cardmeister/` | **CardMeister** (52 PNG) — default |
+| Faces | `cards/pd-ornate/` | AustinGabriel CC0 ornate |
+| Faces | `cards/woodcut/` | SONDLecT woodcut CC0 (352×493) |
+| Faces | `cards/jumbo-2/` | Saul Vertical2 public domain (352×528) |
+| Faces | `cards/fourcolour/` | Saul Vertical4 |
+| Faces | `cards/accessible/` | Saul Accessible Vertical |
+| Backs (14) | `card-backs/` | suecao-navy + sylly×6 + woodcut-01 + saul blue/red + ornate×4 |
+| Legal | `docs/legal/assets/{cardmeister,pd-ornate,sylly,woodcut,saul-svgcards}/` | PROVENANCE + licence |
 
-**Removido do shipping (Batch 1):** `cards3/` Casino faces + Casino backs 05–08 + `hazmat-red`. Legacy prefs/themes migrate via `LEGACY_CARD_*_MIGRATION`.
+**Removido (Batch 1):** `cards3/` Casino + hazmat-red. Themes keep Sylly/Suecão mappings (Batch 2 does not reassign themes).
 
 ### Registry
 
@@ -26,12 +26,19 @@ Código: `cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts` + `card
 |----|------|----------------|
 | `cardmeister` | deck (**default**) | `/assets/cards-cardmeister` |
 | `pd-ornate` | deck | `/assets/cards/pd-ornate` |
+| `woodcut` | deck | `/assets/cards/woodcut` |
+| `jumbo-2` | deck | `/assets/cards/jumbo-2` |
+| `fourcolour` | deck | `/assets/cards/fourcolour` |
+| `accessible` | deck | `/assets/cards/accessible` |
 | `suecao-navy` | back (**fallback**) | `/assets/card-backs/suecao-navy` |
 | `sylly-01`…`06` | back | `/assets/card-backs/sylly-0N` |
+| `woodcut-01` | back | woodcut `back.svg` |
+| `saul-blue-01` / `saul-red-01` | back | Saul Vertical2 (shared across Saul decks) |
+| `ornate-blue/red-01/02` | back | AustinGabriel card backs |
 
 **API por tema:** `backId` activo (30 temas); `deckId` opcional → default `cardmeister`. Faces/backs independentes.
 
-### Back por tema (após migração Casino → Sylly)
+### Back por tema (Batch 1 mapping retained)
 
 | Tema | backId |
 |------|--------|
@@ -79,8 +86,8 @@ Código: `cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts` + `card
 
 ### Planned later batches
 
-- Batch 2: woodcut + Saul Spatz jumbo / four-colour / accessible (+ more backs)
-- Batch 3: Kenney / Webisso polish; sharper Sylly vector re-export; Credits polish
+- Batch 3: Kenney · Webisso · optional hayeah · Suecão colourways; theme back polish; Credits polish
+- Optional: sharper Sylly vector re-export
 
 ## Critérios para pack de cartas (compra / import)
 
@@ -96,14 +103,11 @@ Código: `cardDeckRegistry.ts` + `themeCardVisuals.ts` + `cardAssets.ts` + `card
 3. Registar em `CARD_DECKS`; ledger + LICENSE
 4. `npm test` + smoke visual
 
-## Checklist Batch 1
+## Checklist
 
-- [x] CardMeister documented under `docs/legal/assets/cardmeister/`
-- [x] 52 `pd-ornate` faces + provenance
-- [x] 6 Sylly backs + Suecão navy under `card-backs/`
-- [x] Casino `cards3/` removed from shipping
-- [x] Pref / theme migration
-- [ ] Credits UI polish (deferred — still may mention Hazmat historically)
+- [x] Batch 1: CardMeister + pd-ornate + Sylly + Casino removal
+- [x] Batch 2: woodcut + jumbo-2 + fourcolour + accessible + backs → 14
+- [ ] Credits UI polish (deferred)
 
 ## SFX (runtime)
 
@@ -148,8 +152,10 @@ Arquitectura: **D — HYBRID** — 6 core bundled + **23 remote R2**; Android ca
 | Asset | Licença | Notas |
 |-------|---------|-------|
 | CardMeister faces | Unlicense | `docs/legal/assets/cardmeister/` |
-| pd-ornate faces | CC0 1.0 | AustinGabriel — `docs/legal/assets/pd-ornate/` |
+| pd-ornate faces + ornate backs | CC0 1.0 | AustinGabriel — `docs/legal/assets/pd-ornate/` |
+| woodcut faces + woodcut-01 | CC0 1.0 | `docs/legal/assets/woodcut/` |
+| jumbo-2 / fourcolour / accessible + saul backs | Public domain (author dedication) | `docs/legal/assets/saul-svgcards/` |
 | Suecão navy back | Suecão / produto | Original |
-| Sylly backs 01–06 | CC0 | Pack License.txt (Andrew Tidey) — `docs/legal/assets/sylly/` |
-| Casino Normal (`cards3`) | **REMOVED from shipping** | Licence was indeterminada; `_temp/Casino_1` forensic only |
-| Hazmat faces / hazmat-red | **REMOVED from shipping** | Legacy / unresolved |
+| Sylly backs 01–06 | CC0 | `docs/legal/assets/sylly/` |
+| Casino Normal (`cards3`) | **REMOVED from shipping** | |
+| Hazmat faces / hazmat-red | **REMOVED from shipping** | |

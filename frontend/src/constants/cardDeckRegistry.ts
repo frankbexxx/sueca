@@ -1,7 +1,7 @@
 /**
  * Central card deck / back registry.
  * Faces (`deckId`) and backs (`backId`) are independent.
- * Shipping decks (REL-DECK-01B): cardmeister + pd-ornate. Casino removed.
+ * Shipping decks (REL-DECK-01C Batch 2): cardmeister + pd-ornate + woodcut + Saul Spatz ×3.
  */
 
 import { THEME_CARD_VISUALS } from './themeCardVisuals';
@@ -24,23 +24,43 @@ export type CardBackDefinition = {
   label: string;
 };
 
-/** Shipping face decks — Casino removed (REL-DECK-01B). */
+/** Shipping face decks — Casino removed. Default remains cardmeister. */
 export const CARD_DECKS = {
   cardmeister: {
     id: 'cardmeister',
     facePath: '/assets/cards-cardmeister',
-    label: 'Classic Vector'
+    label: 'CardMeister'
   },
   'pd-ornate': {
     id: 'pd-ornate',
     facePath: '/assets/cards/pd-ornate',
-    label: 'Ornate Public Domain'
+    label: 'Ornate'
+  },
+  woodcut: {
+    id: 'woodcut',
+    facePath: '/assets/cards/woodcut',
+    label: 'Woodcut'
+  },
+  'jumbo-2': {
+    id: 'jumbo-2',
+    facePath: '/assets/cards/jumbo-2',
+    label: 'Jumbo'
+  },
+  fourcolour: {
+    id: 'fourcolour',
+    facePath: '/assets/cards/fourcolour',
+    label: '4-Colour'
+  },
+  accessible: {
+    id: 'accessible',
+    facePath: '/assets/cards/accessible',
+    label: 'Accessible'
   }
 } as const satisfies Record<string, CardDeckDefinition>;
 
 export type CardDeckId = keyof typeof CARD_DECKS;
 
-/** Shipping backs — Casino / hazmat removed (REL-DECK-01B). */
+/** Shipping backs — Casino / hazmat removed. Batch 2 expands selectable set. */
 export const CARD_BACKS = {
   'suecao-navy': {
     id: 'suecao-navy',
@@ -76,6 +96,41 @@ export const CARD_BACKS = {
     id: 'sylly-06',
     assetPathBase: '/assets/card-backs/sylly-06',
     label: 'Sylly red B'
+  },
+  'woodcut-01': {
+    id: 'woodcut-01',
+    assetPathBase: '/assets/card-backs/woodcut-01',
+    label: 'Woodcut'
+  },
+  'saul-blue-01': {
+    id: 'saul-blue-01',
+    assetPathBase: '/assets/card-backs/saul-blue-01',
+    label: 'Saul blue'
+  },
+  'saul-red-01': {
+    id: 'saul-red-01',
+    assetPathBase: '/assets/card-backs/saul-red-01',
+    label: 'Saul red'
+  },
+  'ornate-blue-01': {
+    id: 'ornate-blue-01',
+    assetPathBase: '/assets/card-backs/ornate-blue-01',
+    label: 'Ornate blue'
+  },
+  'ornate-red-01': {
+    id: 'ornate-red-01',
+    assetPathBase: '/assets/card-backs/ornate-red-01',
+    label: 'Ornate red'
+  },
+  'ornate-blue-02': {
+    id: 'ornate-blue-02',
+    assetPathBase: '/assets/card-backs/ornate-blue-02',
+    label: 'Ornate blue B'
+  },
+  'ornate-red-02': {
+    id: 'ornate-red-02',
+    assetPathBase: '/assets/card-backs/ornate-red-02',
+    label: 'Ornate red B'
   }
 } as const satisfies Record<string, CardBackDefinition>;
 
@@ -83,7 +138,7 @@ export type CardBackId = keyof typeof CARD_BACKS;
 
 /**
  * Default face deck. CardMeister kept as least-disruptive default
- * (already shipped + covered by existing tests); pd-ornate is selectable.
+ * (already shipped + covered by existing tests).
  */
 export const DEFAULT_CARD_DECK_ID: CardDeckId = 'cardmeister';
 

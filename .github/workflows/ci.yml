@@ -89,6 +89,10 @@ jobs:
 
           verify_faces public/assets/cards-cardmeister
           verify_faces public/assets/cards/pd-ornate
+          verify_faces public/assets/cards/woodcut
+          verify_faces public/assets/cards/jumbo-2
+          verify_faces public/assets/cards/fourcolour
+          verify_faces public/assets/cards/accessible
 
           for back in \
             suecao-navy.png \
@@ -97,7 +101,14 @@ jobs:
             sylly-03.png \
             sylly-04.png \
             sylly-05.png \
-            sylly-06.png
+            sylly-06.png \
+            woodcut-01.png \
+            saul-blue-01.png \
+            saul-red-01.png \
+            ornate-blue-01.png \
+            ornate-red-01.png \
+            ornate-blue-02.png \
+            ornate-red-02.png
           do
             test -f "public/assets/card-backs/$back" || {
               echo "MISSING back: public/assets/card-backs/$back"
@@ -110,7 +121,7 @@ jobs:
             exit 1
           }
 
-          echo "Verify card assets: PASS (cardmeister + pd-ornate + 7 backs)"
+          echo "Verify card assets: PASS (6 fronts + 14 backs)"
 
   backend:
     runs-on: ubuntu-latest

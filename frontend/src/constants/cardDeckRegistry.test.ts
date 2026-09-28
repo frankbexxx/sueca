@@ -44,58 +44,77 @@ const BUILT_IN_THEMES = [
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'] as const;
 const SUITS = ['Clubs', 'Diamonds', 'Hearts', 'Spades'] as const;
 
+const SHIPPING_DECK_IDS = [
+  'accessible',
+  'cardmeister',
+  'fourcolour',
+  'jumbo-2',
+  'pd-ornate',
+  'woodcut'
+] as const;
+
+const REPRESENTATIVE = [
+  ['Ace', 'Spades'],
+  ['10', 'Hearts'],
+  ['Jack', 'Clubs'],
+  ['Queen', 'Diamonds'],
+  ['King', 'Spades']
+] as const;
+
 const PUBLIC = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../public'
 );
 
-function assertFaceFiles(deckDir: string, facePathPrefix: string) {
-  const dir = path.join(PUBLIC, deckDir.replace(/^\//, ''));
+function assertFaceFiles(deckId: keyof typeof CARD_DECKS) {
+  const facePath = CARD_DECKS[deckId].facePath;
+  const dir = path.join(PUBLIC, facePath.replace(/^\//, ''));
   const files = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.png') && f.includes('_of_'));
-  expect(files).toHaveLength(52);
+  expect(files, deckId).toHaveLength(52);
   for (const rank of RANKS) {
     for (const suit of SUITS) {
       const name = `${rank}_of_${suit}.png`;
-      expect(files).toContain(name);
+      expect(files, `${deckId}/${name}`).toContain(name);
       expect(fs.statSync(path.join(dir, name)).size).toBeGreaterThan(500);
       expect(
-        getCardImagePath(rank, suit, '', 'classic', `?deck=${facePathPrefix}`)
-      ).toBe(`${CARD_DECKS[facePathPrefix as keyof typeof CARD_DECKS].facePath}/${name}`);
+        getCardImagePath(rank, suit, '', 'classic', `?deck=${deckId}`)
+      ).toBe(`${facePath}/${name}`);
     }
+  }
+  for (const [rank, suit] of REPRESENTATIVE) {
+    const name = `${rank}_of_${suit}.png`;
+    expect(files).toContain(name);
+    expect(fs.existsSync(path.join(dir, name))).toBe(true);
   }
 }
 
-describe('cardDeckRegistry + theme card visuals (REL-DECK-01B)', () => {
+describe('cardDeckRegistry + theme card visuals (REL-DECK-01C)', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('registers cardmeister + pd-ornate; default is cardmeister; no Casino', () => {
-    expect(Object.keys(CARD_DECKS).sort()).toEqual(['cardmeister', 'pd-ornate']);
+  it('registers six fronts; default cardmeister; no Casino', () => {
+    expect(Object.keys(CARD_DECKS).sort()).toEqual([...SHIPPING_DECK_IDS]);
     expect(DEFAULT_CARD_DECK_ID).toBe('cardmeister');
     expect(ACTIVE_CARD_DECK_ID).toBe('cardmeister');
     expect(isCardDeckId('casino')).toBe(false);
-    expect(isCardDeckId('cardmeister')).toBe(true);
-    expect(isCardDeckId('pd-ornate')).toBe(true);
+    expect(isCardDeckId('woodcut')).toBe(true);
+    expect(isCardDeckId('jumbo-2')).toBe(true);
+    expect(isCardDeckId('fourcolour')).toBe(true);
+    expect(isCardDeckId('accessible')).toBe(true);
     expect(resolveActiveDeck().facePath).toBe('/assets/cards-cardmeister');
     expect(CARD_ASSETS_DIR).toBe('/assets/cards-cardmeister');
-    expect(CARD_DECKS['pd-ornate'].facePath).toBe('/assets/cards/pd-ornate');
   });
 
-  it('registers suecao-navy + six Sylly backs; no Casino/hazmat backs', () => {
-    expect(Object.keys(CARD_BACKS).sort()).toEqual([
-      'suecao-navy',
-      'sylly-01',
-      'sylly-02',
-      'sylly-03',
-      'sylly-04',
-      'sylly-05',
-      'sylly-06'
-    ].sort());
+  it('registers 14 backs including Batch 2; no Casino/hazmat', () => {
+    expect(Object.keys(CARD_BACKS)).toHaveLength(14);
     expect(isCardBackId('casino-05')).toBe(false);
     expect(isCardBackId('hazmat-red')).toBe(false);
+    expect(isCardBackId('woodcut-01')).toBe(true);
+    expect(isCardBackId('saul-blue-01')).toBe(true);
+    expect(isCardBackId('ornate-red-02')).toBe(true);
     expect(CARD_BACKS['suecao-navy'].assetPathBase).toBe(
       '/assets/card-backs/suecao-navy'
     );
@@ -109,6 +128,8 @@ describe('cardDeckRegistry + theme card visuals (REL-DECK-01B)', () => {
       const faces = fs.readdirSync(dir).filter((f) => f.includes('_of_'));
       expect(faces.length, deck.id).toBe(52);
     }
+    const backIds = Object.keys(CARD_BACKS);
+    expect(new Set(backIds).size).toBe(backIds.length);
     for (const back of Object.values(CARD_BACKS)) {
       const file = path.join(
         PUBLIC,
@@ -119,13 +140,12 @@ describe('cardDeckRegistry + theme card visuals (REL-DECK-01B)', () => {
     }
   });
 
-  it('ships 52 pd-ornate faces with canonical names', () => {
-    assertFaceFiles('/assets/cards/pd-ornate', 'pd-ornate');
-  });
-
-  it('ships 52 CardMeister faces', () => {
-    assertFaceFiles('/assets/cards-cardmeister', 'cardmeister');
-  });
+  it.each(SHIPPING_DECK_IDS)(
+    'ships 52 canonical faces for %s with representative mapping',
+    (deckId) => {
+      assertFaceFiles(deckId);
+    }
+  );
 
   it('migrates legacy Casino front/back ids', () => {
     expect(LEGACY_CARD_FRONT_MIGRATION.casino).toBe('cardmeister');
@@ -173,17 +193,17 @@ describe('cardDeckRegistry + theme card visuals (REL-DECK-01B)', () => {
     expect(getCardAssetsDir('classic', '')).toBe('/assets/cards-cardmeister');
   });
 
-  it('keeps deckId and backId independent', () => {
+  it('keeps deckId and backId independent across Batch 2 decks', () => {
     expect(resolveCardDeckForTheme('midnight').id).toBe('cardmeister');
     expect(resolveCardBackForTheme('midnight').id).toBe('sylly-03');
-    expect(resolveEffectiveDeck('midnight', '?deck=pd-ornate').id).toBe(
-      'pd-ornate'
+    expect(resolveEffectiveDeck('midnight', '?deck=woodcut').id).toBe('woodcut');
+    expect(resolveEffectiveDeck('midnight', '', 'fourcolour').id).toBe(
+      'fourcolour'
+    );
+    expect(resolveEffectiveBack('midnight', 'saul-blue-01').id).toBe(
+      'saul-blue-01'
     );
     expect(resolveCardBackForTheme('midnight').id).toBe('sylly-03');
-    expect(resolveEffectiveDeck('midnight', '', 'pd-ornate').id).toBe(
-      'pd-ornate'
-    );
-    expect(resolveEffectiveBack('midnight', 'sylly-01').id).toBe('sylly-01');
   });
 
   it('assigns cleared backId to every built-in theme', () => {
@@ -224,9 +244,12 @@ describe('cardDeckRegistry + theme card visuals (REL-DECK-01B)', () => {
     expect(
       getCardImagePath('King', 'Hearts', '', 'classic', '?deck=pd-ornate')
     ).toBe('/assets/cards/pd-ornate/King_of_Hearts.png');
+    expect(
+      getCardImagePath('Jack', 'Clubs', '', 'classic', '?deck=jumbo-2')
+    ).toBe('/assets/cards/jumbo-2/Jack_of_Clubs.png');
     expect(getCardBackPath('classic')).toBe('/assets/card-backs/suecao-navy.png');
-    expect(getCardBackPath('midnight', 'sylly-06')).toBe(
-      '/assets/card-backs/sylly-06.png'
+    expect(getCardBackPath('midnight', 'woodcut-01')).toBe(
+      '/assets/card-backs/woodcut-01.png'
     );
   });
 
