@@ -296,6 +296,7 @@ export class SpadesGame extends BaseGameAdapter {
       dealingMethod: 'A',
       dealingDirection: 'left',
       playDirection: 'right',
+      dealAlignment: 'same',
       waitingForRoundStart: waitingForBids,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

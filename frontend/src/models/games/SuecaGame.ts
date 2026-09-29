@@ -116,6 +116,10 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.setPlayDirection(direction);
   }
 
+  setDealAlignment(alignment: 'same' | 'opposite'): void {
+    this.game?.setDealAlignment(alignment);
+  }
+
   restoreState(state: GameState, options?: RestoreStateOptions): GameState {
     const names = state.players.map((p) => p.name);
     const playDirection =

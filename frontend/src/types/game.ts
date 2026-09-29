@@ -28,6 +28,12 @@ export type DealingDirection = 'left' | 'right';
  * Default production value: `right`.
  */
 export type PlayDirection = 'right' | 'left';
+/**
+ * Sueca per-hand deal packaging relative to session PlayDirection (ARCH-SUECA-02/05).
+ * `same` = deal with play; `opposite` = deal against play.
+ * Default: `same`.
+ */
+export type DealAlignment = 'same' | 'opposite';
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameState {
@@ -55,6 +61,12 @@ export interface GameState {
    * Default `'right'` (ACW). TEMPORARY: missing values normalize to `'right'` until Phase 6 persistence migration.
    */
   playDirection: PlayDirection;
+  /**
+   * Sueca per-hand deal alignment vs playDirection.
+   * Default `'same'`. Independent of first leader / trick order.
+   * TEMPORARY: missing values normalize to `'same'` until Phase 6.
+   */
+  dealAlignment: DealAlignment;
   waitingForRoundStart: boolean; // Pause before starting new round
   waitingForRoundEnd: boolean; // Pause to show round results
   waitingForGameStart: boolean; // Pause before starting new game

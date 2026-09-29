@@ -11,12 +11,13 @@
  * Runtime migration status:
  *   Phase 1: vocabulary + helpers
  *   Phase 2: Game engine uses playDirection (default RIGHT)
+ *   Phase 3: canonical deal via playDirection + dealAlignment
  *   AI/CI/render still hard-code RIGHT/ACW until later phases
  */
 
-import type { PlayDirection } from '../../types/game';
+import type { DealAlignment, PlayDirection } from '../../types/game';
 
-export type { PlayDirection };
+export type { DealAlignment, PlayDirection };
 
 export type Seat = 0 | 1 | 2 | 3;
 
@@ -25,8 +26,6 @@ export type Seat = 0 | 1 | 2 | 3;
  * - same: distribute in play direction (normal / trump = dealer last card)
  * - opposite: distribute opposite to play (trump = dealer first card)
  */
-export type DealAlignment = 'same' | 'opposite';
-
 export interface SuecaSessionRules {
   playDirection: PlayDirection;
 }

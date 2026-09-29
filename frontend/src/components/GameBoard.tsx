@@ -188,6 +188,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       dealingMethod: 'A',
       dealingDirection: 'right',
       playDirection: 'right',
+      dealAlignment: 'same',
       waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

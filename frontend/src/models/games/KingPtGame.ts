@@ -898,6 +898,7 @@ export class KingPtGame extends BaseGameAdapter {
       dealingMethod: 'A',
       dealingDirection: 'left',
       playDirection: 'right',
+      dealAlignment: 'same',
       waitingForRoundStart: withKohReveal || isFesta,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

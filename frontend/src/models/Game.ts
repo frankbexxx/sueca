@@ -1,12 +1,18 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty, PlayDirection } from '../types/game';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty, PlayDirection, DealAlignment } from '../types/game';
 import { Deck } from './Deck';
 import { applyHandSortToState } from '../utils/handSort';
-import { dealSuecaFromCardOrder } from './games/suecaDeal';
+import {
+  dealSuecaCanonical,
+  dealSuecaLegacyAbsolute,
+  legacyFieldsForAlignment,
+  resolveLegacyDealAlignment
+} from './games/suecaDeal';
 import {
   asSeat,
   firstLeader,
   nextDealer,
   nextSeat,
+  oppositeDirection,
   seatAtOffset
 } from './games/suecaRules';
 import { cloneGameState } from './games/cloneGameState';
@@ -38,6 +44,22 @@ export class Game {
   /** Session play direction — defaults to RIGHT/ACW when missing (legacy snapshots). */
   private playDir(): PlayDirection {
     return this.state.playDirection === 'left' ? 'left' : 'right';
+  }
+
+  private dealAlign(): DealAlignment {
+    return this.state.dealAlignment === 'opposite' ? 'opposite' : 'same';
+  }
+
+  /** Sync dealAlignment from legacy Method×Direction when the combo is product-canonical. */
+  private syncDealAlignmentFromLegacy(): void {
+    const resolved = resolveLegacyDealAlignment(
+      this.playDir(),
+      this.state.dealingMethod,
+      this.state.dealingDirection ?? 'right'
+    );
+    if (resolved) {
+      this.state.dealAlignment = resolved;
+    }
   }
 
   /**
@@ -125,14 +147,12 @@ export class Game {
   }
 
   /**
-   * Deal cards using Method A/B and left/right direction around the table.
-   * Allocation is BLOCK dealing (10 consecutive cards per seat) — see suecaDeal.ts.
+   * Deal cards via canonical playDirection + dealAlignment when legacy Method×Direction
+   * maps unambiguously; otherwise preserve absolute legacy deal (unsupported UI combos).
    */
   private dealCards(
     players: Player[],
-    dealerIndex: number,
-    method: DealingMethod,
-    direction: DealingDirection = 'right'
+    dealerIndex: number
   ): { suit: Suit | null; card: Card | null } {
     this.deck = new Deck();
     // According to Sueca rules: after shuffling, the deck is cut by the partner of the shuffler
@@ -142,7 +162,20 @@ export class Game {
     while (this.deck.getRemaining() > 0) {
       remaining.push(this.deck.deal(1)[0]);
     }
-    const result = dealSuecaFromCardOrder(remaining, dealerIndex, method, direction);
+
+    const play = this.playDir();
+    const method = this.state.dealingMethod;
+    const direction = this.state.dealingDirection ?? 'right';
+    const resolved = resolveLegacyDealAlignment(play, method, direction);
+
+    const result =
+      resolved !== null
+        ? (() => {
+            this.state.dealAlignment = resolved;
+            return dealSuecaCanonical(remaining, dealerIndex, play, resolved);
+          })()
+        : dealSuecaLegacyAbsolute(remaining, dealerIndex, method, direction);
+
     for (let i = 0; i < 4; i++) {
       players[i].hand.push(...result.hands[i]);
     }
@@ -185,6 +218,11 @@ export class Game {
     const dealerIndex = seatedOrder.indexOf(dealerName);
     const play = playDirection === 'left' ? 'left' : 'right';
     const firstTrickStarter = firstLeader(asSeat(dealerIndex), play);
+    // Default deal packaging: Method A → same as play; Method B → opposite (product bridge).
+    const initialDirection: DealingDirection =
+      dealingMethod === 'B' ? oppositeDirection(play) : play;
+    const initialAlignment =
+      resolveLegacyDealAlignment(play, dealingMethod, initialDirection) ?? 'same';
 
     return {
       players,
@@ -205,8 +243,9 @@ export class Game {
       nextTrickLeader: null,
       isFirstTrick: true,
       dealingMethod: dealingMethod,
-      dealingDirection: 'right',
+      dealingDirection: initialDirection,
       playDirection: play,
+      dealAlignment: initialAlignment,
       waitingForRoundStart: true, // Pause before starting (show trump card)
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -229,6 +268,15 @@ export class Game {
     // TEMPORARY Phase 6 bridge: legacy snapshots without playDirection → RIGHT/ACW.
     if (this.state.playDirection !== 'left' && this.state.playDirection !== 'right') {
       this.state.playDirection = 'right';
+    }
+    // TEMPORARY Phase 6 bridge: missing dealAlignment → same (or resolve from legacy).
+    if (this.state.dealAlignment !== 'same' && this.state.dealAlignment !== 'opposite') {
+      const resolved = resolveLegacyDealAlignment(
+        this.playDir(),
+        this.state.dealingMethod ?? 'A',
+        this.state.dealingDirection ?? 'right'
+      );
+      this.state.dealAlignment = resolved ?? 'same';
     }
   }
 
@@ -522,14 +570,28 @@ export class Game {
 
   setDealingMethod(method: DealingMethod): void {
     this.state.dealingMethod = method;
+    this.syncDealAlignmentFromLegacy();
   }
 
   setDealingDirection(direction: DealingDirection): void {
     this.state.dealingDirection = direction;
+    this.syncDealAlignmentFromLegacy();
   }
 
   setPlayDirection(direction: PlayDirection): void {
     this.state.playDirection = direction === 'left' ? 'left' : 'right';
+    // Keep legacy Method×Direction coherent with current dealAlignment when possible.
+    const fields = legacyFieldsForAlignment(this.playDir(), this.dealAlign());
+    this.state.dealingMethod = fields.dealingMethod;
+    this.state.dealingDirection = fields.dealingDirection;
+  }
+
+  setDealAlignment(alignment: DealAlignment): void {
+    const align = alignment === 'opposite' ? 'opposite' : 'same';
+    this.state.dealAlignment = align;
+    const fields = legacyFieldsForAlignment(this.playDir(), align);
+    this.state.dealingMethod = fields.dealingMethod;
+    this.state.dealingDirection = fields.dealingDirection;
   }
 
   private startNewRound(): void {
@@ -564,9 +626,7 @@ export class Game {
       if (this.state.players[0].hand.length === 0) {
         const trumpResult = this.dealCards(
           this.state.players,
-          this.state.dealerIndex,
-          this.state.dealingMethod,
-          this.state.dealingDirection ?? 'right'
+          this.state.dealerIndex
         );
         this.state.trumpSuit = trumpResult.suit;
         this.state.trumpCard = trumpResult.card;

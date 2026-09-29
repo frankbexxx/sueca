@@ -1,5 +1,6 @@
 import {
   AIDifficulty,
+  DealAlignment,
   DealingDirection,
   DealingMethod,
   GameState,
@@ -8,6 +9,7 @@ import {
   PlayDirection,
 } from '../types/game';
 import { mpWarn } from '../utils/mpDebug';
+import { resolveLegacyDealAlignment } from '../models/games/suecaDeal';
 
 function defaultPlayer(index: number, existing?: Partial<Player>): Player {
   const isTeam1 = index === 0 || index === 2;
@@ -78,6 +80,18 @@ export function normalizeGameState(
     playDirection: (source.playDirection === 'left' || source.playDirection === 'right'
       ? source.playDirection
       : 'right') as PlayDirection,
+    // TEMPORARY Phase 6 — missing dealAlignment → resolve from legacy or 'same'.
+    dealAlignment: ((): DealAlignment => {
+      if (source.dealAlignment === 'same' || source.dealAlignment === 'opposite') {
+        return source.dealAlignment;
+      }
+      const play = (source.playDirection === 'left' || source.playDirection === 'right'
+        ? source.playDirection
+        : 'right') as PlayDirection;
+      const method = (source.dealingMethod ?? 'A') as DealingMethod;
+      const dir = (source.dealingDirection ?? 'right') as DealingDirection;
+      return resolveLegacyDealAlignment(play, method, dir) ?? 'same';
+    })(),
     waitingForRoundStart: source.waitingForRoundStart ?? false,
     waitingForRoundEnd: source.waitingForRoundEnd ?? false,
     waitingForGameStart: source.waitingForGameStart ?? false,

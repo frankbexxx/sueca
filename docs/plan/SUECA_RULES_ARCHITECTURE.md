@@ -33,17 +33,28 @@ of PlayDirection / DealAlignment.
 
 Still present (scheduled removal after later phases):
 
-- `DealingDirection` / `DealingMethod` A\|B on `GameState` and UI
-- Hard-coded ACW in `Game.playCard` / `evaluateTrick` / dealer rotation (via legacy helpers)
-- Setup/modal “Direcção” + Method A/B copy
+- `DealingMethod` / `DealingDirection` on `GameState` and dealing modal (bridge)
+- Hard-coded ACW in AI / CI / render (Phase 5 consumers)
+- Setup copy still claims one-by-one dealing (Phase 4)
 
 ## Runtime status
 
-**Phase 1:** vocabulary + pure helpers; no behaviour change.
-**Phase 2:** `Game` engine uses `state.playDirection` (default `'right'`) for first
-leader, play order, winner seats, and dealer rotation. Legacy `dealingDirection`
-remains deal-only. AI/CI/render still assume RIGHT/ACW until later phases.
-UI does not yet expose playDirection.
+**Phase 1:** vocabulary + pure helpers.
+**Phase 2:** `Game` uses `playDirection` (default `'right'`) for leader / play / winners / dealer rotation.
+**Phase 3:** canonical deal via `dealSuecaCanonical(playDirection, dealAlignment)`;
+legacy Method A/B × absolute `dealingDirection` remains a **TEMPORARY UI bridge**.
+Unambiguous maps: A+dir(play)→same, B+opposite(play)→opposite.
+Unsupported UI combos (A+left / B+right under RIGHT play, and mirrors) keep absolute legacy deal —
+**no invented product semantics** (Phase 4 must fix modal).
+AI/CI/render still assume RIGHT/ACW. Persistence schema still legacy (Phase 6).
+
+### Production modal mapping (RIGHT play)
+
+| Modal | Canonical |
+|-------|-----------|
+| Standard (A) + Direita (right) | RIGHT + **same** |
+| Dealer First (B) + Esquerda (left) | RIGHT + **opposite** |
+| A + Esquerda / B + Direita | **unsupported** (legacy absolute fallback) |
 
 ## Deferred
 

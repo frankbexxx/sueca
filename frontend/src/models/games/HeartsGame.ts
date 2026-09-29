@@ -279,6 +279,7 @@ export class HeartsGame extends BaseGameAdapter {
       dealingMethod: 'A',
       dealingDirection: 'left',
       playDirection: 'right',
+      dealAlignment: 'same',
       waitingForRoundStart: true,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
