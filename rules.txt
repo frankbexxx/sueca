@@ -1,15 +1,28 @@
 SUECA – REGRAS DO JOGO
+(Produto: ARCH-SUECA-02 Phase 0. Runtime migration: incomplete — see docs/rules/sueca.md.)
 
-1. PRINCÍPIO FUNDAMENTAL – ROTAÇÃO
+1. PRINCÍPIO FUNDAMENTAL – DOIS SENTIDOS SEPARADOS
 
-Sueca sempre roda no sentido anti-horário (para a direita) durante o jogo.
-Isto aplica-se a:
-• Jogar cartas
+PlayDirection (sentido de JOGO) e DealAlignment (sentido de DISTRIBUIÇÃO) são conceitos distintos.
+
+1.1 PlayDirection — sessão / partida aos 4 pontos
+
+Dois modos:
+• RIGHT (padrão): anti-horário / à direita — passo (seat+3)%4
+• LEFT: horário / à esquerda — passo (seat+1)%4
+
+Escolhido uma vez; fixo para a sessão. Aplica-se a:
 • Ordem de jogada em cada vaza
-• Rotação do dealer por jogo
-• Responsabilidade de embaralhar
+• Quem abre a primeira vaza
+• Vencedor → líder da próxima vaza
+• Rotação do dealer entre mãos
 
-Exceção: durante o setup, o Método B de distribuição requer uma rotação temporária no sentido horário. Esta inversão única é detalhada mais abaixo.
+1.2 DealAlignment — por mão
+
+• SAME (padrão): distribuir no mesmo sentido do PlayDirection
+• OPPOSITE: distribuir no sentido oposto
+
+Alterar DealAlignment NÃO altera PlayDirection nem o primeiro jogador.
 
 
 2. CONFIGURAÇÃO DO JOGO
@@ -36,40 +49,35 @@ Uma vez formadas as equipas, os parceiros devem sentar-se em frente um do outro.
 
 3.1 Embaralhar o Baralho
 
-Realizado pelo jogador sentado imediatamente à direita do dealer.
+Realizado pelo jogador sentado imediatamente à DIREITA FÍSICA do dealer.
+Independente de PlayDirection e DealAlignment.
 
 3.2 Cortar o Baralho
 
-Realizado pelo parceiro do embaralhador.
-Isto evita qualquer conflito de interesse entre embaralhar, cortar e distribuir.
+Realizado pelo parceiro do embaralhador (= esquerda física do dealer).
+Independente de PlayDirection e DealAlignment.
 
 3.3 Responsabilidade de Distribuição
 
-Após o corte, o dealer gere a distribuição usando um dos dois métodos legais descritos abaixo.
+Após o corte, o dealer gere a distribuição (same ou opposite).
 
 
-4. MÉTODOS DE DISTRIBUIÇÃO – DUAS VARIANTES LEGAIS
+4. MÉTODOS DE DISTRIBUIÇÃO
 
-Método A – Distribuição Padrão (Mais Comum)
+Distribuição é SEMPRE em blocos (nunca uma a uma na atribuição).
+Cada jogador recebe exactamente 10 cartas.
 
-• Distribuir uma carta de cada vez, no sentido anti-horário (para a direita)
-• Cada jogador recebe dez cartas
-• O dealer recebe as últimas dez cartas
-• A última carta do baralho define o Naipe de Trunfo
+4.1 Normal (alignment = same)
 
-O jogo começa no sentido anti-horário.
+• Três blocos de 10 no sentido derivado do jogo, terminando no dealer
+• Dealer: 9 cartas + última carta virada
+• A última carta define o Naipe de Trunfo (= 10.ª do dealer)
 
+4.2 Alternativa (alignment = opposite)
 
-Método B – Dealer Recebe a Primeira Carta (Trunfo Revelado Primeiro)
-
-• O dealer tira a primeira carta do topo → esta carta torna-se o Naipe de Trunfo
-• Depois o dealer tira mais 9 cartas
-• O resto das cartas são distribuídas no sentido horário (para a esquerda)
-• Todos os jogadores ainda recebem 10 cartas no total
-
-Importante:
-Após a distribuição estar completa → todo o jogo retorna à rotação padrão anti-horária.
-Esta inversão aplica-se apenas à distribuição de cartas neste método específico.
+• Dealer vira a PRIMEIRA carta → trunfo (= 1.ª do dealer); +9 cartas
+• Três blocos de 10 no sentido oposto ao jogo
+• Quem abre e o sentido de JOGO não mudam
 
 
 5. TRATAMENTO DO NAIPE DE TRUNFO
@@ -82,10 +90,11 @@ Esta inversão aplica-se apenas à distribuição de cartas neste método espec�
 
 O jogo consiste em dez vazas, já que cada jogador tem 10 cartas.
 
-6.1 Regra da Primeira Vaza (Ordem de Jogada Especial)
+6.1 Regra da Primeira Vaza
 
-• O jogador à direita do dealer começa a primeira vaza
-• O dealer é sempre o último a jogar na primeira vaza apenas
+• Play RIGHT → jogador à direita física do dealer começa
+• Play LEFT → jogador à esquerda física do dealer começa
+• DealAlignment não altera isto
 
 6.2 Lógica Padrão das Vazas
 

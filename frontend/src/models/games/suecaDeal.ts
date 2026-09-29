@@ -1,4 +1,12 @@
 import { Card, DealingDirection, DealingMethod } from '../../types/game';
+import {
+  asSeat,
+  dealSeatOrder,
+  inferTrickLeader,
+  nextSeat,
+  physicalRightOf,
+  seatAtOffset
+} from './suecaRules';
 
 /**
  * Sueca seat geometry (UX-SEAT-01 / tableLayout):
@@ -14,16 +22,20 @@ import { Card, DealingDirection, DealingMethod } from '../../types/game';
  * DealingDirection storage (legacy names — do not flip without migration):
  *   'right' = anti-clockwise / to the right — traditional default (dealer+3 first)
  *   'left'  = clockwise / to the left — alternative deal sense (dealer+1 first)
+ *
+ * ARCH-SUECA-03: pure ACW geometry below delegates to canonical suecaRules
+ * with PlayDirection 'right' so current runtime behaviour is unchanged.
+ * Prefer suecaRules for new direction-aware code.
  */
 
 /** Player physically to the dealer's right (Sueca first recipient / first leader). */
 export function suecaPhysicalRightOf(dealerIndex: number): number {
-  return (dealerIndex + 3) % 4;
+  return physicalRightOf(asSeat(dealerIndex));
 }
 
 /** Next seat anti-clockwise (play progression / "to the right"). */
 export function suecaNextAntiClockwise(playerIndex: number): number {
-  return (playerIndex + 3) % 4;
+  return nextSeat(asSeat(playerIndex), 'right');
 }
 
 /**
@@ -35,26 +47,24 @@ export function suecaNextAntiClockwise(playerIndex: number): number {
  * — NOT `(trickLeader + trickOffset) % 4` (that is clockwise / Hearts-Spades-King).
  */
 export function suecaSeatAtTrickOffset(trickLeader: number, trickOffset: number): number {
-  const steps = ((trickOffset % 4) + 4) % 4;
-  return (trickLeader + 3 * steps) % 4;
+  return seatAtOffset(asSeat(trickLeader), trickOffset, 'right');
 }
 
 /**
  * Infer trick leader from a seat that played at `turnIndex` (0 = lead)
  * under Sueca anti-clockwise order.
- * Inverse of {@link suecaSeatAtTrickOffset}: `(playerIndex + turnIndex) % 4`.
+ * Inverse of {@link suecaSeatAtTrickOffset}.
  */
 export function suecaInferTrickLeader(playerIndex: number, turnIndex: number): number {
-  const steps = ((turnIndex % 4) + 4) % 4;
-  return (playerIndex + steps) % 4;
+  return inferTrickLeader(asSeat(playerIndex), turnIndex, 'right');
 }
 
 /**
  * Clockwise seat at trick offset (Hearts / Spades / King): `(leader + offset) % 4`.
+ * Not Sueca play — kept for other variants.
  */
 export function clockwiseSeatAtTrickOffset(trickLeader: number, trickOffset: number): number {
-  const steps = ((trickOffset % 4) + 4) % 4;
-  return (trickLeader + steps) % 4;
+  return seatAtOffset(asSeat(trickLeader), trickOffset, 'left');
 }
 
 /**
@@ -66,12 +76,10 @@ export function suecaDealSeatOrder(
   dealerIndex: number,
   direction: DealingDirection = 'right'
 ): number[] {
-  if (direction === 'left') {
-    // Clockwise: dealer+1, +2, +3, dealer
-    return [0, 1, 2, 3].map((i) => (dealerIndex + 1 + i) % 4);
-  }
-  // Anti-clockwise: dealer-1, -2, -3, dealer
-  return [0, 1, 2, 3].map((i) => (dealerIndex - 1 - i + 8) % 4);
+  const dealer = asSeat(dealerIndex);
+  const dir = direction === 'left' ? 'left' : 'right';
+  // Legacy Method A order = canonical same-alignment order for that absolute deal dir.
+  return dealSeatOrder(dealer, dir, 'same');
 }
 
 /** Non-dealer seats in dealing direction (Method B remainder). */
@@ -92,6 +100,9 @@ export interface SuecaDealResult {
  * Pure Sueca deal from a fixed 40-card sequence (index 0 dealt first).
  * BLOCK dealing: each player receives 10 consecutive cards before the next seat.
  * Does not shuffle — caller supplies the post-cut order.
+ *
+ * Legacy Method A/B × DealingDirection — unchanged in Phase 1.
+ * Future: SuecaHandDealPolicy alignment (same/opposite) via suecaRules.
  */
 export function dealSuecaFromCardOrder(
   cards: Card[],

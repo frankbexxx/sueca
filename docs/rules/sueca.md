@@ -2,8 +2,10 @@
 
 Preset id: `sueca-pt-normal`
 
-Status: draft canonico para alinhar engine e testes  
-Date: 2026-04-24
+Status: canonico de produto (ARCH-SUECA-02 Phase 0 freeze)
+Date: 2026-09-29
+Implementation: Phase 1 vocabulary/geometry in `frontend/src/models/games/suecaRules.ts`.
+Runtime engine/UI still wired to legacy RIGHT/ACW-only path until later phases.
 
 ## 1) Visao geral
 
@@ -44,59 +46,88 @@ Geometria de lugares (motor / UX-SEAT-01): indice `0` Sul, `1` Oeste, `2` Norte,
 A **direita fisica** do dealer e `(dealer + 3) % 4` (ex.: Sul → Este).
 A **esquerda fisica** do dealer e `(dealer + 1) % 4` (ex.: Sul → Oeste).
 
-Distribuicao e **sempre em blocos de 10 cartas** por jogador (cada um recebe as 10
-antes de passar ao seguinte). A animacao pode mostrar cartas uma a uma; a ordem
-de atribuicao no motor e a do bloco.
+### PlayDirection (sentido de JOGO) — sessao / partida aos 4 pontos
 
-### Sentido de distribuicao (apenas a distribuicao)
+Dois sentidos suportados; escolhido uma vez e fixo para a sessao:
 
-| Valor no motor | Sentido | Primeiro a receber (Metodo A) |
-|----------------|---------|--------------------------------|
-| `right` (padrao) | Anti-horario / a direita | Direita fisica do dealer |
-| `left` | Horario / a esquerda | Esquerda fisica do dealer |
+| Valor | Significado fisico | Passo |
+|-------|--------------------|-------|
+| `right` (**padrao**) | Anti-horario / a direita | `(seat + 3) % 4` |
+| `left` | Horario / a esquerda | `(seat + 1) % 4` |
 
-O sentido de distribuicao **nao** controla o sentido de jogo nem quem abre.
+Controla: primeiro a jogar, ordem na vaza, vencedor → proximo lider, rotacao do dealer.
 
-### Metodo A (tradicional / padrao)
+### DealAlignment (sentido de DISTRIBUICAO) — por mao
 
-1. Bloco de 10 ao jogador a **direita fisica** do dealer.
-2. Seguinte anti-horario: bloco de 10.
-3. Seguinte: bloco de 10.
-4. Dealer: bloco de 10.
-5. **Trunfo** = ultima carta distribuida (ultima do ultimo bloco).
+Relativo ao PlayDirection da sessao (nao e um segundo "left/right" absoluto na UX):
 
-### Metodo B (variante alternativa)
+| Alignment | Efeito |
+|-----------|--------|
+| `same` (**padrao**) | Distribuir no mesmo sentido do jogo |
+| `opposite` | Distribuir no sentido oposto ao jogo |
 
-1. Dealer recebe o **primeiro** bloco de 10; **trunfo** = primeira / topo do baralho.
-2. Os restantes recebem blocos de 10 no sentido configurado (tipicamente horario / `left`).
-3. Depois da distribuicao: quem abre e o sentido de jogo **nao mudam**.
+Alterar DealAlignment **nao** altera PlayDirection, primeiro jogador, nem ordem de vazas.
 
-### Requisito canonico para ambos
+Distribuicao e **sempre em blocos** (nunca uma carta de cada vez na atribuicao do motor).
+Cada jogador recebe exactamente 10 cartas. A animacao pode mostrar cartas uma a uma.
 
-- No inicio da mao, cada jogador tem exatamente 10 cartas.
+### Forma normal (`same`)
+
+1. Tres blocos de 10 no sentido de distribuicao derivado (`same` → PlayDirection),
+   comecando no primeiro jogador nesse sentido e terminando no dealer.
+2. Dealer: 9 cartas + ultima carta virada.
+3. **Trunfo** = essa ultima carta (= 10.ª do dealer).
+
+Exemplo play=`right`, alignment=`same`, dealer Sul(0): ordem `[3,2,1,0]`;
+trunfo = ultima carta do bloco do dealer.
+
+### Forma alternativa (`opposite`)
+
+1. Primeira carta virada = **trunfo** = 1.ª do dealer; dealer recebe +9.
+2. Tres blocos de 10 no sentido oposto ao jogo (sem incluir o dealer de novo).
+3. Quem abre e o sentido de jogo **nao mudam**.
+
+Exemplo play=`right`, alignment=`opposite`, dealer 0: ordem `[0,1,2,3]`;
+trunfo = primeira carta.
+
+### Embaralhar / cortar (independente de PlayDirection e DealAlignment)
+
+- **Embaralhador** = jogador a **direita fisica** do dealer.
+- **Cortador** = parceiro do embaralhador (= **esquerda fisica** do dealer).
+
+### Requisito canonico
+
+- No inicio da mao, cada jogador tem exactamente 10 cartas.
 - O trunfo da mao fica fixo ate ao fim da mao.
+
+### Estado de migracao (implementacao)
+
+- Vocabulario/geometria canonicos: `suecaRules.ts` (Phase 1).
+- Runtime actual: ainda FIXED play RIGHT/ACW; deal via legado `DealingMethod` A/B +
+  `DealingDirection` left/right. A migracao para PlayDirection + DealAlignment e fases seguintes.
 
 ## 5) Ordem de jogo da vaza
 
 - Cada vaza tem 4 jogadas (1 por jogador).
 - O jogador que abre (lidera) define o naipe da vaza.
-- Os restantes jogam em ordem de turno.
+- Os restantes jogam em ordem de turno segundo **PlayDirection**.
 
-### Sentido de jogo (independente da distribuicao)
+### Sentido de jogo
 
-- Padrao: **anti-horario / a direita** = `(jogador + 3) % 4` na geometria acima.
-- Nao e alterado pelo Metodo A/B nem pelo sentido de distribuicao.
+- `right`: `(jogador + 3) % 4` (anti-horario / a direita).
+- `left`: `(jogador + 1) % 4` (horario / a esquerda).
+- Nao e alterado por DealAlignment.
 
 ### Quem abre
 
-- Primeira vaza: **sempre** o jogador a **direita fisica** do dealer (`(dealer + 3) % 4`).
+- Primeira vaza: `firstLeader(dealer, playDirection)` —
+  play `right` → direita fisica; play `left` → esquerda fisica.
 - Vazas seguintes: quem venceu a vaza anterior abre a proxima.
 
 ### Rotacao do dealer
 
-- Entre maos, o dealer passa a **direita fisica**: `novoDealer = (dealer + 3) % 4`.
-- Sequencia de exemplo a partir do Sul: Sul → Este → Norte → Oeste → Sul.
-- Consistente com o sentido de jogo (anti-horario / a direita); independente do Metodo A/B.
+- Entre maos: `nextDealer(dealer, playDirection)` (mesmo passo que o primeiro lider).
+- Exemplo a partir do Sul com play `right`: Sul → Este → Norte → Oeste → Sul.
 
 ## 6) Regra de seguir naipe (obrigatoria)
 
@@ -201,13 +232,16 @@ Enquanto nao existir modo de desafio formal, a regra minima obrigatoria e: **ren
 - Sem dependencia de UI, sem side effects de DOM, sem `Math.random` nao-seeded.
 - Toda variacao regional deve ser modelada por configuracao de ruleset (nao por ifs espalhados na UI).
 
-## 14) Itens ainda a confirmar contigo (checkpoint funcional)
+## 14) Checkpoint funcional restante
 
-Mesmo com este baseline, existem variacoes regionais reais. Antes de fechar Phase 2, confirmar:
+Produto (ARCH-SUECA-02) ja fixou PlayDirection / DealAlignment / blocos / trump shapes.
+Ainda abertos fora deste contrato de direccao:
 
-- Sentido de distribuicao e de jogo que queres como oficial no produto.
 - Regra formal de empate 60-60 (dobra so a proxima mao ou acumula cadeia).
-- Terminologia de vitoria especial (capote/perfeita) que queres mostrar na UI.
+- Terminologia de vitoria especial (capote/perfeita) na UI.
+- UX exacta: onde escolher PlayDirection (setup vs modal) e DealAlignment por mao.
+- Embaralhar/cortar ja definidos acima (direita fisica / parceiro); confirmar se algum
+  fluxo visual depende disso.
 
-Esta pagina passa a ser a referencia unica para os testes do `engine-sueca`.
+Esta pagina e a referencia de produto para Sueca; testes de motor devem alinhar por fases.
 
