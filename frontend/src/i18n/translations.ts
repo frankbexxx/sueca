@@ -35,6 +35,12 @@ export interface Translations {
     dealingMethod: string;
     methodA: string;
     methodB: string;
+    /** ARCH-SUECA-06 — session play direction. */
+    playDirection: string;
+    playDirectionRight: string;
+    playDirectionRightHint: string;
+    playDirectionLeft: string;
+    playDirectionLeftHint: string;
     startGame: string;
     advancedSettings: string;
     multiplayerMode: string;
@@ -70,6 +76,14 @@ export interface Translations {
     dealingMethodB: string;
     dealingDirLeft: string;
     dealingDirRight: string;
+    /** ARCH-SUECA-06 — per-hand deal alignment. */
+    dealAlignmentLabel: string;
+    dealAlignmentSame: string;
+    dealAlignmentOpposite: string;
+    dealAlignmentSameHint: string;
+    dealAlignmentOppositeHint: string;
+    playDirectionReadonlyRight: string;
+    playDirectionReadonlyLeft: string;
     newGame: string;
     heartsRoundTitle: string;
     heartsRoundPoints: string;
@@ -764,6 +778,11 @@ export const translations: Record<Language, Translations> = {
       dealingMethod: 'Método de Distribuição:',
       methodA: 'Método A (Standard)',
       methodB: 'Método B (Dealer First)',
+      playDirection: 'Sentido do jogo',
+      playDirectionRight: 'Pela direita',
+      playDirectionRightHint: 'Sentido anti-horário',
+      playDirectionLeft: 'Pela esquerda',
+      playDirectionLeftHint: 'Sentido horário',
       startGame: 'Iniciar Jogo',
       advancedSettings: 'Configurações Avançadas',
       multiplayerMode: 'Multiplayer',
@@ -857,6 +876,15 @@ export const translations: Record<Language, Translations> = {
       dealingMethodB: 'Dealer First',
       dealingDirLeft: 'Esquerda (horário)',
       dealingDirRight: 'Direita (anti-horário)',
+      dealAlignmentLabel: 'Sentido da distribuição',
+      dealAlignmentSame: 'Mesmo sentido do jogo',
+      dealAlignmentOpposite: 'Sentido oposto ao jogo',
+      dealAlignmentSameHint:
+        'Distribui no mesmo sentido do jogo. O dealer recebe por último e a última carta define o trunfo.',
+      dealAlignmentOppositeHint:
+        'Distribui no sentido oposto. A primeira carta do dealer define o trunfo.',
+      playDirectionReadonlyRight: 'Jogo: pela direita',
+      playDirectionReadonlyLeft: 'Jogo: pela esquerda',
       newGame: 'Novo Jogo',
       heartsRoundTitle: 'Fim da ronda',
       heartsRoundPoints: 'Pontos desta ronda',
@@ -1213,6 +1241,11 @@ export const translations: Record<Language, Translations> = {
       dealingMethod: 'Dealing Method:',
       methodA: 'Method A (Standard)',
       methodB: 'Method B (Dealer First)',
+      playDirection: 'Play direction',
+      playDirectionRight: 'To the right',
+      playDirectionRightHint: 'Anti-clockwise',
+      playDirectionLeft: 'To the left',
+      playDirectionLeftHint: 'Clockwise',
       startGame: 'Start Game',
       advancedSettings: 'Advanced Settings',
       multiplayerMode: 'Multiplayer',
@@ -1306,6 +1339,15 @@ export const translations: Record<Language, Translations> = {
       dealingMethodB: 'Dealer First',
       dealingDirLeft: 'Left (clockwise)',
       dealingDirRight: 'Right (counter-clockwise)',
+      dealAlignmentLabel: 'Deal direction',
+      dealAlignmentSame: 'Same as play',
+      dealAlignmentOpposite: 'Opposite to play',
+      dealAlignmentSameHint:
+        'Deal in the same direction as play. The dealer receives last and the last card sets trump.',
+      dealAlignmentOppositeHint:
+        'Deal in the opposite direction. The dealer’s first card sets trump.',
+      playDirectionReadonlyRight: 'Play: to the right',
+      playDirectionReadonlyLeft: 'Play: to the left',
       newGame: 'Start New Game',
       heartsRoundTitle: 'Round complete',
       heartsRoundPoints: 'Points this round',

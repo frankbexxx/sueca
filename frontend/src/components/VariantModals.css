@@ -152,7 +152,7 @@
 
 /* S4 — compact Sueca dealing modal */
 .dealing-modal {
-  max-width: 340px;
+  max-width: 360px;
   padding: 0.85rem 1rem 1rem;
   gap: 0.55rem;
 }
@@ -163,6 +163,13 @@
   font-weight: 700;
   text-align: center;
   line-height: 1.2;
+}
+
+.dealing-modal-play-readonly {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(245, 245, 245, 0.78);
 }
 
 .dealing-modal-section {
@@ -182,16 +189,16 @@
 .dealing-modal-radios {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.35rem;
 }
 
 .dealing-modal-radio {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.65rem;
   min-height: 44px;
-  padding: 0 2px;
+  padding: 0.35rem 2px;
   color: inherit;
   cursor: pointer;
   font-size: 0.95rem;
@@ -202,15 +209,24 @@
   flex-shrink: 0;
   width: 18px;
   height: 18px;
-  margin: 0;
+  margin: 0.15rem 0 0;
   accent-color: var(--sc-accent);
+}
+
+.dealing-modal-hint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.3;
+  color: rgba(245, 245, 245, 0.68);
 }
 
 /* Beat `.variant-modal label` / `input` (column + tall text-field chrome). */
 .variant-modal.dealing-modal .dealing-modal-radio {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.65rem;
   min-height: 44px;
   font-size: 0.95rem;

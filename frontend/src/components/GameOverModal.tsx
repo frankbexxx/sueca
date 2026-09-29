@@ -1,5 +1,6 @@
+import React from 'react';
 import { getHeartsState } from '../models/games/HeartsGame';
-import { GameState, DealingMethod, GameVariant } from '../types/game';
+import { GameState, GameVariant } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
 
@@ -9,9 +10,7 @@ interface GameOverModalProps {
   usTeam: 1 | 2;
   themTeam: 1 | 2;
   localPlayerIndex: number;
-  dealingMethod: DealingMethod;
   getTeamName: (team: 1 | 2) => string;
-  onDealingMethodChange: (method: DealingMethod) => void;
   onNewGame: () => void;
 }
 
@@ -87,9 +86,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   usTeam,
   themTeam,
   localPlayerIndex,
-  dealingMethod,
   getTeamName,
-  onDealingMethodChange,
   onNewGame
 }) => {
   const { t } = useLanguage();
@@ -173,22 +170,6 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
             <span>{isSpades ? `${themGames} ${pts}` : `${themGames}/4`}</span>
           </li>
         </ul>
-
-        {!isSpades && (
-          <div className="modal-new-game-options">
-            <label className="modal-select-label">
-              <strong>{t.modals.dealingMethodNext}</strong>
-              <select
-                value={dealingMethod}
-                onChange={(e) => onDealingMethodChange(e.target.value as DealingMethod)}
-                className="modal-select"
-              >
-                <option value="A">{t.startMenu.methodA}</option>
-                <option value="B">{t.startMenu.methodB}</option>
-              </select>
-            </label>
-          </div>
-        )}
 
         <button
           type="button"

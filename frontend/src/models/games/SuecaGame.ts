@@ -12,6 +12,7 @@ export class SuecaGame extends BaseGameAdapter {
   getVariantFlow(): SuecaVariantFlow {
     return {
       kind: 'sueca',
+      setDealAlignment: (alignment) => this.setDealAlignment(alignment),
       setDealingMethod: (method) => this.setDealingMethod(method),
       setDealingDirection: (direction) => this.setDealingDirection(direction)
     };

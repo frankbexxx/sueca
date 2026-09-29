@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { AIDifficulty, DealingMethod, GameVariant } from '../../types/game';
+import { AIDifficulty, GameVariant, PlayDirection } from '../../types/game';
 import { GameConfig } from '../../types/gameConfig';
 import { useLanguage } from '../../i18n/useLanguage';
 import { useGameSetup } from '../../hooks/useGameSetup';
@@ -24,27 +24,27 @@ const DIFF_OPTIONS: { id: AIDifficulty; labelPt: string; labelEn: string }[] = [
   { id: 'hard', labelPt: 'Difícil', labelEn: 'Hard' }
 ];
 
-/** Labels from suecaDeal.ts — not invented. */
-const DEALING_OPTIONS: {
-  id: DealingMethod;
+/** ARCH-SUECA-06 — session play direction (not Method A/B). */
+const PLAY_DIRECTION_OPTIONS: {
+  id: PlayDirection;
   titlePt: string;
   hintPt: string;
   titleEn: string;
   hintEn: string;
 }[] = [
   {
-    id: 'A',
-    titlePt: 'Padrão',
-    hintPt: 'Uma a uma à volta da mesa; a última carta define o trunfo',
-    titleEn: 'Standard',
-    hintEn: 'One by one around the table; the last card sets trump'
+    id: 'right',
+    titlePt: 'Pela direita',
+    hintPt: 'Sentido anti-horário',
+    titleEn: 'To the right',
+    hintEn: 'Anti-clockwise'
   },
   {
-    id: 'B',
-    titlePt: 'Dealer recebe primeiro',
-    hintPt: 'O dealer recebe a primeira carta (trunfo), depois o resto da mão',
-    titleEn: 'Dealer first',
-    hintEn: 'Dealer receives the first card (trump), then the rest of the hand'
+    id: 'left',
+    titlePt: 'Pela esquerda',
+    hintPt: 'Sentido horário',
+    titleEn: 'To the left',
+    hintEn: 'Clockwise'
   }
 ];
 
@@ -290,22 +290,27 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
 
             {showSuecaRules && (
               <>
-                <p className="setup-rules-intro">Distribuição</p>
+                <p className="setup-rules-intro">
+                  {isPt
+                    ? '10 cartas por jogador, em blocos. O sentido do jogo fica fixo nesta partida; em cada mão o dealer pode distribuir no mesmo sentido ou no oposto.'
+                    : '10 cards each, in blocks. Play direction is fixed for this match; each hand the dealer may deal the same way or the opposite way.'}
+                </p>
+                <p className="setup-rules-intro">{t.startMenu.playDirection}</p>
                 <div
                   className="setup-dealing"
                   role="radiogroup"
-                  aria-label={t.startMenu.dealingMethod}
+                  aria-label={t.startMenu.playDirection}
                 >
-                  {DEALING_OPTIONS.map((opt) => (
+                  {PLAY_DIRECTION_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       type="button"
                       role="radio"
-                      aria-checked={setup.dealingMethod === opt.id}
+                      aria-checked={setup.playDirection === opt.id}
                       className={`setup-deal-option${
-                        setup.dealingMethod === opt.id ? ' is-selected' : ''
+                        setup.playDirection === opt.id ? ' is-selected' : ''
                       }`}
-                      onClick={() => setup.setDealingMethod(opt.id)}
+                      onClick={() => setup.setPlayDirection(opt.id)}
                     >
                       <span className="setup-deal-title">
                         {isPt ? opt.titlePt : opt.titleEn}

@@ -1,28 +1,25 @@
 import React from 'react';
-import { DealingDirection, DealingMethod } from '../types/game';
+import { DealAlignment, PlayDirection } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
 import './VariantModals.css';
 
-export type { DealingDirection };
-
 interface SuecaDealingModalProps {
   round: number;
-  dealingMethod: DealingMethod;
-  dealingDirection: DealingDirection;
-  onMethodChange: (method: DealingMethod) => void;
-  onDirectionChange: (direction: DealingDirection) => void;
+  playDirection: PlayDirection;
+  dealAlignment: DealAlignment;
+  onAlignmentChange: (alignment: DealAlignment) => void;
   onConfirm: () => void;
 }
 
-/** Shown before each Sueca deal — method + direction (outside rules preset). */
+/** Shown before each Sueca deal — per-hand DealAlignment only (ARCH-SUECA-06). */
 export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
-  dealingMethod,
-  dealingDirection,
-  onMethodChange,
-  onDirectionChange,
+  playDirection,
+  dealAlignment,
+  onAlignmentChange,
   onConfirm
 }) => {
   const { t } = useLanguage();
+  const play = playDirection === 'left' ? 'left' : 'right';
 
   return (
     <div className="variant-modal-overlay dealing-modal-overlay">
@@ -36,50 +33,40 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
           {t.modals.dealingTitle}
         </h2>
 
-        <div className="dealing-modal-section">
-          <div className="dealing-modal-label">{t.modals.dealingMethodLabel}</div>
-          <div className="dealing-modal-radios" role="radiogroup" aria-label={t.modals.dealingMethodLabel}>
-            <label className="dealing-modal-radio">
-              <input
-                type="radio"
-                name="sueca-deal-method"
-                checked={dealingMethod === 'A'}
-                onChange={() => onMethodChange('A')}
-              />
-              <span>{t.modals.dealingMethodA}</span>
-            </label>
-            <label className="dealing-modal-radio">
-              <input
-                type="radio"
-                name="sueca-deal-method"
-                checked={dealingMethod === 'B'}
-                onChange={() => onMethodChange('B')}
-              />
-              <span>{t.modals.dealingMethodB}</span>
-            </label>
-          </div>
-        </div>
+        <p className="dealing-modal-play-readonly" aria-live="polite">
+          {play === 'right' ? t.modals.playDirectionReadonlyRight : t.modals.playDirectionReadonlyLeft}
+        </p>
 
         <div className="dealing-modal-section">
-          <div className="dealing-modal-label">{t.modals.dealingDirectionLabel}</div>
-          <div className="dealing-modal-radios" role="radiogroup" aria-label={t.modals.dealingDirectionLabel}>
+          <div className="dealing-modal-label">{t.modals.dealAlignmentLabel}</div>
+          <div
+            className="dealing-modal-radios"
+            role="radiogroup"
+            aria-label={t.modals.dealAlignmentLabel}
+          >
             <label className="dealing-modal-radio">
               <input
                 type="radio"
-                name="sueca-deal-dir"
-                checked={dealingDirection === 'left'}
-                onChange={() => onDirectionChange('left')}
+                name="sueca-deal-alignment"
+                checked={dealAlignment === 'same'}
+                onChange={() => onAlignmentChange('same')}
               />
-              <span>{t.modals.dealingDirLeft}</span>
+              <span>
+                <strong>{t.modals.dealAlignmentSame}</strong>
+                <span className="dealing-modal-hint">{t.modals.dealAlignmentSameHint}</span>
+              </span>
             </label>
             <label className="dealing-modal-radio">
               <input
                 type="radio"
-                name="sueca-deal-dir"
-                checked={dealingDirection === 'right'}
-                onChange={() => onDirectionChange('right')}
+                name="sueca-deal-alignment"
+                checked={dealAlignment === 'opposite'}
+                onChange={() => onAlignmentChange('opposite')}
               />
-              <span>{t.modals.dealingDirRight}</span>
+              <span>
+                <strong>{t.modals.dealAlignmentOpposite}</strong>
+                <span className="dealing-modal-hint">{t.modals.dealAlignmentOppositeHint}</span>
+              </span>
             </label>
           </div>
         </div>

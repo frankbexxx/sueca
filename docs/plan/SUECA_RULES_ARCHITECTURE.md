@@ -1,4 +1,6 @@
-# Sueca rules architecture (ARCH-SUECA-03 Phase 1)
+/**
+ * Sueca rules architecture (ARCH-SUECA-03 … ARCH-SUECA-06)
+ */
 
 ## Canonical module
 
@@ -20,45 +22,57 @@ Geometry: `nextSeat`, `seatAtOffset`, `firstLeader`, `nextDealer`, `partnerOf`,
 Shuffler = physical right of dealer; cutter = partner of shuffler. **Independent**
 of PlayDirection / DealAlignment.
 
-## Legacy bridge (unchanged runtime)
+## Legacy bridge (temporary)
 
-`suecaDeal.ts` pure ACW helpers now **delegate** to `suecaRules` with `'right'`:
+`suecaDeal.ts` pure ACW helpers still **delegate** to `suecaRules` with `'right'`
+for AI/CI/render consumers (Phase 5):
 
 - `suecaPhysicalRightOf` → `physicalRightOf`
 - `suecaNextAntiClockwise` → `nextSeat(..., 'right')`
-- `suecaSeatAtTrickOffset` → `seatAtOffset(..., 'right')`
-- `suecaInferTrickLeader` → `inferTrickLeader(..., 'right')`
-- `suecaDealSeatOrder(dir)` → `dealSeatOrder(dealer, dir, 'same')`
-- `clockwiseSeatAtTrickOffset` → `seatAtOffset(..., 'left')` (other games)
+- etc.
 
-Still present (scheduled removal after later phases):
+Engine bridge still present until Phase 6+ cleanup:
 
-- `DealingMethod` / `DealingDirection` on `GameState` and dealing modal (bridge)
-- Hard-coded ACW in AI / CI / render (Phase 5 consumers)
-- Setup copy still claims one-by-one dealing (Phase 4)
+- `DealingMethod` / `DealingDirection` on `GameState` (derived from canonical via
+  `legacyFieldsForAlignment` when UI sets `dealAlignment`)
+- Hard-coded ACW in AI / CI / render
+- Persistence schema still carries legacy fields (Phase 6)
 
 ## Runtime status
 
 **Phase 1:** vocabulary + pure helpers.
 **Phase 2:** `Game` uses `playDirection` (default `'right'`) for leader / play / winners / dealer rotation.
-**Phase 3:** canonical deal via `dealSuecaCanonical(playDirection, dealAlignment)`;
-legacy Method A/B × absolute `dealingDirection` remains a **TEMPORARY UI bridge**.
-Unambiguous maps: A+dir(play)→same, B+opposite(play)→opposite.
-Unsupported UI combos (A+left / B+right under RIGHT play, and mirrors) keep absolute legacy deal —
-**no invented product semantics** (Phase 4 must fix modal).
-AI/CI/render still assume RIGHT/ACW. Persistence schema still legacy (Phase 6).
+**Phase 3:** canonical deal via `dealSuecaCanonical(playDirection, dealAlignment)`.
+**Phase 4 (ARCH-SUECA-06):** UI/config migrated:
 
-### Production modal mapping (RIGHT play)
+- **Setup** owns session `PlayDirection` (`Sentido do jogo` — Pela direita / Pela esquerda).
+  Stored in `sueca-play-direction`. Fixed for the match-to-4; not editable in the dealing modal.
+- **Dealing modal** owns per-hand `DealAlignment` (`Sentido da distribuição` —
+  Mesmo sentido / Sentido oposto). Default each hand: `same`.
+- Invalid legacy Method×Direction free combinations are **no longer UI-reachable**.
+- Legacy engine/persistence bridges remain temporarily; UI truth is canonical only.
 
-| Modal | Canonical |
-|-------|-----------|
-| Standard (A) + Direita (right) | RIGHT + **same** |
-| Dealer First (B) + Esquerda (left) | RIGHT + **opposite** |
-| A + Esquerda / B + Direita | **unsupported** (legacy absolute fallback) |
+### Canonical product (post Phase 4 UI)
+
+| Setup | Modal | Engine |
+|-------|-------|--------|
+| RIGHT | same | RIGHT + same |
+| RIGHT | opposite | RIGHT + opposite |
+| LEFT | same | LEFT + same |
+| LEFT | opposite | LEFT + opposite |
+
+Derived bridge (outputs only, not user-driven):
+
+| Canonical | Legacy fields |
+|-----------|---------------|
+| RIGHT + same | A + right |
+| RIGHT + opposite | B + left |
+| LEFT + same | A + left |
+| LEFT + opposite | B + right |
 
 ## Deferred
 
-- Persist `playDirection` / `dealAlignment` + schema migration
-- Wire engine, AI, CI, render to `PlayDirection`
-- Replace user-facing Method A/B with same/opposite
-- Remove overloaded `DealingDirection` after bridge drain
+- Persist `playDirection` / `dealAlignment` + formal schema migration (Phase 6)
+- Wire AI, CI, render to `PlayDirection` (Phase 5)
+- Remove overloaded `DealingMethod` / `DealingDirection` after bridge drain
+- Ghost/dead cleanup of unused Method A/B i18n keys

@@ -22,6 +22,7 @@ vi.mock('../../i18n/useLanguage', () => ({
         errorPlayer1Required: 'Nome do jogador 1 é obrigatório',
         aiDifficulty: 'Dificuldade',
         dealingMethod: 'Distribuição',
+        playDirection: 'Sentido do jogo',
         playerPlaceholder: (i: number) => `Player ${i + 1}`
       },
       playSetup: {
@@ -83,23 +84,41 @@ describe('GameSetupScreen production redesign', () => {
     expect(container.textContent).toMatch(/IA/);
   });
 
-  it('Sueca shows distribution options mapped to A/B', () => {
+  it('Sueca shows play direction (default RIGHT) and passes LEFT in config', () => {
     const { onStartGame } = renderSetup({ initialVariant: 'sueca' });
     expect(container.textContent).toContain('Regras');
-    expect(container.textContent).toContain('Padrão');
-    expect(container.textContent).toContain('Dealer recebe primeiro');
-    expect(container.textContent).toContain('última carta define o trunfo');
+    expect(container.textContent).toContain('Sentido do jogo');
+    expect(container.textContent).toContain('Pela direita');
+    expect(container.textContent).toContain('Pela esquerda');
+    expect(container.textContent).not.toContain('Uma a uma');
+    expect(container.textContent).not.toContain('Dealer recebe primeiro');
+    expect(container.textContent).not.toMatch(/Método A|Método B|Method A|Method B/);
 
-    const dealerFirst = Array.from(container.querySelectorAll('.setup-deal-option')).find(
-      (el) => el.textContent?.includes('Dealer recebe primeiro')
+    const right = Array.from(container.querySelectorAll('.setup-deal-option')).find((el) =>
+      el.textContent?.includes('Pela direita')
     ) as HTMLButtonElement;
-    act(() => dealerFirst.click());
+    expect(right.getAttribute('aria-checked')).toBe('true');
+
+    const left = Array.from(container.querySelectorAll('.setup-deal-option')).find((el) =>
+      el.textContent?.includes('Pela esquerda')
+    ) as HTMLButtonElement;
+    act(() => left.click());
 
     const start = container.querySelector('.setup-cta') as HTMLButtonElement;
     act(() => start.click());
     expect(onStartGame).toHaveBeenCalledTimes(1);
-    expect(onStartGame.mock.calls[0][0].dealingMethod).toBe('B');
+    expect(onStartGame.mock.calls[0][0].playDirection).toBe('left');
     expect(onStartGame.mock.calls[0][0].gameVariant).toBe('sueca');
+    expect(localStorage.getItem('sueca-play-direction')).toBe('left');
+  });
+
+  it('Sueca setup restores LEFT play direction from storage', () => {
+    localStorage.setItem('sueca-play-direction', 'left');
+    renderSetup({ initialVariant: 'sueca' });
+    const left = Array.from(container.querySelectorAll('.setup-deal-option')).find((el) =>
+      el.textContent?.includes('Pela esquerda')
+    ) as HTMLButtonElement;
+    expect(left.getAttribute('aria-checked')).toBe('true');
   });
 
   it('King synthetic shows read-only mode and no preset selector', () => {

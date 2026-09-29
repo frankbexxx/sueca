@@ -3,18 +3,17 @@
  * No rules, no mutable state, no JSX.
  */
 
-import type { DealingDirection, DealingMethod } from '../types/game';
+import type { DealAlignment } from '../types/game';
 import type { SuecaVariantFlow } from '../models/games/variantFlowApi';
 
 export interface SuecaFlowController {
-  applyDealSetup(method: DealingMethod, direction: DealingDirection): void;
+  applyDealSetup(alignment: DealAlignment): void;
 }
 
 export function createSuecaFlowController(flow: SuecaVariantFlow): SuecaFlowController {
   return {
-    applyDealSetup(method, direction) {
-      flow.setDealingMethod(method);
-      flow.setDealingDirection(direction);
+    applyDealSetup(alignment) {
+      flow.setDealAlignment(alignment);
     }
   };
 }

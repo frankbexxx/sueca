@@ -53,6 +53,8 @@ export const TRICK_AUTO_CONTINUE_SECONDS = 5;
 // LocalStorage keys
 export const STORAGE_KEYS = {
   DEALING_METHOD: 'sueca-dealing-method',
+  /** ARCH-SUECA-06 — session play direction preference (`'right'` | `'left'`). */
+  PLAY_DIRECTION: 'sueca-play-direction',
   PLAYER_NAMES: 'sueca-player-names',
   AI_DIFFICULTY: 'sueca-ai-difficulty',
   SORT_HAND: 'sueca-sort-hand',

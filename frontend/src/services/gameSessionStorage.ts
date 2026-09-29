@@ -236,6 +236,10 @@ export function stripMultiplayerFields(config: GameConfig): GameConfig {
     playerNames: config.playerNames,
     aiDifficulty: config.aiDifficulty,
     dealingMethod: config.dealingMethod,
+    playDirection:
+      config.playDirection === 'left' || config.playDirection === 'right'
+        ? config.playDirection
+        : undefined,
     gameVariant: config.gameVariant,
     rulesPresetId: config.rulesPresetId,
     multiplayerEnabled: false
@@ -262,6 +266,10 @@ export function loadLastConfig(): GameConfig | null {
       playerNames: parsed.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
       aiDifficulty: parsed.aiDifficulty ?? 'medium',
       dealingMethod: parsed.dealingMethod ?? 'A',
+      playDirection:
+        parsed.playDirection === 'left' || parsed.playDirection === 'right'
+          ? parsed.playDirection
+          : undefined,
       multiplayerEnabled: false,
       gameVariant: parsed.gameVariant,
       rulesPresetId: resolvePresetId(parsed.gameVariant, parsed.rulesPresetId)
@@ -282,6 +290,10 @@ export function buildSoloConfigForVariant(variant: GameVariant): GameConfig {
     playerNames: getPlayerNamesForVariant(variant),
     aiDifficulty: getDifficultyForVariant(variant),
     dealingMethod: last?.dealingMethod ?? 'A',
+    playDirection:
+      last?.playDirection === 'left' || last?.playDirection === 'right'
+        ? last.playDirection
+        : 'right',
     multiplayerEnabled: false,
     gameVariant: variant,
     rulesPresetId

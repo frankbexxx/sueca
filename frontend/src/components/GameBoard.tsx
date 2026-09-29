@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, Card, Suit } from '../types/game';
+import { GameState, Card, Suit, DealAlignment, PlayDirection } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { InGameBar } from './navigation/InGameBar';
 import { InGameSettingsOverlay } from './navigation/InGameSettingsOverlay';
@@ -66,7 +66,7 @@ import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { HeartsPassModal } from './HeartsPassModal';
-import { SuecaDealingModal, DealingDirection } from './SuecaDealingModal';
+import { SuecaDealingModal } from './SuecaDealingModal';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
@@ -129,8 +129,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
   
   const { playerNames, dealingMethod, aiDifficulty, gameVariant, rulesPresetId } = config;
-  const [roundDealingMethod, setRoundDealingMethod] = useState(dealingMethod);
-  const [dealingDirection, setDealingDirection] = useState<DealingDirection>('right');
+  const sessionPlayDirection: PlayDirection =
+    config.playDirection === 'left' ? 'left' : 'right';
+  /** Per-hand deal packaging; preferred product default is SAME each hand (ARCH-SUECA-06). */
+  const [dealAlignment, setDealAlignment] = useState<DealAlignment>('same');
   const multiplayerSessionCode = (config.multiplayerSessionId ?? '').trim();
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const isMultiplayerActive = isMultiplayer && multiplayerSessionCode.length > 0;
@@ -148,10 +150,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const gameAdapterRef = useRef<GameAdapter | null>(null);
   const latestRemoteStateRef = useRef<GameState | null>(null);
   const processedActionIdsRef = useRef<Set<string>>(new Set());
-  const roundDealingMethodRef = useRef(dealingMethod);
-  roundDealingMethodRef.current = roundDealingMethod;
-  const dealingDirectionRef = useRef(dealingDirection);
-  dealingDirectionRef.current = dealingDirection;
+  const dealAlignmentRef = useRef(dealAlignment);
+  dealAlignmentRef.current = dealAlignment;
   const onExitRef = useRef(onExit);
   onExitRef.current = onExit;
   const gameOverExitRef = useRef(
@@ -341,8 +341,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       if (!adapter) return;
 
       const ok = applyHostAction(adapter, action, {
-        roundDealingMethod: roundDealingMethodRef.current,
-        dealingDirection: dealingDirectionRef.current,
+        dealAlignment: dealAlignmentRef.current,
         rulesPresetId,
       });
       if (!ok) {
@@ -458,6 +457,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         } else {
           const initOptions = {
             dealingMethod: config.dealingMethod,
+            playDirection: config.playDirection === 'left' ? 'left' : 'right',
             aiDifficulty: config.aiDifficulty,
             localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
             multiplayerSlots: config.multiplayerEnabled ? config.multiplayerSlots : undefined,
@@ -627,10 +627,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       playerNames,
       aiDifficulty,
       dealingMethod,
+      playDirection: sessionPlayDirection,
       gameVariant,
       rulesPresetId: statePreset
     });
   };
+
+  /** ARCH-SUECA-06 — each new hand defaults DealAlignment to SAME (does not remember prior hand). */
+  const prevDealWaitRef = useRef(false);
+  useEffect(() => {
+    const waiting = gameVariant === 'sueca' && gameState.waitingForRoundStart;
+    if (waiting && !prevDealWaitRef.current) {
+      setDealAlignment('same');
+    }
+    prevDealWaitRef.current = waiting;
+  }, [gameVariant, gameState.waitingForRoundStart, gameState.round]);
 
   useEffect(() => {
     if (!gameAdapter || !gameStarted || gameState.isGameOver || isMultiplayerActive) return;
@@ -1970,13 +1981,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && !isJoiner && (
         <SuecaDealingModal
           round={gameState.round}
-          dealingMethod={roundDealingMethod}
-          dealingDirection={dealingDirection}
-          onMethodChange={setRoundDealingMethod}
-          onDirectionChange={setDealingDirection}
+          playDirection={sessionPlayDirection}
+          dealAlignment={dealAlignment}
+          onAlignmentChange={setDealAlignment}
           onConfirm={() => {
             if (!gameAdapter || !suecaCtrl) return;
-            suecaCtrl.applyDealSetup(roundDealingMethod, dealingDirection);
+            suecaCtrl.applyDealSetup(dealAlignment);
             gameAdapter.startRound(gameAdapter.getCurrentState());
             if (isHost) {
               mpLog('[MP] host publish deal', {
@@ -2003,9 +2013,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           usTeam={usTeam}
           themTeam={themTeam}
           localPlayerIndex={localPlayerIndex}
-          dealingMethod={dealingMethod}
           getTeamName={getTeamName}
-          onDealingMethodChange={() => {}}
           onNewGame={handleNewGame}
         />
       )}

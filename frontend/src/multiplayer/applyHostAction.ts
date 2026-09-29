@@ -4,11 +4,15 @@ import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
 import { GameAction } from '../types/multiplayerActions';
-import { DealingDirection, DealingMethod } from '../types/game';
+import { DealAlignment, DealingDirection, DealingMethod } from '../types/game';
 import { resolvePresetId } from '../constants/rulesPresets';
 
 export interface ApplyHostActionOptions {
+  /** Canonical per-hand deal packaging (ARCH-SUECA-06). */
+  dealAlignment?: DealAlignment;
+  /** @deprecated TEMPORARY — prefer dealAlignment. */
   roundDealingMethod?: DealingMethod;
+  /** @deprecated TEMPORARY — prefer dealAlignment. */
   dealingDirection?: DealingDirection;
   rulesPresetId?: string;
 }
@@ -31,11 +35,15 @@ export function applyHostAction(
     }
     case 'startRound': {
       if (adapter.variant === 'sueca') {
-        (adapter as SuecaGame).setDealingMethod(
-          options.roundDealingMethod ?? action.dealingMethod
-        );
-        if (options.dealingDirection) {
-          (adapter as SuecaGame).setDealingDirection(options.dealingDirection);
+        const sueca = adapter as SuecaGame;
+        if (options.dealAlignment === 'same' || options.dealAlignment === 'opposite') {
+          sueca.setDealAlignment(options.dealAlignment);
+        } else {
+          // TEMPORARY bridge for older action payloads / tests.
+          sueca.setDealingMethod(options.roundDealingMethod ?? action.dealingMethod);
+          if (options.dealingDirection) {
+            sueca.setDealingDirection(options.dealingDirection);
+          }
         }
       }
       adapter.startRound(adapter.getCurrentState());

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AIDifficulty, DealingMethod, GameVariant } from '../types/game';
+import { AIDifficulty, GameVariant, PlayDirection } from '../types/game';
 import { GameConfig } from '../types/gameConfig';
 import { getAvailableGames } from '../constants/gameMetadata';
 import {
@@ -17,8 +17,19 @@ import {
   savePlayerNamesForVariant,
   setDifficultyForVariant
 } from '../services/setupPreferences';
-import { DEFAULT_PLAYER_NAMES } from '../constants/gameConstants';
+import { DEFAULT_PLAYER_NAMES, STORAGE_KEYS } from '../constants/gameConstants';
 import { bumpSyncablePrefsRevision } from '../services/syncablePrefsRevision';
+import { legacyFieldsForAlignment } from '../models/games/suecaDeal';
+
+function readStoredPlayDirection(): PlayDirection {
+  const raw = localStorage.getItem(STORAGE_KEYS.PLAY_DIRECTION);
+  if (raw === 'left' || raw === 'right') return raw;
+  const last = loadLastConfig();
+  if (last?.playDirection === 'left' || last?.playDirection === 'right') {
+    return last.playDirection;
+  }
+  return 'right';
+}
 
 export function useGameSetup(
   initialVariant?: GameVariant,
@@ -52,11 +63,9 @@ export function useGameSetup(
     getDifficultyForVariant(resolveInitialVariant())
   );
 
-  const [dealingMethod, setDealingMethod] = useState<DealingMethod>(
-    () =>
-      (localStorage.getItem('sueca-dealing-method') as DealingMethod) ||
-      last?.dealingMethod ||
-      'A'
+  /** ARCH-SUECA-06 — session play direction; default RIGHT. Not inferred from Method A/B. */
+  const [playDirection, setPlayDirectionState] = useState<PlayDirection>(() =>
+    readStoredPlayDirection()
   );
 
   const [multiplayerEnabled, setMultiplayerEnabled] = useState(
@@ -88,7 +97,7 @@ export function useGameSetup(
       setPlayerNamesState((prev) => {
         const next = typeof names === 'function' ? names(prev) : names;
         savePlayerNamesForVariant(gameVariant, next);
-        return next.map((n, i) => n);
+        return next.map((n) => n);
       });
     },
     [gameVariant]
@@ -102,6 +111,10 @@ export function useGameSetup(
     [gameVariant]
   );
 
+  const setPlayDirection = useCallback((direction: PlayDirection) => {
+    setPlayDirectionState(direction === 'left' ? 'left' : 'right');
+  }, []);
+
   const setGameVariant = (variant: GameVariant) => {
     setGameVariantState(variant);
     setRulesPresetId((prev) => resolvePresetId(variant, prev));
@@ -112,13 +125,13 @@ export function useGameSetup(
   };
 
   useEffect(() => {
-    const prev = localStorage.getItem('sueca-dealing-method');
-    localStorage.setItem('sueca-dealing-method', dealingMethod);
+    const prev = localStorage.getItem(STORAGE_KEYS.PLAY_DIRECTION);
+    localStorage.setItem(STORAGE_KEYS.PLAY_DIRECTION, playDirection);
     // SYNC-01A — bump only on real user change, not first hydrate.
-    if (prev !== null && prev !== dealingMethod) {
+    if (prev !== null && prev !== playDirection) {
       bumpSyncablePrefsRevision();
     }
-  }, [dealingMethod]);
+  }, [playDirection]);
 
   useEffect(() => {
     localStorage.setItem('sueca-multiplayer-enabled', String(multiplayerEnabled));
@@ -155,10 +168,14 @@ export function useGameSetup(
     });
     savePlayerNamesForVariant(gameVariant, cleanedNames);
     setDifficultyForVariant(gameVariant, aiDifficulty);
+    const play = playDirection === 'left' ? 'left' : 'right';
+    // Bridge only: setup no longer chooses Method A/B — derive default same packaging.
+    const legacy = legacyFieldsForAlignment(play, 'same');
     return {
       playerNames: cleanedNames,
       aiDifficulty,
-      dealingMethod,
+      dealingMethod: legacy.dealingMethod,
+      playDirection: play,
       multiplayerEnabled: MULTIPLAYER_ENABLED && multiplayerEnabled,
       multiplayerSessionId: multiplayerSessionId.trim() || undefined,
       gameVariant,
@@ -171,8 +188,8 @@ export function useGameSetup(
     setPlayerNames,
     aiDifficulty,
     setAIDifficulty,
-    dealingMethod,
-    setDealingMethod,
+    playDirection,
+    setPlayDirection,
     multiplayerEnabled,
     setMultiplayerEnabled,
     multiplayerSessionId,

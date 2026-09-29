@@ -15,6 +15,7 @@ describe('variantFlowApi (C3)', () => {
     const flow = adapter.getVariantFlow();
     expect(isSuecaFlow(flow)).toBe(true);
     if (!isSuecaFlow(flow)) return;
+    expect(() => flow.setDealAlignment('opposite')).not.toThrow();
     expect(() => flow.setDealingMethod('A')).not.toThrow();
     expect(() => flow.setDealingDirection('left')).not.toThrow();
   });
