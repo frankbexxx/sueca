@@ -66,22 +66,49 @@
   justify-content: center;
 }
 
-.hand-cards-front-preview img {
+/* REL-DECK-SIZE-02 — fixed 5:7 preview frame; art contained (no crop/stretch). */
+.hand-cards-preview-frame {
   width: 28px;
   height: 40px;
-  object-fit: cover;
+  aspect-ratio: 5 / 7;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   border-radius: 3px;
   border: 1px solid var(--sc-surface-border);
-  background: var(--sc-surface-modal);
+  background: #f4efe6;
+}
+
+.hand-cards-preview-frame--back {
+  width: 36px;
+  height: 50px;
+  border-radius: 4px;
+}
+
+.hand-cards-preview-frame img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.hand-cards-front-preview img {
+  /* nested under .hand-cards-preview-frame */
 }
 
 .hand-cards-back-preview {
   width: 36px;
   height: 50px;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border-radius: 4px;
   border: 1px solid var(--sc-surface-border);
-  background: var(--sc-surface-modal);
+  background: #f4efe6;
 }
 
 .hand-cards-theme-chip {

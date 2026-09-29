@@ -310,12 +310,13 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
                 >
                   <span className="hand-cards-front-preview">
                     {FRONT_SAMPLE.map((s) => (
-                      <img
-                        key={`${id}-${s.rank}-${s.suit}`}
-                        src={facePreviewSrc(id, s.rank, s.suit)}
-                        alt=""
-                        draggable={false}
-                      />
+                      <span key={`${id}-${s.rank}-${s.suit}`} className="hand-cards-preview-frame">
+                        <img
+                          src={facePreviewSrc(id, s.rank, s.suit)}
+                          alt=""
+                          draggable={false}
+                        />
+                      </span>
                     ))}
                   </span>
                   <span>{frontLabel}</span>
@@ -337,12 +338,13 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
               data-active={skins.cardBackId === 'theme' ? 'true' : 'false'}
               onClick={() => setBack('theme')}
             >
-              <img
-                className="hand-cards-back-preview"
-                src={getCardBackPath(themeId, 'theme')}
-                alt=""
-                draggable={false}
-              />
+              <span className="hand-cards-preview-frame hand-cards-preview-frame--back">
+                <img
+                  src={getCardBackPath(themeId, 'theme')}
+                  alt=""
+                  draggable={false}
+                />
+              </span>
               <span>
                 {language === 'pt' ? `Tema (${themeBack.label})` : `Theme (${themeBack.label})`}
               </span>
@@ -358,12 +360,13 @@ export const SettingsHandScreen: React.FC<SettingsHandScreenProps> = ({
                   data-active={active ? 'true' : 'false'}
                   onClick={() => setBack(id)}
                 >
-                  <img
-                    className="hand-cards-back-preview"
-                    src={getCardBackPath(themeId, id)}
-                    alt=""
-                    draggable={false}
-                  />
+                  <span className="hand-cards-preview-frame hand-cards-preview-frame--back">
+                    <img
+                      src={getCardBackPath(themeId, id)}
+                      alt=""
+                      draggable={false}
+                    />
+                  </span>
                   <span>{CARD_BACKS[id].label}</span>
                 </button>
               );

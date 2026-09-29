@@ -36,12 +36,13 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
             return (
               <div
                 key={`${card.id}-${index}`}
-                className={`trick-card-cross trick-from-${position}`}
+                className={`trick-card-cross trick-from-${position} card-frame`}
               >
                 <img
                   src={getCardImage(card)}
                   alt={`${card.rank} of ${card.suit}`}
-                  className="trick-card-img"
+                  className="card-frame__art trick-card-img"
+                  draggable={false}
                   onError={(event) => handleCardImageError(event, `${card.rank}-${card.suit}`)}
                 />
               </div>

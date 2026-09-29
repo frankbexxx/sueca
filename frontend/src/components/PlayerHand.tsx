@@ -94,11 +94,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
           }
 
           return (
-            <img
+            <div
               key={card.id}
-              src={getCardImage(card)}
-              alt={`${card.rank} of ${card.suit}`}
-              className={`card-hand ${visualClass} ${isSelected ? 'selected' : ''} ${
+              className={`card-hand card-frame ${visualClass} ${isSelected ? 'selected' : ''} ${
                 isPassSelected ? 'card-hand--pass-selected' : ''
               }`}
               style={{
@@ -109,10 +107,27 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               role={readOnly ? 'presentation' : 'button'}
               tabIndex={readOnly ? -1 : isPlayable ? 0 : -1}
               aria-disabled={readOnly || !isPlayable}
-              onError={(event) =>
-                handleCardImageError(event, `${card.rank}-${card.suit}`)
+              onKeyDown={
+                readOnly
+                  ? undefined
+                  : (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onCardClick(cardIndex);
+                      }
+                    }
               }
-            />
+            >
+              <img
+                src={getCardImage(card)}
+                alt={`${card.rank} of ${card.suit}`}
+                className="card-frame__art"
+                draggable={false}
+                onError={(event) =>
+                  handleCardImageError(event, `${card.rank}-${card.suit}`)
+                }
+              />
+            </div>
           );
         })}
       </div>

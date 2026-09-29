@@ -18,6 +18,13 @@ import {
 } from './phaserHandVisual';
 import { resolveHandHitAreaMode } from './phaserHandInput';
 import {
+  createCardFacePlate,
+  setContainedCardArt,
+  setContainedCardHitArea,
+  texturePixelSize
+} from './phaserCardDisplay';
+import { containDisplaySize, CARD_FRAME_ASPECT } from '../../constants/cardDisplayContract';
+import {
   DEFAULT_THEME,
   PhaserThemeView,
   resolvePhaserThemeFromDom,
@@ -396,10 +403,15 @@ export class SuecaTableScene extends Phaser.Scene {
         }
 
         if (hasBack) {
-          const img = this.add
-            .image(pos.x, pos.y, this.backKey)
-            .setDisplaySize(w, h)
-            .setDepth(depth + 0.01);
+          // REL-DECK-SIZE-02: ivory plate = outer 5:7 footprint; back art contained.
+          const plate = this.add
+            .rectangle(pos.x, pos.y, w, h, 0xf4efe6, 1)
+            .setDepth(depth + 0.005);
+          if (isSide) plate.setAngle(90);
+          this.opponentBacks.push(plate);
+
+          const img = this.add.image(pos.x, pos.y, this.backKey).setDepth(depth + 0.01);
+          setContainedCardArt(img, w, h);
           if (isSide) img.setAngle(90);
           this.opponentBacks.push(img);
 
@@ -639,11 +651,14 @@ export class SuecaTableScene extends Phaser.Scene {
     sprite.removeAllListeners('pointerdown');
     sprite.removeAllListeners('pointerover');
     sprite.removeAllListeners('pointerout');
-    const displaySize = (scale: number) => {
+    const artSize = (scale: number) => {
       const presence = PREMIUM_TABLE.handPresenceScale;
-      const cw = this.view?.layout.cardWidth ?? sprite.displayWidth;
-      const ch = this.view?.layout.cardHeight ?? sprite.displayHeight;
-      return { w: cw * scale * presence, h: ch * scale * presence };
+      const cw = this.view?.layout.cardWidth ?? 50;
+      const ch = this.view?.layout.cardHeight ?? Math.round(cw * CARD_FRAME_ASPECT);
+      const tex = texturePixelSize(sprite);
+      const base = containDisplaySize(cw, ch, tex.width, tex.height);
+      const s = scale * presence;
+      return { w: base.width * s, h: base.height * s, frameW: cw * s, frameH: ch * s };
     };
     sprite.on('pointerover', () => {
       if (this.dragCardId) return;
@@ -657,7 +672,7 @@ export class SuecaTableScene extends Phaser.Scene {
         interactionEnabled: this.view.interactionEnabled,
         hovered: true
       });
-      const size = displaySize(visual.scale);
+      const size = artSize(visual.scale);
       this.tweens.add({
         targets: sprite,
         y: entity.position.y + visual.yOffset,
@@ -679,7 +694,7 @@ export class SuecaTableScene extends Phaser.Scene {
         interactionEnabled: this.view.interactionEnabled,
         hovered: false
       });
-      const size = displaySize(visual.scale);
+      const size = artSize(visual.scale);
       this.tweens.add({
         targets: sprite,
         y: entity.position.y + visual.yOffset,
@@ -769,12 +784,17 @@ export class SuecaTableScene extends Phaser.Scene {
       hovered: false
     });
     const presence = PREMIUM_TABLE.handPresenceScale;
+    const cw = this.view.layout.cardWidth;
+    const ch = this.view.layout.cardHeight;
+    const tex = texturePixelSize(sprite);
+    const base = containDisplaySize(cw, ch, tex.width, tex.height);
+    const s = visual.scale * presence;
     this.tweens.add({
       targets: sprite,
       x: entity.position.x,
       y: entity.position.y + visual.yOffset,
-      displayWidth: this.view.layout.cardWidth * visual.scale * presence,
-      displayHeight: this.view.layout.cardHeight * visual.scale * presence,
+      displayWidth: base.width * s,
+      displayHeight: base.height * s,
       duration: 140,
       ease: 'Cubic.easeOut',
       onComplete: () => {
@@ -826,8 +846,8 @@ export class SuecaTableScene extends Phaser.Scene {
         hovered: false
       });
       const displayScale = visual.scale * presence;
-      const dw = cardWidth * displayScale;
-      const dh = cardHeight * displayScale;
+      const frameW = cardWidth * displayScale;
+      const frameH = cardHeight * displayScale;
       const targetX = entity.position.x;
       const targetY = entity.position.y + visual.yOffset;
       // GLOBAL-CARDS-01 — selected cards lift on Y only; keep fan depth by index.
@@ -836,28 +856,43 @@ export class SuecaTableScene extends Phaser.Scene {
       const shadow = this.add
         .ellipse(
           targetX + 1,
-          targetY + Math.max(4, dh * 0.12),
-          dw * 0.92,
-          dh * 0.24,
+          targetY + Math.max(4, frameH * 0.12),
+          frameW * 0.92,
+          frameH * 0.24,
           PREMIUM_TABLE.shadow,
           entity.selected ? 0.4 : 0.32
         )
         .setDepth(Math.max(PREMIUM_TABLE.depthHand - 1, cardDepth - 1));
       this.handShadows.push(shadow);
 
-      // Dark mat behind face — peeks as a thin lateral rim under overlap
-      // (GLOBAL-CARDS-01). Clarifies card boundaries without changing fan (S6).
+      // REL-DECK-SIZE-02 — dark rim + ivory 5:7 plate; art contained inside.
       const pad = PREMIUM_TABLE.handEdgePad;
-      const edge = this.add
-        .rectangle(targetX, targetY, dw + pad * 2, dh + pad * 2, PREMIUM_TABLE.handEdge, PREMIUM_TABLE.handEdgeAlpha)
+      const rim = this.add
+        .rectangle(
+          targetX,
+          targetY,
+          frameW + pad * 2,
+          frameH + pad * 2,
+          PREMIUM_TABLE.handEdge,
+          PREMIUM_TABLE.handEdgeAlpha
+        )
         .setAngle(entity.position.rotationDeg)
-        .setDepth(cardDepth - 0.15);
-      this.handEdges.push(edge);
+        .setDepth(cardDepth - 0.2);
+      this.handEdges.push(rim);
+      const plate = createCardFacePlate(
+        this,
+        targetX,
+        targetY,
+        frameW,
+        frameH,
+        cardDepth - 0.1,
+        entity.position.rotationDeg
+      );
+      this.handEdges.push(plate);
 
       if (!sprite) {
         sprite = this.add
           .image(targetX, targetY, entity.textureKey)
-          .setDisplaySize(dw, dh)
           .setDepth(cardDepth)
           .setAngle(entity.position.rotationDeg);
         this.bindHandInteraction(sprite, id);
@@ -866,8 +901,8 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setTexture(entity.textureKey);
       }
 
-      this.applyHandVisual(sprite, entity, view, visual);
-      sprite.setDisplaySize(dw, dh);
+      const art = setContainedCardArt(sprite, frameW, frameH);
+      this.applyHandVisual(sprite, entity, view, visual, frameW, frameH, art);
 
       if (this.dragCardId === id) return;
 
@@ -876,15 +911,15 @@ export class SuecaTableScene extends Phaser.Scene {
         sprite.setPosition(targetX, targetY);
         sprite.setAngle(entity.position.rotationDeg);
         sprite.setDepth(cardDepth);
-        sprite.setDisplaySize(dw, dh);
+        setContainedCardArt(sprite, frameW, frameH);
       } else {
         this.tweens.add({
           targets: sprite,
           x: targetX,
           y: targetY,
           angle: entity.position.rotationDeg,
-          displayWidth: dw,
-          displayHeight: dh,
+          displayWidth: art.width,
+          displayHeight: art.height,
           duration: 130,
           ease: 'Sine.easeOut'
         });
@@ -911,18 +946,28 @@ export class SuecaTableScene extends Phaser.Scene {
       canDrag: entity.canDrag,
       passSelectionEnabled: view.passSelectionEnabled,
       interactionEnabled: view.interactionEnabled
-    })
+    }),
+    frameW?: number,
+    frameH?: number,
+    art?: { width: number; height: number }
   ): void {
     sprite.setAlpha(visual.alpha);
     sprite.setTint(visual.tint);
     const hitMode = resolveHandHitAreaMode(visual.interactive);
-    if (hitMode === 'default-frame') {
-      // Default frame hit area — scales with displaySize. Never use layout.cardWidth
-      // as a Geom.Rectangle (that is display-space; textures are ~533x764 → tiny world hit).
-      sprite.setInteractive({ useHandCursor: true });
-    } else {
-      sprite.disableInteractive();
-    }
+    const fw = frameW ?? view.layout.cardWidth;
+    const fh = frameH ?? view.layout.cardHeight;
+    const artSize = art ?? {
+      width: sprite.displayWidth,
+      height: sprite.displayHeight
+    };
+    setContainedCardHitArea(
+      sprite,
+      fw,
+      fh,
+      artSize.width,
+      artSize.height,
+      hitMode === 'default-frame'
+    );
   }
 
   private redrawTrick(
@@ -947,15 +992,26 @@ export class SuecaTableScene extends Phaser.Scene {
         const shouldAnimate = !instant && animate.has(id);
         const startX = handSprite?.x ?? entity.origin.x;
         const startY = handSprite?.y ?? entity.origin.y;
+
+        const plate = createCardFacePlate(
+          this,
+          shouldAnimate ? startX : entity.position.x,
+          shouldAnimate ? startY : entity.position.y,
+          cardWidth,
+          cardHeight,
+          trickDepth - 0.05
+        );
+        this.trickExtras.push(plate);
+
         sprite = this.add
           .image(
             shouldAnimate ? startX : entity.position.x,
             shouldAnimate ? startY : entity.position.y,
             entity.textureKey
           )
-          .setDisplaySize(cardWidth, cardHeight)
           .setDepth(trickDepth)
           .setAngle(0);
+        setContainedCardArt(sprite, cardWidth, cardHeight);
         this.trickSprites.set(id, sprite);
         if (handSprite) {
           this.tweens.killTweensOf(handSprite);
@@ -964,7 +1020,7 @@ export class SuecaTableScene extends Phaser.Scene {
         }
         if (shouldAnimate) {
           this.tweens.add({
-            targets: sprite,
+            targets: [sprite, plate],
             x: entity.position.x,
             y: entity.position.y,
             duration: entity.playerIndex === this.latestModel?.localPlayerIndex ? 280 : 320,
@@ -973,11 +1029,20 @@ export class SuecaTableScene extends Phaser.Scene {
         }
       } else {
         if (sprite.texture.key !== entity.textureKey) sprite.setTexture(entity.textureKey);
+        const plate = createCardFacePlate(
+          this,
+          entity.position.x,
+          entity.position.y,
+          cardWidth,
+          cardHeight,
+          trickDepth - 0.05
+        );
+        this.trickExtras.push(plate);
         if (instant) {
           this.tweens.killTweensOf(sprite);
           sprite.setPosition(entity.position.x, entity.position.y);
         }
-        sprite.setDisplaySize(cardWidth, cardHeight);
+        setContainedCardArt(sprite, cardWidth, cardHeight);
         sprite.setDepth(trickDepth);
       }
 

@@ -1083,11 +1083,19 @@
   z-index: 100;
 }
 
-.trick-card-img {
+.trick-card-cross {
+  /* positioned by compass modifiers below */
+}
+
+.trick-card-cross.card-frame {
   width: var(--card-w);
   height: var(--card-h);
   border-radius: 6px;
   box-shadow: 0 3px 7px rgba(0,0,0,0.38);
+}
+
+.trick-card-img {
+  /* art sized by .card-frame__art — keep class for legacy selectors */
 }
 
 
@@ -1288,7 +1296,6 @@
   margin-right: 4px;
   min-width: calc(var(--card-w) * 0.92);
   min-height: calc(var(--card-h) * 0.93);
-  object-fit: contain;
 }
 
 .hand-row--scroll .card-hand.selected,
@@ -1299,6 +1306,32 @@
 /* Narrow bar may still use absolute fan when adaptive spacing fits. */
 .player-hand-bar--narrow .hand-row:not(.hand-row--scroll) .card-hand {
   position: absolute;
+}
+
+/**
+ * REL-DECK-SIZE-02 — canonical outer 5:7 card frame; art contains inside.
+ * Outer footprint stays fixed; native deck ratios are not stretched or cropped.
+ */
+.card-frame {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f4efe6;
+  aspect-ratio: 5 / 7;
+}
+
+.card-frame__art {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 
 .card-hand {
@@ -1403,12 +1436,13 @@
 
 .card-back-small {
   width: 25px; /* 70% of 36px */
-  height: 36px; /* 70% of 52px */
+  height: 36px; /* 70% of 52px — outer 5:7 */
   border-radius: 3px; /* 70% of 4px */
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border: 1px solid var(--sc-surface-border);
   box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 70% scaling */
-  background: var(--sc-surface-modal);
+  background: #f4efe6;
 }
 
 .card-count {

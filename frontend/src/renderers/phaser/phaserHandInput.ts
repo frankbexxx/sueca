@@ -6,8 +6,9 @@
 export type HandHitAreaMode = 'default-frame' | 'disabled';
 
 /**
- * Interactive legal/pass cards use Phaser's default texture-frame hit area
- * so scale/displaySize maps pointer hits correctly.
+ * Interactive legal/pass cards use a texture-local hit area that maps to the
+ * outer 5:7 display frame (see setContainedCardHitArea). Mode name kept for
+ * compatibility with existing hit-policy tests.
  */
 export function resolveHandHitAreaMode(interactive: boolean): HandHitAreaMode {
   return interactive ? 'default-frame' : 'disabled';
