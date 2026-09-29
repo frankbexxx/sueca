@@ -9,6 +9,10 @@ import type { KingPtVariantState } from '../models/games/KingPtGame';
 import type { SpadesVariantState } from '../models/games/SpadesGame';
 import type { HeartsVariantState } from '../models/games/HeartsGame';
 import { resolveFestaSheetChromeDensity } from '../models/games/king/kingFestaActionAvailability';
+import {
+  clockwiseSeatAtTrickOffset,
+  suecaSeatAtTrickOffset
+} from '../models/games/suecaDeal';
 import type {
   TableRenderModel,
   TableSeatRenderModel,
@@ -87,7 +91,10 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const currentTrick: TableTrickCardRenderModel[] = (gameState.currentTrick ?? []).map(
     (card, orderIndex) => ({
       card,
-      playerIndex: (gameState.trickLeader + orderIndex) % 4,
+      playerIndex:
+        variant === 'sueca'
+          ? suecaSeatAtTrickOffset(gameState.trickLeader, orderIndex)
+          : clockwiseSeatAtTrickOffset(gameState.trickLeader, orderIndex),
       orderIndex
     })
   );

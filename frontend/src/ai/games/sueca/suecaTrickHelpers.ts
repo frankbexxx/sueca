@@ -1,4 +1,5 @@
 import { CARD_HIERARCHY, Card, GameState, Suit } from '../../../types/game';
+import { suecaSeatAtTrickOffset } from '../../../models/games/suecaDeal';
 
 export function isAceSeenInSuit(state: GameState, suit: Suit): boolean {
   return state.playedCards.some((c) => c.suit === suit && c.rank === 'A');
@@ -31,6 +32,7 @@ export function suecaCompareTrickCards(
   return 0;
 }
 
+/** Seat of the current trick winner under Sueca ACW play order (REL-SUECA-REG-03). */
 export function suecaTrickWinnerIndex(
   trick: Card[],
   trickLeader: number,
@@ -46,7 +48,7 @@ export function suecaTrickWinnerIndex(
       winningCard = trick[i];
     }
   }
-  return (trickLeader + winningIndex) % 4;
+  return suecaSeatAtTrickOffset(trickLeader, winningIndex);
 }
 
 export function cardWouldWinTrickSueca(
@@ -59,7 +61,7 @@ export function cardWouldWinTrickSueca(
   const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit);
   if (winner === null) return false;
   const cardIndex = trick.length - 1;
-  return winner === (trickLeader + cardIndex) % 4;
+  return winner === suecaSeatAtTrickOffset(trickLeader, cardIndex);
 }
 
 export function pickLowestRank<T extends { card: Card }>(entries: T[]): T {

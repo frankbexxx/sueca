@@ -3,6 +3,7 @@ import { cardsMatch } from '../shared/clone';
 import {
   cardWouldWinTrickStandard,
   cardWouldWinTrickSueca,
+  inferSuecaTrickLeader,
   inferTrickLeader,
 } from '../encoder/trickHelpers';
 import {
@@ -44,6 +45,9 @@ export function result(
 }
 
 export function trickLeader(ctx: EvaluatorContext): number {
+  if (ctx.state.variant === 'sueca') {
+    return inferSuecaTrickLeader(ctx.state.playerIndex, ctx.state.turnIndex);
+  }
   return inferTrickLeader(ctx.state.playerIndex, ctx.state.turnIndex);
 }
 

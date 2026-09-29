@@ -1,5 +1,5 @@
 import { GameAdapter } from '../../models/games/GameAdapter';
-import { Card, GameState, Suit } from '../../types/game';
+import { Card, GameState, GameVariant, Suit } from '../../types/game';
 import { cloneCards } from '../shared/clone';
 import { createEventId } from '../shared/ids';
 import { appendLogEvent } from '../shared/storage/logStore';
@@ -10,6 +10,10 @@ import { resolveContract } from '../logger/resolveMode';
 import { roundHistoryEngine } from './roundHistory';
 import { TrickPlayRecord } from './types';
 import { deriveTrickPoints, extractTrickEndVariantFields } from './variantTrickFields';
+import {
+  clockwiseSeatAtTrickOffset,
+  suecaSeatAtTrickOffset
+} from '../../models/games/suecaDeal';
 
 export function isTrickJustClosed(stateBefore: GameState, stateAfter: GameState): boolean {
   if (stateAfter.waitingForTrickEnd !== true) {
@@ -31,7 +35,8 @@ function resolveLedSuit(trick: Card[]): Suit | null {
 function buildPlaysFromTrick(
   stateAfter: GameState,
   roundIndex: number,
-  trickIndex: number
+  trickIndex: number,
+  variant: GameVariant
 ): TrickPlayRecord[] {
   const fromHistory = roundHistoryEngine.lastTrickPlays(roundIndex, trickIndex);
   if (fromHistory.length === 4) {
@@ -44,7 +49,10 @@ function buildPlaysFromTrick(
     roundIndex,
     trickIndex,
     turnIndex,
-    playerIndex: (leader + turnIndex) % 4,
+    playerIndex:
+      variant === 'sueca'
+        ? suecaSeatAtTrickOffset(leader, turnIndex)
+        : clockwiseSeatAtTrickOffset(leader, turnIndex),
     card: { ...card },
   }));
 }
@@ -76,7 +84,7 @@ export function buildTrickEndEvent(input: BuildTrickEndEventInput): TrickEndEven
 
   const roundIndex = normalizeRoundIndex(stateAfter);
   const trickCards = cloneCards(stateAfter.currentTrick);
-  const plays = buildPlaysFromTrick(stateAfter, roundIndex, trickIndex);
+  const plays = buildPlaysFromTrick(stateAfter, roundIndex, trickIndex, gameAdapter.variant);
   const trickNumberForKing = resolveTrickNumberForKing(stateAfter);
   const { pointsInTrick, penaltiesInTrick } = deriveTrickPoints(
     gameAdapter,

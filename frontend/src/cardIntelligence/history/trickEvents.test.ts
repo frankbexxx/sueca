@@ -153,6 +153,32 @@ describe('buildTrickEndEvent', () => {
     expect(event.schemaVersion).toBe('3.0.0');
   });
 
+  it('REL-SUECA-REG-03: Sueca fallback reconstructs plays ACW (0→3→2→1)', () => {
+    // No roundHistory plays — forces buildPlaysFromTrick fallback
+    const trick = [
+      card('clubs', '2', '1'),
+      card('clubs', '3', '2'),
+      card('clubs', '4', '3'),
+      card('clubs', '5', '4'),
+    ];
+    const adapter: GameAdapter = { ...mockAdapterStub(), variant: 'sueca' };
+    const stateAfter = baseState({
+      currentTrick: trick,
+      trickLeader: 0,
+      lastTrickWinner: 0,
+      waitingForTrickEnd: true,
+      trumpSuit: 'spades',
+    });
+    const event = buildTrickEndEvent({
+      gameAdapter: adapter,
+      stateAfter,
+      gameId: 'g1',
+      sessionId: 's1',
+      trickIndex: 0,
+    });
+    expect(event.plays.map((p) => p.playerIndex)).toEqual([0, 3, 2, 1]);
+  });
+
   it('builds hearts trick points', () => {
     const trick = [
       card('hearts', '2', '1'),

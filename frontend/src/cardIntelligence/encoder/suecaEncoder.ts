@@ -9,7 +9,7 @@ import { SuecaLogFields } from '../shared/types/variantLogFields';
 import { SuecaEncoding } from './types';
 import {
   cardWouldWinTrickSueca,
-  inferTrickLeader,
+  inferSuecaTrickLeader,
   lowestTrumpThatWinsSueca,
   lowestWinningCardSueca,
   suecaTrickWinnerIndex,
@@ -42,7 +42,7 @@ export function encodeSuecaVariant(
     partnerWinning = currentWinner === partnerIndex;
   }
 
-  const trickLeader = inferTrickLeader(event.playerIndex, event.turnIndex);
+  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex);
 
   let canWinCheaply: boolean | null = null;
   const cheapestWinner = lowestWinningCardSueca(
@@ -105,6 +105,6 @@ export function resolveSuecaCurrentWinner(
   if (event.currentWinnerBefore !== null) return event.currentWinnerBefore;
   if (event.currentWinnerAfter !== null) return event.currentWinnerAfter;
   const trick = event.trickAfter.length > 0 ? event.trickAfter : event.trickBefore;
-  const trickLeader = inferTrickLeader(event.playerIndex, event.turnIndex);
+  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex);
   return suecaTrickWinnerIndex(trick, trickLeader, event.trumpSuit);
 }

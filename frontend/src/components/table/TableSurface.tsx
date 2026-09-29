@@ -46,6 +46,7 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           gameState={gameState}
           localPlayerIndex={localPlayerIndex}
           getCardImage={getCardImage}
+          variant={variant}
         />
         <PlayerSeats
           gameState={gameState}

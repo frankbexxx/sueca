@@ -69,7 +69,7 @@ describe('buildTableRenderModel', () => {
     expect(model.localHand).toHaveLength(1);
     expect(model.currentTrick).toEqual([
       { card: gameState.currentTrick[0], playerIndex: 1, orderIndex: 0 },
-      { card: gameState.currentTrick[1], playerIndex: 2, orderIndex: 1 }
+      { card: gameState.currentTrick[1], playerIndex: 0, orderIndex: 1 }
     ]);
     expect(model.seats[0]).toMatchObject({
       isLocal: true,
@@ -247,6 +247,107 @@ describe('buildTableRenderModel', () => {
     expect(model.variantUi.king?.festaPhase).toBe('auction');
     expect(model.variantUi.king?.waitingForChoice).toBe(true);
     expect(model.activeSeat).toBeNull();
+  });
+
+  describe('REL-SUECA-REG-03 Sueca ACW trick visual placement', () => {
+    const fourCards = [
+      { suit: 'clubs' as const, rank: '2' as const, id: 'c2' },
+      { suit: 'clubs' as const, rank: '3' as const, id: 'c3' },
+      { suit: 'clubs' as const, rank: '4' as const, id: 'c4' },
+      { suit: 'clubs' as const, rank: '5' as const, id: 'c5' }
+    ];
+
+    it('leader 0: cards map to seats 0 → 3 → 2 → 1 (South East North West)', () => {
+      const gameState = baseState({
+        trickLeader: 0,
+        currentTrick: fourCards,
+        currentPlayerIndex: 1
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'sueca',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([0, 3, 2, 1]);
+      // Not clockwise 0→1→2→3
+      expect(model.currentTrick.map((t) => t.playerIndex)).not.toEqual([0, 1, 2, 3]);
+    });
+
+    it('leader 1: cards map to seats 1 → 0 → 3 → 2', () => {
+      const gameState = baseState({
+        trickLeader: 1,
+        currentTrick: fourCards,
+        currentPlayerIndex: 2
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'sueca',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([1, 0, 3, 2]);
+    });
+
+    it('Hearts still uses clockwise leader+offset', () => {
+      const gameState = baseState({
+        trickLeader: 0,
+        currentTrick: fourCards,
+        variant: 'hearts'
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'hearts', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'hearts',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([0, 1, 2, 3]);
+    });
+
+    it('Spades still uses clockwise leader+offset', () => {
+      const gameState = baseState({
+        trickLeader: 0,
+        currentTrick: fourCards,
+        variant: 'spades'
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'spades', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'spades',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([0, 1, 2, 3]);
+    });
+
+    it('King still uses clockwise leader+offset', () => {
+      const gameState = baseState({
+        trickLeader: 0,
+        currentTrick: fourCards,
+        variant: 'king'
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'king', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'king',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([0, 1, 2, 3]);
+    });
   });
 });
 

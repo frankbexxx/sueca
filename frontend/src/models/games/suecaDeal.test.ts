@@ -4,7 +4,9 @@ import {
   dealSuecaFromCardOrder,
   suecaDealOthersOrder,
   suecaDealSeatOrder,
-  suecaPhysicalRightOf
+  suecaInferTrickLeader,
+  suecaPhysicalRightOf,
+  suecaSeatAtTrickOffset
 } from './suecaDeal';
 
 function makeDeck40(): Card[] {
@@ -27,6 +29,18 @@ describe('suecaDeal — block contract', () => {
     expect(suecaDealOthersOrder(0, 'right')).toEqual([3, 2, 1]);
     expect(suecaDealOthersOrder(0, 'left')).toEqual([1, 2, 3]);
     expect(suecaPhysicalRightOf(0)).toBe(3);
+  });
+
+  it('suecaSeatAtTrickOffset: ACW mapping (leader + 3*offset) % 4', () => {
+    // leader 0: offsets → seats 0, 3, 2, 1
+    expect([0, 1, 2, 3].map((i) => suecaSeatAtTrickOffset(0, i))).toEqual([0, 3, 2, 1]);
+    // leader 1: → 1, 0, 3, 2
+    expect([0, 1, 2, 3].map((i) => suecaSeatAtTrickOffset(1, i))).toEqual([1, 0, 3, 2]);
+  });
+
+  it('suecaInferTrickLeader inverts ACW seat offsets', () => {
+    expect(suecaInferTrickLeader(3, 1)).toBe(0);
+    expect(suecaInferTrickLeader(0, 1)).toBe(1);
   });
 
   it('Method A deals 10-card blocks (not round-robin)', () => {

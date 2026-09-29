@@ -4,7 +4,8 @@ import { applyHandSortToState } from '../utils/handSort';
 import {
   dealSuecaFromCardOrder,
   suecaNextAntiClockwise,
-  suecaPhysicalRightOf
+  suecaPhysicalRightOf,
+  suecaSeatAtTrickOffset
 } from './games/suecaDeal';
 import { cloneGameState } from './games/cloneGameState';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
@@ -99,9 +100,9 @@ export class Game {
   }
 
   /**
-   * Seat players in fixed positions:
-   * Index 0 = South (humano), 1 = East (AI), 2 = North (AI), 3 = West (AI)
-   * Teams: South+North (team 1), East+West (team 2)
+   * Seat players in fixed positions (UX-SEAT-01 / tableLayout):
+   * Index 0 = South (local human), 1 = West (AI), 2 = North (AI), 3 = East (AI)
+   * Teams: South+North (team 1), West+East (team 2)
    */
   private seatPlayers(playerNames: string[]): string[] {
     const defaults = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
@@ -364,9 +365,10 @@ export class Game {
 
     // Calculate points for this trick
     const points = trick.reduce((sum, card) => sum + CARD_POINTS[card.rank], 0);
-    
-    // Determine which team won
-    const actualWinnerIndex = (this.state.trickLeader + winningIndex) % 4;
+
+    // Map trick card index → seat under Sueca anti-clockwise play (REL-SUECA-REG-02).
+    // Do NOT use (trickLeader + winningIndex) % 4 — that is clockwise (Hearts/Spades/King).
+    const actualWinnerIndex = suecaSeatAtTrickOffset(this.state.trickLeader, winningIndex);
     const winningTeam = this.state.players[actualWinnerIndex].team;
 
     if (winningTeam === 1) {

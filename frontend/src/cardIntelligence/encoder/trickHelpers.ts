@@ -1,8 +1,19 @@
 import { CARD_HIERARCHY, Card, Suit } from '../../types/game';
 import { trickWinnerIndex } from '../../models/games/trickUtils';
+import {
+  clockwiseSeatAtTrickOffset,
+  suecaInferTrickLeader,
+  suecaSeatAtTrickOffset
+} from '../../models/games/suecaDeal';
 
+/** Infer leader under clockwise play (Hearts / Spades / King). */
 export function inferTrickLeader(playerIndex: number, turnIndex: number): number {
   return (playerIndex - turnIndex + 4) % 4;
+}
+
+/** Infer leader under Sueca anti-clockwise play. */
+export function inferSuecaTrickLeader(playerIndex: number, turnIndex: number): number {
+  return suecaInferTrickLeader(playerIndex, turnIndex);
 }
 
 export function suecaCompareTrickCards(
@@ -41,7 +52,7 @@ export function suecaTrickWinnerIndex(
       winningCard = trick[i];
     }
   }
-  return (trickLeader + winningIndex) % 4;
+  return suecaSeatAtTrickOffset(trickLeader, winningIndex);
 }
 
 export function standardTrickWinnerIndex(
@@ -62,8 +73,9 @@ export function cardWouldWinTrickSueca(
   if (!trumpSuit) return false;
   const trick = [...trickBefore, card];
   const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit);
+  if (winner === null) return false;
   const cardIndex = trick.length - 1;
-  return winner === (trickLeader + cardIndex) % 4;
+  return winner === suecaSeatAtTrickOffset(trickLeader, cardIndex);
 }
 
 export function cardWouldWinTrickStandard(
@@ -74,8 +86,9 @@ export function cardWouldWinTrickStandard(
 ): boolean {
   const trick = [...trickBefore, card];
   const winner = standardTrickWinnerIndex(trick, trickLeader, trumpSuit);
+  if (winner === null) return false;
   const cardIndex = trick.length - 1;
-  return winner === (trickLeader + cardIndex) % 4;
+  return winner === clockwiseSeatAtTrickOffset(trickLeader, cardIndex);
 }
 
 export function lowestWinningCardSueca(

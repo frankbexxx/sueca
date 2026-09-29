@@ -10,7 +10,8 @@ import {
   dealSuecaFromCardOrder,
   suecaDealSeatOrder,
   suecaNextAntiClockwise,
-  suecaPhysicalRightOf
+  suecaPhysicalRightOf,
+  suecaSeatAtTrickOffset
 } from './suecaDeal';
 
 function makeDeck40(): Card[] {
@@ -48,6 +49,17 @@ describe('Sueca physical seat mapping (UX-SEAT-01)', () => {
     expect(suecaNextAntiClockwise(3)).toBe(2); // East → North
     expect(suecaNextAntiClockwise(2)).toBe(1); // North → West
     expect(suecaNextAntiClockwise(1)).toBe(0); // West → South
+  });
+
+  it('REL-SUECA-REG-02: trick card index maps via ACW, not clockwise', () => {
+    // leader 0 play order seats: 0 → 3 → 2 → 1
+    expect(suecaSeatAtTrickOffset(0, 0)).toBe(0);
+    expect(suecaSeatAtTrickOffset(0, 1)).toBe(3);
+    expect(suecaSeatAtTrickOffset(0, 2)).toBe(2);
+    expect(suecaSeatAtTrickOffset(0, 3)).toBe(1);
+    // wi=1/3 diverge from clockwise
+    expect(suecaSeatAtTrickOffset(0, 1)).not.toBe((0 + 1) % 4);
+    expect(suecaSeatAtTrickOffset(0, 3)).not.toBe((0 + 3) % 4);
   });
 });
 

@@ -27,6 +27,37 @@ export function suecaNextAntiClockwise(playerIndex: number): number {
 }
 
 /**
+ * Seat that played card at trick position `trickOffset` (0 = leader)
+ * under Sueca anti-clockwise play. Equivalent to applying
+ * {@link suecaNextAntiClockwise} `trickOffset` times from the leader.
+ *
+ * Formula: `(trickLeader + 3 * trickOffset) % 4`
+ * — NOT `(trickLeader + trickOffset) % 4` (that is clockwise / Hearts-Spades-King).
+ */
+export function suecaSeatAtTrickOffset(trickLeader: number, trickOffset: number): number {
+  const steps = ((trickOffset % 4) + 4) % 4;
+  return (trickLeader + 3 * steps) % 4;
+}
+
+/**
+ * Infer trick leader from a seat that played at `turnIndex` (0 = lead)
+ * under Sueca anti-clockwise order.
+ * Inverse of {@link suecaSeatAtTrickOffset}: `(playerIndex + turnIndex) % 4`.
+ */
+export function suecaInferTrickLeader(playerIndex: number, turnIndex: number): number {
+  const steps = ((turnIndex % 4) + 4) % 4;
+  return (playerIndex + steps) % 4;
+}
+
+/**
+ * Clockwise seat at trick offset (Hearts / Spades / King): `(leader + offset) % 4`.
+ */
+export function clockwiseSeatAtTrickOffset(trickLeader: number, trickOffset: number): number {
+  const steps = ((trickOffset % 4) + 4) % 4;
+  return (trickLeader + steps) % 4;
+}
+
+/**
  * Seat order for one full deal pass (4 seats).
  * - right (anti-clockwise, traditional): physical-right first → … → dealer last
  * - left (clockwise, alternative sense): physical-left first → … → dealer last
