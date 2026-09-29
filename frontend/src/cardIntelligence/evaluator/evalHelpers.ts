@@ -46,19 +46,22 @@ export function result(
 
 export function trickLeader(ctx: EvaluatorContext): number {
   if (ctx.state.variant === 'sueca') {
-    return inferSuecaTrickLeader(ctx.state.playerIndex, ctx.state.turnIndex);
+    const play = suecaEnc(ctx).playDirection === 'left' ? 'left' : 'right';
+    return inferSuecaTrickLeader(ctx.state.playerIndex, ctx.state.turnIndex, play);
   }
   return inferTrickLeader(ctx.state.playerIndex, ctx.state.turnIndex);
 }
 
 export function chosenWinsTrickSueca(ctx: EvaluatorContext): boolean {
+  const play = suecaEnc(ctx).playDirection === 'left' ? 'left' : 'right';
   return cardWouldWinTrickSueca(
     ctx.chosenCard,
     ctx.state.currentTrick.slice(0, -1).length > 0
       ? ctx.state.currentTrick.slice(0, ctx.state.trickPosition)
       : ctx.state.currentTrick.filter((_, i) => i < ctx.state.trickPosition),
     trickLeader(ctx),
-    ctx.state.trumpSuit
+    ctx.state.trumpSuit,
+    play
   );
 }
 
@@ -107,7 +110,11 @@ export function lowestWinningSpade(ctx: EvaluatorContext): Card | null {
 }
 
 export function suecaEnc(ctx: EvaluatorContext): SuecaEncoding {
-  return ctx.state.variantEncoding as SuecaEncoding;
+  const enc = ctx.state.variantEncoding as SuecaEncoding;
+  if (enc.playDirection !== 'left' && enc.playDirection !== 'right') {
+    return { ...enc, playDirection: 'right' };
+  }
+  return enc;
 }
 
 export function spadesEnc(ctx: EvaluatorContext): SpadesEncoding {

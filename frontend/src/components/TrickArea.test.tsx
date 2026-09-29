@@ -34,6 +34,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     isFirstTrick: false,
     dealingMethod: 'A',
     dealingDirection: 'right',
+    playDirection: 'right',
+    dealAlignment: 'same',
     waitingForRoundStart: false,
     waitingForRoundEnd: false,
     waitingForGameStart: false,
@@ -65,6 +67,22 @@ describe('TrickArea REL-SUECA-REG-03 visual seat classes', () => {
     expect(cards[1].className).toContain('trick-from-east');
     expect(cards[2].className).toContain('trick-from-north');
     expect(cards[3].className).toContain('trick-from-west');
+  });
+
+  it('Sueca LEFT leader 0: places cards South West North East', () => {
+    const { container } = render(
+      <TrickArea
+        gameState={makeState({ playDirection: 'left' })}
+        localPlayerIndex={0}
+        getCardImage={getCardImage}
+        variant="sueca"
+      />
+    );
+    const cards = container.querySelectorAll('.trick-card-cross');
+    expect(cards[0].className).toContain('trick-from-south');
+    expect(cards[1].className).toContain('trick-from-west');
+    expect(cards[2].className).toContain('trick-from-north');
+    expect(cards[3].className).toContain('trick-from-east');
   });
 
   it('Hearts leader 0: places cards South West North East (clockwise)', () => {

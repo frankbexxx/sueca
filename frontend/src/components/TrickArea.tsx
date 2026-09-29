@@ -2,16 +2,14 @@ import React from 'react';
 import { GameState, Card, GameVariant } from '../types/game';
 import { getTablePositionForPlayer } from '../utils/tableLayout';
 import { handleCardImageError } from '../utils/cardImageError';
-import {
-  clockwiseSeatAtTrickOffset,
-  suecaSeatAtTrickOffset
-} from '../models/games/suecaDeal';
+import { clockwiseSeatAtTrickOffset } from '../models/games/suecaDeal';
+import { asSeat, seatAtOffset } from '../models/games/suecaRules';
 
 interface TrickAreaProps {
   gameState: GameState;
   localPlayerIndex: number;
   getCardImage: (card: Card) => string;
-  /** Required for correct Sueca ACW vs clockwise other-game seat mapping. */
+  /** Required for correct Sueca vs clockwise other-game seat mapping. */
   variant?: GameVariant;
 }
 
@@ -22,6 +20,7 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
   variant
 }) => {
   const effectiveVariant = variant ?? gameState.variant ?? 'sueca';
+  const play = gameState.playDirection === 'left' ? 'left' : 'right';
 
   return (
     <div className="trick-area-center">
@@ -30,7 +29,7 @@ export const TrickArea: React.FC<TrickAreaProps> = ({
           {(gameState.currentTrick ?? []).map((card: Card, index: number) => {
             const playerIndex =
               effectiveVariant === 'sueca'
-                ? suecaSeatAtTrickOffset(gameState.trickLeader, index)
+                ? seatAtOffset(asSeat(gameState.trickLeader), index, play)
                 : clockwiseSeatAtTrickOffset(gameState.trickLeader, index);
             const position = getTablePositionForPlayer(playerIndex, localPlayerIndex);
             return (

@@ -2,23 +2,24 @@
  * Pure builder: GameState + board flow → TableRenderModel (C5).
  */
 
-import type { GameState, GameVariant } from '../types/game';
+import type { GameState, GameVariant, PlayDirection } from '../types/game';
 import type { GameBoardFlowView } from '../utils/gameFlowOrchestrator';
 import { isActiveTurnSeat } from '../utils/playerSeatHelpers';
 import type { KingPtVariantState } from '../models/games/KingPtGame';
 import type { SpadesVariantState } from '../models/games/SpadesGame';
 import type { HeartsVariantState } from '../models/games/HeartsGame';
 import { resolveFestaSheetChromeDensity } from '../models/games/king/kingFestaActionAvailability';
-import {
-  clockwiseSeatAtTrickOffset,
-  suecaSeatAtTrickOffset
-} from '../models/games/suecaDeal';
+import { clockwiseSeatAtTrickOffset } from '../models/games/suecaDeal';
+import { asSeat, seatAtOffset } from '../models/games/suecaRules';
 import type {
   TableRenderModel,
   TableSeatRenderModel,
   TableTrickCardRenderModel
 } from './tableRenderModel';
 
+function suecaPlayDirection(state: GameState): PlayDirection {
+  return state.playDirection === 'left' ? 'left' : 'right';
+}
 export interface BuildTableRenderModelInput {
   gameState: GameState;
   variant: GameVariant;
@@ -93,7 +94,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
       card,
       playerIndex:
         variant === 'sueca'
-          ? suecaSeatAtTrickOffset(gameState.trickLeader, orderIndex)
+          ? seatAtOffset(asSeat(gameState.trickLeader), orderIndex, suecaPlayDirection(gameState))
           : clockwiseSeatAtTrickOffset(gameState.trickLeader, orderIndex),
       orderIndex
     })

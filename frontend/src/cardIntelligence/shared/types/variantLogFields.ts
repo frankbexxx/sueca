@@ -1,6 +1,8 @@
 export interface SuecaLogFields {
   partnerIndex: number;
   teamIndex: 1 | 2;
+  /** Session play direction; omit / legacy logs → RIGHT. */
+  playDirection?: 'right' | 'left';
 }
 
 export interface SpadesLogFields {

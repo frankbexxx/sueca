@@ -35,60 +35,63 @@ describe('suecaTrickHelpers', () => {
   describe('REL-SUECA-REG-03 ACW winner seat (trick array index → seat)', () => {
     it('leader 0 order 0→3→2→1: wi=1 → East (3), wi=3 → West (1)', () => {
       const trump: Suit = 'spades';
-      // Ace of clubs at offset 1 (East)
+      // Ace of clubs at offset 1 (East under RIGHT)
       const trickEastWins = [
         makeCard('2', 'clubs'),
         makeCard('A', 'clubs'),
         makeCard('3', 'clubs'),
         makeCard('4', 'clubs')
       ];
-      expect(suecaTrickWinnerIndex(trickEastWins, 0, trump)).toBe(3);
-      expect(suecaSeatAtTrickOffset(0, 1)).toBe(3);
+      expect(suecaTrickWinnerIndex(trickEastWins, 0, trump, 'right')).toBe(3);
 
-      // Ace at offset 3 (West)
+      // Ace at offset 3 (West under RIGHT)
       const trickWestWins = [
         makeCard('2', 'clubs'),
         makeCard('3', 'clubs'),
         makeCard('4', 'clubs'),
         makeCard('A', 'clubs')
       ];
-      expect(suecaTrickWinnerIndex(trickWestWins, 0, trump)).toBe(1);
-      expect(suecaSeatAtTrickOffset(0, 3)).toBe(1);
-      // Clockwise would wrongly map wi=1→1 and wi=3→3
-      expect((0 + 1) % 4).not.toBe(3);
-      expect((0 + 3) % 4).not.toBe(1);
+      expect(suecaTrickWinnerIndex(trickWestWins, 0, trump, 'right')).toBe(1);
     });
 
     it.each([0, 1, 2, 3] as const)(
-      'leader %s: Ace at each offset maps via suecaSeatAtTrickOffset',
+      'RIGHT leader %s: Ace at each offset maps via seatAtOffset(right)',
       (leader) => {
         const trump: Suit = 'hearts';
         for (const wi of [0, 1, 2, 3] as const) {
           const ranks: Card['rank'][] = ['2', '3', '4', '5'];
           ranks[wi] = 'A';
           const trick = ranks.map((r) => makeCard(r, 'clubs'));
-          expect(suecaTrickWinnerIndex(trick, leader, trump)).toBe(
+          expect(suecaTrickWinnerIndex(trick, leader, trump, 'right')).toBe(
             suecaSeatAtTrickOffset(leader, wi)
           );
         }
       }
     );
 
-    it('cardWouldWinTrickSueca attributes win to ACW seat of the played card', () => {
-      // Leader 0; one card played; seat 3 plays next (ACW).
+    it('cardWouldWinTrickSueca attributes win to RIGHT seat of the played card', () => {
       const before = [makeCard('2', 'clubs')];
       const ace = makeCard('A', 'clubs');
-      expect(cardWouldWinTrickSueca(ace, before, 0, 'spades')).toBe(true);
-      // Winner seat must be East (3), not West (1)
-      expect(suecaTrickWinnerIndex([...before, ace], 0, 'spades')).toBe(3);
+      expect(cardWouldWinTrickSueca(ace, before, 0, 'spades', 'right')).toBe(true);
+      expect(suecaTrickWinnerIndex([...before, ace], 0, 'spades', 'right')).toBe(3);
     });
 
-    it('partner ownership: East winning is team2, not West', () => {
+    it('partner ownership: East winning is team2, not West (RIGHT)', () => {
       const trick = [makeCard('2', 'clubs'), makeCard('A', 'clubs')];
-      const winner = suecaTrickWinnerIndex(trick, 0, 'spades');
-      expect(winner).toBe(3); // East = team 2 with West
-      // Old clockwise wrongly returned 1 (also team2) — still check seats diverge
+      const winner = suecaTrickWinnerIndex(trick, 0, 'spades', 'right');
+      expect(winner).toBe(3);
       expect(winner).not.toBe(1);
+    });
+
+    it('LEFT leader 0: wi=1 → West (1), not East (3)', () => {
+      const trick = [
+        makeCard('2', 'clubs'),
+        makeCard('A', 'clubs'),
+        makeCard('3', 'clubs'),
+        makeCard('4', 'clubs')
+      ];
+      expect(suecaTrickWinnerIndex(trick, 0, 'spades', 'left')).toBe(1);
+      expect(suecaTrickWinnerIndex(trick, 0, 'spades', 'left')).not.toBe(3);
     });
   });
 });

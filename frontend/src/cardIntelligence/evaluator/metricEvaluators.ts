@@ -365,7 +365,8 @@ function evaluateS08(ctx: EvaluatorContext): MetricEvaluationResult | null {
     ctx.legalMoves,
     ctx.state.currentTrick,
     leader,
-    ctx.state.trumpSuit
+    ctx.state.trumpSuit,
+    s.playDirection
   );
   if (s.cutRisk === null && cheapest !== null && ctx.state.currentTrick.length > 0) {
     return result('S08', 'partial', 'Risco de corte indisponível — avaliação parcial.');
@@ -373,7 +374,7 @@ function evaluateS08(ctx: EvaluatorContext): MetricEvaluationResult | null {
   if (s.cutRisk === null) return notApplicable('S08');
   return (
     compareChosenToCheapestWinner(ctx, 'S08', cheapest, (c) =>
-      cardWouldWinTrickSueca(c, ctx.state.currentTrick, leader, ctx.state.trumpSuit)
+      cardWouldWinTrickSueca(c, ctx.state.currentTrick, leader, ctx.state.trumpSuit, s.playDirection)
     ) ?? notApplicable('S08')
   );
 }
@@ -385,7 +386,8 @@ function evaluateS12(ctx: EvaluatorContext): MetricEvaluationResult | null {
     ctx.legalMoves,
     ctx.state.currentTrick,
     leader,
-    ctx.state.trumpSuit
+    ctx.state.trumpSuit,
+    suecaEnc(ctx).playDirection
   );
   if (!cheapest) return notApplicable('S12');
   if (cardsMatch(ctx.chosenCard, cheapest)) {
@@ -428,7 +430,8 @@ function evaluateS19(ctx: EvaluatorContext): MetricEvaluationResult | null {
     ctx.chosenCard,
     ctx.state.currentTrick,
     leader,
-    ctx.state.trumpSuit
+    ctx.state.trumpSuit,
+    s.playDirection
   );
   if (wins && ctx.legalMoves.length > 1) {
     const lower = ctx.legalMoves

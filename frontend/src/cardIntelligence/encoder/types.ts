@@ -70,6 +70,8 @@ export interface HiddenInformationPolicy {
 export interface SuecaEncoding {
   partnerIndex: number;
   teamIndex: 1 | 2;
+  /** Session play direction used for seat/winner geometry. */
+  playDirection: 'right' | 'left';
   acesSeenBySuit: Record<Suit, boolean>;
   sevensSeenBySuit: Record<Suit, boolean>;
   trumpSeenCount: number;

@@ -32,22 +32,23 @@ export function suecaPhysicalRightOf(dealerIndex: number): number {
   return physicalRightOf(asSeat(dealerIndex));
 }
 
-/** Next seat anti-clockwise (play progression / "to the right"). */
-export function suecaNextAntiClockwise(playerIndex: number): number {
-  return nextSeat(asSeat(playerIndex), 'right');
-}
-
 /**
  * Seat that played card at trick position `trickOffset` (0 = leader)
- * under Sueca anti-clockwise play.
+ * under Sueca RIGHT/ACW play.
+ * @deprecated TEMPORARY Phase 7 — prefer {@link seatAtOffset}(..., playDirection).
  */
 export function suecaSeatAtTrickOffset(trickLeader: number, trickOffset: number): number {
   return seatAtOffset(asSeat(trickLeader), trickOffset, 'right');
 }
 
-/** Infer trick leader under Sueca anti-clockwise order. */
+/** Infer trick leader under Sueca RIGHT/ACW order. @deprecated Prefer inferTrickLeader(..., playDirection). */
 export function suecaInferTrickLeader(playerIndex: number, turnIndex: number): number {
   return inferTrickLeader(asSeat(playerIndex), turnIndex, 'right');
+}
+
+/** Next seat anti-clockwise (RIGHT play). @deprecated Prefer nextSeat(..., playDirection). */
+export function suecaNextAntiClockwise(playerIndex: number): number {
+  return nextSeat(asSeat(playerIndex), 'right');
 }
 
 /** Clockwise seat at trick offset (Hearts / Spades / King). */

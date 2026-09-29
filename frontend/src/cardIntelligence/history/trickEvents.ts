@@ -11,9 +11,9 @@ import { roundHistoryEngine } from './roundHistory';
 import { TrickPlayRecord } from './types';
 import { deriveTrickPoints, extractTrickEndVariantFields } from './variantTrickFields';
 import {
-  clockwiseSeatAtTrickOffset,
-  suecaSeatAtTrickOffset
+  clockwiseSeatAtTrickOffset
 } from '../../models/games/suecaDeal';
+import { asSeat, seatAtOffset } from '../../models/games/suecaRules';
 
 export function isTrickJustClosed(stateBefore: GameState, stateAfter: GameState): boolean {
   if (stateAfter.waitingForTrickEnd !== true) {
@@ -45,13 +45,14 @@ function buildPlaysFromTrick(
 
   const trick = stateAfter.currentTrick;
   const leader = stateAfter.trickLeader;
+  const play = stateAfter.playDirection === 'left' ? 'left' : 'right';
   return trick.map((card, turnIndex) => ({
     roundIndex,
     trickIndex,
     turnIndex,
     playerIndex:
       variant === 'sueca'
-        ? suecaSeatAtTrickOffset(leader, turnIndex)
+        ? seatAtOffset(asSeat(leader), turnIndex, play)
         : clockwiseSeatAtTrickOffset(leader, turnIndex),
     card: { ...card },
   }));

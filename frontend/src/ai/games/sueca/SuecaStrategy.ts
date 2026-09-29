@@ -5,8 +5,10 @@ import {
   isSevenLeadBlocked,
   pickHighestRank,
   pickLowestRank,
+  playDirectionOf,
   suecaTrickWinnerIndex,
 } from './suecaTrickHelpers';
+import { partnerOf, asSeat } from '../../../models/games/suecaRules';
 
 /**
  * Context supplied by Game.ts to avoid coupling the strategy to the class.
@@ -21,10 +23,9 @@ export interface SuecaStrategyContext {
 // ---------------------------------------------------------------------------
 
 export function getPartnerIndex(state: GameState, playerIndex: number): number | null {
-  const player = state.players[playerIndex];
-  const partner = state.players.find((p) => p.team === player.team && p.id !== player.id);
-  if (!partner) return null;
-  return state.players.findIndex((p) => p.id === partner.id);
+  if (!state.players[playerIndex]) return null;
+  // Geometric partners 0↔2 / 1↔3 — independent of PlayDirection.
+  return partnerOf(asSeat(playerIndex));
 }
 
 export function getPartnerSignal(state: GameState, playerIndex: number): string | null {
@@ -119,12 +120,13 @@ function pickCheapestWinner(
   trick: Card[],
   trickLeader: number,
   trumpSuit: Suit,
+  playDirection: ReturnType<typeof playDirectionOf>,
   filter?: (entry: { card: Card; index: number }) => boolean
 ): number | null {
   const winners = candidates.filter(
     (v) =>
       (!filter || filter(v)) &&
-      cardWouldWinTrickSueca(v.card, trick, trickLeader, trumpSuit)
+      cardWouldWinTrickSueca(v.card, trick, trickLeader, trumpSuit, playDirection)
   );
   if (winners.length === 0) return null;
   return pickLowestRank(winners).index;
@@ -150,6 +152,7 @@ export function chooseSuecaCard(
 
   const validCards = ctx.getValidCards(playerIndex);
   if (validCards.length === 0) return -1;
+  const play = playDirectionOf(state);
 
   // --- Easy ---
   if (difficulty === 'easy') {
@@ -234,10 +237,10 @@ export function chooseSuecaCard(
 
   // S19/T05 — partner already winning: do not steal (medium + hard)
   if (partnerIndex !== null) {
-    const currentWinner = suecaTrickWinnerIndex(trick, state.trickLeader, trumpSuit);
+    const currentWinner = suecaTrickWinnerIndex(trick, state.trickLeader, trumpSuit, play);
     if (currentWinner === partnerIndex) {
       const nonStealing = validCards.filter(
-        (v) => !cardWouldWinTrickSueca(v.card, trick, state.trickLeader, trumpSuit)
+        (v) => !cardWouldWinTrickSueca(v.card, trick, state.trickLeader, trumpSuit, play)
       );
       if (nonStealing.length > 0) {
         return pickLowestRank(nonStealing).index;
@@ -246,7 +249,8 @@ export function chooseSuecaCard(
         validCards,
         trick,
         state.trickLeader,
-        trumpSuit
+        trumpSuit,
+        play
       );
       if (forcedWin !== null) return forcedWin;
     }
@@ -281,6 +285,7 @@ export function chooseSuecaCard(
         trick,
         state.trickLeader,
         trumpSuit,
+        play,
         () => true
       );
       if (cheapest !== null) return cheapest;
@@ -294,7 +299,8 @@ export function chooseSuecaCard(
       trumpCards,
       trick,
       state.trickLeader,
-      trumpSuit
+      trumpSuit,
+      play
     );
     if (cheapestTrump !== null) return cheapestTrump;
   }

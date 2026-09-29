@@ -1,5 +1,5 @@
 /**
- * Sueca rules architecture (ARCH-SUECA-03 … ARCH-SUECA-06)
+ * Sueca rules architecture (ARCH-SUECA-03 … ARCH-SUECA-07)
  */
 
 ## Canonical module
@@ -17,62 +17,48 @@
 
 Geometry: `nextSeat`, `seatAtOffset`, `firstLeader`, `nextDealer`, `partnerOf`,
 `physicalRightOf`, `physicalLeftOf`, `oppositeDirection`, `dealDirectionFor`,
-`dealSeatOrder`, `trumpPlacementFor`, `shufflerForDealer`, `cutterForDealer`.
+`dealSeatOrder`, `trumpPlacementFor`, `shufflerForDealer`, `cutterForDealer`,
+`inferTrickLeader`.
 
 Shuffler = physical right of dealer; cutter = partner of shuffler. **Independent**
 of PlayDirection / DealAlignment.
 
-## Legacy bridge (temporary)
-
-`suecaDeal.ts` pure ACW helpers still **delegate** to `suecaRules` with `'right'`
-for AI/CI/render consumers (Phase 5):
-
-- `suecaPhysicalRightOf` → `physicalRightOf`
-- `suecaNextAntiClockwise` → `nextSeat(..., 'right')`
-- etc.
-
-Engine bridge still present until Phase 6+ cleanup:
-
-- `DealingMethod` / `DealingDirection` on `GameState` (derived from canonical via
-  `legacyFieldsForAlignment` when UI sets `dealAlignment`)
-- Hard-coded ACW in AI / CI / render
-- Persistence schema still carries legacy fields (Phase 6)
+Physical seat compass is fixed (0S/1W/2N/3E). PlayDirection changes logical
+progression only — renderers must not rotate the table.
 
 ## Runtime status
 
 **Phase 1:** vocabulary + pure helpers.
-**Phase 2:** `Game` uses `playDirection` (default `'right'`) for leader / play / winners / dealer rotation.
+**Phase 2:** `Game` uses `playDirection` for leader / play / winners / dealer rotation.
 **Phase 3:** canonical deal via `dealSuecaCanonical(playDirection, dealAlignment)`.
-**Phase 4 (ARCH-SUECA-06):** UI/config migrated:
+**Phase 4:** Setup owns session `PlayDirection`; dealing modal owns per-hand `DealAlignment`.
+**Phase 5 (ARCH-SUECA-07):** AI, Card Intelligence, table model, Phaser (via model), and
+DOM TrickArea consume `state.playDirection` + canonical `seatAtOffset` /
+`inferTrickLeader`. Fixed-ACW helpers remain as deprecated bridges for tests/legacy.
 
-- **Setup** owns session `PlayDirection` (`Sentido do jogo` — Pela direita / Pela esquerda).
-  Stored in `sueca-play-direction`. Fixed for the match-to-4; not editable in the dealing modal.
-- **Dealing modal** owns per-hand `DealAlignment` (`Sentido da distribuição` —
-  Mesmo sentido / Sentido oposto). Default each hand: `same`.
-- Invalid legacy Method×Direction free combinations are **no longer UI-reachable**.
-- Legacy engine/persistence bridges remain temporarily; UI truth is canonical only.
+### Consumer wiring (Phase 5)
 
-### Canonical product (post Phase 4 UI)
+| Consumer | Source of direction |
+|----------|---------------------|
+| AI (`suecaTrickHelpers` / `SuecaStrategy`) | `state.playDirection` |
+| CI encoder / eval / trickEvents | log `SuecaLogFields.playDirection` + state |
+| `buildTableRenderModel` / TrickArea | `gameState.playDirection` |
+| Phaser | inherits seats from table model (no local arithmetic) |
 
-| Setup | Modal | Engine |
-|-------|-------|--------|
-| RIGHT | same | RIGHT + same |
-| RIGHT | opposite | RIGHT + opposite |
-| LEFT | same | LEFT + same |
-| LEFT | opposite | LEFT + opposite |
+Partners remain geometric: `partnerOf` → 0↔2, 1↔3 (not direction-dependent).
 
-Derived bridge (outputs only, not user-driven):
+## Legacy bridge (temporary — Phase 6/7)
 
-| Canonical | Legacy fields |
-|-----------|---------------|
-| RIGHT + same | A + right |
-| RIGHT + opposite | B + left |
-| LEFT + same | A + left |
-| LEFT + opposite | B + right |
+Still present until persistence/cleanup:
+
+- `DealingMethod` / `DealingDirection` on `GameState` (derived bridge)
+- `suecaSeatAtTrickOffset` / `suecaInferTrickLeader` / `suecaNextAntiClockwise`
+  (RIGHT-only wrappers; no active AI/CI/render callers after Phase 5)
+- MP `startRound.dealingMethod` wire field
+- Unused Method A/B i18n keys
+- Persistence schema still legacy fields (Phase 6)
 
 ## Deferred
 
 - Persist `playDirection` / `dealAlignment` + formal schema migration (Phase 6)
-- Wire AI, CI, render to `PlayDirection` (Phase 5)
-- Remove overloaded `DealingMethod` / `DealingDirection` after bridge drain
-- Ghost/dead cleanup of unused Method A/B i18n keys
+- Remove deprecated fixed-ACW helpers + ghost cleanup (Phase 7)

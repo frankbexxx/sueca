@@ -1,5 +1,11 @@
-import { CARD_HIERARCHY, Card, GameState, Suit } from '../../../types/game';
-import { suecaSeatAtTrickOffset } from '../../../models/games/suecaDeal';
+import { CARD_HIERARCHY, Card, GameState, PlayDirection, Suit } from '../../../types/game';
+import { asSeat, seatAtOffset } from '../../../models/games/suecaRules';
+
+/** Resolve session play direction from GameState (default RIGHT). */
+export function playDirectionOf(state: Pick<GameState, 'playDirection'> | PlayDirection | undefined): PlayDirection {
+  if (typeof state === 'string') return state === 'left' ? 'left' : 'right';
+  return state?.playDirection === 'left' ? 'left' : 'right';
+}
 
 export function isAceSeenInSuit(state: GameState, suit: Suit): boolean {
   return state.playedCards.some((c) => c.suit === suit && c.rank === 'A');
@@ -32,13 +38,18 @@ export function suecaCompareTrickCards(
   return 0;
 }
 
-/** Seat of the current trick winner under Sueca ACW play order (REL-SUECA-REG-03). */
+/**
+ * Seat of the current trick winner under session PlayDirection.
+ * Default `'right'` preserves production RIGHT/ACW behaviour.
+ */
 export function suecaTrickWinnerIndex(
   trick: Card[],
   trickLeader: number,
-  trumpSuit: Suit
+  trumpSuit: Suit,
+  playDirection: PlayDirection = 'right'
 ): number | null {
   if (trick.length === 0) return null;
+  const play = playDirection === 'left' ? 'left' : 'right';
   const leadSuit = trick[0].suit;
   let winningIndex = 0;
   let winningCard = trick[0];
@@ -48,20 +59,22 @@ export function suecaTrickWinnerIndex(
       winningCard = trick[i];
     }
   }
-  return suecaSeatAtTrickOffset(trickLeader, winningIndex);
+  return seatAtOffset(asSeat(trickLeader), winningIndex, play);
 }
 
 export function cardWouldWinTrickSueca(
   card: Card,
   trickBefore: Card[],
   trickLeader: number,
-  trumpSuit: Suit
+  trumpSuit: Suit,
+  playDirection: PlayDirection = 'right'
 ): boolean {
+  const play = playDirection === 'left' ? 'left' : 'right';
   const trick = [...trickBefore, card];
-  const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit);
+  const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit, play);
   if (winner === null) return false;
   const cardIndex = trick.length - 1;
-  return winner === suecaSeatAtTrickOffset(trickLeader, cardIndex);
+  return winner === seatAtOffset(asSeat(trickLeader), cardIndex, play);
 }
 
 export function pickLowestRank<T extends { card: Card }>(entries: T[]): T {

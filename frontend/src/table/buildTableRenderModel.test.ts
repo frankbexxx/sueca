@@ -295,6 +295,25 @@ describe('buildTableRenderModel', () => {
       expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([1, 0, 3, 2]);
     });
 
+    it('leader 0 LEFT: cards map to seats 0 → 1 → 2 → 3', () => {
+      const gameState = baseState({
+        playDirection: 'left',
+        trickLeader: 0,
+        currentTrick: fourCards,
+        currentPlayerIndex: 3
+      });
+      const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'sueca',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow
+      });
+      expect(model.currentTrick.map((t) => t.playerIndex)).toEqual([0, 1, 2, 3]);
+    });
+
     it('Hearts still uses clockwise leader+offset', () => {
       const gameState = baseState({
         trickLeader: 0,

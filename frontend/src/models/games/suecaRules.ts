@@ -12,7 +12,9 @@
  *   Phase 1: vocabulary + helpers
  *   Phase 2: Game engine uses playDirection (default RIGHT)
  *   Phase 3: canonical deal via playDirection + dealAlignment
- *   AI/CI/render still hard-code RIGHT/ACW until later phases
+ *   Phase 4: Setup / dealing modal UI
+ *   Phase 5: AI / CI / render consume playDirection
+ *   Phase 6+: persistence + cleanup
  */
 
 import type { DealAlignment, PlayDirection } from '../../types/game';

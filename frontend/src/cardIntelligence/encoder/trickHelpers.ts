@@ -1,19 +1,24 @@
-import { CARD_HIERARCHY, Card, Suit } from '../../types/game';
+import { CARD_HIERARCHY, Card, PlayDirection, Suit } from '../../types/game';
 import { trickWinnerIndex } from '../../models/games/trickUtils';
-import {
-  clockwiseSeatAtTrickOffset,
-  suecaInferTrickLeader,
-  suecaSeatAtTrickOffset
-} from '../../models/games/suecaDeal';
+import { asSeat, inferTrickLeader as inferTrickLeaderCanonical, seatAtOffset } from '../../models/games/suecaRules';
+import { clockwiseSeatAtTrickOffset } from '../../models/games/suecaDeal';
 
 /** Infer leader under clockwise play (Hearts / Spades / King). */
 export function inferTrickLeader(playerIndex: number, turnIndex: number): number {
   return (playerIndex - turnIndex + 4) % 4;
 }
 
-/** Infer leader under Sueca anti-clockwise play. */
-export function inferSuecaTrickLeader(playerIndex: number, turnIndex: number): number {
-  return suecaInferTrickLeader(playerIndex, turnIndex);
+/**
+ * Infer leader under Sueca session PlayDirection.
+ * Default `'right'` preserves production RIGHT/ACW behaviour for legacy logs.
+ */
+export function inferSuecaTrickLeader(
+  playerIndex: number,
+  turnIndex: number,
+  playDirection: PlayDirection = 'right'
+): number {
+  const play = playDirection === 'left' ? 'left' : 'right';
+  return inferTrickLeaderCanonical(asSeat(playerIndex), turnIndex, play);
 }
 
 export function suecaCompareTrickCards(
@@ -40,9 +45,11 @@ export function suecaCompareTrickCards(
 export function suecaTrickWinnerIndex(
   trick: Card[],
   trickLeader: number,
-  trumpSuit: Suit | null
+  trumpSuit: Suit | null,
+  playDirection: PlayDirection = 'right'
 ): number | null {
   if (trick.length === 0 || !trumpSuit) return null;
+  const play = playDirection === 'left' ? 'left' : 'right';
   const leadSuit = trick[0].suit;
   let winningIndex = 0;
   let winningCard = trick[0];
@@ -52,7 +59,7 @@ export function suecaTrickWinnerIndex(
       winningCard = trick[i];
     }
   }
-  return suecaSeatAtTrickOffset(trickLeader, winningIndex);
+  return seatAtOffset(asSeat(trickLeader), winningIndex, play);
 }
 
 export function standardTrickWinnerIndex(
@@ -68,14 +75,16 @@ export function cardWouldWinTrickSueca(
   card: Card,
   trickBefore: Card[],
   trickLeader: number,
-  trumpSuit: Suit | null
+  trumpSuit: Suit | null,
+  playDirection: PlayDirection = 'right'
 ): boolean {
   if (!trumpSuit) return false;
+  const play = playDirection === 'left' ? 'left' : 'right';
   const trick = [...trickBefore, card];
-  const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit);
+  const winner = suecaTrickWinnerIndex(trick, trickLeader, trumpSuit, play);
   if (winner === null) return false;
   const cardIndex = trick.length - 1;
-  return winner === suecaSeatAtTrickOffset(trickLeader, cardIndex);
+  return winner === seatAtOffset(asSeat(trickLeader), cardIndex, play);
 }
 
 export function cardWouldWinTrickStandard(
@@ -95,10 +104,12 @@ export function lowestWinningCardSueca(
   legalMoves: Card[],
   trickBefore: Card[],
   trickLeader: number,
-  trumpSuit: Suit | null
+  trumpSuit: Suit | null,
+  playDirection: PlayDirection = 'right'
 ): Card | null {
+  const play = playDirection === 'left' ? 'left' : 'right';
   const winners = legalMoves.filter((c) =>
-    cardWouldWinTrickSueca(c, trickBefore, trickLeader, trumpSuit)
+    cardWouldWinTrickSueca(c, trickBefore, trickLeader, trumpSuit, play)
   );
   if (winners.length === 0) return null;
   return winners.reduce((best, cur) =>
@@ -110,12 +121,14 @@ export function lowestTrumpThatWinsSueca(
   legalMoves: Card[],
   trickBefore: Card[],
   trickLeader: number,
-  trumpSuit: Suit | null
+  trumpSuit: Suit | null,
+  playDirection: PlayDirection = 'right'
 ): Card | null {
   if (!trumpSuit || trickBefore.length === 0) return null;
+  const play = playDirection === 'left' ? 'left' : 'right';
   const trumps = legalMoves.filter((c) => c.suit === trumpSuit);
   const winners = trumps.filter((c) =>
-    cardWouldWinTrickSueca(c, trickBefore, trickLeader, trumpSuit)
+    cardWouldWinTrickSueca(c, trickBefore, trickLeader, trumpSuit, play)
   );
   if (winners.length === 0) return null;
   return winners.reduce((best, cur) =>

@@ -14,11 +14,17 @@ import {
   lowestWinningCardSueca,
   suecaTrickWinnerIndex,
 } from './trickHelpers';
+import type { PlayDirection } from '../../types/game';
 
 function deriveCutRisk(trumpSeenCount: number, trickLen: number): 'low' | 'medium' | 'high' {
   if (trumpSeenCount >= 6) return 'high';
   if (trumpSeenCount >= 3 || trickLen >= 2) return 'medium';
   return 'low';
+}
+
+function playDirectionFromEvent(event: CardDecisionLogEvent): PlayDirection {
+  const vf = event.variantFields as SuecaLogFields;
+  return vf.playDirection === 'left' ? 'left' : 'right';
 }
 
 export function encodeSuecaVariant(
@@ -29,6 +35,7 @@ export function encodeSuecaVariant(
   const vf = event.variantFields as SuecaLogFields;
   const partnerIndex = vf.partnerIndex ?? (event.playerIndex + 2) % 4;
   const teamIndex = vf.teamIndex ?? 1;
+  const playDirection = playDirectionFromEvent(event);
   const plays = event.roundPlayHistory;
   const trumpSuit = event.trumpSuit;
   const acesSeenBySuit = acesSeenFromPlays(plays);
@@ -42,20 +49,21 @@ export function encodeSuecaVariant(
     partnerWinning = currentWinner === partnerIndex;
   }
 
-  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex);
+  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex, playDirection);
 
   let canWinCheaply: boolean | null = null;
   const cheapestWinner = lowestWinningCardSueca(
     event.legalMoves,
     event.trickBefore,
     trickLeader,
-    trumpSuit
+    trumpSuit,
+    playDirection
   );
   if (cheapestWinner) {
     canWinCheaply = true;
   } else if (event.legalMoves.length > 0 && trumpSuit) {
     const anyWinner = event.legalMoves.some((c) =>
-      cardWouldWinTrickSueca(c, event.trickBefore, trickLeader, trumpSuit)
+      cardWouldWinTrickSueca(c, event.trickBefore, trickLeader, trumpSuit, playDirection)
     );
     canWinCheaply = anyWinner ? false : null;
   }
@@ -65,7 +73,8 @@ export function encodeSuecaVariant(
     event.legalMoves,
     event.trickBefore,
     trickLeader,
-    trumpSuit
+    trumpSuit,
+    playDirection
   );
   if (lowestTrumpWinner) {
     canCutWithLowestTrump = true;
@@ -87,6 +96,7 @@ export function encodeSuecaVariant(
   return {
     partnerIndex,
     teamIndex,
+    playDirection,
     acesSeenBySuit,
     sevensSeenBySuit,
     trumpSeenCount,
@@ -104,7 +114,8 @@ export function resolveSuecaCurrentWinner(
   if (trickEndEvent) return trickEndEvent.winnerIndex;
   if (event.currentWinnerBefore !== null) return event.currentWinnerBefore;
   if (event.currentWinnerAfter !== null) return event.currentWinnerAfter;
+  const playDirection = playDirectionFromEvent(event);
   const trick = event.trickAfter.length > 0 ? event.trickAfter : event.trickBefore;
-  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex);
-  return suecaTrickWinnerIndex(trick, trickLeader, event.trumpSuit);
+  const trickLeader = inferSuecaTrickLeader(event.playerIndex, event.turnIndex, playDirection);
+  return suecaTrickWinnerIndex(trick, trickLeader, event.trumpSuit, playDirection);
 }

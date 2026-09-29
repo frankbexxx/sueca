@@ -33,6 +33,7 @@ export function extractVariantFields(
       return {
         partnerIndex: (playerIndex + 2) % 4,
         teamIndex,
+        playDirection: state.playDirection === 'left' ? 'left' : 'right',
       } satisfies SuecaLogFields;
     case 'spades': {
       const bids = variantState.bids;
