@@ -4,6 +4,7 @@ import { AIDifficulty, DealingDirection, DealingMethod, GameState } from '../../
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
 import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
 import { SuecaVariantFlow } from './variantFlowApi';
+import { migrateSuecaPersistedState } from './migrateSuecaPersistedState';
 
 export class SuecaGame extends BaseGameAdapter {
   variant = 'sueca' as const;
@@ -122,20 +123,22 @@ export class SuecaGame extends BaseGameAdapter {
   }
 
   restoreState(state: GameState, options?: RestoreStateOptions): GameState {
-    const names = state.players.map((p) => p.name);
-    const playDirection =
-      state.playDirection === 'left' || state.playDirection === 'right'
-        ? state.playDirection
-        : 'right';
+    const migrated = migrateSuecaPersistedState({ ...state, variant: 'sueca' });
+    if (!migrated.ok || !migrated.state) {
+      throw new Error(`Sueca restoreState rejected: ${migrated.reason}`);
+    }
+    const restored = migrated.state;
+    const names = restored.players.map((p) => p.name);
+    const playDirection = restored.playDirection === 'left' ? 'left' : 'right';
     this.game = new Game(
       names,
-      state.dealingMethod || 'A',
-      state.aiDifficulty || 'medium',
+      restored.dealingMethod || 'A',
+      restored.aiDifficulty || 'medium',
       undefined,
       undefined,
       playDirection
     );
-    this.game.loadState(state);
+    this.game.loadState(restored);
     if (options?.localPlayerIndex !== undefined) {
       this.game.setLocalPlayerIndex(options.localPlayerIndex, options.multiplayerSlots);
     }

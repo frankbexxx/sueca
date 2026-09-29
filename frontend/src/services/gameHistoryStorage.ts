@@ -6,6 +6,7 @@ import {
   loadDurableJson,
   writeDurableEnvelope
 } from './durableLocalStorage';
+import { stampSuecaSchemaV2, migrateSuecaPersistedState } from '../models/games/migrateSuecaPersistedState';
 
 export const PINNED_KEY = 'sueca-pinned-sessions-v1';
 export const FINISHED_KEY = 'sueca-finished-games-v1';
@@ -97,15 +98,31 @@ export function loadPinnedSessions(): PinnedMap {
 export function loadPinnedSession(variant: GameVariant): PinnedGameSession | null {
   const session = readPinned()[variant];
   if (!session || session.state?.isGameOver) return null;
+  if (session.config.gameVariant === 'sueca') {
+    const migrated = migrateSuecaPersistedState({ ...session.state, variant: 'sueca' });
+    if (!migrated.ok || !migrated.state) {
+      try {
+        const map = readPinned();
+        delete map.sueca;
+        writePinned(map);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    return { ...session, state: migrated.state };
+  }
   return session;
 }
 
 export function pinGameSession(config: GameConfig, state: GameState, label?: string): void {
   if (state.isGameOver) return;
   const map = readPinned();
+  const persisted =
+    config.gameVariant === 'sueca' ? stampSuecaSchemaV2({ ...state, variant: 'sueca' }) : state;
   map[config.gameVariant] = {
     config,
-    state,
+    state: persisted,
     savedAt: Date.now(),
     pinnedAt: Date.now(),
     label

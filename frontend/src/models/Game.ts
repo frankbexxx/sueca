@@ -7,6 +7,7 @@ import {
   legacyFieldsForAlignment,
   resolveLegacyDealAlignment
 } from './games/suecaDeal';
+import { migrateSuecaPersistedState } from './games/migrateSuecaPersistedState';
 import {
   asSeat,
   firstLeader,
@@ -246,6 +247,7 @@ export class Game {
       dealingDirection: initialDirection,
       playDirection: play,
       dealAlignment: initialAlignment,
+      schemaVersion: 2,
       waitingForRoundStart: true, // Pause before starting (show trump card)
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -264,20 +266,16 @@ export class Game {
   }
 
   loadState(state: GameState): void {
+    // Sueca: require migrated schema v2 — do not invent playDirection here.
+    if ((state.variant ?? 'sueca') === 'sueca') {
+      const migrated = migrateSuecaPersistedState(state);
+      if (!migrated.ok || !migrated.state) {
+        throw new Error(`Sueca loadState rejected: ${migrated.reason}`);
+      }
+      this.state = migrated.state;
+      return;
+    }
     this.state = cloneGameState(state);
-    // TEMPORARY Phase 6 bridge: legacy snapshots without playDirection → RIGHT/ACW.
-    if (this.state.playDirection !== 'left' && this.state.playDirection !== 'right') {
-      this.state.playDirection = 'right';
-    }
-    // TEMPORARY Phase 6 bridge: missing dealAlignment → same (or resolve from legacy).
-    if (this.state.dealAlignment !== 'same' && this.state.dealAlignment !== 'opposite') {
-      const resolved = resolveLegacyDealAlignment(
-        this.playDir(),
-        this.state.dealingMethod ?? 'A',
-        this.state.dealingDirection ?? 'right'
-      );
-      this.state.dealAlignment = resolved ?? 'same';
-    }
   }
 
   setLocalPlayerIndex(

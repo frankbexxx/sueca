@@ -1,11 +1,19 @@
-import { DealingMethod } from './game';
+import { DealAlignment, DealingMethod } from './game';
 import { SpadesBidType } from '../models/games/spades/spadesRules';
 
 /** Player intent pushed to Firebase; host validates and applies. */
 export type GameAction =
   | { type: 'playCard'; playerIndex: number; cardIndex: number; clientId: string; at: number }
   | { type: 'finishTrick'; playerIndex: number; clientId: string; at: number }
-  | { type: 'startRound'; dealingMethod: DealingMethod; clientId: string; at: number }
+  | {
+      type: 'startRound';
+      /** @deprecated TEMPORARY bridge — prefer dealAlignment. */
+      dealingMethod: DealingMethod;
+      /** Canonical per-hand packaging (ARCH-SUECA-08). */
+      dealAlignment?: DealAlignment;
+      clientId: string;
+      at: number;
+    }
   | { type: 'continueRound'; clientId: string; at: number }
   | { type: 'confirmPass'; playerIndex: number; clientId: string; at: number }
   | {

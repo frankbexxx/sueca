@@ -11,6 +11,10 @@ import {
   loadDurableJson,
   writeDurableEnvelope
 } from './durableLocalStorage';
+import {
+  migrateSuecaPersistedState,
+  stampSuecaSchemaV2
+} from '../models/games/migrateSuecaPersistedState';
 
 export const SESSIONS_KEY = 'sueca-saved-sessions-v1';
 export const LEGACY_SESSION_KEY = 'sueca-saved-session';
@@ -308,20 +312,39 @@ export function saveGameSession(config: GameConfig, state: GameState): void {
     writeSessions(sessions);
     return;
   }
-  sessions[variant] = { config, state, savedAt: Date.now() };
+  const persistedState =
+    variant === 'sueca' ? stampSuecaSchemaV2({ ...state, variant: 'sueca' }) : state;
+  sessions[variant] = { config, state: persistedState, savedAt: Date.now() };
   writeSessions(sessions);
 }
 
 export function loadGameSession(variant?: GameVariant): SavedGameSession | null {
   const sessions = readSessionsRaw();
+  const resolve = (session: SavedGameSession | undefined): SavedGameSession | null => {
+    if (!isValidSession(session) || isObsoleteKingSavedSession(session)) return null;
+    if (session.config.gameVariant !== 'sueca') return session;
+    const migrated = migrateSuecaPersistedState({ ...session.state, variant: 'sueca' });
+    if (!migrated.ok || !migrated.state) {
+      // Quarantine unusable Sueca resume — clear slot so Continue does not invent play.
+      try {
+        const next = { ...sessions };
+        delete next.sueca;
+        writeSessions(next);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    return { ...session, state: migrated.state };
+  };
+
   if (variant) {
-    const session = sessions[variant];
-    return isValidSession(session) ? session : null;
+    return resolve(sessions[variant]);
   }
   let latest: SavedGameSession | null = null;
   for (const v of ALL_VARIANTS) {
-    const session = sessions[v];
-    if (isValidSession(session) && (!latest || session.savedAt > latest.savedAt)) {
+    const session = resolve(sessions[v]);
+    if (session && (!latest || session.savedAt > latest.savedAt)) {
       latest = session;
     }
   }

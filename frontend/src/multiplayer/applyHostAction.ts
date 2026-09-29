@@ -36,8 +36,14 @@ export function applyHostAction(
     case 'startRound': {
       if (adapter.variant === 'sueca') {
         const sueca = adapter as SuecaGame;
-        if (options.dealAlignment === 'same' || options.dealAlignment === 'opposite') {
-          sueca.setDealAlignment(options.dealAlignment);
+        const align =
+          action.dealAlignment === 'same' || action.dealAlignment === 'opposite'
+            ? action.dealAlignment
+            : options.dealAlignment === 'same' || options.dealAlignment === 'opposite'
+              ? options.dealAlignment
+              : null;
+        if (align) {
+          sueca.setDealAlignment(align);
         } else {
           // TEMPORARY bridge for older action payloads / tests.
           sueca.setDealingMethod(options.roundDealingMethod ?? action.dealingMethod);

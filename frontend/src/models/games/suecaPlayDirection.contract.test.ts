@@ -202,12 +202,14 @@ describe('ARCH-SUECA-04 playDirection snapshot / restore', () => {
     expect(other.getState().trickLeader).toBe(1);
   });
 
-  it('TEMPORARY: missing playDirection normalizes to right', () => {
+  it('legacy missing playDirection migrates to right (schema v2)', () => {
     const game = new Game(['A', 'B', 'C', 'D'], 'A');
-    const raw = { ...game.getState() } as Partial<GameState>;
+    const raw = { ...game.getState(), waitingForRoundStart: true } as Partial<GameState>;
     delete raw.playDirection;
+    delete raw.schemaVersion;
     const normalized = normalizeGameState(raw);
     expect(normalized.playDirection).toBe('right');
+    expect(normalized.schemaVersion).toBe(2);
 
     game.loadState(normalized);
     expect(game.getState().playDirection).toBe('right');

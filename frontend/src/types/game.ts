@@ -54,19 +54,24 @@ export interface GameState {
   waitingForTrickEnd: boolean;
   nextTrickLeader: number | null;
   isFirstTrick: boolean; // Track if this is the first trick of the round
-  dealingMethod: DealingMethod; // Current dealing method
-  dealingDirection: DealingDirection; // Sueca deal sense: right=anti-clockwise (default), left=clockwise
+  dealingMethod: DealingMethod; // COMPATIBILITY-ONLY (Sueca) — derived from playDirection×dealAlignment
+  dealingDirection: DealingDirection; // COMPATIBILITY-ONLY (Sueca) — derived bridge; not SoT
   /**
-   * Sueca session play direction (match-to-4). Independent of dealingDirection.
-   * Default `'right'` (ACW). TEMPORARY: missing values normalize to `'right'` until Phase 6 persistence migration.
+   * CANONICAL (Sueca schema v2) — session play direction (match-to-4).
+   * Independent of dealingDirection. Resume uses persisted/migrated value; setup
+   * preference (`sueca-play-direction`) only seeds NEW matches.
    */
   playDirection: PlayDirection;
   /**
-   * Sueca per-hand deal alignment vs playDirection.
-   * Default `'same'`. Independent of first leader / trick order.
-   * TEMPORARY: missing values normalize to `'same'` until Phase 6.
+   * CANONICAL (Sueca schema v2) — per-hand deal alignment vs playDirection.
+   * Default `'same'` for new hands. Independent of first leader / trick order.
    */
   dealAlignment: DealAlignment;
+  /**
+   * CANONICAL (Sueca) — persisted schema version (ARCH-SUECA-08).
+   * Value `2` required for exact restore. Missing → legacy migrator path.
+   */
+  schemaVersion?: number;
   waitingForRoundStart: boolean; // Pause before starting new round
   waitingForRoundEnd: boolean; // Pause to show round results
   waitingForGameStart: boolean; // Pause before starting new game
