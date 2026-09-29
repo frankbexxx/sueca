@@ -22,8 +22,19 @@ export class SuecaGame extends BaseGameAdapter {
     const aiDifficulty = (options?.aiDifficulty as AIDifficulty) || 'medium';
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
     const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
+    const playDirection =
+      options?.playDirection === 'left' || options?.playDirection === 'right'
+        ? options.playDirection
+        : 'right';
 
-    this.game = new Game(playerNames, dealingMethod, aiDifficulty, localPlayerIndex, multiplayerSlots);
+    this.game = new Game(
+      playerNames,
+      dealingMethod,
+      aiDifficulty,
+      localPlayerIndex,
+      multiplayerSlots,
+      playDirection
+    );
     const state = this.game.getState();
     state.variant = 'sueca';
     return state;
@@ -101,9 +112,24 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.setDealingDirection(direction);
   }
 
+  setPlayDirection(direction: 'left' | 'right'): void {
+    this.game?.setPlayDirection(direction);
+  }
+
   restoreState(state: GameState, options?: RestoreStateOptions): GameState {
     const names = state.players.map((p) => p.name);
-    this.game = new Game(names, state.dealingMethod || 'A', state.aiDifficulty || 'medium');
+    const playDirection =
+      state.playDirection === 'left' || state.playDirection === 'right'
+        ? state.playDirection
+        : 'right';
+    this.game = new Game(
+      names,
+      state.dealingMethod || 'A',
+      state.aiDifficulty || 'medium',
+      undefined,
+      undefined,
+      playDirection
+    );
     this.game.loadState(state);
     if (options?.localPlayerIndex !== undefined) {
       this.game.setLocalPlayerIndex(options.localPlayerIndex, options.multiplayerSlots);

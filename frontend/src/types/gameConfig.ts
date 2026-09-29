@@ -1,10 +1,15 @@
-import { AIDifficulty, DealingMethod, GameVariant } from './game';
+import { AIDifficulty, DealingMethod, GameVariant, PlayDirection } from './game';
 import { RulesPresetId } from '../constants/rulesPresets';
 
 export interface GameConfig {
   playerNames: string[];
   aiDifficulty: AIDifficulty;
   dealingMethod: DealingMethod;
+  /**
+   * Sueca session play direction. Optional bridge until setup UI exposes it (Phase 4+).
+   * Omitted → engine defaults to `'right'`.
+   */
+  playDirection?: PlayDirection;
   multiplayerEnabled: boolean;
   multiplayerSessionId?: string;
   /** Index of the local human player in multiplayer sessions (0 = host). */

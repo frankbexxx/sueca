@@ -8,15 +8,17 @@
  *   'right' = physical right = anti-clockwise = step +3 mod 4
  *   'left'  = physical left  = clockwise      = step +1 mod 4
  *
- * Runtime migration status (Phase 1):
- *   Engine / AI / CI / render still hard-code RIGHT/ACW via legacy suecaDeal helpers.
- *   This module is the future single source; callers migrate in later phases.
+ * Runtime migration status:
+ *   Phase 1: vocabulary + helpers
+ *   Phase 2: Game engine uses playDirection (default RIGHT)
+ *   AI/CI/render still hard-code RIGHT/ACW until later phases
  */
 
-export type Seat = 0 | 1 | 2 | 3;
+import type { PlayDirection } from '../../types/game';
 
-/** Session-scoped play sense (match to 4 points). */
-export type PlayDirection = 'right' | 'left';
+export type { PlayDirection };
+
+export type Seat = 0 | 1 | 2 | 3;
 
 /**
  * Per-hand deal packaging relative to session {@link PlayDirection}.

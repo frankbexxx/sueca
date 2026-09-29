@@ -278,6 +278,7 @@ export class HeartsGame extends BaseGameAdapter {
       isFirstTrick: true,
       dealingMethod: 'A',
       dealingDirection: 'left',
+      playDirection: 'right',
       waitingForRoundStart: true,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

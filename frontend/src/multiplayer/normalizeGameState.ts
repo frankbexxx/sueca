@@ -5,6 +5,7 @@ import {
   GameState,
   GameVariant,
   Player,
+  PlayDirection,
 } from '../types/game';
 import { mpWarn } from '../utils/mpDebug';
 
@@ -73,6 +74,10 @@ export function normalizeGameState(
     isFirstTrick: source.isFirstTrick ?? true,
     dealingMethod: (source.dealingMethod ?? 'A') as DealingMethod,
     dealingDirection: (source.dealingDirection ?? 'right') as DealingDirection,
+    // TEMPORARY Phase 6 persistence bridge — missing playDirection → production RIGHT/ACW.
+    playDirection: (source.playDirection === 'left' || source.playDirection === 'right'
+      ? source.playDirection
+      : 'right') as PlayDirection,
     waitingForRoundStart: source.waitingForRoundStart ?? false,
     waitingForRoundEnd: source.waitingForRoundEnd ?? false,
     waitingForGameStart: source.waitingForGameStart ?? false,

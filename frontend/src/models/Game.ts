@@ -1,12 +1,14 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty } from '../types/game';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty, PlayDirection } from '../types/game';
 import { Deck } from './Deck';
 import { applyHandSortToState } from '../utils/handSort';
+import { dealSuecaFromCardOrder } from './games/suecaDeal';
 import {
-  dealSuecaFromCardOrder,
-  suecaNextAntiClockwise,
-  suecaPhysicalRightOf,
-  suecaSeatAtTrickOffset
-} from './games/suecaDeal';
+  asSeat,
+  firstLeader,
+  nextDealer,
+  nextSeat,
+  seatAtOffset
+} from './games/suecaRules';
 import { cloneGameState } from './games/cloneGameState';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
 
@@ -19,10 +21,23 @@ export class Game {
     dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
     localPlayerIndex?: number,
-    multiplayerSlots?: Array<'human' | 'ai'>
+    multiplayerSlots?: Array<'human' | 'ai'>,
+    playDirection: PlayDirection = 'right'
   ) {
     this.deck = new Deck();
-    this.state = this.initializeGame(playerNames, dealingMethod, aiDifficulty, localPlayerIndex, multiplayerSlots);
+    this.state = this.initializeGame(
+      playerNames,
+      dealingMethod,
+      aiDifficulty,
+      localPlayerIndex,
+      multiplayerSlots,
+      playDirection
+    );
+  }
+
+  /** Session play direction — defaults to RIGHT/ACW when missing (legacy snapshots). */
+  private playDir(): PlayDirection {
+    return this.state.playDirection === 'left' ? 'left' : 'right';
   }
 
   /**
@@ -139,7 +154,8 @@ export class Game {
     dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
     localPlayerIndex?: number,
-    multiplayerSlots?: Array<'human' | 'ai'>
+    multiplayerSlots?: Array<'human' | 'ai'>,
+    playDirection: PlayDirection = 'right'
   ): GameState {
     // Choose dealer
     const dealerName = this.chooseDealer(playerNames);
@@ -167,8 +183,8 @@ export class Game {
     
     // Find dealer index in seated order
     const dealerIndex = seatedOrder.indexOf(dealerName);
-    // First leader = player physically to the dealer's right (tableLayout east when dealer south).
-    const firstTrickStarter = suecaPhysicalRightOf(dealerIndex);
+    const play = playDirection === 'left' ? 'left' : 'right';
+    const firstTrickStarter = firstLeader(asSeat(dealerIndex), play);
 
     return {
       players,
@@ -190,6 +206,7 @@ export class Game {
       isFirstTrick: true,
       dealingMethod: dealingMethod,
       dealingDirection: 'right',
+      playDirection: play,
       waitingForRoundStart: true, // Pause before starting (show trump card)
       waitingForRoundEnd: false,
       waitingForGameStart: false,
@@ -209,6 +226,10 @@ export class Game {
 
   loadState(state: GameState): void {
     this.state = cloneGameState(state);
+    // TEMPORARY Phase 6 bridge: legacy snapshots without playDirection → RIGHT/ACW.
+    if (this.state.playDirection !== 'left' && this.state.playDirection !== 'right') {
+      this.state.playDirection = 'right';
+    }
   }
 
   setLocalPlayerIndex(
@@ -280,9 +301,11 @@ export class Game {
     // Track this card as played
     this.state.playedCards.push(card);
 
-    // Calculate next player — always anti-clockwise (to the dealer's right).
-    // First leader is already physical-right of dealer; no separate first-trick path.
-    this.state.currentPlayerIndex = suecaNextAntiClockwise(this.state.currentPlayerIndex);
+    // Next player follows session PlayDirection (default RIGHT = ACW / physical right).
+    this.state.currentPlayerIndex = nextSeat(
+      asSeat(this.state.currentPlayerIndex),
+      this.playDir()
+    );
 
     // If trick is complete, evaluate it
     if (this.state.currentTrick.length === 4) {
@@ -366,9 +389,12 @@ export class Game {
     // Calculate points for this trick
     const points = trick.reduce((sum, card) => sum + CARD_POINTS[card.rank], 0);
 
-    // Map trick card index → seat under Sueca anti-clockwise play (REL-SUECA-REG-02).
-    // Do NOT use (trickLeader + winningIndex) % 4 — that is clockwise (Hearts/Spades/King).
-    const actualWinnerIndex = suecaSeatAtTrickOffset(this.state.trickLeader, winningIndex);
+    // Map trick card index → seat under session PlayDirection (ARCH-SUECA-04).
+    const actualWinnerIndex = seatAtOffset(
+      asSeat(this.state.trickLeader),
+      winningIndex,
+      this.playDir()
+    );
     const winningTeam = this.state.players[actualWinnerIndex].team;
 
     if (winningTeam === 1) {
@@ -502,6 +528,10 @@ export class Game {
     this.state.dealingDirection = direction;
   }
 
+  setPlayDirection(direction: PlayDirection): void {
+    this.state.playDirection = direction === 'left' ? 'left' : 'right';
+  }
+
   private startNewRound(): void {
     this.state.nextRoundValue = undefined;
     this.state.round++;
@@ -509,7 +539,8 @@ export class Game {
     this.state.currentTrick = [];
     this.state.playedCards = [];
 
-    this.state.dealerIndex = suecaPhysicalRightOf(this.state.dealerIndex);
+    const play = this.playDir();
+    this.state.dealerIndex = nextDealer(asSeat(this.state.dealerIndex), play);
 
     this.state.players.forEach((p) => {
       p.hand = [];
@@ -517,7 +548,7 @@ export class Game {
     this.state.trumpSuit = null;
     this.state.trumpCard = null;
 
-    const firstTrickStarter = suecaPhysicalRightOf(this.state.dealerIndex);
+    const firstTrickStarter = firstLeader(asSeat(this.state.dealerIndex), play);
     this.state.currentPlayerIndex = firstTrickStarter;
     this.state.trickLeader = firstTrickStarter;
     this.state.lastTrickWinner = null;

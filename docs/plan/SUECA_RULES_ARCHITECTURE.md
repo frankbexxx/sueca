@@ -39,9 +39,11 @@ Still present (scheduled removal after later phases):
 
 ## Runtime status
 
-**Phase 1 does not change behaviour.** Production Sueca remains RIGHT/ACW play;
-deal still Method A/B × absolute left/right. Docs describe the target product
-contract; engine migration is Phase 2+.
+**Phase 1:** vocabulary + pure helpers; no behaviour change.
+**Phase 2:** `Game` engine uses `state.playDirection` (default `'right'`) for first
+leader, play order, winner seats, and dealer rotation. Legacy `dealingDirection`
+remains deal-only. AI/CI/render still assume RIGHT/ACW until later phases.
+UI does not yet expose playDirection.
 
 ## Deferred
 

@@ -187,6 +187,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       isFirstTrick: true,
       dealingMethod: 'A',
       dealingDirection: 'right',
+      playDirection: 'right',
       waitingForRoundStart: false,
       waitingForRoundEnd: false,
       waitingForGameStart: false,

@@ -22,6 +22,12 @@ export interface Player {
 export type DealingMethod = 'A' | 'B';
 /** Sueca deal sense: `right` = anti-clockwise / physical-right first (default); `left` = clockwise. */
 export type DealingDirection = 'left' | 'right';
+/**
+ * Sueca session play sense (ARCH-SUECA-02/04).
+ * `right` = physical right / ACW (+3); `left` = physical left / CW (+1).
+ * Default production value: `right`.
+ */
+export type PlayDirection = 'right' | 'left';
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameState {
@@ -44,6 +50,11 @@ export interface GameState {
   isFirstTrick: boolean; // Track if this is the first trick of the round
   dealingMethod: DealingMethod; // Current dealing method
   dealingDirection: DealingDirection; // Sueca deal sense: right=anti-clockwise (default), left=clockwise
+  /**
+   * Sueca session play direction (match-to-4). Independent of dealingDirection.
+   * Default `'right'` (ACW). TEMPORARY: missing values normalize to `'right'` until Phase 6 persistence migration.
+   */
+  playDirection: PlayDirection;
   waitingForRoundStart: boolean; // Pause before starting new round
   waitingForRoundEnd: boolean; // Pause to show round results
   waitingForGameStart: boolean; // Pause before starting new game
