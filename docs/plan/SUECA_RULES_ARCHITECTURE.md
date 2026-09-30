@@ -1,171 +1,97 @@
 /**
- * Sueca rules architecture (ARCH-SUECA-03 … ARCH-SUECA-08)
+ * Sueca rules architecture (current — ARCH-SUECA-03…09)
  */
 
-## Canonical module
+## Canonical product rules
 
-`frontend/src/models/games/suecaRules.ts`
+| Concept | Values | Scope |
+|---------|--------|-------|
+| `PlayDirection` | `'right'` (+3 ACW) \| `'left'` (+1 CW) | Session / match-to-4 |
+| `DealAlignment` | `'same'` \| `'opposite'` | Per hand (dealing modal) |
+| `Seat` | `0\|1\|2\|3` — South, West, North, East | Fixed physical compass |
 
-| Type | Meaning |
-|------|---------|
-| `Seat` | `0\|1\|2\|3` — South, West, North, East |
-| `PlayDirection` | `'right'` (+3 ACW) \| `'left'` (+1 CW) — session-scoped |
-| `DealAlignment` | `'same'` \| `'opposite'` — per-hand deal packaging vs play |
-| `SuecaSessionRules` | `{ playDirection }` |
-| `SuecaHandDealPolicy` | `{ alignment }` |
-| `SuecaTrumpPlacement` | `'dealer-last-card'` (same) \| `'dealer-first-card'` (opposite) |
+Geometry helpers live in `frontend/src/models/games/suecaRules.ts`:
+`nextSeat`, `seatAtOffset`, `firstLeader`, `nextDealer`, `partnerOf`,
+`physicalRightOf`, `physicalLeftOf`, `dealSeatOrder`, `trumpPlacementFor`,
+`shufflerForDealer`, `cutterForDealer`, `inferTrickLeader`.
 
-Geometry: `nextSeat`, `seatAtOffset`, `firstLeader`, `nextDealer`, `partnerOf`,
-`physicalRightOf`, `physicalLeftOf`, `oppositeDirection`, `dealDirectionFor`,
-`dealSeatOrder`, `trumpPlacementFor`, `shufflerForDealer`, `cutterForDealer`,
-`inferTrickLeader`.
+Shuffler = physical right of dealer; cutter = partner of shuffler —
+**independent** of PlayDirection / DealAlignment.
 
-Shuffler = physical right of dealer; cutter = partner of shuffler. **Independent**
-of PlayDirection / DealAlignment.
+Renderers must not rotate the table; PlayDirection changes logical progression only.
 
-Physical seat compass is fixed (0S/1W/2N/3E). PlayDirection changes logical
-progression only — renderers must not rotate the table.
+## Source-of-truth ownership
 
-## Runtime status
+| Concern | Owner |
+|---------|-------|
+| Session play | Setup preference seeds **new** matches; `state.playDirection` wins on resume |
+| Hand deal packaging | Dealing modal → `state.dealAlignment` (default SAME each new hand) |
+| Seat geometry | `suecaRules.ts` |
+| Deal engine | `dealSuecaCanonical(playDirection, dealAlignment)` |
+| Progression (lead / play / winners / dealer rotate) | `Game` via canonical helpers |
+| AI / CI / table / Phaser | Consumers of `state.playDirection` only |
+| Persistence migration | `migrateSuecaPersistedState` |
 
-**Phase 1:** vocabulary + pure helpers.
-**Phase 2:** `Game` uses `playDirection` for leader / play / winners / dealer rotation.
-**Phase 3:** canonical deal via `dealSuecaCanonical(playDirection, dealAlignment)`.
-**Phase 4:** Setup owns session `PlayDirection`; dealing modal owns per-hand `DealAlignment`.
-**Phase 5 (ARCH-SUECA-07):** AI, Card Intelligence, table model, Phaser (via model), and
-DOM TrickArea consume `state.playDirection` + canonical `seatAtOffset` /
-`inferTrickLeader`. Fixed-ACW helpers remain as deprecated bridges for tests/legacy.
-**Phase 6 (ARCH-SUECA-08):** persisted schema v2 + central migrator (this doc § Persistence).
+No second Sueca rule engine is allowed.
 
-### Consumer wiring (Phase 5)
+## Schema v2
 
-| Consumer | Source of direction |
-|----------|---------------------|
-| AI (`suecaTrickHelpers` / `SuecaStrategy`) | `state.playDirection` |
-| CI encoder / eval / trickEvents | log `SuecaLogFields.playDirection` + state |
-| `buildTableRenderModel` / TrickArea | `gameState.playDirection` |
-| Phaser | inherits seats from table model (no local arithmetic) |
+Persisted Sueca GameState is understood from:
 
-Partners remain geometric: `partnerOf` → 0↔2, 1↔3 (not direction-dependent).
+- `schemaVersion: 2`
+- `playDirection`
+- `dealAlignment`
+- normal game fields (seats, trick, scores, waiting flags, …)
 
----
+New Sueca writes do **not** include `dealingMethod` / `dealingDirection`.
 
-## Persistence schema v2 (ARCH-SUECA-08 / Phase 6)
+## Migration boundary
 
-**Constant:** `SUECA_STATE_SCHEMA_VERSION = 2`
+Entry: `migrateSuecaPersistedState(raw)`.
 
-**Entry point:** `migrateSuecaPersistedState(raw)` in
-`frontend/src/models/games/migrateSuecaPersistedState.ts`
+Used by: session resume, pinned history, `Game.loadState`, `SuecaGame.restoreState`,
+`normalizeGameState` (sync + MP).
 
-All Sueca restore paths must use it:
+### Historical Method A/B (read-only)
 
-- local session resume (`gameSessionStorage.loadGameSession`)
-- pinned resume (`gameHistoryStorage.loadPinnedSession`)
-- `Game.loadState` / `SuecaGame.restoreState`
-- MP / sync normalize (`normalizeGameState` → same migrator)
+Old saves may still carry Method × absolute direction. Migrator maps only unambiguous cases:
 
-### Canonical persisted fields
+| Legacy | Result |
+|--------|--------|
+| A + right | RIGHT + SAME |
+| B + left | RIGHT + OPPOSITE |
+| A + left / B + right between hands | reset-hand (SAME, waiting, leader recomputed) |
+| A + left / B + right mid-hand | reject / quarantine |
+| missing `playDirection` | assign RIGHT |
+| invalid seats / missing v2 waiting | reject |
 
-| Field | Values | Role |
-|-------|--------|------|
-| `schemaVersion` | `2` | Sueca GameState schema |
-| `playDirection` | `'right'` \| `'left'` | session SoT |
-| `dealAlignment` | `'same'` \| `'opposite'` | current/last hand packaging |
+`resolveLegacyDealAlignment` lives in the migrator module — migration INPUT only.
 
-### Compatibility-only fields (bridge — Phase 7 deletion candidates)
+Incoming MP `startRound.dealingMethod` is accepted at the host compatibility boundary and
+mapped to `dealAlignment`; outgoing intents use `dealAlignment`.
 
-| Field | Role |
-|-------|------|
-| `dealingMethod` | `'A'` \| `'B'` — derived via `legacyFieldsForAlignment` |
-| `dealingDirection` | absolute deal sense — derived; not SoT |
+## Legacy support still retained
 
-v2 readers must not require Method/Direction to understand semantics.
+| Item | Why | Write? | Read? | Future deletion |
+|------|-----|--------|-------|-----------------|
+| `GameState.dealingMethod?` / `dealingDirection?` | Optional; non-Sueca fillers; Sueca migrator reads old saves | Sueca: no | migrator + old payloads | when no old saves matter |
+| `GameConfig.dealingMethod?` | Optional ignored | Sueca setup: no | old last-config | when configs aged out |
+| `STORAGE_KEYS.DEALING_METHOD` | clearLocalUserData may remove orphan key | no | no (active) | remove constant after wipe period |
+| MP `startRound.dealingMethod?` | Soft-hidden peers | outgoing: no | host boundary | when no legacy peers |
+| Types `DealingMethod` / `DealingDirection` | Migrator + optional fields | — | migrator | with field removal |
 
-### Migration rules
+## No known duplicate rule engines
 
-| Input | Action |
-|-------|--------|
-| v2 + valid play/alignment + seats + `waitingForRoundStart` | **exact** — no seat/trick mutation |
-| legacy missing `playDirection` | assign **`right`** (legacy fixed ACW play) |
-| A + right | RIGHT + **same** |
-| B + left | RIGHT + **opposite** |
-| A + left / B + right between hands | **reset-hand** — `dealAlignment='same'`, `waitingForRoundStart=true`, clear hands/trick/trump/playedCards; recompute `currentPlayerIndex`/`trickLeader` from `firstLeader(dealer, playDirection)`; preserve dealer/scores/round |
-| A + left / B + right mid-hand | **rejected** / quarantine |
-| invalid seat (not 0..3) | **rejected** — never `?? 0` |
-| missing `waitingForRoundStart` (legacy, safe boundary) | prefer **`true`** + reset-hand boundary — never blindly `false` |
-| pre-a014217 / undistinguished old CW semantics | prefer quarantine over guessing (no git-history runtime detection) |
+Canonical path only: `suecaRules` + `dealSuecaCanonical` + `Game` + migrator.
+Fixed-ACW wrappers (`suecaNextAntiClockwise`, `suecaSeatAtTrickOffset`,
+`suecaInferTrickLeader`) and `dealSuecaLegacyAbsolute` are **removed**.
 
-Diagnostics (tests/logs only): `migratedFrom`, `action`, `reason`.
+## Migration history (short)
 
-### Setup preference vs session
-
-| Concern | Key / field | Wins on |
-|---------|-------------|---------|
-| Setup preference | `localStorage` `sueca-play-direction` | **new** matches only |
-| Session rule | `state.playDirection` | **resume** (must not overwrite LEFT with setup RIGHT) |
-
-New hand product default for deal packaging remains **SAME** (modal), independent of prior hand’s `dealAlignment`.
-
-### Dangerous normalize fallbacks
-
-| Pattern | Status |
-|---------|--------|
-| Sueca path → migrator | **required** |
-| `playDirection ?? 'right'` on v2 normalize | **removed** from Sueca success path (RIGHT only in new-game + legacy migrate) |
-| `waitingForRoundStart ?? false` on Sueca | **removed** — migrator handles intentionally |
-| Non-Sueca variants | still use generic defaults (unchanged) |
-| Live `Game.playDir()` / deal bridge `dealingDirection ?? 'right'` | retained for post-load runtime / legacy deal path — Phase 7 |
-
-### Sync (parked — no redesign)
-
-- Publish/subscribe goes through `normalizeGameState` → same migrator.
-- Synced v2 carries `playDirection` / `dealAlignment` / `schemaVersion`.
-- Pref key `sueca-dealing-method` still in `syncablePrefs` for compatibility — Phase 7 deletion.
-
-### Multiplayer (soft-hidden)
-
-- Wire: `startRound.dealAlignment?` preferred; `startRound.dealingMethod` TEMPORARY bridge.
-- State wire: full `GameState` via normalize/migrator — no separate MP migration semantics.
-- Unsupported Method×Direction combos must not be invented on the Sueca success path.
-
-### Replay / history
-
-- Pinned sessions stamp v2 on pin; load through migrator (quarantine on reject).
-- Finished summaries do **not** store full GameState — no direction migration needed.
-- Do not rewrite old history to fake canonical semantics.
-
----
-
-## Legacy bridge (temporary — Phase 7)
-
-Still present until cleanup:
-
-- `DealingMethod` / `DealingDirection` on `GameState` (derived bridge)
-- `legacyFieldsForAlignment` / `resolveLegacyDealAlignment` / `dealSuecaLegacyAbsolute`
-- `suecaSeatAtTrickOffset` / `suecaInferTrickLeader` / `suecaNextAntiClockwise`
-  (RIGHT-only wrappers; tests/legacy)
-- MP `startRound.dealingMethod` wire field
-- Method A/B i18n keys (`dealingMethodA` / `dealingMethodB`)
-- Storage / sync pref `sueca-dealing-method`
-- `GameConfig.dealingMethod` (bridge into initialize)
-
-## Deferred (Phase 7)
-
-Remove deprecated fixed-ACW helpers + ghost cleanup — see Phase 7 deletion inventory below.
-
-### Phase 7 deletion inventory (do not delete in Phase 6)
-
-| Item | Location / notes |
-|------|------------------|
-| `DealingMethod` / `DealingDirection` types + GameState fields | `types/game.ts` — after all writers stamp only play/align |
-| `legacyFieldsForAlignment` / `resolveLegacyDealAlignment` | `suecaDeal.ts` |
-| `dealSuecaLegacyAbsolute` / `dealSueca` absolute wrapper | `suecaDeal.ts` / `Game.dealCards` fallback |
-| `suecaSeatAtTrickOffset` / `suecaInferTrickLeader` / `suecaNextAntiClockwise` | `suecaDeal.ts` + tests still importing |
-| `STORAGE_KEYS.DEALING_METHOD` / `sueca-dealing-method` | `gameConstants`, `syncablePrefs`, `syncMeaningfulData`, `clearLocalUserData` |
-| `GameConfig.dealingMethod` | `gameConfig.ts` / setup / session last-config |
-| MP `startRound.dealingMethod` (+ applyHostAction bridge) | `multiplayerActions.ts`, `applyHostAction.ts` |
-| Method A/B i18n | `translations.ts` `dealingMethodA/B`, modal labels |
-| Live `dealingDirection ?? 'right'` in deal/syncLegacy | `Game.ts` |
-| Non-product Method×Direction paths | once product never emits them |
-| Stale comments/docs referring to Method as SoT | scattered |
-| Tests asserting Method/Direction as primary SoT | migrate assertions to play/align |
+1. Vocabulary + helpers
+2. Engine playDirection
+3. Canonical deal
+4. Setup / modal
+5. AI / CI / render consumers
+6. Schema v2 + central migrator
+7. Legacy runtime removal (this doc)

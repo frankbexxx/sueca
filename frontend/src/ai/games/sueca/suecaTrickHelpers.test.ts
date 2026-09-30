@@ -5,7 +5,7 @@ import {
   cardWouldWinTrickSueca
 } from './suecaTrickHelpers';
 import { Card, GameState, Suit } from '../../../types/game';
-import { suecaSeatAtTrickOffset } from '../../../models/games/suecaDeal';
+import { seatAtOffset } from '../../../models/games/suecaRules';
 
 function makeCard(rank: Card['rank'], suit: Suit): Card {
   return { rank, suit, id: `${suit}_${rank}` };
@@ -63,7 +63,7 @@ describe('suecaTrickHelpers', () => {
           ranks[wi] = 'A';
           const trick = ranks.map((r) => makeCard(r, 'clubs'));
           expect(suecaTrickWinnerIndex(trick, leader, trump, 'right')).toBe(
-            suecaSeatAtTrickOffset(leader, wi)
+            seatAtOffset(leader as 0 | 1 | 2 | 3, wi, 'right')
           );
         }
       }

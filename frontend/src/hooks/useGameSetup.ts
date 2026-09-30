@@ -19,7 +19,6 @@ import {
 } from '../services/setupPreferences';
 import { DEFAULT_PLAYER_NAMES, STORAGE_KEYS } from '../constants/gameConstants';
 import { bumpSyncablePrefsRevision } from '../services/syncablePrefsRevision';
-import { legacyFieldsForAlignment } from '../models/games/suecaDeal';
 
 function readStoredPlayDirection(): PlayDirection {
   const raw = localStorage.getItem(STORAGE_KEYS.PLAY_DIRECTION);
@@ -169,12 +168,9 @@ export function useGameSetup(
     savePlayerNamesForVariant(gameVariant, cleanedNames);
     setDifficultyForVariant(gameVariant, aiDifficulty);
     const play = playDirection === 'left' ? 'left' : 'right';
-    // Bridge only: setup no longer chooses Method A/B — derive default same packaging.
-    const legacy = legacyFieldsForAlignment(play, 'same');
     return {
       playerNames: cleanedNames,
       aiDifficulty,
-      dealingMethod: legacy.dealingMethod,
       playDirection: play,
       multiplayerEnabled: MULTIPLAYER_ENABLED && multiplayerEnabled,
       multiplayerSessionId: multiplayerSessionId.trim() || undefined,

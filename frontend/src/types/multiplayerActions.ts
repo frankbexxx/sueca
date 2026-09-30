@@ -7,10 +7,13 @@ export type GameAction =
   | { type: 'finishTrick'; playerIndex: number; clientId: string; at: number }
   | {
       type: 'startRound';
-      /** @deprecated TEMPORARY bridge — prefer dealAlignment. */
-      dealingMethod: DealingMethod;
-      /** Canonical per-hand packaging (ARCH-SUECA-08). */
+      /** Canonical per-hand packaging (preferred). */
       dealAlignment?: DealAlignment;
+      /**
+       * Compatibility-only incoming: legacy peers may still send Method A/B.
+       * Outgoing Sueca must use dealAlignment. Host maps unambiguous Method at boundary.
+       */
+      dealingMethod?: DealingMethod;
       clientId: string;
       at: number;
     }

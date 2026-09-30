@@ -4,16 +4,13 @@ import { SpadesGame } from '../models/games/SpadesGame';
 import { HeartsGame } from '../models/games/HeartsGame';
 import { KingGame } from '../models/games/KingGame';
 import { GameAction } from '../types/multiplayerActions';
-import { DealAlignment, DealingDirection, DealingMethod } from '../types/game';
+import { DealAlignment, DealingMethod } from '../types/game';
 import { resolvePresetId } from '../constants/rulesPresets';
+import { resolveLegacyDealAlignment } from '../models/games/migrateSuecaPersistedState';
 
 export interface ApplyHostActionOptions {
-  /** Canonical per-hand deal packaging (ARCH-SUECA-06). */
+  /** Canonical per-hand deal packaging. */
   dealAlignment?: DealAlignment;
-  /** @deprecated TEMPORARY — prefer dealAlignment. */
-  roundDealingMethod?: DealingMethod;
-  /** @deprecated TEMPORARY — prefer dealAlignment. */
-  dealingDirection?: DealingDirection;
   rulesPresetId?: string;
 }
 
@@ -44,12 +41,17 @@ export function applyHostAction(
               : null;
         if (align) {
           sueca.setDealAlignment(align);
+        } else if (action.dealingMethod) {
+          // Compatibility boundary only: map unambiguous legacy Method (play = session).
+          const play =
+            sueca.getCurrentState().playDirection === 'left' ? 'left' : 'right';
+          const method = (action.dealingMethod === 'B' ? 'B' : 'A') as DealingMethod;
+          const dir = method === 'B' ? (play === 'right' ? 'left' : 'right') : play;
+          const mapped = resolveLegacyDealAlignment(play, method, dir);
+          if (mapped) sueca.setDealAlignment(mapped);
+          else sueca.setDealAlignment('same');
         } else {
-          // TEMPORARY bridge for older action payloads / tests.
-          sueca.setDealingMethod(options.roundDealingMethod ?? action.dealingMethod);
-          if (options.dealingDirection) {
-            sueca.setDealingDirection(options.dealingDirection);
-          }
+          sueca.setDealAlignment('same');
         }
       }
       adapter.startRound(adapter.getCurrentState());

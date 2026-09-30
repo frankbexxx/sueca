@@ -1,6 +1,6 @@
 import { Game } from './Game';
 import { CARD_HIERARCHY, CARD_POINTS, Card, GameState, Suit } from '../types/game';
-import { suecaSeatAtTrickOffset } from './games/suecaDeal';
+import { seatAtOffset } from './games/suecaRules';
 
 /** Canonical seats: 0 South, 1 West, 2 North, 3 East */
 const SEAT_NAMES = ['South', 'West', 'North', 'East'] as const;
@@ -194,7 +194,7 @@ describe('REL-SUECA-REG-02 anti-clockwise winner → seat mapping', () => {
   )(
     'leader=$leader winningIndex=$winningIndex → seat $expected (ACW, not clockwise)',
     ({ leader, winningIndex, expected }) => {
-      expect(suecaSeatAtTrickOffset(leader, winningIndex)).toBe(expected);
+      expect(seatAtOffset(leader as 0 | 1 | 2 | 3, winningIndex, 'right')).toBe(expected);
       // Clockwise formula must diverge for wi 1 and 3
       if (winningIndex === 1 || winningIndex === 3) {
         expect((leader + winningIndex) % 4).not.toBe(expected);
@@ -258,7 +258,7 @@ describe('REL-SUECA-REG-02 anti-clockwise winner → seat mapping', () => {
     internal.evaluateTrick();
 
     expect(internal.state.lastTrickWinner).toBe(2);
-    expect(suecaSeatAtTrickOffset(0, 2)).toBe(2);
+    expect(seatAtOffset(0, 2, 'right')).toBe(2);
   });
 
   it('full trick play: leader 0, East (3) wins trump → next leader 3', () => {

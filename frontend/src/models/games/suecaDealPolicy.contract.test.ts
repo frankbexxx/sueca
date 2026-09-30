@@ -5,11 +5,8 @@
 import { describe, expect, it } from 'vitest';
 import { Card } from '../../types/game';
 import { Game } from '../Game';
-import {
-  dealSuecaCanonical,
-  legacyFieldsForAlignment,
-  resolveLegacyDealAlignment
-} from './suecaDeal';
+import { dealSuecaCanonical } from './suecaDeal';
+import { resolveLegacyDealAlignment } from './migrateSuecaPersistedState';
 import {
   asSeat,
   cutterForDealer,
@@ -44,7 +41,7 @@ const PLAYS: PlayDirection[] = ['right', 'left'];
 const ALIGNS: DealAlignment[] = ['same', 'opposite'];
 const SEATS: Seat[] = [0, 1, 2, 3];
 
-describe('ARCH-SUECA-05 resolveLegacyDealAlignment', () => {
+describe('ARCH-SUECA-09 resolveLegacyDealAlignment (migration-only)', () => {
   it('maps unambiguous production combos', () => {
     expect(resolveLegacyDealAlignment('right', 'A', 'right')).toBe('same');
     expect(resolveLegacyDealAlignment('right', 'B', 'left')).toBe('opposite');
@@ -52,22 +49,11 @@ describe('ARCH-SUECA-05 resolveLegacyDealAlignment', () => {
     expect(resolveLegacyDealAlignment('left', 'B', 'right')).toBe('opposite');
   });
 
-  it('rejects unsupported Method×Direction (reachable in UI — no invented semantics)', () => {
+  it('rejects unsupported Method×Direction', () => {
     expect(resolveLegacyDealAlignment('right', 'A', 'left')).toBeNull();
     expect(resolveLegacyDealAlignment('right', 'B', 'right')).toBeNull();
     expect(resolveLegacyDealAlignment('left', 'A', 'right')).toBeNull();
     expect(resolveLegacyDealAlignment('left', 'B', 'left')).toBeNull();
-  });
-
-  it('legacyFieldsForAlignment round-trips', () => {
-    for (const play of PLAYS) {
-      for (const align of ALIGNS) {
-        const fields = legacyFieldsForAlignment(play, align);
-        expect(resolveLegacyDealAlignment(play, fields.dealingMethod, fields.dealingDirection)).toBe(
-          align
-        );
-      }
-    }
   });
 });
 
@@ -126,7 +112,7 @@ describe('ARCH-SUECA-05 four scenarios — first leader independent of deal', ()
       ALIGNS.map((align) => ({ play, align }))
     )
   )('play=$play alignment=$align: leader = firstLeader(dealer, play)', ({ play, align }) => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, play);
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, play);
     const s = game.getState();
     s.dealerIndex = 0;
     const leader = firstLeader(0, play);
@@ -177,17 +163,16 @@ describe('ARCH-SUECA-05 shuffler/cutter independence', () => {
   });
 });
 
-describe('ARCH-SUECA-05 production path via legacy setters', () => {
-  it('A+right → same; B+left → opposite under play RIGHT', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A');
+describe('ARCH-SUECA-09 setDealAlignment is canonical SoT', () => {
+  it('setDealAlignment updates dealAlignment without Method fields', () => {
+    const game = new Game(['A', 'B', 'C', 'D']);
     expect(game.getState().playDirection).toBe('right');
     expect(game.getState().dealAlignment).toBe('same');
-
-    game.setDealingMethod('B');
-    game.setDealingDirection('left');
+    game.setDealAlignment('opposite');
     expect(game.getState().dealAlignment).toBe('opposite');
+    expect(game.getState().dealingMethod).toBeUndefined();
+    expect(game.getState().dealingDirection).toBeUndefined();
     game.setDealAlignment('same');
-    expect(game.getState().dealingMethod).toBe('A');
-    expect(game.getState().dealingDirection).toBe('right');
+    expect(game.getState().dealAlignment).toBe('same');
   });
 });

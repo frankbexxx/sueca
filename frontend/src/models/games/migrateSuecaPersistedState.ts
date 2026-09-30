@@ -1,12 +1,13 @@
 /**
- * ARCH-SUECA-08 — central Sueca persisted-state migrator.
+ * ARCH-SUECA-08/09 — central Sueca persisted-state migrator.
  *
  * Canonical schema v2 persists:
  * - schemaVersion: 2
  * - playDirection
  * - dealAlignment
  *
- * Legacy Method A/B × DealingDirection remain compatibility-only outputs.
+ * Legacy Method A/B × DealingDirection are READ-ONLY migration inputs.
+ * Migrated output is canonical-only (no Method/Direction writers).
  */
 
 import type {
@@ -16,11 +17,7 @@ import type {
   GameState,
   PlayDirection
 } from '../../types/game';
-import {
-  resolveLegacyDealAlignment,
-  legacyFieldsForAlignment
-} from './suecaDeal';
-import { asSeat, firstLeader, seatAtOffset } from './suecaRules';
+import { asSeat, firstLeader, oppositeDirection, seatAtOffset } from './suecaRules';
 import { cloneGameState } from './cloneGameState';
 
 /** Canonical Sueca GameState schema version (Phase 6). */
@@ -35,6 +32,22 @@ export interface SuecaMigrationResult {
   migratedFrom: 1 | 2 | 'legacy' | 'unknown';
   /** Present when ok. */
   state?: GameState;
+}
+
+/**
+ * Migration-only: map legacy Method × absolute DealingDirection → DealAlignment.
+ * Returns null for ambiguous/non-product combinations.
+ */
+export function resolveLegacyDealAlignment(
+  playDirection: PlayDirection,
+  method: DealingMethod,
+  dealingDirection: DealingDirection
+): DealAlignment | null {
+  const play = playDirection === 'left' ? 'left' : 'right';
+  const dir = dealingDirection === 'left' ? 'left' : 'right';
+  if (method === 'A' && dir === play) return 'same';
+  if (method === 'B' && dir === oppositeDirection(play)) return 'opposite';
+  return null;
 }
 
 function isSeat(n: unknown): n is number {
@@ -67,10 +80,10 @@ function isMidHand(raw: Partial<GameState>): boolean {
   return players.some((p) => (p?.hand?.length ?? 0) > 0);
 }
 
-function stampLegacyFields(state: GameState): void {
-  const fields = legacyFieldsForAlignment(state.playDirection, state.dealAlignment);
-  state.dealingMethod = fields.dealingMethod;
-  state.dealingDirection = fields.dealingDirection;
+/** Strip compatibility-only Method/Direction from canonical Sueca writes. */
+function stripLegacyDealFields(state: GameState): void {
+  delete state.dealingMethod;
+  delete state.dealingDirection;
 }
 
 function applyResetHandBoundary(state: GameState): void {
@@ -91,7 +104,7 @@ function applyResetHandBoundary(state: GameState): void {
   state.currentPlayerIndex = leader;
   state.trickLeader = leader;
   state.players = state.players.map((p) => ({ ...p, hand: [] }));
-  stampLegacyFields(state);
+  stripLegacyDealFields(state);
 }
 
 /**
@@ -180,8 +193,6 @@ function baseFromPartial(raw: Partial<GameState>): GameState {
     waitingForTrickEnd: raw.waitingForTrickEnd ?? false,
     nextTrickLeader: raw.nextTrickLeader ?? null,
     isFirstTrick: raw.isFirstTrick ?? true,
-    dealingMethod: (raw.dealingMethod === 'B' ? 'B' : 'A') as DealingMethod,
-    dealingDirection: (raw.dealingDirection === 'left' ? 'left' : 'right') as DealingDirection,
     playDirection: 'right',
     dealAlignment: 'same',
     waitingForRoundStart: raw.waitingForRoundStart === true,
@@ -261,7 +272,7 @@ export function migrateSuecaPersistedState(
     state.dealerIndex = raw.dealerIndex;
     state.currentPlayerIndex = raw.currentPlayerIndex;
     state.trickLeader = raw.trickLeader;
-    stampLegacyFields(state);
+    stripLegacyDealFields(state);
 
     const seatErr = validateSeats(state);
     if (seatErr) {
@@ -384,7 +395,7 @@ export function migrateSuecaPersistedState(
     } else {
       state.waitingForRoundStart = true;
       applyResetHandBoundary(state);
-      stampLegacyFields(state);
+      stripLegacyDealFields(state);
       return {
         ok: true,
         action: 'migrated',
@@ -397,7 +408,7 @@ export function migrateSuecaPersistedState(
     state.waitingForRoundStart = raw.waitingForRoundStart === true;
   }
 
-  stampLegacyFields(state);
+  stripLegacyDealFields(state);
 
   // If seats were missing entirely on a between-hands save, align leader to playDirection.
   if (
@@ -439,6 +450,6 @@ export function stampSuecaSchemaV2(state: GameState): GameState {
   next.variant = next.variant ?? 'sueca';
   next.playDirection = next.playDirection === 'left' ? 'left' : 'right';
   next.dealAlignment = next.dealAlignment === 'opposite' ? 'opposite' : 'same';
-  stampLegacyFields(next);
+  stripLegacyDealFields(next);
   return next;
 }

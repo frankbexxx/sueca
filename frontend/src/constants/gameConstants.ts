@@ -52,8 +52,12 @@ export const TRICK_AUTO_CONTINUE_SECONDS = 5;
 
 // LocalStorage keys
 export const STORAGE_KEYS = {
+  /**
+   * @deprecated Compatibility-only — clearLocalUserData may still remove this key.
+   * No active Sueca writer (ARCH-SUECA-09).
+   */
   DEALING_METHOD: 'sueca-dealing-method',
-  /** ARCH-SUECA-06 — session play direction preference (`'right'` | `'left'`). */
+  /** Session play direction preference (`'right'` | `'left'`). */
   PLAY_DIRECTION: 'sueca-play-direction',
   PLAYER_NAMES: 'sueca-player-names',
   AI_DIFFICULTY: 'sueca-ai-difficulty',
@@ -70,5 +74,4 @@ export const STORAGE_KEYS = {
 
 // Default values
 export const DEFAULT_PLAYER_NAMES = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
-export const DEFAULT_DEALING_METHOD = 'A' as const;
 export const DEFAULT_AI_DIFFICULTY = 'medium' as const;

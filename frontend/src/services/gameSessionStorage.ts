@@ -239,7 +239,6 @@ export function stripMultiplayerFields(config: GameConfig): GameConfig {
   return {
     playerNames: config.playerNames,
     aiDifficulty: config.aiDifficulty,
-    dealingMethod: config.dealingMethod,
     playDirection:
       config.playDirection === 'left' || config.playDirection === 'right'
         ? config.playDirection
@@ -269,7 +268,6 @@ export function loadLastConfig(): GameConfig | null {
     return stripMultiplayerFields({
       playerNames: parsed.playerNames ?? ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
       aiDifficulty: parsed.aiDifficulty ?? 'medium',
-      dealingMethod: parsed.dealingMethod ?? 'A',
       playDirection:
         parsed.playDirection === 'left' || parsed.playDirection === 'right'
           ? parsed.playDirection
@@ -293,7 +291,6 @@ export function buildSoloConfigForVariant(variant: GameVariant): GameConfig {
   return {
     playerNames: getPlayerNamesForVariant(variant),
     aiDifficulty: getDifficultyForVariant(variant),
-    dealingMethod: last?.dealingMethod ?? 'A',
     playDirection:
       last?.playDirection === 'left' || last?.playDirection === 'right'
         ? last.playDirection

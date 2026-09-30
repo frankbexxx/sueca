@@ -15,7 +15,7 @@ import {
   resolveEffectiveDeck
 } from '../../constants/cardDeckRegistry';
 import { DEAL_ANIMATION_DELAY_MS } from '../../constants/dealAnimationPreferences';
-import { dealSuecaFromCardOrder } from '../../models/games/suecaDeal';
+import { dealSuecaCanonical } from '../../models/games/suecaDeal';
 import { Card } from '../../types/game';
 
 vi.mock('../../i18n/useLanguage', () => ({
@@ -96,9 +96,9 @@ describe('Mão e Cartas / SettingsHandScreen', () => {
 
   it('deal animation preference never changes Sueca deal outcome', () => {
     localStorage.setItem(STORAGE_KEYS.DEAL_ANIMATION_SPEED, 'fast');
-    const a = dealSuecaFromCardOrder(deck40(), 0, 'A', 'left');
+    const a = dealSuecaCanonical(deck40(), 0, 'left', 'same');
     localStorage.setItem(STORAGE_KEYS.DEAL_ANIMATION_SPEED, 'paused');
-    const b = dealSuecaFromCardOrder(deck40(), 0, 'A', 'left');
+    const b = dealSuecaCanonical(deck40(), 0, 'left', 'same');
     expect(a.hands.map((h) => h.map((c) => c.id))).toEqual(
       b.hands.map((h) => h.map((c) => c.id))
     );
@@ -109,10 +109,10 @@ describe('Mão e Cartas / SettingsHandScreen', () => {
   it('card skin cannot affect deal assignment', () => {
     localStorage.setItem(STORAGE_KEYS.CARD_FRONT, 'cardmeister');
     localStorage.setItem(STORAGE_KEYS.CARD_BACK, 'sylly-02');
-    const a = dealSuecaFromCardOrder(deck40(), 1, 'A', 'left');
+    const a = dealSuecaCanonical(deck40(), 1, 'left', 'same');
     localStorage.setItem(STORAGE_KEYS.CARD_FRONT, 'pd-ornate');
     localStorage.setItem(STORAGE_KEYS.CARD_BACK, 'suecao-navy');
-    const b = dealSuecaFromCardOrder(deck40(), 1, 'A', 'left');
+    const b = dealSuecaCanonical(deck40(), 1, 'left', 'same');
     expect(a.hands.flat().map((c) => c.id)).toEqual(b.hands.flat().map((c) => c.id));
   });
 });

@@ -10,8 +10,6 @@
 
 import type {
   DealAlignment,
-  DealingDirection,
-  DealingMethod,
   GameState,
   GameVariant,
   Suit
@@ -27,12 +25,8 @@ import { isKingPtEnginePreset } from './king/kingSyntheticMode';
 /** Minimal Sueca dealing / setup flow. */
 export interface SuecaVariantFlow {
   kind: 'sueca';
-  /** Canonical per-hand deal packaging (ARCH-SUECA-06). */
+  /** Canonical per-hand deal packaging. */
   setDealAlignment(alignment: DealAlignment): void;
-  /** @deprecated TEMPORARY bridge — prefer setDealAlignment. */
-  setDealingMethod(method: DealingMethod): void;
-  /** @deprecated TEMPORARY bridge — prefer setDealAlignment. */
-  setDealingDirection(direction: DealingDirection): void;
 }
 
 /** Spades bid-phase flow + state read. */

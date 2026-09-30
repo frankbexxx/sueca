@@ -23,11 +23,7 @@ vi.mock('../i18n/useLanguage', () => ({
           'Distribui no sentido oposto. A primeira carta do dealer define o trunfo.',
         playDirectionReadonlyRight: 'Jogo: pela direita',
         playDirectionReadonlyLeft: 'Jogo: pela esquerda',
-        startGame: 'Iniciar Jogo',
-        dealingMethodA: 'Standard',
-        dealingMethodB: 'Dealer First',
-        dealingDirLeft: 'Esquerda',
-        dealingDirRight: 'Direita'
+        startGame: 'Iniciar Jogo'
       }
     }
   })

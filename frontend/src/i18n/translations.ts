@@ -32,9 +32,6 @@ export interface Translations {
     difficultyDescEasy: string;
     difficultyDescMedium: string;
     difficultyDescHard: string;
-    dealingMethod: string;
-    methodA: string;
-    methodB: string;
     /** ARCH-SUECA-06 — session play direction. */
     playDirection: string;
     playDirectionRight: string;
@@ -68,14 +65,7 @@ export interface Translations {
     gamesComplete: string;
     won: string;
     finalGames: string;
-    dealingMethodNext: string;
     dealingTitle: string;
-    dealingMethodLabel: string;
-    dealingDirectionLabel: string;
-    dealingMethodA: string;
-    dealingMethodB: string;
-    dealingDirLeft: string;
-    dealingDirRight: string;
     /** ARCH-SUECA-06 — per-hand deal alignment. */
     dealAlignmentLabel: string;
     dealAlignmentSame: string;
@@ -438,7 +428,6 @@ export interface Translations {
     player: string;
     playerNames: string;
     aiDifficulty: string;
-    dealingMethod: string;
     showGrid: string;
     credits: string;
     quitConfirm: string;
@@ -775,9 +764,6 @@ export const translations: Record<Language, Translations> = {
       difficultyDescEasy: 'AI joga mais aleatoriamente',
       difficultyDescMedium: 'AI usa estratégia básica',
       difficultyDescHard: 'AI usa estratégia avançada com coordenação',
-      dealingMethod: 'Método de Distribuição:',
-      methodA: 'Método A (Standard)',
-      methodB: 'Método B (Dealer First)',
       playDirection: 'Sentido do jogo',
       playDirectionRight: 'Pela direita',
       playDirectionRightHint: 'Sentido anti-horário',
@@ -868,14 +854,7 @@ export const translations: Record<Language, Translations> = {
       gamesComplete: '🎉 Jogos Completos! 🎉',
       won: 'Venceu!',
       finalGames: 'Jogos Finais:',
-      dealingMethodNext: 'Método de Distribuição para o Próximo Jogo:',
       dealingTitle: 'Distribuição',
-      dealingMethodLabel: 'Método',
-      dealingDirectionLabel: 'Direcção',
-      dealingMethodA: 'Standard',
-      dealingMethodB: 'Dealer First',
-      dealingDirLeft: 'Esquerda (horário)',
-      dealingDirRight: 'Direita (anti-horário)',
       dealAlignmentLabel: 'Sentido da distribuição',
       dealAlignmentSame: 'Mesmo sentido do jogo',
       dealAlignmentOpposite: 'Sentido oposto ao jogo',
@@ -904,7 +883,6 @@ export const translations: Record<Language, Translations> = {
       player: 'Jogador:',
       playerNames: 'Nome dos Jogadores:',
       aiDifficulty: 'Dificuldade da AI:',
-      dealingMethod: 'Método de Distribuição:',
       showGrid: 'Mostrar grelha (debug)',
       credits: 'Créditos',
       quitConfirm: 'Tem certeza que deseja sair do jogo atual?',
@@ -1238,9 +1216,6 @@ export const translations: Record<Language, Translations> = {
       difficultyDescEasy: 'AI plays more randomly',
       difficultyDescMedium: 'AI uses basic strategy',
       difficultyDescHard: 'AI uses advanced strategy with coordination',
-      dealingMethod: 'Dealing Method:',
-      methodA: 'Method A (Standard)',
-      methodB: 'Method B (Dealer First)',
       playDirection: 'Play direction',
       playDirectionRight: 'To the right',
       playDirectionRightHint: 'Anti-clockwise',
@@ -1331,14 +1306,7 @@ export const translations: Record<Language, Translations> = {
       gamesComplete: '🎉 Games Complete! 🎉',
       won: 'Won!',
       finalGames: 'Final Games:',
-      dealingMethodNext: 'Dealing Method for Next Game:',
       dealingTitle: 'Dealing',
-      dealingMethodLabel: 'Method',
-      dealingDirectionLabel: 'Direction',
-      dealingMethodA: 'Standard',
-      dealingMethodB: 'Dealer First',
-      dealingDirLeft: 'Left (clockwise)',
-      dealingDirRight: 'Right (counter-clockwise)',
       dealAlignmentLabel: 'Deal direction',
       dealAlignmentSame: 'Same as play',
       dealAlignmentOpposite: 'Opposite to play',
@@ -1367,7 +1335,6 @@ export const translations: Record<Language, Translations> = {
       player: 'Player:',
       playerNames: 'Player Names:',
       aiDifficulty: 'AI Difficulty:',
-      dealingMethod: 'Dealing Method:',
       showGrid: 'Show grid (debug)',
       credits: 'Credits',
       quitConfirm: 'Are you sure you want to quit the current game?',

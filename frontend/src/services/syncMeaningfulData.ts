@@ -4,7 +4,7 @@
  * LocalGuest / auth metadata alone are NEVER meaningful.
  */
 
-import { DEFAULT_PLAYER_NAMES, DEFAULT_AI_DIFFICULTY, DEFAULT_DEALING_METHOD } from '../constants/gameConstants';
+import { DEFAULT_PLAYER_NAMES, DEFAULT_AI_DIFFICULTY } from '../constants/gameConstants';
 import { loadHandPreferences } from '../constants/handPreferences';
 import { getActiveTheme } from './billingService';
 import { loadLegacyStatsSeed } from './legacyStatsSeed';
@@ -60,15 +60,13 @@ export function hasMeaningfulLocalSeed(): boolean {
   return seedMetricsNonZero(loadLegacyStatsSeed());
 }
 
-/** Prefs differ from product defaults (setup / hand / theme / dealing / auto-pause). */
+/** Prefs differ from product defaults (setup / hand / theme / auto-pause). */
 export function hasMeaningfulLocalPrefs(): boolean {
   const setup = loadSetupPrefs();
   if (!setupLooksDefault(setup)) return true;
   if (!handLooksDefault()) return true;
   if (getActiveTheme() !== 'classic') return true;
   try {
-    const dealing = localStorage.getItem(STORAGE_KEYS.DEALING_METHOD);
-    if (dealing != null && dealing !== DEFAULT_DEALING_METHOD) return true;
     if (localStorage.getItem(STORAGE_KEYS.AUTO_PAUSE_TRICK) === 'true') return true;
   } catch {
     /* ignore */

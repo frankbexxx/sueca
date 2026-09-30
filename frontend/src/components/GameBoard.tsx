@@ -128,7 +128,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [gameStarted, setGameStarted] = useState(false);
   const [aiSource, setAiSource] = useState<'external' | 'local'>('local');
   
-  const { playerNames, dealingMethod, aiDifficulty, gameVariant, rulesPresetId } = config;
+  const { playerNames, aiDifficulty, gameVariant, rulesPresetId } = config;
   const sessionPlayDirection: PlayDirection =
     config.playDirection === 'left' ? 'left' : 'right';
   /** Per-hand deal packaging; preferred product default is SAME each hand (ARCH-SUECA-06). */
@@ -185,8 +185,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       waitingForTrickEnd: false,
       nextTrickLeader: null,
       isFirstTrick: true,
-      dealingMethod: 'A',
-      dealingDirection: 'right',
       playDirection: 'right',
       dealAlignment: 'same',
       schemaVersion: 2,
@@ -457,7 +455,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           initialState = adapter.restoreState(normalizeGameState(resumeSession.state));
         } else {
           const initOptions = {
-            dealingMethod: config.dealingMethod,
             playDirection: config.playDirection === 'left' ? 'left' : 'right',
             aiDifficulty: config.aiDifficulty,
             localPlayerIndex: config.multiplayerEnabled ? (config.localPlayerIndex ?? 0) : undefined,
@@ -627,7 +624,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       ...config,
       playerNames,
       aiDifficulty,
-      dealingMethod,
       playDirection: sessionPlayDirection,
       gameVariant,
       rulesPresetId: statePreset
@@ -648,7 +644,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!gameAdapter || !gameStarted || gameState.isGameOver || isMultiplayerActive) return;
     saveGameSession(buildPersistConfig(), gameState);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on state ticks
-  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, dealingMethod, gameVariant, rulesPresetId]);
+  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, gameVariant, rulesPresetId]);
 
   /**
    * Shared deal/round SFX (all variants):

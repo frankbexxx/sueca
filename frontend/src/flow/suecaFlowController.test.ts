@@ -6,9 +6,7 @@ describe('suecaFlowController', () => {
     const calls: string[] = [];
     const flow: SuecaVariantFlow = {
       kind: 'sueca',
-      setDealAlignment: (a) => calls.push(`align:${a}`),
-      setDealingMethod: (m) => calls.push(`method:${m}`),
-      setDealingDirection: (d) => calls.push(`dir:${d}`)
+      setDealAlignment: (a) => calls.push(`align:${a}`)
     };
     createSuecaFlowController(flow).applyDealSetup('opposite');
     expect(calls).toEqual(['align:opposite']);

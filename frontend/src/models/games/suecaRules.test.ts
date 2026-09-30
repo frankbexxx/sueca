@@ -25,12 +25,7 @@ import {
   type PlayDirection,
   type Seat
 } from './suecaRules';
-import {
-  suecaInferTrickLeader,
-  suecaNextAntiClockwise,
-  suecaPhysicalRightOf,
-  suecaSeatAtTrickOffset
-} from './suecaDeal';
+import { suecaPhysicalRightOf } from './suecaDeal';
 
 const SEATS = allSeats();
 const PLAY_DIRS: PlayDirection[] = ['right', 'left'];
@@ -161,28 +156,8 @@ describe('suecaRules — inferTrickLeader inverts seatAtOffset', () => {
   });
 });
 
-describe('suecaRules — legacy bridge preserves RIGHT/ACW outputs', () => {
+describe('suecaDeal — physical-right helper', () => {
   it.each(SEATS)('suecaPhysicalRightOf(%s) === physicalRightOf', (s) => {
     expect(suecaPhysicalRightOf(s)).toBe(physicalRightOf(s));
-  });
-
-  it.each(SEATS)('suecaNextAntiClockwise(%s) === nextSeat(right)', (s) => {
-    expect(suecaNextAntiClockwise(s)).toBe(nextSeat(s, 'right'));
-  });
-
-  it('suecaSeatAtTrickOffset matches seatAtOffset(..., right)', () => {
-    for (const leader of SEATS) {
-      for (let o = 0; o < 4; o++) {
-        expect(suecaSeatAtTrickOffset(leader, o)).toBe(seatAtOffset(leader, o, 'right'));
-      }
-    }
-  });
-
-  it('suecaInferTrickLeader matches inferTrickLeader(..., right)', () => {
-    for (const seat of SEATS) {
-      for (let t = 0; t < 4; t++) {
-        expect(suecaInferTrickLeader(seat, t)).toBe(inferTrickLeader(seat, t, 'right'));
-      }
-    }
   });
 });

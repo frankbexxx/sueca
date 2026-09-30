@@ -1,8 +1,6 @@
 import {
   AIDifficulty,
   DealAlignment,
-  DealingDirection,
-  DealingMethod,
   GameState,
   GameVariant,
   Player,
@@ -71,8 +69,6 @@ export function normalizeGameState(
       waitingForRoundStart: true,
       currentTrick: [],
       waitingForTrickEnd: false,
-      dealingMethod: 'A',
-      dealingDirection: source.playDirection === 'left' ? 'left' : 'right',
       playDirection: source.playDirection === 'left' ? 'left' : 'right',
       dealAlignment: 'same',
       players: (Array.isArray(source.players) ? source.players : []).map((p) => ({
@@ -123,8 +119,6 @@ export function normalizeGameState(
     waitingForTrickEnd: source.waitingForTrickEnd ?? false,
     nextTrickLeader: source.nextTrickLeader ?? null,
     isFirstTrick: source.isFirstTrick ?? true,
-    dealingMethod: (source.dealingMethod ?? 'A') as DealingMethod,
-    dealingDirection: (source.dealingDirection ?? 'right') as DealingDirection,
     playDirection: (source.playDirection === 'left' || source.playDirection === 'right'
       ? source.playDirection
       : 'right') as PlayDirection,

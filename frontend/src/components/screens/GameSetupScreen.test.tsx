@@ -21,7 +21,6 @@ vi.mock('../../i18n/useLanguage', () => ({
       startMenu: {
         errorPlayer1Required: 'Nome do jogador 1 é obrigatório',
         aiDifficulty: 'Dificuldade',
-        dealingMethod: 'Distribuição',
         playDirection: 'Sentido do jogo',
         playerPlaceholder: (i: number) => `Player ${i + 1}`
       },

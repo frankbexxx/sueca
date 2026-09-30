@@ -8,7 +8,7 @@ import {
   suecaTrickWinnerIndex,
   standardTrickWinnerIndex
 } from './trickHelpers';
-import { suecaSeatAtTrickOffset } from '../../models/games/suecaDeal';
+import { seatAtOffset } from '../../models/games/suecaRules';
 
 function makeCard(rank: Card['rank'], suit: Suit): Card {
   return { rank, suit, id: `${rank}-${suit}` };
@@ -74,7 +74,7 @@ describe('cardIntelligence trickHelpers — REL-SUECA-REG-03', () => {
         ranks[wi] = 'A';
         const trick = ranks.map((r) => makeCard(r, 'clubs'));
         expect(suecaTrickWinnerIndex(trick, leader, trump)).toBe(
-          suecaSeatAtTrickOffset(leader, wi)
+          seatAtOffset(leader as 0 | 1 | 2 | 3, wi, 'right')
         );
       }
     });

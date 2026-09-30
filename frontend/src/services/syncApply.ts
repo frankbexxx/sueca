@@ -105,9 +105,7 @@ export function applyRemoteSyncablePrefs(payload: Record<string, unknown>): void
         trumpPosition: hand.trumpPosition
       });
     }
-    if (typeof data.dealingMethod === 'string') {
-      localStorage.setItem(STORAGE_KEYS.DEALING_METHOD, data.dealingMethod);
-    }
+    // Ignore obsolete dealingMethod from older sync payloads (ARCH-SUECA-09).
     if (typeof data.autoPauseTrick === 'boolean') {
       localStorage.setItem(STORAGE_KEYS.AUTO_PAUSE_TRICK, String(data.autoPauseTrick));
     }

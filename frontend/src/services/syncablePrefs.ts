@@ -32,7 +32,6 @@ export type { SyncablePrefsMetaV1 };
 export type SyncablePrefsDataV1 = {
   setup: SetupPrefsV1;
   hand: HandPreferences;
-  dealingMethod: string | null;
   autoPauseTrick: boolean;
   activeTheme: string;
 };
@@ -47,13 +46,6 @@ export type SyncablePrefsDocumentV1 = {
 /** Assemble future sync payload from live existing keys + local revision meta. */
 export function buildSyncablePrefsDocument(): SyncablePrefsDocumentV1 {
   const meta = getSyncablePrefsMeta();
-  const dealing = (() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.DEALING_METHOD);
-    } catch {
-      return null;
-    }
-  })();
   const autoPause = (() => {
     try {
       return localStorage.getItem(STORAGE_KEYS.AUTO_PAUSE_TRICK) === 'true';
@@ -69,7 +61,6 @@ export function buildSyncablePrefsDocument(): SyncablePrefsDocumentV1 {
     data: {
       setup: loadSetupPrefs(),
       hand: loadHandPreferences(),
-      dealingMethod: dealing,
       autoPauseTrick: autoPause,
       activeTheme: getActiveTheme()
     }

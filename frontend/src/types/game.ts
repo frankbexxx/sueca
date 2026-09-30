@@ -20,7 +20,7 @@ export interface Player {
 }
 
 export type DealingMethod = 'A' | 'B';
-/** Sueca deal sense: `right` = anti-clockwise / physical-right first (default); `left` = clockwise. */
+/** @deprecated Absolute deal sense — Sueca migration-only input; not runtime SoT. */
 export type DealingDirection = 'left' | 'right';
 /**
  * Sueca session play sense (ARCH-SUECA-02/04).
@@ -54,21 +54,28 @@ export interface GameState {
   waitingForTrickEnd: boolean;
   nextTrickLeader: number | null;
   isFirstTrick: boolean; // Track if this is the first trick of the round
-  dealingMethod: DealingMethod; // COMPATIBILITY-ONLY (Sueca) — derived from playDirection×dealAlignment
-  dealingDirection: DealingDirection; // COMPATIBILITY-ONLY (Sueca) — derived bridge; not SoT
+  /**
+   * @deprecated Compatibility-only — Sueca v2 does not write or consume this.
+   * Non-Sueca games may still set a placeholder. Migrator reads from old saves.
+   */
+  dealingMethod?: DealingMethod;
+  /**
+   * @deprecated Compatibility-only — Sueca v2 does not write or consume this.
+   * Non-Sueca games may still set a placeholder. Migrator reads from old saves.
+   */
+  dealingDirection?: DealingDirection;
   /**
    * CANONICAL (Sueca schema v2) — session play direction (match-to-4).
-   * Independent of dealingDirection. Resume uses persisted/migrated value; setup
-   * preference (`sueca-play-direction`) only seeds NEW matches.
+   * Resume uses persisted/migrated value; setup preference only seeds NEW matches.
    */
   playDirection: PlayDirection;
   /**
    * CANONICAL (Sueca schema v2) — per-hand deal alignment vs playDirection.
-   * Default `'same'` for new hands. Independent of first leader / trick order.
+   * Default `'same'` for new hands.
    */
   dealAlignment: DealAlignment;
   /**
-   * CANONICAL (Sueca) — persisted schema version (ARCH-SUECA-08).
+   * CANONICAL (Sueca) — persisted schema version.
    * Value `2` required for exact restore. Missing → legacy migrator path.
    */
   schemaVersion?: number;

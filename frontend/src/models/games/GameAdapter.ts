@@ -16,14 +16,14 @@
  * - pause/resume/quit/updatePlayerNames must not write only to a discarded clone
  */
 
-import { Card, GameState, GameVariant, Player, AIDifficulty, DealingMethod } from '../../types/game';
+import { Card, GameState, GameVariant, Player, AIDifficulty } from '../../types/game';
 import { cloneGameState } from './cloneGameState';
 import { VariantFlowApi } from './variantFlowApi';
 
 export interface GameInitOptions {
-  dealingMethod?: DealingMethod;
   aiDifficulty?: AIDifficulty;
   localPlayerIndex?: number;
+  playDirection?: 'left' | 'right';
 }
 
 export interface RestoreStateOptions {

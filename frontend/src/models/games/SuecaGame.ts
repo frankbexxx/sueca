@@ -1,6 +1,6 @@
 import { BaseGameAdapter, RestoreStateOptions } from './GameAdapter';
 import { Game } from '../Game';
-import { AIDifficulty, DealingDirection, DealingMethod, GameState } from '../../types/game';
+import { AIDifficulty, GameState } from '../../types/game';
 import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
 import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
 import { SuecaVariantFlow } from './variantFlowApi';
@@ -13,14 +13,11 @@ export class SuecaGame extends BaseGameAdapter {
   getVariantFlow(): SuecaVariantFlow {
     return {
       kind: 'sueca',
-      setDealAlignment: (alignment) => this.setDealAlignment(alignment),
-      setDealingMethod: (method) => this.setDealingMethod(method),
-      setDealingDirection: (direction) => this.setDealingDirection(direction)
+      setDealAlignment: (alignment) => this.setDealAlignment(alignment)
     };
   }
 
   initialize(playerNames: string[], options?: Record<string, unknown>): GameState {
-    const dealingMethod = (options?.dealingMethod as DealingMethod) || 'A';
     const aiDifficulty = (options?.aiDifficulty as AIDifficulty) || 'medium';
     const localPlayerIndex = options?.localPlayerIndex as number | undefined;
     const multiplayerSlots = options?.multiplayerSlots as Array<'human' | 'ai'> | undefined;
@@ -31,7 +28,6 @@ export class SuecaGame extends BaseGameAdapter {
 
     this.game = new Game(
       playerNames,
-      dealingMethod,
       aiDifficulty,
       localPlayerIndex,
       multiplayerSlots,
@@ -106,14 +102,6 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.updatePlayerNames(names);
   }
 
-  setDealingMethod(method: DealingMethod): void {
-    this.game?.setDealingMethod(method);
-  }
-
-  setDealingDirection(direction: DealingDirection): void {
-    this.game?.setDealingDirection(direction);
-  }
-
   setPlayDirection(direction: 'left' | 'right'): void {
     this.game?.setPlayDirection(direction);
   }
@@ -132,7 +120,6 @@ export class SuecaGame extends BaseGameAdapter {
     const playDirection = restored.playDirection === 'left' ? 'left' : 'right';
     this.game = new Game(
       names,
-      restored.dealingMethod || 'A',
       restored.aiDifficulty || 'medium',
       undefined,
       undefined,

@@ -1,19 +1,13 @@
-import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, DealingMethod, DealingDirection, AIDifficulty, PlayDirection, DealAlignment } from '../types/game';
+import { GameState, Player, Card, Suit, CARD_HIERARCHY, CARD_POINTS, AIDifficulty, PlayDirection, DealAlignment } from '../types/game';
 import { Deck } from './Deck';
 import { applyHandSortToState } from '../utils/handSort';
-import {
-  dealSuecaCanonical,
-  dealSuecaLegacyAbsolute,
-  legacyFieldsForAlignment,
-  resolveLegacyDealAlignment
-} from './games/suecaDeal';
+import { dealSuecaCanonical } from './games/suecaDeal';
 import { migrateSuecaPersistedState } from './games/migrateSuecaPersistedState';
 import {
   asSeat,
   firstLeader,
   nextDealer,
   nextSeat,
-  oppositeDirection,
   seatAtOffset
 } from './games/suecaRules';
 import { cloneGameState } from './games/cloneGameState';
@@ -25,7 +19,6 @@ export class Game {
 
   constructor(
     playerNames: string[] = ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
-    dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
     localPlayerIndex?: number,
     multiplayerSlots?: Array<'human' | 'ai'>,
@@ -34,7 +27,6 @@ export class Game {
     this.deck = new Deck();
     this.state = this.initializeGame(
       playerNames,
-      dealingMethod,
       aiDifficulty,
       localPlayerIndex,
       multiplayerSlots,
@@ -42,25 +34,13 @@ export class Game {
     );
   }
 
-  /** Session play direction — defaults to RIGHT/ACW when missing (legacy snapshots). */
+  /** Session play direction — engine SoT after construction / loadState. */
   private playDir(): PlayDirection {
     return this.state.playDirection === 'left' ? 'left' : 'right';
   }
 
   private dealAlign(): DealAlignment {
     return this.state.dealAlignment === 'opposite' ? 'opposite' : 'same';
-  }
-
-  /** Sync dealAlignment from legacy Method×Direction when the combo is product-canonical. */
-  private syncDealAlignmentFromLegacy(): void {
-    const resolved = resolveLegacyDealAlignment(
-      this.playDir(),
-      this.state.dealingMethod,
-      this.state.dealingDirection ?? 'right'
-    );
-    if (resolved) {
-      this.state.dealAlignment = resolved;
-    }
   }
 
   /**
@@ -148,8 +128,7 @@ export class Game {
   }
 
   /**
-   * Deal cards via canonical playDirection + dealAlignment when legacy Method×Direction
-   * maps unambiguously; otherwise preserve absolute legacy deal (unsupported UI combos).
+   * Deal cards via canonical playDirection + dealAlignment.
    */
   private dealCards(
     players: Player[],
@@ -165,17 +144,8 @@ export class Game {
     }
 
     const play = this.playDir();
-    const method = this.state.dealingMethod;
-    const direction = this.state.dealingDirection ?? 'right';
-    const resolved = resolveLegacyDealAlignment(play, method, direction);
-
-    const result =
-      resolved !== null
-        ? (() => {
-            this.state.dealAlignment = resolved;
-            return dealSuecaCanonical(remaining, dealerIndex, play, resolved);
-          })()
-        : dealSuecaLegacyAbsolute(remaining, dealerIndex, method, direction);
+    const align = this.dealAlign();
+    const result = dealSuecaCanonical(remaining, dealerIndex, play, align);
 
     for (let i = 0; i < 4; i++) {
       players[i].hand.push(...result.hands[i]);
@@ -185,7 +155,6 @@ export class Game {
 
   private initializeGame(
     playerNames: string[],
-    dealingMethod: DealingMethod = 'A',
     aiDifficulty: AIDifficulty = 'medium',
     localPlayerIndex?: number,
     multiplayerSlots?: Array<'human' | 'ai'>,
@@ -219,11 +188,6 @@ export class Game {
     const dealerIndex = seatedOrder.indexOf(dealerName);
     const play = playDirection === 'left' ? 'left' : 'right';
     const firstTrickStarter = firstLeader(asSeat(dealerIndex), play);
-    // Default deal packaging: Method A → same as play; Method B → opposite (product bridge).
-    const initialDirection: DealingDirection =
-      dealingMethod === 'B' ? oppositeDirection(play) : play;
-    const initialAlignment =
-      resolveLegacyDealAlignment(play, dealingMethod, initialDirection) ?? 'same';
 
     return {
       players,
@@ -235,7 +199,7 @@ export class Game {
       trickLeader: firstTrickStarter,
       scores: { team1: 0, team2: 0 },
       gameScore: { team1: 0, team2: 0 },
-      completedPentes: [], // Array of completed pentes (stand alone pentes from 120 points)
+      completedPentes: [],
       round: 1,
       isGameOver: false,
       winner: null,
@@ -243,19 +207,17 @@ export class Game {
       waitingForTrickEnd: false,
       nextTrickLeader: null,
       isFirstTrick: true,
-      dealingMethod: dealingMethod,
-      dealingDirection: initialDirection,
       playDirection: play,
-      dealAlignment: initialAlignment,
+      dealAlignment: 'same',
       schemaVersion: 2,
-      waitingForRoundStart: true, // Pause before starting (show trump card)
+      waitingForRoundStart: true,
       waitingForRoundEnd: false,
       waitingForGameStart: false,
-      playedCards: [], // Initialize empty - will track cards as they're played
+      playedCards: [],
       isPaused: false,
       playerName: players[0]?.name || 'Player 1',
       aiDifficulty: aiDifficulty,
-      partnerSignals: [], // Initialize empty - will track partner coordination signals
+      partnerSignals: [],
       nextRoundValue: undefined
     };
   }
@@ -566,30 +528,12 @@ export class Game {
     }
   }
 
-  setDealingMethod(method: DealingMethod): void {
-    this.state.dealingMethod = method;
-    this.syncDealAlignmentFromLegacy();
-  }
-
-  setDealingDirection(direction: DealingDirection): void {
-    this.state.dealingDirection = direction;
-    this.syncDealAlignmentFromLegacy();
-  }
-
   setPlayDirection(direction: PlayDirection): void {
     this.state.playDirection = direction === 'left' ? 'left' : 'right';
-    // Keep legacy Method×Direction coherent with current dealAlignment when possible.
-    const fields = legacyFieldsForAlignment(this.playDir(), this.dealAlign());
-    this.state.dealingMethod = fields.dealingMethod;
-    this.state.dealingDirection = fields.dealingDirection;
   }
 
   setDealAlignment(alignment: DealAlignment): void {
-    const align = alignment === 'opposite' ? 'opposite' : 'same';
-    this.state.dealAlignment = align;
-    const fields = legacyFieldsForAlignment(this.playDir(), align);
-    this.state.dealingMethod = fields.dealingMethod;
-    this.state.dealingDirection = fields.dealingDirection;
+    this.state.dealAlignment = alignment === 'opposite' ? 'opposite' : 'same';
   }
 
   private startNewRound(): void {

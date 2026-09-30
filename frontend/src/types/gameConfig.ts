@@ -5,12 +5,12 @@ export interface GameConfig {
   playerNames: string[];
   aiDifficulty: AIDifficulty;
   /**
-   * TEMPORARY bridge field — derived from playDirection + dealAlignment at the UI boundary.
-   * Prefer `playDirection` as session SoT. Persistence schema migration is Phase 6.
+   * @deprecated Obsolete Method A/B — ignored by Sueca runtime.
+   * Retained optional for old session configs / non-Sueca fixtures.
    */
-  dealingMethod: DealingMethod;
+  dealingMethod?: DealingMethod;
   /**
-   * Sueca session play direction (ARCH-SUECA-06). Fixed for the match-to-4.
+   * Sueca session play direction. Fixed for the match-to-4.
    * Omitted → engine defaults to `'right'`.
    */
   playDirection?: PlayDirection;

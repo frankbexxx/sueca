@@ -48,12 +48,12 @@ function playFullTrickFromLeader(game: Game): GameState {
 
 describe('ARCH-SUECA-04 PlayDirection — RIGHT preservation', () => {
   it('defaults playDirection to right', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A');
+    const game = new Game(['A', 'B', 'C', 'D']);
     expect(game.getState().playDirection).toBe('right');
   });
 
   it('dealer 0: leader 3; order 3→2→1→0', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A');
+    const game = new Game(['A', 'B', 'C', 'D']);
     forceDealer(game, 0);
     game.startRound();
     const s0 = game.getState();
@@ -70,7 +70,7 @@ describe('ARCH-SUECA-04 PlayDirection — RIGHT preservation', () => {
   });
 
   it('dealer rotation RIGHT: 0→3 next hand', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A');
+    const game = new Game(['A', 'B', 'C', 'D']);
     forceDealer(game, 0);
     game.startRound();
     const s = game.getState();
@@ -86,7 +86,7 @@ describe('ARCH-SUECA-04 PlayDirection — RIGHT preservation', () => {
 
 describe('ARCH-SUECA-04 PlayDirection — LEFT engine', () => {
   it('dealer 0: first leader = 1; order 1→2→3→0', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
     forceDealer(game, 0);
     expect(game.getState().playDirection).toBe('left');
     expect(game.getState().trickLeader).toBe(1);
@@ -102,7 +102,7 @@ describe('ARCH-SUECA-04 PlayDirection — LEFT engine', () => {
   });
 
   it('LEFT: winner at trick offsets maps CW; winner leads next', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
     forceDealer(game, 0);
     game.startRound();
 
@@ -126,7 +126,7 @@ describe('ARCH-SUECA-04 PlayDirection — LEFT engine', () => {
   });
 
   it('LEFT: dealer 0 rotates to 1 next hand', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
     forceDealer(game, 0);
     game.startRound();
     const s = game.getState();
@@ -143,7 +143,6 @@ describe('ARCH-SUECA-04 PlayDirection — LEFT engine', () => {
   it('SuecaGame.initialize accepts playDirection left', () => {
     const adapter = new SuecaGame();
     const state = adapter.initialize(['A', 'B', 'C', 'D'], {
-      dealingMethod: 'A',
       playDirection: 'left'
     });
     expect(state.playDirection).toBe('left');
@@ -151,13 +150,12 @@ describe('ARCH-SUECA-04 PlayDirection — LEFT engine', () => {
 });
 
 describe('ARCH-SUECA-04 deal independence from play', () => {
-  it.each(['left', 'right'] as const)(
-    'RIGHT play: dealingDirection=%s does not change leader/order',
-    (dealDir) => {
-      const game = new Game(['A', 'B', 'C', 'D'], 'A');
+  it.each(['same', 'opposite'] as const)(
+    'RIGHT play: dealAlignment=%s does not change leader/order',
+    (align) => {
+      const game = new Game(['A', 'B', 'C', 'D']);
       forceDealer(game, 0);
-      game.setDealingDirection(dealDir);
-      game.setDealingMethod('A');
+      game.setDealAlignment(align);
       expect(game.getState().playDirection).toBe('right');
       expect(game.getState().trickLeader).toBe(3);
       game.startRound();
@@ -166,12 +164,12 @@ describe('ARCH-SUECA-04 deal independence from play', () => {
     }
   );
 
-  it.each(['left', 'right'] as const)(
-    'LEFT play: dealingDirection=%s does not change leader/order',
-    (dealDir) => {
-      const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+  it.each(['same', 'opposite'] as const)(
+    'LEFT play: dealAlignment=%s does not change leader/order',
+    (align) => {
+      const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
       forceDealer(game, 0);
-      game.setDealingDirection(dealDir);
+      game.setDealAlignment(align);
       expect(game.getState().playDirection).toBe('left');
       expect(game.getState().trickLeader).toBe(1);
       game.startRound();
@@ -183,27 +181,27 @@ describe('ARCH-SUECA-04 deal independence from play', () => {
 
 describe('ARCH-SUECA-04 playDirection snapshot / restore', () => {
   it('getState/clone preserves playDirection', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
     const snap = game.getState();
     expect(snap.playDirection).toBe('left');
     expect(cloneGameState(snap).playDirection).toBe('left');
   });
 
   it('loadState preserves explicit left', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(['A', 'B', 'C', 'D'], 'medium', undefined, undefined, 'left');
     forceDealer(game, 0);
     const snap = game.getState();
     expect(snap.playDirection).toBe('left');
     expect(snap.trickLeader).toBe(1);
 
-    const other = new Game(['A', 'B', 'C', 'D'], 'A');
+    const other = new Game(['A', 'B', 'C', 'D']);
     other.loadState(snap);
     expect(other.getState().playDirection).toBe('left');
     expect(other.getState().trickLeader).toBe(1);
   });
 
   it('legacy missing playDirection migrates to right (schema v2)', () => {
-    const game = new Game(['A', 'B', 'C', 'D'], 'A');
+    const game = new Game(['A', 'B', 'C', 'D']);
     const raw = { ...game.getState(), waitingForRoundStart: true } as Partial<GameState>;
     delete raw.playDirection;
     delete raw.schemaVersion;

@@ -20,7 +20,7 @@ function runHand(
   dealer: number;
 } {
   const adapter = new SuecaGame();
-  adapter.initialize(NAMES, { playDirection: play, dealingMethod: 'A' });
+  adapter.initialize(NAMES, { playDirection: play });
   const flow = adapter.getVariantFlow();
   createSuecaFlowController(flow).applyDealSetup(align);
   adapter.startRound(adapter.getCurrentState());
@@ -52,7 +52,7 @@ describe('ARCH-SUECA-06 UI→engine flow contracts', () => {
   );
 
   it('setDealAlignment does not change playDirection', () => {
-    const game = new Game(NAMES, 'A', 'medium', undefined, undefined, 'left');
+    const game = new Game(NAMES, 'medium', undefined, undefined, 'left');
     expect(game.getState().playDirection).toBe('left');
     game.setDealAlignment('opposite');
     expect(game.getState().playDirection).toBe('left');

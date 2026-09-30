@@ -16,8 +16,6 @@ describe('variantFlowApi (C3)', () => {
     expect(isSuecaFlow(flow)).toBe(true);
     if (!isSuecaFlow(flow)) return;
     expect(() => flow.setDealAlignment('opposite')).not.toThrow();
-    expect(() => flow.setDealingMethod('A')).not.toThrow();
-    expect(() => flow.setDealingDirection('left')).not.toThrow();
   });
 
   it('exposes Spades bid flow + state read', () => {

@@ -447,7 +447,7 @@ describe('ARCH-SUECA-08 mid-trick resume', () => {
     const migrated = migrateSuecaPersistedState(state);
     expect(migrated.ok).toBe(true);
     expect(migrated.state!.currentPlayerIndex).toBe(1);
-    const game = new Game(['P0', 'P1', 'P2', 'P3'], 'A', 'medium', undefined, undefined, 'right');
+    const game = new Game(['P0', 'P1', 'P2', 'P3'], 'medium', undefined, undefined, 'right');
     game.loadState(migrated.state!);
     expect(game.getState().playDirection).toBe('right');
     expect(game.getState().trickLeader).toBe(3);
