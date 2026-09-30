@@ -278,10 +278,22 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
                       }`}
                       onClick={() => setup.setRulesPresetId(preset.id)}
                     >
-                      <span className="setup-deal-title">{preset.namePt}</span>
-                      <span className="setup-deal-hint">
-                        {isPt ? preset.descriptionPt : preset.description}
+                      <span className="setup-deal-option__copy">
+                        <span className="setup-deal-title">{preset.namePt}</span>
+                        <span className="setup-deal-hint">
+                          {isPt ? preset.descriptionPt : preset.description}
+                        </span>
                       </span>
+                      {setup.rulesPresetId === preset.id ? (
+                        <span className="setup-deal-check" aria-hidden="true">
+                          ✓
+                        </span>
+                      ) : (
+                        <span
+                          className="setup-deal-check setup-deal-check--empty"
+                          aria-hidden="true"
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -312,12 +324,24 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
                       }`}
                       onClick={() => setup.setPlayDirection(opt.id)}
                     >
-                      <span className="setup-deal-title">
-                        {isPt ? opt.titlePt : opt.titleEn}
+                      <span className="setup-deal-option__copy">
+                        <span className="setup-deal-title">
+                          {isPt ? opt.titlePt : opt.titleEn}
+                        </span>
+                        <span className="setup-deal-hint">
+                          {isPt ? opt.hintPt : opt.hintEn}
+                        </span>
                       </span>
-                      <span className="setup-deal-hint">
-                        {isPt ? opt.hintPt : opt.hintEn}
-                      </span>
+                      {setup.playDirection === opt.id ? (
+                        <span className="setup-deal-check" aria-hidden="true">
+                          ✓
+                        </span>
+                      ) : (
+                        <span
+                          className="setup-deal-check setup-deal-check--empty"
+                          aria-hidden="true"
+                        />
+                      )}
                     </button>
                   ))}
                 </div>

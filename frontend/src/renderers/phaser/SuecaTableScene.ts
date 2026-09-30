@@ -51,6 +51,8 @@ export interface SuecaTableSceneHost {
   getActiveTurnLabel?: () => string;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   getSelectedCardIndex?: () => number | null;
+  /** UX-SUECA-04 — fires when felt/chrome exist (may precede React subscription). */
+  onTableSurfaceReady?: () => void;
 }
 
 export class SuecaTableScene extends Phaser.Scene {
@@ -141,6 +143,8 @@ export class SuecaTableScene extends Phaser.Scene {
     this.vignetteGfx = this.add.graphics().setDepth(PREMIUM_TABLE.depthTable + 2);
     this.drawTableSurface(false);
     this.tableReady = true;
+    // Notify even if React already applied a model while create() was pending.
+    this.host.onTableSurfaceReady?.();
 
     this.trumpText = this.add
       .text(12, 10, '', {
@@ -156,6 +160,11 @@ export class SuecaTableScene extends Phaser.Scene {
     this.ensureCardBackTexture(this.theme.cardBackId, this.theme.cardBackPath, () => {
       if (this.latestModel) this.syncFromModel(true);
     });
+  }
+
+  /** UX-SUECA-04 — felt/chrome created; safe for ritual overlay. */
+  isTableSurfaceReady(): boolean {
+    return this.tableReady;
   }
 
   /**
@@ -281,10 +290,24 @@ export class SuecaTableScene extends Phaser.Scene {
     if (forceLayout || this.dragCardId) {
       this.cancelDrag(true);
       this.tweens.killAll();
+      // killAll can freeze mid-pulse alphas — restore seat shells immediately.
+      this.seatPanels.forEach((p) => p.setAlpha(1));
+      this.seatLabels.forEach((l) => l.setAlpha(1));
     }
 
+    const prevLayout = this.view?.layout;
+    const layoutChanged =
+      forceLayout ||
+      !prevLayout ||
+      prevLayout.width !== nextView.layout.width ||
+      prevLayout.height !== nextView.layout.height ||
+      prevLayout.aspect !== nextView.layout.aspect;
+
     this.view = nextView;
-    this.drawTableSurface(true);
+    // UX-SUECA-04 — do NOT clear/redraw felt on every ritual-focus sync (causes seat flicker).
+    if (layoutChanged) {
+      this.drawTableSurface(true);
+    }
     // Special-state banner only (festa / contract) — no trump glyph on felt.
     if (this.trumpText) {
       this.trumpText.setText(nextView.trumpLabel);
@@ -474,6 +497,7 @@ export class SuecaTableScene extends Phaser.Scene {
     let activeSeatIndex: number | null = null;
     const turnColor = this.theme.activeHex;
     const turnColorCss = this.theme.active;
+    const ritualActive = view.seats.some((s) => s.showRitualHighlight);
     view.seats.forEach((seat) => {
       keep.add(seat.seatIndex);
       const text = seat.labelText;
@@ -509,6 +533,8 @@ export class SuecaTableScene extends Phaser.Scene {
       }
       label.setColor(this.theme.text);
       label.setBackgroundColor('rgba(0,0,0,0)');
+      label.setAlpha(1);
+      label.setVisible(true);
 
       let cueLabel = this.seatTurnCues.get(seat.seatIndex);
       if (showCue) {
@@ -568,8 +594,10 @@ export class SuecaTableScene extends Phaser.Scene {
       const centerX = px + pw / 2;
       const py = seat.labelPosition.y - ph / 2;
       const radius = 8;
-      const active = seat.showActiveHighlight;
+      const ritual = Boolean(seat.showRitualHighlight);
+      const active = seat.showActiveHighlight && !ritual;
       if (active) activeSeatIndex = seat.seatIndex;
+      if (ritual) activeSeatIndex = seat.seatIndex;
 
       const nameY = showCue
         ? py + padY + label.height / 2
@@ -591,18 +619,23 @@ export class SuecaTableScene extends Phaser.Scene {
         this.seatPanels.set(seat.seatIndex, panel);
       }
       panel.clear();
+      panel.setAlpha(1);
+      panel.setVisible(true);
       panel.fillStyle(PREMIUM_TABLE.shadow, 0.18);
       panel.fillRoundedRect(px + 1, py + 1.5, pw, ph, radius);
       if (active) {
         panel.fillStyle(turnColor, 0.1);
         panel.fillRoundedRect(px, py, pw, ph, radius);
+      } else if (ritual) {
+        panel.fillStyle(this.theme.brass, 0.12);
+        panel.fillRoundedRect(px, py, pw, ph, radius);
       }
-      panel.fillStyle(this.theme.seatPanel, active ? 0.82 : 0.68);
+      panel.fillStyle(this.theme.seatPanel, active || ritual ? 0.86 : 0.68);
       panel.fillRoundedRect(px, py, pw, ph, radius);
       panel.lineStyle(
-        active ? 1.5 : 1,
+        active || ritual ? 1.75 : 1,
         active ? turnColor : this.theme.brass,
-        active ? 0.9 : seat.isDealer ? 0.38 : 0.2
+        active ? 0.9 : ritual ? 0.78 : seat.isDealer ? 0.38 : 0.2
       );
       panel.strokeRoundedRect(px, py, pw, ph, radius);
 
@@ -613,7 +646,9 @@ export class SuecaTableScene extends Phaser.Scene {
       }
     });
 
+    // UX-SUECA-04 — no alpha pulse while ritual focus moves (looks like seats vanishing).
     if (
+      !ritualActive &&
       activeSeatIndex != null &&
       activeSeatIndex !== this.lastActiveSeat &&
       this.seatPanels.has(activeSeatIndex)
@@ -629,6 +664,8 @@ export class SuecaTableScene extends Phaser.Scene {
     }
     this.lastActiveSeat = activeSeatIndex;
 
+    // Preserve seat shells unless this sync truly dropped seats (never during ritual).
+    if (keep.size === 0) return;
     Array.from(this.seatLabels.keys()).forEach((idx) => {
       if (!keep.has(idx)) {
         this.seatLabels.get(idx)?.destroy();

@@ -66,7 +66,7 @@ export interface Translations {
     won: string;
     finalGames: string;
     dealingTitle: string;
-    /** ARCH-SUECA-06 — per-hand deal alignment. */
+    /** ARCH-SUECA-06 — per-hand deal alignment (legacy copy; ritual uses physical labels). */
     dealAlignmentLabel: string;
     dealAlignmentSame: string;
     dealAlignmentOpposite: string;
@@ -74,6 +74,24 @@ export interface Translations {
     dealAlignmentOppositeHint: string;
     playDirectionReadonlyRight: string;
     playDirectionReadonlyLeft: string;
+    /** UX-SUECA-01 — hand ritual */
+    dealerLabel: string;
+    dealPrompt: string;
+    dealPhysicalRight: string;
+    dealPhysicalLeft: string;
+    dealConfirm: string;
+    shuffling: (name: string) => string;
+    cutting: (name: string) => string;
+    dealerDeciding: (name: string) => string;
+    willDealRight: (name: string) => string;
+    willDealLeft: (name: string) => string;
+    ritualRoleShuffler: string;
+    ritualRoleCutter: string;
+    ritualRoleDealer: string;
+    ritualRoleFirstPlayer: string;
+    distributing: string;
+    trumpRevealTitle: string;
+    firstPlayerStarts: (name: string) => string;
     newGame: string;
     heartsRoundTitle: string;
     heartsRoundPoints: string;
@@ -864,6 +882,23 @@ export const translations: Record<Language, Translations> = {
         'Distribui no sentido oposto. A primeira carta do dealer define o trunfo.',
       playDirectionReadonlyRight: 'Jogo: pela direita',
       playDirectionReadonlyLeft: 'Jogo: pela esquerda',
+      dealerLabel: 'Dealer:',
+      dealPrompt: 'Por onde queres distribuir?',
+      dealPhysicalRight: 'Pela direita',
+      dealPhysicalLeft: 'Pela esquerda',
+      dealConfirm: 'Distribuir',
+      shuffling: (name) => `${name} está a baralhar…`,
+      cutting: (name) => `${name} corta o baralho`,
+      dealerDeciding: (name) => `${name} está a decidir por onde distribuir…`,
+      willDealRight: (name) => `${name} vai distribuir pela direita`,
+      willDealLeft: (name) => `${name} vai distribuir pela esquerda`,
+      ritualRoleShuffler: 'BARALHA',
+      ritualRoleCutter: 'CORTA',
+      ritualRoleDealer: 'DEALER',
+      ritualRoleFirstPlayer: 'COMEÇA',
+      distributing: 'A distribuir…',
+      trumpRevealTitle: 'Trunfo',
+      firstPlayerStarts: (name) => `${name} começa`,
       newGame: 'Novo Jogo',
       heartsRoundTitle: 'Fim da ronda',
       heartsRoundPoints: 'Pontos desta ronda',
@@ -1316,6 +1351,23 @@ export const translations: Record<Language, Translations> = {
         'Deal in the opposite direction. The dealer’s first card sets trump.',
       playDirectionReadonlyRight: 'Play: to the right',
       playDirectionReadonlyLeft: 'Play: to the left',
+      dealerLabel: 'Dealer:',
+      dealPrompt: 'Which way do you want to deal?',
+      dealPhysicalRight: 'Anti-clockwise',
+      dealPhysicalLeft: 'Clockwise',
+      dealConfirm: 'Deal',
+      shuffling: (name) => `${name} is shuffling…`,
+      cutting: (name) => `${name} cuts the deck`,
+      dealerDeciding: (name) => `${name} is deciding which way to deal…`,
+      willDealRight: (name) => `${name} will deal anti-clockwise`,
+      willDealLeft: (name) => `${name} will deal clockwise`,
+      ritualRoleShuffler: 'SHUFFLE',
+      ritualRoleCutter: 'CUT',
+      ritualRoleDealer: 'DEALER',
+      ritualRoleFirstPlayer: 'LEADS',
+      distributing: 'Dealing…',
+      trumpRevealTitle: 'Trump',
+      firstPlayerStarts: (name) => `${name} leads`,
       newGame: 'Start New Game',
       heartsRoundTitle: 'Round complete',
       heartsRoundPoints: 'Points this round',

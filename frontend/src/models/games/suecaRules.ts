@@ -126,6 +126,22 @@ export function dealDirectionFor(
 }
 
 /**
+ * UX-SUECA-01 — map dealer’s physical deal choice → canonical DealAlignment.
+ * Does not become a new source of truth; playDirection + DealAlignment remain SoT.
+ *
+ * RIGHT play: direita/right → same, esquerda/left → opposite
+ * LEFT play:  esquerda/left → same, direita/right → opposite
+ */
+export function dealAlignmentFromPhysicalDeal(
+  playDirection: PlayDirection,
+  physicalDealDirection: PlayDirection
+): DealAlignment {
+  const play = playDirection === 'left' ? 'left' : 'right';
+  const physical = physicalDealDirection === 'left' ? 'left' : 'right';
+  return physical === play ? 'same' : 'opposite';
+}
+
+/**
  * Block deal seat order (4 seats). Does not deal cards.
  *
  * - same: starts at first recipient in deal direction, ends with dealer

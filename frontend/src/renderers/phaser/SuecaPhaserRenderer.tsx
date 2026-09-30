@@ -13,6 +13,7 @@ import type {
 import { useLanguage } from '../../i18n/useLanguage';
 import { SuecaTableScene, SUECA_TABLE_SCENE_KEY } from './SuecaTableScene';
 import { resolvePhaserThemeFromDom } from './phaserTheme';
+import { createTableReadyLatch } from './tableReadyLatch';
 import './SuecaPhaserRenderer.css';
 
 export interface SuecaPhaserRendererProps {
@@ -24,6 +25,11 @@ export interface SuecaPhaserRendererProps {
   selectedCardIndex?: number | null;
   /** Called once if Phaser.Game construction fails (useEffect — not caught by error boundaries). */
   onInitError?: (error: Error) => void;
+  /**
+   * UX-SUECA-04 — fires once when scene has painted seats (table ready for ritual).
+   * Safe if scene becomes ready before or after this prop is installed.
+   */
+  onTableReady?: () => void;
 }
 
 export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
@@ -33,7 +39,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   getTeamName,
   isLocalCardPlayable,
   selectedCardIndex = null,
-  onInitError
+  onInitError,
+  onTableReady
 }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -46,6 +53,13 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   const getTeamNameRef = useRef(getTeamName);
   const activeTurnLabelRef = useRef(t.gameBoard.nowPlaying);
   const onInitErrorRef = useRef(onInitError);
+  const onTableReadyRef = useRef(onTableReady);
+  const seatsReadyRef = useRef(false);
+  const readyLatchRef = useRef(
+    createTableReadyLatch(() => {
+      onTableReadyRef.current?.();
+    })
+  );
 
   eventsRef.current = events;
   playableRef.current = isLocalCardPlayable;
@@ -54,6 +68,15 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   getTeamNameRef.current = getTeamName;
   activeTurnLabelRef.current = t.gameBoard.nowPlaying;
   onInitErrorRef.current = onInitError;
+  onTableReadyRef.current = onTableReady;
+
+  const emitReadyIfPossible = () => {
+    const scene = sceneRef.current;
+    readyLatchRef.current.tryNotify({
+      surfaceReady: Boolean(scene?.isTableSurfaceReady()),
+      seatsReady: seatsReadyRef.current
+    });
+  };
 
   const buildHost = () => ({
     onLocalCardClick: (cardIndex: number) => {
@@ -64,7 +87,11 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     getActiveTurnLabel: () => activeTurnLabelRef.current,
     isLocalCardPlayable: (cardIndex: number) =>
       playableRef.current ? playableRef.current(cardIndex) : true,
-    getSelectedCardIndex: () => selectedRef.current ?? null
+    getSelectedCardIndex: () => selectedRef.current ?? null,
+    onTableSurfaceReady: () => {
+      // Scene.create may finish after the first model apply — re-check latch.
+      emitReadyIfPossible();
+    }
   });
 
   useEffect(() => {
@@ -74,6 +101,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     let themeTimer: number | undefined;
     let exposeScene = false;
     let scene: SuecaTableScene | null = null;
+    let pollId = 0;
+    let cancelled = false;
 
     try {
       const theme = resolvePhaserThemeFromDom();
@@ -102,6 +131,19 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
       (window as unknown as { __suecaPhaserScene?: SuecaTableScene }).__suecaPhaserScene =
         scene;
 
+      // Secondary readiness poll — covers create() completing without another React render.
+      // Primary path: onTableSurfaceReady + model apply both call emitReadyIfPossible.
+      let polls = 0;
+      const poll = () => {
+        if (cancelled) return;
+        emitReadyIfPossible();
+        polls += 1;
+        if (!readyLatchRef.current.hasFired() && polls < 120) {
+          pollId = window.requestAnimationFrame(poll);
+        }
+      };
+      pollId = window.requestAnimationFrame(poll);
+
       themeTimer = window.setInterval(() => {
         const next = resolvePhaserThemeFromDom();
         sceneRef.current?.setTheme(next);
@@ -117,6 +159,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     }
 
     return () => {
+      cancelled = true;
+      if (pollId) window.cancelAnimationFrame(pollId);
       if (themeTimer != null) window.clearInterval(themeTimer);
       if (exposeScene && scene) {
         const w = window as unknown as { __suecaPhaserScene?: SuecaTableScene };
@@ -132,8 +176,11 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
+    seatsReadyRef.current = model.seats.length === 4;
     scene.setHost(buildHost());
     scene.applyModel(model);
+    // Read current readiness (not only a one-shot edge) — latch is idempotent.
+    emitReadyIfPossible();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, selectedCardIndex, isLocalCardPlayable, getTeamName, t.gameBoard.nowPlaying]);
 

@@ -1,79 +1,236 @@
-import React from 'react';
-import { DealAlignment, PlayDirection } from '../types/game';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { DealAlignment, PlayDirection, PlayerType } from '../types/game';
 import { useLanguage } from '../i18n/useLanguage';
+import {
+  alignmentFromPhysicalDealChoice,
+  isSuecaDealerAi,
+  pickAiPhysicalDealDirection,
+  resolveRitualTimings,
+  ritualFocusForPhase,
+  ritualSeatsForDealer,
+  type SuecaPhysicalDealDirection,
+  type SuecaRitualFixedTimings,
+  type SuecaRitualFocus,
+  type SuecaRitualPhase
+} from '../models/games/suecaHandRitual';
 import './VariantModals.css';
 
-interface SuecaDealingModalProps {
-  round: number;
-  playDirection: PlayDirection;
-  dealAlignment: DealAlignment;
-  onAlignmentChange: (alignment: DealAlignment) => void;
-  onConfirm: () => void;
+export interface SuecaDealingModalPlayer {
+  name: string;
+  type?: PlayerType;
 }
 
-/** Shown before each Sueca deal — per-hand DealAlignment only (ARCH-SUECA-06). */
+interface SuecaDealingModalProps {
+  playDirection: PlayDirection;
+  dealerIndex: number;
+  players: SuecaDealingModalPlayer[];
+  onConfirm: (alignment: DealAlignment) => void;
+  /** UX-SUECA-03 — notify table of ritual focus (cleared on unmount). */
+  onRitualFocusChange?: (focus: SuecaRitualFocus | null) => void;
+  /** Injected RNG for AI 50/50 (tests). */
+  random?: () => number;
+  /** Fixed phase durations (tests / deterministic). */
+  timings?: Partial<SuecaRitualFixedTimings>;
+}
+
+/** UX-SUECA-03 — compact premium table card + ritual focus callbacks. */
 export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   playDirection,
-  dealAlignment,
-  onAlignmentChange,
-  onConfirm
+  dealerIndex,
+  players,
+  onConfirm,
+  onRitualFocusChange,
+  random = Math.random,
+  timings: timingOverrides
 }) => {
   const { t } = useLanguage();
-  const play = playDirection === 'left' ? 'left' : 'right';
+  const seats = useMemo(() => ritualSeatsForDealer(dealerIndex), [dealerIndex]);
+  const dealer = players[seats.dealer];
+  const shuffler = players[seats.shuffler];
+  const cutter = players[seats.cutter];
+  const dealerName = dealer?.name ?? `Player ${seats.dealer + 1}`;
+  const shufflerName = shuffler?.name ?? `Player ${seats.shuffler + 1}`;
+  const cutterName = cutter?.name ?? `Player ${seats.cutter + 1}`;
+  const dealerIsAi = isSuecaDealerAi(dealer?.type);
+
+  const [phase, setPhase] = useState<SuecaRitualPhase>('shuffle');
+  const [physicalChoice, setPhysicalChoice] = useState<SuecaPhysicalDealDirection | null>(
+    null
+  );
+  const [aiResult, setAiResult] = useState<SuecaPhysicalDealDirection | null>(null);
+
+  const onConfirmRef = useRef(onConfirm);
+  onConfirmRef.current = onConfirm;
+  const onFocusRef = useRef(onRitualFocusChange);
+  onFocusRef.current = onRitualFocusChange;
+  const randomRef = useRef(random);
+  randomRef.current = random;
+  const confirmedRef = useRef(false);
+
+  const resolvedTimings = useMemo(
+    () => resolveRitualTimings(timingOverrides, random),
+    // Resolve once per mount — avoid re-rolling mid-ritual.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount cadence
+    [timingOverrides]
+  );
+
+  useEffect(() => {
+    confirmedRef.current = false;
+    setPhase('shuffle');
+    setPhysicalChoice(null);
+    setAiResult(null);
+  }, [dealerIndex, playDirection]);
+
+  useEffect(() => {
+    onFocusRef.current?.(ritualFocusForPhase(phase, dealerIndex));
+  }, [phase, dealerIndex]);
+
+  useEffect(() => {
+    return () => {
+      onFocusRef.current?.(null);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase !== 'shuffle') return;
+    const id = window.setTimeout(() => setPhase('cut'), resolvedTimings.shuffleMs);
+    return () => window.clearTimeout(id);
+  }, [phase, resolvedTimings.shuffleMs]);
+
+  useEffect(() => {
+    if (phase !== 'cut') return;
+    const id = window.setTimeout(() => setPhase('dealer-decision'), resolvedTimings.cutMs);
+    return () => window.clearTimeout(id);
+  }, [phase, resolvedTimings.cutMs]);
+
+  useEffect(() => {
+    if (phase !== 'dealer-decision' || !dealerIsAi) return;
+    const id = window.setTimeout(() => {
+      const physical = pickAiPhysicalDealDirection(randomRef.current);
+      setAiResult(physical);
+      setPhase('dealer-decision-result');
+    }, resolvedTimings.aiDecisionMs);
+    return () => window.clearTimeout(id);
+  }, [phase, dealerIsAi, resolvedTimings.aiDecisionMs]);
+
+  useEffect(() => {
+    if (phase !== 'dealer-decision-result' || !dealerIsAi || !aiResult) return;
+    const id = window.setTimeout(() => {
+      if (confirmedRef.current) return;
+      confirmedRef.current = true;
+      onConfirmRef.current(alignmentFromPhysicalDealChoice(playDirection, aiResult));
+    }, resolvedTimings.decisionResultMs);
+    return () => window.clearTimeout(id);
+  }, [phase, dealerIsAi, aiResult, playDirection, resolvedTimings.decisionResultMs]);
+
+  const handleConfirm = () => {
+    if (!physicalChoice || confirmedRef.current) return;
+    confirmedRef.current = true;
+    onConfirm(alignmentFromPhysicalDealChoice(playDirection, physicalChoice));
+  };
+
+  const showHumanDecision = phase === 'dealer-decision' && !dealerIsAi;
+  const density =
+    showHumanDecision ? 'human' : phase === 'shuffle' || phase === 'cut' ? 'status' : 'decision';
+
+  let statusText: string | null = null;
+  if (phase === 'shuffle') statusText = t.modals.shuffling(shufflerName);
+  else if (phase === 'cut') statusText = t.modals.cutting(cutterName);
+  else if (phase === 'dealer-decision' && dealerIsAi) {
+    statusText = t.modals.dealerDeciding(dealerName);
+  } else if (phase === 'dealer-decision-result' && aiResult) {
+    statusText =
+      aiResult === 'right'
+        ? t.modals.willDealRight(dealerName)
+        : t.modals.willDealLeft(dealerName);
+  }
 
   return (
-    <div className="variant-modal-overlay dealing-modal-overlay">
+    <div
+      className="variant-modal-overlay dealing-modal-overlay dealing-modal-overlay--table-ritual"
+      data-testid="sueca-ritual-overlay"
+    >
       <div
-        className="variant-modal dealing-modal"
+        className={`variant-modal dealing-modal dealing-modal--ritual dealing-modal--ritual-plaque dealing-modal--ritual-clearance dealing-modal--ritual-${density}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dealing-modal-title"
+        data-ritual-phase={phase}
+        data-dealer-ai={dealerIsAi ? 'true' : 'false'}
       >
-        <h2 id="dealing-modal-title" className="dealing-modal-title">
+        <p id="dealing-modal-title" className="dealing-modal-kicker">
           {t.modals.dealingTitle}
-        </h2>
-
-        <p className="dealing-modal-play-readonly" aria-live="polite">
-          {play === 'right' ? t.modals.playDirectionReadonlyRight : t.modals.playDirectionReadonlyLeft}
         </p>
 
-        <div className="dealing-modal-section">
-          <div className="dealing-modal-label">{t.modals.dealAlignmentLabel}</div>
-          <div
-            className="dealing-modal-radios"
-            role="radiogroup"
-            aria-label={t.modals.dealAlignmentLabel}
+        {!showHumanDecision && statusText ? (
+          <p
+            className={`dealing-modal-status${
+              phase === 'dealer-decision' || phase === 'dealer-decision-result'
+                ? ' dealing-modal-status--decision'
+                : ''
+            }`}
+            aria-live="polite"
           >
-            <label className="dealing-modal-radio">
-              <input
-                type="radio"
-                name="sueca-deal-alignment"
-                checked={dealAlignment === 'same'}
-                onChange={() => onAlignmentChange('same')}
-              />
-              <span>
-                <strong>{t.modals.dealAlignmentSame}</strong>
-                <span className="dealing-modal-hint">{t.modals.dealAlignmentSameHint}</span>
-              </span>
-            </label>
-            <label className="dealing-modal-radio">
-              <input
-                type="radio"
-                name="sueca-deal-alignment"
-                checked={dealAlignment === 'opposite'}
-                onChange={() => onAlignmentChange('opposite')}
-              />
-              <span>
-                <strong>{t.modals.dealAlignmentOpposite}</strong>
-                <span className="dealing-modal-hint">{t.modals.dealAlignmentOppositeHint}</span>
-              </span>
-            </label>
-          </div>
-        </div>
+            {statusText}
+          </p>
+        ) : null}
 
-        <button type="button" className="sueca-btn sueca-btn--primary dealing-modal-start" onClick={onConfirm}>
-          {t.modals.startGame}
-        </button>
+        {showHumanDecision ? (
+          <>
+            <p className="dealing-modal-dealer" aria-live="polite">
+              <span className="dealing-modal-dealer-label">{t.modals.dealerLabel}</span>{' '}
+              <strong>{dealerName}</strong>
+            </p>
+            <p className="dealing-modal-prompt">{t.modals.dealPrompt}</p>
+            <div
+              className="dealing-modal-choices"
+              role="radiogroup"
+              aria-label={t.modals.dealPrompt}
+            >
+              {(
+                [
+                  { id: 'right' as const, label: t.modals.dealPhysicalRight },
+                  { id: 'left' as const, label: t.modals.dealPhysicalLeft }
+                ] as const
+              ).map((opt) => {
+                const selected = physicalChoice === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    data-physical-deal={opt.id}
+                    className={`dealing-choice-card${selected ? ' is-selected' : ''}`}
+                    onClick={() => setPhysicalChoice(opt.id)}
+                  >
+                    <span className="dealing-choice-card__body">
+                      <span className="dealing-choice-card__title">{opt.label}</span>
+                    </span>
+                    {selected ? (
+                      <span className="deal-select-check" aria-hidden="true">
+                        ✓
+                      </span>
+                    ) : (
+                      <span
+                        className="deal-select-check deal-select-check--empty"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="sueca-btn sueca-btn--primary dealing-modal-start"
+              disabled={!physicalChoice}
+              onClick={handleConfirm}
+            >
+              {t.modals.dealConfirm}
+            </button>
+          </>
+        ) : null}
       </div>
     </div>
   );

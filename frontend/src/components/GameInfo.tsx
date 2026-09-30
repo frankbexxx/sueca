@@ -12,6 +12,7 @@ interface GameInfoProps {
   gameState: GameState;
   variant: GameVariant;
   rulesPresetId?: string;
+  hideTrump?: boolean;
 }
 
 function suitLabelFor(t: Translations, suit: Suit): string {
@@ -31,7 +32,7 @@ function suitLabelFor(t: Translations, suit: Suit): string {
  * Center status for Sueca / Spades team strip (UX-P3.4b).
  * King/Hearts use UnifiedGameStatusPanel — keep this branch lean.
  */
-export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant }) => {
+export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant, hideTrump = false }) => {
   const { t } = useLanguage();
 
   if (variant === 'spades') {
@@ -54,6 +55,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, variant }) => {
   }
 
   if (variant === 'sueca') {
+    if (hideTrump) return null;
     const trumpBadge = resolveTrumpSuitBadge(gameState.trumpSuit);
     const trumpCard = gameState.trumpCard;
     if (!trumpBadge && !trumpCard) return null;

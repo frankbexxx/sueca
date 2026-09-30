@@ -19,6 +19,10 @@ export interface DomTableSurfacePropsFromModel {
   compactSeats: boolean;
   spadesBidPhase: boolean;
   spadesState: SpadesVariantState | undefined;
+  ritualFocusSeat: number | null;
+  ritualRole: TableRenderModel['ritualRole'];
+  hideHands: boolean;
+  playLocked: boolean;
 }
 
 export interface DomLocalDockPropsFromModel {
@@ -33,6 +37,9 @@ export interface DomLocalDockPropsFromModel {
   showAuctionBadges: boolean;
   auctionActions: TableRenderModel['variantUi']['auctionActions'];
   auctionLocale: 'pt' | 'en';
+  ritualFocusSeat: number | null;
+  ritualRole: TableRenderModel['ritualRole'];
+  playLocked: boolean;
 }
 
 export interface DomPlayerHandPropsFromModel {
@@ -60,7 +67,11 @@ export function mapTableModelToDomSurfaceProps(
     auctionLocale: model.chrome.auctionLocale,
     compactSeats: model.chrome.compactSeats,
     spadesBidPhase: model.chrome.spadesBidPhase,
-    spadesState: spadesStateFull ?? undefined
+    spadesState: spadesStateFull ?? undefined,
+    ritualFocusSeat: model.ritualFocusSeat,
+    ritualRole: model.ritualRole,
+    hideHands: model.presentation.hideHands,
+    playLocked: model.presentation.playLocked
   };
 }
 
@@ -80,7 +91,10 @@ export function mapTableModelToDomDockProps(
     spadesState: spadesStateFull ?? undefined,
     showAuctionBadges: model.chrome.showAuctionBadges,
     auctionActions: model.variantUi.auctionActions,
-    auctionLocale: model.chrome.auctionLocale
+    auctionLocale: model.chrome.auctionLocale,
+    ritualFocusSeat: model.ritualFocusSeat,
+    ritualRole: model.ritualRole,
+    playLocked: model.presentation.playLocked
   };
 }
 

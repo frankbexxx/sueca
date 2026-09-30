@@ -21,6 +21,24 @@ export interface TableSeatRenderModel {
   handCount: number;
 }
 
+/** UX-SUECA-03/04 — transient Sueca hand ritual focus (not engine / not trick turn). */
+export type TableRitualRole = 'shuffler' | 'cutter' | 'dealer' | 'first-player';
+
+export interface TableRitualFocusRenderModel {
+  seat: number;
+  role: TableRitualRole;
+}
+
+/** UX-SUECA-04 — presentation gates (not engine). */
+export interface TablePresentationGate {
+  /** Hide hands/backs even if engine already dealt. */
+  hideHands: boolean;
+  /** Hide trump from HUD (ceremony may show it). */
+  hideTrump: boolean;
+  /** Block trick interaction / AI play. */
+  playLocked: boolean;
+}
+
 /** Card already played into the current trick. */
 export interface TableTrickCardRenderModel {
   card: Card;
@@ -143,6 +161,17 @@ export interface TableRenderModel {
   currentTrick: TableTrickCardRenderModel[];
   /** Engine index of the seat that should show active highlight; null if none. */
   activeSeat: number | null;
+  /**
+   * UX-SUECA-03 — Sueca pre-deal ritual focus (presentation only).
+   * Independent of activeSeat / currentPlayerIndex. Null when not in ritual.
+   */
+  ritualFocusSeat: number | null;
+  ritualRole: TableRitualRole | null;
+  /**
+   * UX-SUECA-04 — presentation gates. Defaults are “show everything / unlocked”
+   * when gate is absent.
+   */
+  presentation: TablePresentationGate;
   dealerSeat: number;
   leaderSeat: number;
   /** Winner of the completed trick while waiting for continue (presentation). */

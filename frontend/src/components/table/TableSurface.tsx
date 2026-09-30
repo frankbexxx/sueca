@@ -21,6 +21,10 @@ export interface TableSurfaceProps {
   spadesBidPhase?: boolean;
   spadesState?: SpadesVariantState;
   layoutSnapshot?: LayoutSnapshot;
+  ritualFocusSeat?: number | null;
+  ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
+  hideHands?: boolean;
+  playLocked?: boolean;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -37,7 +41,11 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   compactSeats = false,
   spadesBidPhase = false,
   spadesState,
-  layoutSnapshot
+  layoutSnapshot,
+  ritualFocusSeat = null,
+  ritualRole = null,
+  hideHands = false,
+  playLocked = false
 }) => {
   return (
     <div className="table-layout">
@@ -62,6 +70,10 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           spadesBidPhase={spadesBidPhase}
           spadesState={spadesState}
           layoutSnapshot={layoutSnapshot}
+          ritualFocusSeat={ritualFocusSeat}
+          ritualRole={ritualRole}
+          hideHands={hideHands}
+          playLocked={playLocked}
         />
       </div>
     </div>

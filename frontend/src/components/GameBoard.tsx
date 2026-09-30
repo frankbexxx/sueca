@@ -67,6 +67,23 @@ import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal } from './SuecaDealingModal';
+import { SuecaPostDealCard } from './SuecaPostDealCard';
+import {
+  nextSuecaPostDealPhase,
+  physicalDealFromAlignment,
+  postDealDurationMs,
+  postDealFocusForPhase,
+  postDealHandsHidden,
+  postDealPlayLocked,
+  postDealTrumpHudHidden,
+  resolvePostDealTimings,
+  shouldMountSuecaDealRitual,
+  suecaPresentationPlayReady,
+  type SuecaPhysicalDealDirection,
+  type SuecaPostDealFixedTimings,
+  type SuecaPostDealPhase,
+  type SuecaRitualRole
+} from '../models/games/suecaHandRitual';
 import { KingFestaFlowModal } from './KingFestaFlowModal';
 import { KingKohRevealModal } from './KingKohRevealModal';
 import { KingScoreSheetModal } from './KingScoreSheetModal';
@@ -131,8 +148,24 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const { playerNames, aiDifficulty, gameVariant, rulesPresetId } = config;
   const sessionPlayDirection: PlayDirection =
     config.playDirection === 'left' ? 'left' : 'right';
-  /** Per-hand deal packaging; preferred product default is SAME each hand (ARCH-SUECA-06). */
-  const [dealAlignment, setDealAlignment] = useState<DealAlignment>('same');
+  /** Last confirmed Sueca deal packaging (MP host-action fallback; not modal SoT). */
+  const dealAlignmentRef = useRef<DealAlignment>('same');
+  /** UX-SUECA-03 — transient ritual focus (not GameState / not persisted). */
+  const [ritualFocus, setRitualFocus] = useState<{
+    seat: number;
+    role: SuecaRitualRole;
+  } | null>(null);
+  /** UX-SUECA-04 — table painted before ritual starts. */
+  const [tableReadyForRitual, setTableReadyForRitual] = useState(false);
+  /** UX-SUECA-04 — post-Distribuir presentation phase (null = unlocked / idle). */
+  const [postDealPhase, setPostDealPhase] = useState<SuecaPostDealPhase | null>(null);
+  const [postDealPhysical, setPostDealPhysical] = useState<SuecaPhysicalDealDirection>('right');
+  /** UX-SUECA-06 — timings + seats for phase-driven advances (timer starts after paint). */
+  const postDealCtxRef = useRef<{
+    timings: SuecaPostDealFixedTimings;
+    dealerIndex: number;
+    firstPlayerIndex: number;
+  } | null>(null);
   const multiplayerSessionCode = (config.multiplayerSessionId ?? '').trim();
   const isMultiplayer = Boolean(config.multiplayerEnabled);
   const isMultiplayerActive = isMultiplayer && multiplayerSessionCode.length > 0;
@@ -150,8 +183,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const gameAdapterRef = useRef<GameAdapter | null>(null);
   const latestRemoteStateRef = useRef<GameState | null>(null);
   const processedActionIdsRef = useRef<Set<string>>(new Set());
-  const dealAlignmentRef = useRef(dealAlignment);
-  dealAlignmentRef.current = dealAlignment;
   const onExitRef = useRef(onExit);
   onExitRef.current = onExit;
   const gameOverExitRef = useRef(
@@ -630,21 +661,152 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     });
   };
 
-  /** ARCH-SUECA-06 — each new hand defaults DealAlignment to SAME (does not remember prior hand). */
-  const prevDealWaitRef = useRef(false);
-  useEffect(() => {
-    const waiting = gameVariant === 'sueca' && gameState.waitingForRoundStart;
-    if (waiting && !prevDealWaitRef.current) {
-      setDealAlignment('same');
+  const clearPostDealPresentation = useCallback(() => {
+    postDealCtxRef.current = null;
+    setPostDealPhase(null);
+    setRitualFocus(null);
+  }, []);
+
+  const markTableReadyForRitual = useCallback(() => {
+    // Latch TRUE for this table/game instance — never drop back to false mid-session.
+    setTableReadyForRitual(true);
+  }, []);
+
+  const suecaPresentationGate = useMemo(() => {
+    if (gameVariant !== 'sueca') {
+      return { hideHands: false, hideTrump: false, playLocked: false };
     }
-    prevDealWaitRef.current = waiting;
+    const waiting = gameState.waitingForRoundStart;
+    const postLocked = postDealPlayLocked(postDealPhase);
+    return {
+      hideHands: waiting || postDealHandsHidden(postDealPhase),
+      hideTrump: waiting || postDealTrumpHudHidden(postDealPhase),
+      playLocked: waiting || postLocked || !tableReadyForRitual
+    };
+  }, [
+    gameVariant,
+    gameState.waitingForRoundStart,
+    postDealPhase,
+    tableReadyForRitual
+  ]);
+
+  const suecaPlayReady =
+    gameVariant !== 'sueca' ||
+    suecaPresentationPlayReady({
+      waitingForRoundStart: gameState.waitingForRoundStart,
+      postDealPhase,
+      tableReadyForRitual
+    });
+
+  /** Reset post-deal when a new Sueca hand wait begins (pre-deal ritual owns focus). */
+  useEffect(() => {
+    if (gameVariant !== 'sueca') return;
+    if (gameState.waitingForRoundStart) {
+      postDealCtxRef.current = null;
+      setPostDealPhase(null);
+    }
   }, [gameVariant, gameState.waitingForRoundStart, gameState.round]);
 
+  /** DOM table: ready after paint when not using Phaser. */
   useEffect(() => {
-    if (!gameAdapter || !gameStarted || gameState.isGameOver || isMultiplayerActive) return;
-    saveGameSession(buildPersistConfig(), gameState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on state ticks
-  }, [gameAdapter, gameStarted, gameState, isMultiplayerActive, config, playerNames, aiDifficulty, gameVariant, rulesPresetId]);
+    if (!gameStarted || gameVariant !== 'sueca') return;
+    const phaser =
+      resolveTableRendererForBrowser(gameVariant) === 'phaser' &&
+      !isMultiplayerActive &&
+      !phaserInitFailed;
+    if (phaser) return;
+    let raf2 = 0;
+    const raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => markTableReadyForRitual());
+    });
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, [
+    gameStarted,
+    gameVariant,
+    isMultiplayerActive,
+    phaserInitFailed,
+    markTableReadyForRitual,
+    gameState.round
+  ]);
+
+  useEffect(() => {
+    return () => {
+      postDealCtxRef.current = null;
+    };
+  }, []);
+
+  /**
+   * UX-SUECA-06 — phase-driven post-deal machine.
+   * Timer for each beat starts in useEffect AFTER that phase commits/paints,
+   * so `{name} começa` is guaranteed a full firstPlayerMs of visible state.
+   */
+  useEffect(() => {
+    if (postDealPhase == null) return;
+    const ctx = postDealCtxRef.current;
+    if (!ctx) return;
+    const phaseAtSchedule = postDealPhase;
+    const ms = postDealDurationMs(phaseAtSchedule, ctx.timings);
+    const id = window.setTimeout(() => {
+      const next = nextSuecaPostDealPhase(phaseAtSchedule);
+      if (phaseAtSchedule === 'deal-confirmed' && next === 'distributing') {
+        scheduleDealRoundSfx();
+      }
+      if (next == null) {
+        postDealCtxRef.current = null;
+        setPostDealPhase(null);
+        setRitualFocus(null);
+        return;
+      }
+      setPostDealPhase(next);
+      setRitualFocus(
+        postDealFocusForPhase(next, ctx.dealerIndex, ctx.firstPlayerIndex)
+      );
+    }, ms);
+    return () => window.clearTimeout(id);
+  }, [postDealPhase, scheduleDealRoundSfx]);
+
+  const runSuecaPostDealSequence = useCallback(
+    (alignment: DealAlignment, physical: SuecaPhysicalDealDirection) => {
+      if (!gameAdapter || !suecaCtrl) return;
+      clearPostDealPresentation();
+      setPostDealPhysical(physical);
+      dealAlignmentRef.current = alignment;
+      setRitualFocus({
+        seat: gameAdapter.getCurrentState().dealerIndex,
+        role: 'dealer'
+      });
+      suecaCtrl.applyDealSetup(alignment);
+      gameAdapter.startRound(gameAdapter.getCurrentState());
+      const afterDeal = gameAdapter.getCurrentState();
+      setGameState(afterDeal);
+      if (isHost) {
+        mpLog('[MP] host publish deal', { session: multiplayerSessionCode });
+      }
+      afterHostMutation();
+
+      const timings = resolvePostDealTimings();
+      const dealerIndex = afterDeal.dealerIndex;
+      const firstPlayer = afterDeal.currentPlayerIndex;
+      postDealCtxRef.current = {
+        timings,
+        dealerIndex,
+        firstPlayerIndex: firstPlayer
+      };
+      setPostDealPhase('deal-confirmed');
+      setRitualFocus(postDealFocusForPhase('deal-confirmed', dealerIndex, firstPlayer));
+    },
+    [
+      gameAdapter,
+      suecaCtrl,
+      clearPostDealPresentation,
+      isHost,
+      multiplayerSessionCode,
+      afterHostMutation
+    ]
+  );
 
   /**
    * Shared deal/round SFX (all variants):
@@ -668,7 +830,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const roundStartCleared = wasWaiting === true && !gameState.waitingForRoundStart;
     const handsJustDealt = handsDealt && !prevHandsDealtRef.current;
 
-    const shouldCue = handsDealt && (handsJustDealt || roundStartCleared);
+    // UX-SUECA-04 — Sueca deal SFX is owned by the distributing presentation phase.
+    const suecaOwnsDealSfx =
+      gameVariant === 'sueca' && (postDealPhase != null || roundStartCleared);
+    const shouldCue =
+      handsDealt && (handsJustDealt || roundStartCleared) && !suecaOwnsDealSfx;
     if (shouldCue) {
       scheduleDealRoundSfx();
     }
@@ -679,6 +845,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     gameStarted,
     gameState.waitingForRoundStart,
     gameState.players,
+    gameVariant,
+    postDealPhase,
     scheduleDealRoundSfx
   ]);
 
@@ -911,14 +1079,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       !isRemoteTurn &&
       !isLocalHumanTurn &&
       isHostOrSolo &&
-      !waitingForEarlyEnd
+      !waitingForEarlyEnd &&
+      suecaPlayReady
     ) {
       const timer = setTimeout(() => {
         playAICard();
       }, AI_PLAY_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd]);
+  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd, suecaPlayReady]);
 
   /**
    * Handles card click from human player
@@ -949,7 +1118,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       !gameState.waitingForTrickEnd &&
       !gameState.waitingForRoundStart &&
       !gameState.waitingForRoundEnd &&
-      !gameState.waitingForGameStart
+      !gameState.waitingForGameStart &&
+      suecaPlayReady
     ) {
       const playerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
       const player = gameState.players[playerIndex];
@@ -1457,7 +1627,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         kingPt: kingPtState,
         spadesState,
         heartsState,
-        heartsPassIndices: heartsState?.humanPassIndices
+        heartsPassIndices: heartsState?.humanPassIndices,
+        ritualFocus:
+          gameVariant === 'sueca' && ritualFocus
+            ? { seat: ritualFocus.seat, role: ritualFocus.role }
+            : null,
+        presentation:
+          gameVariant === 'sueca'
+            ? {
+                hideHands: suecaPresentationGate.hideHands,
+                hideTrump: suecaPresentationGate.hideTrump,
+                playLocked: suecaPresentationGate.playLocked
+              }
+            : null
       }),
     [
       gameState,
@@ -1470,7 +1652,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       language,
       kingPtState,
       spadesState,
-      heartsState
+      heartsState,
+      ritualFocus,
+      suecaPresentationGate
     ]
   );
 
@@ -1589,6 +1773,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const isLocalCardPlayable = (cardIndex: number) => {
     if (!gameAdapter) return false;
+    if (!suecaPlayReady) return false;
     if (heartsPassActive) return true;
     if (festaSheetActive) return false;
     if (!isHandPlayActionAllowed(gameState)) return false;
@@ -1619,17 +1804,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {gameAdapter && gameState.players[localPlayerIndex] && (
         <>
           <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
-          <PlayerHand
-            gameState={gameState}
-            localPlayerIndex={localPlayerIndex}
-            selectedCard={selectedCard}
-            readOnly={handProps.readOnly}
-            selectedPassIndices={handProps.selectedPassIndices}
-            canPlayCard={isLocalCardPlayable}
-            onCardClick={handleCardClick}
-            getCardImage={getCardImage}
-            layoutSnapshot={layoutSnapshot}
-          />
+          {!suecaPresentationGate.hideHands ? (
+            <PlayerHand
+              gameState={gameState}
+              localPlayerIndex={localPlayerIndex}
+              selectedCard={selectedCard}
+              readOnly={handProps.readOnly || !suecaPlayReady}
+              selectedPassIndices={handProps.selectedPassIndices}
+              canPlayCard={isLocalCardPlayable}
+              onCardClick={handleCardClick}
+              getCardImage={getCardImage}
+              layoutSnapshot={layoutSnapshot}
+            />
+          ) : null}
         </>
       )}
     </>
@@ -1654,6 +1841,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       className={boardClassName}
       data-table-renderer={usePhaserTable ? 'phaser' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
+      data-table-ready={
+        gameVariant === 'sueca' ? (tableReadyForRitual ? '1' : '0') : undefined
+      }
+      data-post-deal-phase={
+        gameVariant === 'sueca' ? postDealPhase ?? 'play-ready' : undefined
+      }
       data-ai-source={isDevMode() ? aiSource : undefined}
     >
       {(devKingFestaJump || devKingNegContract) ? (
@@ -1694,6 +1887,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             usTeam={usTeam}
             themTeam={themTeam}
             rulesPresetId={rulesPresetId}
+            hideTrump={suecaPresentationGate.hideTrump}
           />
         </div>
         <InGameBar
@@ -1740,6 +1934,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 selectedCardIndex={selectedCard}
                 isLocalCardPlayable={isLocalCardPlayable}
                 onInitError={handlePhaserFallback}
+                onTableReady={markTableReadyForRitual}
                 events={{
                   onLocalCardClick: handlePhaserCardClick,
                   onContinueTrick: () => {
@@ -1975,23 +2170,42 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           return null;
         })()}
 
-      {gameVariant === 'sueca' && gameState.waitingForRoundStart && !gameState.isGameOver && !isJoiner && (
+      {gameVariant === 'sueca' &&
+        shouldMountSuecaDealRitual({
+          waitingForRoundStart: gameState.waitingForRoundStart,
+          tableReadyForRitual,
+          isGameOver: gameState.isGameOver,
+          isJoiner
+        }) && (
         <SuecaDealingModal
-          round={gameState.round}
           playDirection={sessionPlayDirection}
-          dealAlignment={dealAlignment}
-          onAlignmentChange={setDealAlignment}
-          onConfirm={() => {
-            if (!gameAdapter || !suecaCtrl) return;
-            suecaCtrl.applyDealSetup(dealAlignment);
-            gameAdapter.startRound(gameAdapter.getCurrentState());
-            if (isHost) {
-              mpLog('[MP] host publish deal', {
-                session: multiplayerSessionCode,
-              });
-            }
-            afterHostMutation();
+          dealerIndex={gameState.dealerIndex}
+          players={gameState.players}
+          onRitualFocusChange={(focus) => {
+            setRitualFocus(focus ? { seat: focus.seat, role: focus.role } : null);
           }}
+          onConfirm={(alignment) => {
+            runSuecaPostDealSequence(
+              alignment,
+              physicalDealFromAlignment(sessionPlayDirection, alignment)
+            );
+          }}
+        />
+      )}
+
+      {gameVariant === 'sueca' && postDealPhase != null && (
+        <SuecaPostDealCard
+          phase={postDealPhase}
+          dealerName={
+            gameState.players[gameState.dealerIndex]?.name ??
+            `Player ${gameState.dealerIndex + 1}`
+          }
+          firstPlayerName={
+            gameState.players[gameState.currentPlayerIndex]?.name ??
+            `Player ${gameState.currentPlayerIndex + 1}`
+          }
+          physicalDeal={postDealPhysical}
+          trumpCard={gameState.trumpCard ?? null}
         />
       )}
 

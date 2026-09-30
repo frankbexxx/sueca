@@ -97,11 +97,18 @@ describe('GameSetupScreen production redesign', () => {
       el.textContent?.includes('Pela direita')
     ) as HTMLButtonElement;
     expect(right.getAttribute('aria-checked')).toBe('true');
+    expect(right.classList.contains('is-selected')).toBe(true);
+    expect(right.querySelector('.setup-deal-check:not(.setup-deal-check--empty)')).not.toBeNull();
 
     const left = Array.from(container.querySelectorAll('.setup-deal-option')).find((el) =>
       el.textContent?.includes('Pela esquerda')
     ) as HTMLButtonElement;
+    expect(left.querySelector('.setup-deal-check--empty')).not.toBeNull();
     act(() => left.click());
+    expect(left.classList.contains('is-selected')).toBe(true);
+    expect(left.querySelector('.setup-deal-check:not(.setup-deal-check--empty)')).not.toBeNull();
+    expect(right.classList.contains('is-selected')).toBe(false);
+    expect(right.querySelector('.setup-deal-check--empty')).not.toBeNull();
 
     const start = container.querySelector('.setup-cta') as HTMLButtonElement;
     act(() => start.click());

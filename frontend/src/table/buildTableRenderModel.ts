@@ -12,7 +12,10 @@ import { resolveFestaSheetChromeDensity } from '../models/games/king/kingFestaAc
 import { clockwiseSeatAtTrickOffset } from '../models/games/suecaDeal';
 import { asSeat, seatAtOffset } from '../models/games/suecaRules';
 import type {
+  TablePresentationGate,
   TableRenderModel,
+  TableRitualFocusRenderModel,
+  TableRitualRole,
   TableSeatRenderModel,
   TableTrickCardRenderModel
 } from './tableRenderModel';
@@ -34,6 +37,13 @@ export interface BuildTableRenderModelInput {
   spadesState?: SpadesVariantState | null;
   heartsState?: HeartsVariantState | null;
   heartsPassIndices?: number[];
+  /**
+   * UX-SUECA-03 — transient ritual focus from GameBoard (not GameState).
+   * When set, trick-turn isActive is suppressed for all seats.
+   */
+  ritualFocus?: TableRitualFocusRenderModel | null;
+  /** UX-SUECA-04 — optional presentation gates. */
+  presentation?: Partial<TablePresentationGate> | null;
 }
 
 export function buildTableRenderModel(input: BuildTableRenderModelInput): TableRenderModel {
@@ -49,8 +59,22 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     kingPt = null,
     spadesState = null,
     heartsState = null,
-    heartsPassIndices
+    heartsPassIndices,
+    ritualFocus = null,
+    presentation: presentationInput = null
   } = input;
+
+  const presentation: TablePresentationGate = {
+    hideHands: Boolean(presentationInput?.hideHands),
+    hideTrump: Boolean(presentationInput?.hideTrump),
+    playLocked: Boolean(presentationInput?.playLocked)
+  };
+
+  const ritualFocusSeat =
+    ritualFocus && Number.isInteger(ritualFocus.seat) ? ritualFocus.seat : null;
+  const ritualRole: TableRitualRole | null =
+    ritualFocusSeat != null && ritualFocus?.role ? ritualFocus.role : null;
+  const ritualActive = ritualFocusSeat != null || presentation.playLocked;
 
   const {
     heartsPassActive,
@@ -73,7 +97,8 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   const activeOpts = {
     spadesBidPhase: spadesBidActive,
     currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-    suppress: heartsPassActive || festaSheetActive
+    // Ritual focus owns seat chrome — suppress trick-turn / bid active.
+    suppress: heartsPassActive || festaSheetActive || ritualActive
   };
 
   const seats: TableSeatRenderModel[] = gameState.players.map((player, index) => ({
@@ -84,7 +109,7 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     isActive: isActiveTurnSeat(gameState, index, activeOpts),
     isDealer: index === gameState.dealerIndex,
     isTrickLeader: index === gameState.trickLeader,
-    handCount: player.hand.length
+    handCount: presentation.hideHands ? 0 : player.hand.length
   }));
 
   const activeSeat = seats.find((s) => s.isActive)?.index ?? null;
@@ -101,7 +126,8 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   );
 
   const localPlayer = gameState.players[localPlayerIndex];
-  const localHand = localPlayer ? [...localPlayer.hand] : [];
+  const localHand =
+    presentation.hideHands || !localPlayer ? [] : [...localPlayer.hand];
 
   const festaSheetChrome =
     festaSheetActive && kingPt
@@ -128,11 +154,14 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
     localHand,
     currentTrick,
     activeSeat,
+    ritualFocusSeat,
+    ritualRole,
+    presentation,
     dealerSeat: gameState.dealerIndex,
     leaderSeat: gameState.trickLeader,
     lastTrickWinner: gameState.lastTrickWinner ?? null,
-    trumpSuit: gameState.trumpSuit,
-    trumpCard: gameState.trumpCard,
+    trumpSuit: presentation.hideTrump ? null : gameState.trumpSuit,
+    trumpCard: presentation.hideTrump ? null : gameState.trumpCard,
     scores: {
       roundPoints: { ...gameState.scores },
       gamePoints: { ...gameState.gameScore },

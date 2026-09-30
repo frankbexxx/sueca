@@ -27,6 +27,8 @@ export interface PlayerInfoBoxProps {
   layoutSnapshot?: LayoutSnapshot;
   /** Engine-derived active turn / bid seat highlight. */
   isActiveTurn?: boolean;
+  /** UX-SUECA-03 — ritual focus (independent of trick turn). */
+  ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
 }
 
 /** Shared active-turn cue — DOM path (Phaser mirrors via seat chrome). */
@@ -58,7 +60,8 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   auctionLocale = 'pt',
   forceMobileLayout = false,
   layoutSnapshot,
-  isActiveTurn = false
+  isActiveTurn = false,
+  ritualRole = null
 }) => {
   void forceMobileLayout;
   void layoutSnapshot;
@@ -69,6 +72,19 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   const isDealer = playerIndex === gameState.dealerIndex;
   const heartsRoundPoints =
     !compactSeats && variant === 'hearts' ? getHeartsState(gameState).roundPoints : null;
+  const hasRitualFocus = ritualRole != null;
+  const showTurnCue = isActiveTurn && !hasRitualFocus && !compactSeats;
+
+  const ritualChipLabel =
+    ritualRole === 'shuffler'
+      ? t.modals.ritualRoleShuffler
+      : ritualRole === 'cutter'
+        ? t.modals.ritualRoleCutter
+        : ritualRole === 'dealer'
+          ? t.modals.ritualRoleDealer
+          : ritualRole === 'first-player'
+            ? t.modals.ritualRoleFirstPlayer
+            : null;
 
   const renderSecondaryLine = () => {
     if (spadesBidPhase && spadesState) {
@@ -98,28 +114,39 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   };
 
   const renderTurnCue = () => {
-    if (!isActiveTurn || compactSeats) return null;
+    if (!showTurnCue) return null;
     return <ActiveTurnCue label={t.gameBoard.nowPlaying} />;
+  };
+
+  const renderRitualChip = () => {
+    if (!ritualChipLabel) return null;
+    return (
+      <span className="ritual-role-chip" data-ritual-role={ritualRole} aria-label={ritualChipLabel}>
+        {ritualChipLabel}
+      </span>
+    );
   };
 
   return (
     <div
       className={`player-info ${useMobileLayout || spadesBidPhase ? 'mobile-layout' : ''}${
-        isActiveTurn ? ' player-info--active' : ''
-      }`}
-      data-active-turn={isActiveTurn ? 'true' : undefined}
+        isActiveTurn && !hasRitualFocus ? ' player-info--active' : ''
+      }${hasRitualFocus ? ' player-info--ritual' : ''}`}
+      data-active-turn={isActiveTurn && !hasRitualFocus ? 'true' : undefined}
+      data-ritual-role={ritualRole ?? undefined}
     >
       {useMobileLayout || spadesBidPhase ? (
         <>
           <div className="player-name-line-1">
             {truncatePlayerName(player.name)}
-            {!compactSeats && !spadesBidPhase && isDealer && (
+            {!compactSeats && !spadesBidPhase && isDealer && !hasRitualFocus && (
               <span className="dealer-badge">🃏</span>
             )}
           </div>
-          {(spadesBidPhase || !compactSeats || isActiveTurn) && (
+          {(spadesBidPhase || !compactSeats || isActiveTurn || hasRitualFocus) && (
             <div className="player-name-line-2">
               {renderSecondaryLine()}
+              {renderRitualChip()}
               {renderTurnCue()}
               {!spadesBidPhase && renderAuctionBadge()}
             </div>
@@ -129,7 +156,10 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
         <>
           <h3 className="player-name">
             {truncatePlayerName(player.name)}
-            {!compactSeats && isDealer && <span className="dealer-badge">🃏</span>}
+            {!compactSeats && isDealer && !hasRitualFocus && (
+              <span className="dealer-badge">🃏</span>
+            )}
+            {renderRitualChip()}
             {renderTurnCue()}
           </h3>
           {!compactSeats && (

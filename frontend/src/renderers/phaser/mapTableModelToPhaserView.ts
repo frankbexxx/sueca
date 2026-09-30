@@ -61,6 +61,9 @@ export interface PhaserSeatEntity {
   isActive: boolean;
   isDealer: boolean;
   showActiveHighlight: boolean;
+  /** UX-SUECA-03 — ritual focus (independent of trick turn). */
+  showRitualHighlight: boolean;
+  ritualRole: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
   /** GLOBAL-UI-03 — localized cue when active (null when inactive). */
   turnCueLabel: string | null;
   backPositions: PhaserPoint[];
@@ -92,6 +95,9 @@ export interface PhaserTableViewModel {
   opponents: PhaserSeatEntity[];
   trick: PhaserTrickCardEntity[];
   activeSeat: number | null;
+  /** UX-SUECA-03 — ritual focus seat (null when not in ritual). */
+  ritualFocusSeat: number | null;
+  ritualRole: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
   dealerSeat: number;
   trumpSuit: string | null;
   trumpLabel: string;
@@ -235,6 +241,7 @@ export function mapTableModelToPhaserView(options: {
     !model.status.waitingForGameStart &&
     !model.status.waitingForEarlyEnd &&
     !model.chrome.handReadOnly &&
+    !model.presentation.playLocked &&
     !spadesBidPhase &&
     !heartsPassPhase &&
     !kingFestaPhase;
@@ -280,6 +287,7 @@ export function mapTableModelToPhaserView(options: {
     const compass = playerIndexToCompass(seat.index, local);
     const showActiveHighlight =
       seat.isActive &&
+      model.ritualFocusSeat == null &&
       !model.status.isPaused &&
       !model.status.isGameOver &&
       !model.status.waitingForTrickEnd &&
@@ -287,8 +295,19 @@ export function mapTableModelToPhaserView(options: {
       !kingFestaPhase &&
       (interactionEnabled || spadesBidPhase);
 
+    const showRitualHighlight = model.ritualFocusSeat === seat.index;
+    const ritualRole = showRitualHighlight ? model.ritualRole : null;
     let bidLabel: string | null = null;
-    if (spadesUi && (spadesBidPhase || !spadesUi.waitingForBids)) {
+    if (showRitualHighlight && ritualRole) {
+      bidLabel =
+        ritualRole === 'shuffler'
+          ? 'BARALHA'
+          : ritualRole === 'cutter'
+            ? 'CORTA'
+            : ritualRole === 'first-player'
+              ? 'COMEÇA'
+              : 'DEALER';
+    } else if (spadesUi && (spadesBidPhase || !spadesUi.waitingForBids)) {
       // During play, React score strip already shows team bids — keep seat bids
       // only while the auction is live to reduce duplicate chrome.
       if (spadesBidPhase) {
@@ -322,11 +341,13 @@ export function mapTableModelToPhaserView(options: {
       teamLabel,
       secondaryBadge: bidLabel,
       showActiveHighlight,
-      activeTurnLabel,
+      // No A JOGAR during ritual — ritual chip is separate chrome.
+      activeTurnLabel: showRitualHighlight ? null : activeTurnLabel,
       aspect: layout.aspect,
       compactSide: layout.compactSideSeats && (compass === 'west' || compass === 'east'),
       // Top seat: identity only — team already in score strip for Sueca.
-      omitTeam: compass === 'north'
+      omitTeam: compass === 'north',
+      suppressDealerMark: showRitualHighlight
     });
 
     const backPositions = seat.isLocal
@@ -350,6 +371,8 @@ export function mapTableModelToPhaserView(options: {
       isActive: seat.isActive,
       isDealer: seat.isDealer,
       showActiveHighlight: presentation.showActiveRing,
+      showRitualHighlight,
+      ritualRole,
       turnCueLabel: presentation.turnCueLabel,
       backPositions,
       labelPosition: seatLabelPosition(compass, layout),
@@ -400,6 +423,8 @@ export function mapTableModelToPhaserView(options: {
     opponents,
     trick,
     activeSeat: model.activeSeat,
+    ritualFocusSeat: model.ritualFocusSeat,
+    ritualRole: model.ritualRole,
     dealerSeat: model.dealerSeat,
     trumpSuit,
     trumpLabel,

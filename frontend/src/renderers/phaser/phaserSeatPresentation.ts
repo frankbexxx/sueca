@@ -26,6 +26,8 @@ export interface SeatPresentationInput {
    * Kept for call-site compatibility.
    */
   omitTeam?: boolean;
+  /** UX-SUECA-04 — when ritual role chip is showing, skip trailing D. */
+  suppressDealerMark?: boolean;
 }
 
 export interface SeatPresentation {
@@ -83,7 +85,9 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
     parts.push(badge);
   }
 
-  if (input.isDealer) parts.push('D');
+  // UX-SUECA-04 — ritual role chip owns dealer identity (avoid DEALER · D).
+  const showDealerMark = Boolean(input.isDealer) && !input.suppressDealerMark;
+  if (showDealerMark) parts.push('D');
 
   return {
     labelText: parts.join(' · '),
@@ -91,7 +95,7 @@ export function computeSeatPresentation(input: SeatPresentationInput): SeatPrese
     monogram: '',
     showMonogram: false,
     showActiveRing: input.showActiveHighlight,
-    showDealerMark: input.isDealer,
+    showDealerMark,
     turnCueLabel:
       input.showActiveHighlight && input.activeTurnLabel
         ? input.activeTurnLabel.trim() || null

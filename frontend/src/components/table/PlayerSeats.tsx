@@ -25,6 +25,12 @@ export interface PlayerSeatsProps {
   spadesBidPhase?: boolean;
   spadesState?: SpadesVariantState;
   layoutSnapshot?: LayoutSnapshot;
+  ritualFocusSeat?: number | null;
+  ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
+  /** UX-SUECA-04 — hide opponent backs until post-deal reveal. */
+  hideHands?: boolean;
+  /** UX-SUECA-04 — suppress A JOGAR while presentation gate locks play. */
+  playLocked?: boolean;
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -40,7 +46,11 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   compactSeats = false,
   spadesBidPhase = false,
   spadesState,
-  layoutSnapshot
+  layoutSnapshot,
+  ritualFocusSeat = null,
+  ritualRole = null,
+  hideHands = false,
+  playLocked = false
 }) => {
   return (
     <div className="seats-layer">
@@ -48,8 +58,9 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         const position = getTablePositionForPlayer(index, localPlayerIndex);
         if (position === 'south') return null;
 
+        const handCount = hideHands ? 0 : player.hand?.length ?? 0;
         const renderAICards = () => {
-          if (compactSeats) return null;
+          if (compactSeats || handCount <= 0) return null;
           return (
             <div className="hand-back-stack">
               <img
@@ -58,25 +69,33 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
                 className="card-back-small"
                 draggable={false}
               />
-              <span className="card-count">{player.hand?.length ?? 0}</span>
+              <span className="card-count">{handCount}</span>
             </div>
           );
         };
 
-        const isActive = isActiveTurnSeat(gameState, index, {
-          spadesBidPhase,
-          currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-          suppress: compactSeats
-        });
+        const hasRitualFocus = ritualFocusSeat === index;
+        const isActive =
+          !hasRitualFocus &&
+          !playLocked &&
+          isActiveTurnSeat(gameState, index, {
+            spadesBidPhase,
+            currentBidderIndex: spadesState?.currentBidderIndex ?? null,
+            suppress: compactSeats || ritualFocusSeat != null || playLocked
+          });
         const isBidding =
           spadesBidPhase && spadesState?.currentBidderIndex === index;
 
         return (
           <div
-            key={player.id}
+            key={`seat-${index}`}
             className={`player-seat player-${position} ${getPlayerSeatTeamClass(variant, usTeam, player.team)}${
               isActive ? ' player-seat--active' : ''
-            }${isBidding ? ' player-seat--bidding' : ''}`}
+            }${hasRitualFocus ? ' player-seat--ritual' : ''}${
+              isBidding ? ' player-seat--bidding' : ''
+            }`}
+            data-seat-index={index}
+            data-ritual-focus={hasRitualFocus ? 'true' : undefined}
           >
             <PlayerInfoBox
               gameState={gameState}
@@ -93,6 +112,7 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
               auctionLocale={auctionLocale}
               layoutSnapshot={layoutSnapshot}
               isActiveTurn={isActive}
+              ritualRole={hasRitualFocus ? ritualRole : null}
             />
             {renderAICards()}
           </div>

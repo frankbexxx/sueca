@@ -276,6 +276,41 @@
   outline-offset: 1px;
 }
 
+/* UX-SUECA-03 — ritual focus (rail), separate from A JOGAR / --sc-turn */
+.player-seat--ritual .player-info,
+.local-player-dock--ritual .player-info,
+.player-info--ritual {
+  position: relative;
+  outline: 1.5px solid color-mix(in srgb, var(--sc-rail) 82%, transparent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sc-rail) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-seat--ritual .player-info,
+  .local-player-dock--ritual .player-info,
+  .player-info--ritual {
+    box-shadow: none;
+  }
+}
+
+.ritual-role-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sc-felt-dark) 70%, #000);
+  background: color-mix(in srgb, var(--sc-rail) 86%, #fff);
+  border: 1px solid color-mix(in srgb, var(--sc-rail) 55%, transparent);
+  white-space: nowrap;
+}
+
 .turn-now-badge {
   display: inline-flex;
   align-items: center;

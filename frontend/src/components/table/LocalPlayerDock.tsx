@@ -18,6 +18,9 @@ export interface LocalPlayerDockProps {
   showAuctionBadges?: boolean;
   auctionActions?: Partial<Record<number, KingBid | 'pass'>>;
   auctionLocale?: 'pt' | 'en';
+  ritualFocusSeat?: number | null;
+  ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
+  playLocked?: boolean;
 }
 
 export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
@@ -32,16 +35,23 @@ export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
   spadesState,
   showAuctionBadges = false,
   auctionActions,
-  auctionLocale = 'pt'
+  auctionLocale = 'pt',
+  ritualFocusSeat = null,
+  ritualRole = null,
+  playLocked = false
 }) => {
   const player = gameState.players[localPlayerIndex];
   if (!player) return null;
 
-  const isActive = isActiveTurnSeat(gameState, localPlayerIndex, {
-    spadesBidPhase,
-    currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-    suppress: compactSeats
-  });
+  const hasRitualFocus = ritualFocusSeat === localPlayerIndex;
+  const isActive =
+    !hasRitualFocus &&
+    !playLocked &&
+    isActiveTurnSeat(gameState, localPlayerIndex, {
+      spadesBidPhase,
+      currentBidderIndex: spadesState?.currentBidderIndex ?? null,
+      suppress: compactSeats || ritualFocusSeat != null || playLocked
+    });
   const isBidding =
     spadesBidPhase && spadesState?.currentBidderIndex === localPlayerIndex;
 
@@ -49,7 +59,10 @@ export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
     <div
       className={`local-player-dock ${getPlayerSeatTeamClass(variant, usTeam, player.team)}${
         isActive ? ' local-player-dock--active' : ''
-      }${isBidding ? ' local-player-dock--bidding' : ''}`}
+      }${hasRitualFocus ? ' local-player-dock--ritual' : ''}${
+        isBidding ? ' local-player-dock--bidding' : ''
+      }`}
+      data-ritual-focus={hasRitualFocus ? 'true' : undefined}
     >
       {/* forceMobileLayout: dock always compact; layout frozen at session start */}
       <PlayerInfoBox
@@ -67,6 +80,7 @@ export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
         auctionLocale={auctionLocale}
         forceMobileLayout
         isActiveTurn={isActive}
+        ritualRole={hasRitualFocus ? ritualRole : null}
       />
     </div>
   );

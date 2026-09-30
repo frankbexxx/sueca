@@ -8,6 +8,7 @@ import {
   allSeats,
   asSeat,
   cutterForDealer,
+  dealAlignmentFromPhysicalDeal,
   dealDirectionFor,
   dealSeatOrder,
   firstLeader,
@@ -116,6 +117,13 @@ describe('suecaRules — deal alignment & order', () => {
     expect(dealDirectionFor('right', 'opposite')).toBe('left');
     expect(dealDirectionFor('left', 'same')).toBe('left');
     expect(dealDirectionFor('left', 'opposite')).toBe('right');
+  });
+
+  it('dealAlignmentFromPhysicalDeal inverse of dealDirectionFor', () => {
+    expect(dealAlignmentFromPhysicalDeal('right', 'right')).toBe('same');
+    expect(dealAlignmentFromPhysicalDeal('right', 'left')).toBe('opposite');
+    expect(dealAlignmentFromPhysicalDeal('left', 'left')).toBe('same');
+    expect(dealAlignmentFromPhysicalDeal('left', 'right')).toBe('opposite');
   });
 
   it('trumpPlacementFor', () => {

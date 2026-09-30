@@ -97,6 +97,9 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
       { card: { suit: 'clubs', rank: '7', id: 'c7' }, playerIndex: 0, orderIndex: 0 }
     ],
     activeSeat: 0,
+    ritualFocusSeat: null,
+    ritualRole: null,
+    presentation: { hideHands: false, hideTrump: false, playLocked: false },
     dealerSeat: 1,
     leaderSeat: 0,
     lastTrickWinner: null,
@@ -132,7 +135,13 @@ function minimalModel(overrides: Partial<TableRenderModel> = {}): TableRenderMod
     },
     variantUi: {}
   };
-  return { ...base, ...overrides, status: { ...base.status, ...(overrides.status || {}) }, chrome: { ...base.chrome, ...(overrides.chrome || {}) } };
+  return {
+    ...base,
+    ...overrides,
+    status: { ...base.status, ...(overrides.status || {}) },
+    chrome: { ...base.chrome, ...(overrides.chrome || {}) },
+    presentation: { ...base.presentation, ...(overrides.presentation || {}) }
+  };
 }
 
 describe('phaserTableLayout E2', () => {
@@ -551,6 +560,22 @@ describe('phaserSeatPresentation UX-P2', () => {
     expect(seat.labelText).not.toContain('Nós');
   });
 
+  it('UX-SUECA-04 suppresses D while ritual role badge is shown', () => {
+    const seat = computeSeatPresentation({
+      name: 'Dealer',
+      handCount: 0,
+      isLocal: false,
+      isDealer: true,
+      teamLabel: null,
+      secondaryBadge: 'DEALER',
+      showActiveHighlight: false,
+      aspect: 'portrait',
+      suppressDealerMark: true
+    });
+    expect(seat.labelText).toBe('Dealer · DEALER');
+    expect(seat.showDealerMark).toBe(false);
+  });
+
   it('keeps local seats without hand count or team tokens', () => {
     const local = computeSeatPresentation({
       name: 'Alex',
@@ -837,6 +862,26 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(active.localHand[1].visualState).toBe('illegal');
     expect(active.localHand[1].canDrag).toBe(false);
 
+    const ritual = mapTableModelToPhaserView({
+      model: minimalModel({
+        ritualFocusSeat: 1,
+        ritualRole: 'cutter',
+        activeSeat: null,
+        seats: minimalModel().seats.map((s) => ({ ...s, isActive: false }))
+      }),
+      width: 640,
+      height: 480,
+      isLocalCardPlayable: () => true
+    });
+    expect(ritual.ritualFocusSeat).toBe(1);
+    expect(ritual.ritualRole).toBe('cutter');
+    const focused = ritual.seats.find((s) => s.seatIndex === 1)!;
+    expect(focused.showRitualHighlight).toBe(true);
+    expect(focused.showActiveHighlight).toBe(false);
+    expect(focused.turnCueLabel).toBeNull();
+    expect(focused.bidLabel).toBe('CORTA');
+    expect(ritual.seats.every((s) => !s.showActiveHighlight)).toBe(true);
+
     const waiting = mapTableModelToPhaserView({
       model: minimalModel({
         status: {
@@ -854,6 +899,108 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(waiting.interactionEnabled).toBe(false);
     expect(waiting.localHand.every((c) => c.visualState === 'inactive')).toBe(true);
     expect(waiting.seats.every((s) => !s.showActiveHighlight)).toBe(true);
+  });
+
+  it('UX-SUECA-04 playLocked gates interaction and A JOGAR before play-ready', () => {
+    const locked = mapTableModelToPhaserView({
+      model: minimalModel({
+        presentation: { hideHands: false, hideTrump: false, playLocked: true },
+        activeSeat: 0,
+        seats: minimalModel().seats.map((s, i) => ({
+          ...s,
+          isActive: i === 0,
+          handCount: i === 0 ? 1 : 10
+        }))
+      }),
+      width: 640,
+      height: 480,
+      activeTurnLabel: 'A JOGAR',
+      isLocalCardPlayable: () => true
+    });
+    expect(locked.interactionEnabled).toBe(false);
+    expect(locked.localHand.every((c) => c.canDrag === false)).toBe(true);
+    expect(locked.seats.every((s) => !s.showActiveHighlight)).toBe(true);
+    expect(locked.seats.every((s) => s.turnCueLabel == null)).toBe(true);
+  });
+
+  it('UX-SUECA-04 first-player ritual shows COMEÇA without A JOGAR', () => {
+    const view = mapTableModelToPhaserView({
+      model: minimalModel({
+        ritualFocusSeat: 2,
+        ritualRole: 'first-player',
+        presentation: { hideHands: false, hideTrump: false, playLocked: true },
+        activeSeat: null,
+        seats: minimalModel().seats.map((s) => ({ ...s, isActive: false }))
+      }),
+      width: 640,
+      height: 480,
+      activeTurnLabel: 'A JOGAR',
+      isLocalCardPlayable: () => true
+    });
+    const focused = view.seats.find((s) => s.seatIndex === 2)!;
+    expect(focused.showRitualHighlight).toBe(true);
+    expect(focused.bidLabel).toBe('COMEÇA');
+    expect(focused.showActiveHighlight).toBe(false);
+    expect(focused.turnCueLabel).toBeNull();
+    expect(view.interactionEnabled).toBe(false);
+  });
+
+  it('UX-SUECA-04 Phaser seats keep identities across ritual phase focus moves', () => {
+    const baseSeats = minimalModel().seats.map((s) => ({
+      ...s,
+      isActive: false,
+      handCount: 0
+    }));
+    const names = baseSeats.map((s) => s.name);
+    const phases: Array<{ seat: number; role: 'shuffler' | 'cutter' | 'dealer' | 'first-player' }> =
+      [
+        { seat: 3, role: 'shuffler' },
+        { seat: 1, role: 'cutter' },
+        { seat: 0, role: 'dealer' },
+        { seat: 2, role: 'first-player' }
+      ];
+    for (const focus of phases) {
+      const view = mapTableModelToPhaserView({
+        model: minimalModel({
+          ritualFocusSeat: focus.seat,
+          ritualRole: focus.role,
+          presentation: { hideHands: true, hideTrump: true, playLocked: true },
+          activeSeat: null,
+          seats: baseSeats,
+          localHand: [],
+          trumpSuit: null,
+          trumpCard: null
+        }),
+        width: 640,
+        height: 480,
+        activeTurnLabel: 'A JOGAR'
+      });
+      expect(view.seats).toHaveLength(4);
+      expect(view.seats.map((s) => s.name)).toEqual(names);
+      expect(view.seats.every((s) => s.handCount === 0)).toBe(true);
+      expect(view.seats.filter((s) => s.showRitualHighlight)).toHaveLength(1);
+      expect(view.seats.find((s) => s.showRitualHighlight)?.seatIndex).toBe(focus.seat);
+      expect(view.seats.every((s) => !s.showActiveHighlight)).toBe(true);
+      expect(view.seats.every((s) => s.turnCueLabel == null)).toBe(true);
+    }
+  });
+
+  it('UX-SUECA-04 hideHands zeros local hand and opponent backs', () => {
+    const view = mapTableModelToPhaserView({
+      model: minimalModel({
+        presentation: { hideHands: true, hideTrump: true, playLocked: true },
+        localHand: [],
+        seats: minimalModel().seats.map((s) => ({ ...s, handCount: 0, isActive: false })),
+        activeSeat: null,
+        trumpSuit: null,
+        trumpCard: null
+      }),
+      width: 640,
+      height: 480
+    });
+    expect(view.localHand).toHaveLength(0);
+    expect(view.seats.every((s) => s.handCount === 0)).toBe(true);
+    expect(view.trumpSuit).toBeNull();
   });
 
   it('keeps pass-phase hand geometry stable and enables pass selection', () => {

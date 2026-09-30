@@ -150,7 +150,214 @@
   gap: 0.75rem;
 }
 
-/* S4 — compact Sueca dealing modal */
+/* UX-SUECA-07 — light vignette; table stays visible; plaque sits above E/W label band */
+.dealing-modal-overlay.dealing-modal-overlay--table-ritual {
+  align-items: center;
+  justify-content: center;
+  /*
+   * Side seats (west/east) sit on the table mid-band (~50%).
+   * Lift the plaque into the upper felt so P2/P4 nameplates stay clear
+   * even when the plaque is wide.
+   */
+  padding-top: 0;
+  padding-bottom: min(24vh, 200px);
+  background: radial-gradient(
+    ellipse 58% 28% at 50% 38%,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.06) 55%,
+    rgba(0, 0, 0, 0.02) 100%
+  );
+  pointer-events: none;
+  z-index: 1200;
+}
+
+.dealing-modal-overlay.dealing-modal-overlay--table-ritual .dealing-modal--ritual {
+  pointer-events: auto;
+}
+
+/*
+ * UX-SUECA-07 — horizontal table plaque (wide + flat), not a tall modal card.
+ * Top-down hierarchy: small kicker → main status.
+ */
+.dealing-modal.dealing-modal--ritual,
+.dealing-modal.dealing-modal--ritual-plaque,
+.dealing-modal.dealing-modal--ritual-clearance {
+  max-width: min(348px, 82vw);
+  width: 100%;
+  padding: 0.42rem 1rem 0.48rem;
+  gap: 0.18rem;
+  font-family: var(--premium-font, 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--premium-hud-panel-strong, rgba(16, 25, 27, 0.88)) 90%, var(--sc-felt)),
+    color-mix(in srgb, var(--sc-felt-dark) 72%, #06090e)
+  );
+  border: 1px solid color-mix(in srgb, var(--sc-rail) 42%, var(--premium-hud-border, rgba(197, 164, 91, 0.22)));
+  border-radius: 10px;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 color-mix(in srgb, var(--sc-rail) 22%, transparent);
+}
+
+.dealing-modal.dealing-modal--ritual-status {
+  min-height: 0;
+  max-height: 86px;
+}
+
+.dealing-modal.dealing-modal--ritual-decision {
+  min-height: 0;
+  max-height: 118px;
+  padding-top: 0.4rem;
+  padding-bottom: 0.45rem;
+}
+
+.dealing-modal.dealing-modal--ritual-human {
+  max-width: min(348px, 82vw);
+  max-height: none;
+  padding: 0.48rem 0.85rem 0.6rem;
+  gap: 0.35rem;
+}
+
+.dealing-modal-kicker {
+  margin: 0;
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sc-rail) 78%, var(--sc-text-muted));
+  line-height: 1.15;
+}
+
+.dealing-modal-status {
+  margin: 0;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--sc-text-title, #e8e0d0);
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dealing-modal-status--decision {
+  font-size: 0.94rem;
+}
+
+.dealing-modal-trump-beat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.05rem 0 0.1rem;
+}
+
+.dealing-modal-trump-card {
+  width: auto;
+  height: 52px;
+  max-width: 40px;
+  object-fit: contain;
+  border-radius: 5px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px color-mix(in srgb, var(--sc-rail) 45%, transparent);
+}
+
+.dealing-modal-dealer {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--sc-text, #f5f5f5) 88%, transparent);
+}
+
+.dealing-modal-dealer-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--sc-text-muted, #aaa) 90%, transparent);
+}
+
+.dealing-modal-prompt {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--sc-text-title, #fff);
+}
+
+.dealing-modal-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dealing-choice-card {
+  appearance: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--sc-surface-border, #445) 90%, transparent);
+  background: color-mix(in srgb, var(--sc-surface, #243040) 45%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.dealing-choice-card.is-selected {
+  border-color: color-mix(in srgb, var(--sc-rail, #c4a35a) 78%, var(--sc-surface-border, #445));
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--sc-felt, #1e4d3a) 55%, var(--sc-surface-modal, #1a2430)),
+    color-mix(in srgb, var(--sc-felt-dark, #0d2818) 75%, transparent)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--sc-rail, #c4a35a) 28%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--sc-rail, #c4a35a) 40%, transparent);
+}
+
+.dealing-choice-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sc-rail, #c4a35a) 75%, transparent);
+  outline-offset: 2px;
+}
+
+.dealing-choice-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sc-text-title, #fff);
+}
+
+.deal-select-check {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  color: color-mix(in srgb, var(--sc-felt-dark, #0d2818) 80%, #000);
+  background: color-mix(in srgb, var(--sc-rail, #c4a35a) 88%, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sc-rail, #c4a35a) 50%, transparent);
+}
+
+.deal-select-check--empty {
+  background: color-mix(in srgb, var(--sc-surface) 22%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sc-rail) 45%, var(--sc-surface-border));
+  color: transparent;
+}
+
+/* S4 — compact Sueca dealing modal (legacy shell kept for other paths) */
 .dealing-modal {
   max-width: 360px;
   padding: 0.85rem 1rem 1rem;
@@ -249,6 +456,13 @@
   margin-top: 0.15rem;
   width: 100%;
   min-height: 48px;
+}
+
+.dealing-modal.dealing-modal--ritual-human .dealing-modal-start {
+  margin-top: 0.1rem;
+  min-height: 42px;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
 }
 
 .variant-modal-wide {

@@ -15,6 +15,8 @@ export interface ScoreStripProps {
   usTeam: 1 | 2;
   themTeam: 1 | 2;
   rulesPresetId?: string;
+  /** UX-SUECA-04 — hide trump face during post-deal ceremony. */
+  hideTrump?: boolean;
 }
 
 export const ScoreStrip: React.FC<ScoreStripProps> = ({
@@ -22,7 +24,8 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
   variant,
   usTeam,
   themTeam,
-  rulesPresetId
+  rulesPresetId,
+  hideTrump = false
 }) => {
   const { language, t } = useLanguage();
   const locale = language === 'pt' ? 'pt' : 'en';
@@ -58,7 +61,12 @@ export const ScoreStrip: React.FC<ScoreStripProps> = ({
         <div className="round-block__game">
           {t.gameBoard.game} {gameState.round}
         </div>
-        <GameInfo gameState={gameState} variant={variant} rulesPresetId={rulesPresetId} />
+        <GameInfo
+          gameState={gameState}
+          variant={variant}
+          rulesPresetId={rulesPresetId}
+          hideTrump={hideTrump}
+        />
       </div>
       <TeamScoreBlock
         gameState={gameState}

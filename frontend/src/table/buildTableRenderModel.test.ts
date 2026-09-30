@@ -65,6 +65,8 @@ describe('buildTableRenderModel', () => {
     expect(model.dealerSeat).toBe(2);
     expect(model.leaderSeat).toBe(1);
     expect(model.activeSeat).toBe(0);
+    expect(model.ritualFocusSeat).toBeNull();
+    expect(model.ritualRole).toBeNull();
     expect(model.trumpSuit).toBe('spades');
     expect(model.localHand).toHaveLength(1);
     expect(model.currentTrick).toEqual([
@@ -388,6 +390,175 @@ describe('mapTableModelToDomProps', () => {
     expect(surface.showTeamLabels).toBe(true);
     expect(dock.localPlayerIndex).toBe(0);
     expect(hand.readOnly).toBe(false);
+    expect(surface.ritualFocusSeat).toBeNull();
+    expect(dock.ritualRole).toBeNull();
     expect(model.seats).toHaveLength(4);
+  });
+});
+
+describe('UX-SUECA-03 ritual focus in table model', () => {
+  it('sets ritualFocusSeat/role and suppresses trick isActive independently of currentPlayerIndex', () => {
+    const gameState = baseState({ currentPlayerIndex: 0, waitingForRoundStart: true });
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'sueca',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      ritualFocus: { seat: 3, role: 'shuffler' }
+    });
+    expect(model.ritualFocusSeat).toBe(3);
+    expect(model.ritualRole).toBe('shuffler');
+    expect(model.activeSeat).toBeNull();
+    expect(model.seats.every((s) => !s.isActive)).toBe(true);
+    expect(gameState.currentPlayerIndex).toBe(0);
+  });
+
+  it('clears ritual focus when input is null', () => {
+    const gameState = baseState({ currentPlayerIndex: 1 });
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'sueca',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      ritualFocus: null
+    });
+    expect(model.ritualFocusSeat).toBeNull();
+    expect(model.ritualRole).toBeNull();
+    expect(model.activeSeat).toBe(1);
+  });
+
+  it('UX-SUECA-04 seat shells stay present across shuffle→cut→dealer ritual focus', () => {
+    const gameState = baseState({ waitingForRoundStart: true, currentPlayerIndex: 0 });
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const names = gameState.players.map((p) => p.name);
+    const phases = [
+      { seat: 3, role: 'shuffler' as const },
+      { seat: 1, role: 'cutter' as const },
+      { seat: 2, role: 'dealer' as const }
+    ];
+    for (const focus of phases) {
+      const model = buildTableRenderModel({
+        gameState,
+        variant: 'sueca',
+        localPlayerIndex: 0,
+        usTeam: 1,
+        themTeam: 2,
+        boardFlow,
+        ritualFocus: focus,
+        presentation: { hideHands: true, hideTrump: true, playLocked: true }
+      });
+      expect(model.seats).toHaveLength(4);
+      expect(model.seats.map((s) => s.name)).toEqual(names);
+      expect(model.seats.every((s) => s.handCount === 0)).toBe(true);
+      expect(model.ritualFocusSeat).toBe(focus.seat);
+      expect(model.ritualRole).toBe(focus.role);
+      expect(model.seats.every((s) => !s.isActive)).toBe(true);
+    }
+  });
+});
+
+describe('UX-SUECA-04 presentation gates in table model', () => {
+  it('hides hands and trump while playLocked suppresses active turn', () => {
+    const gameState = baseState({
+      currentPlayerIndex: 0,
+      waitingForRoundStart: false,
+      players: [
+        {
+          id: '1',
+          name: 'South',
+          hand: [{ suit: 'hearts', rank: 'A', id: 'hA' }],
+          team: 1,
+          type: 'human'
+        },
+        {
+          id: '2',
+          name: 'West',
+          hand: [{ suit: 'clubs', rank: '7', id: 'c7' }],
+          team: 2,
+          type: 'ai'
+        },
+        {
+          id: '3',
+          name: 'North',
+          hand: [{ suit: 'diamonds', rank: 'K', id: 'dK' }],
+          team: 1,
+          type: 'ai'
+        },
+        {
+          id: '4',
+          name: 'East',
+          hand: [{ suit: 'spades', rank: 'Q', id: 'sQ' }],
+          team: 2,
+          type: 'ai'
+        }
+      ]
+    });
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'sueca',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      presentation: { hideHands: true, hideTrump: true, playLocked: true }
+    });
+    expect(model.presentation).toEqual({
+      hideHands: true,
+      hideTrump: true,
+      playLocked: true
+    });
+    expect(model.localHand).toEqual([]);
+    expect(model.seats.every((s) => s.handCount === 0)).toBe(true);
+    expect(model.trumpSuit).toBeNull();
+    expect(model.trumpCard).toBeNull();
+    expect(model.activeSeat).toBeNull();
+    expect(model.seats.every((s) => !s.isActive)).toBe(true);
+    expect(gameState.players[0].hand).toHaveLength(1);
+    expect(gameState.trumpSuit).toBe('spades');
+  });
+
+  it('first-player ritual focus does not activate A JOGAR seat', () => {
+    const gameState = baseState({ currentPlayerIndex: 1 });
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'sueca',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      ritualFocus: { seat: 1, role: 'first-player' },
+      presentation: { playLocked: true }
+    });
+    expect(model.ritualFocusSeat).toBe(1);
+    expect(model.ritualRole).toBe('first-player');
+    expect(model.activeSeat).toBeNull();
+    expect(model.presentation.playLocked).toBe(true);
+  });
+
+  it('maps hideHands/playLocked into DOM surface props', () => {
+    const gameState = baseState();
+    const boardFlow = resolveGameBoardFlow({ variant: 'sueca', gameState });
+    const model = buildTableRenderModel({
+      gameState,
+      variant: 'sueca',
+      localPlayerIndex: 0,
+      usTeam: 1,
+      themTeam: 2,
+      boardFlow,
+      presentation: { hideHands: true, playLocked: true }
+    });
+    const surface = mapTableModelToDomSurfaceProps(model, gameState);
+    const dock = mapTableModelToDomDockProps(model, gameState);
+    expect(surface.hideHands).toBe(true);
+    expect(surface.playLocked).toBe(true);
+    expect(dock.playLocked).toBe(true);
   });
 });
