@@ -89,4 +89,10 @@ describe('SuecaPostDealCard (UX-SUECA-04)', () => {
     expect(card).toBeTruthy();
     expect(card?.classList.contains('dealing-modal--ritual-clearance')).toBe(true);
   });
+
+  it('UX-SUECA-08 hands-reveal is inspectable without trump image', () => {
+    renderPhase('hands-reveal');
+    expect(container.querySelector('[data-post-deal-phase="hands-reveal"]')).toBeTruthy();
+    expect(container.querySelector('.dealing-modal-trump-card')).toBeNull();
+  });
 });

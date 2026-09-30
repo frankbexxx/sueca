@@ -212,6 +212,17 @@ describe('UX-SUECA-04/06 post-deal presentation', () => {
     expect(postDealDurationMs('first-player', timings)).toBe(1000);
   });
 
+  it('UX-SUECA-08 debug includeHandsReveal inserts inspectable hands-reveal', () => {
+    expect(nextSuecaPostDealPhase('distributing', { includeHandsReveal: true })).toBe(
+      'hands-reveal'
+    );
+    expect(nextSuecaPostDealPhase('hands-reveal')).toBe('trump-reveal');
+    expect(postDealHandsHidden('hands-reveal')).toBe(false);
+    expect(postDealTrumpHudHidden('hands-reveal')).toBe(true);
+    expect(postDealPlayLocked('hands-reveal')).toBe(true);
+    expect(postDealDurationMs('hands-reveal', resolvePostDealTimings())).toBe(0);
+  });
+
   it('suecaPresentationPlayReady unlocks only after table-ready + post-deal clearance', () => {
     expect(
       suecaPresentationPlayReady({
@@ -241,6 +252,14 @@ describe('UX-SUECA-04/06 post-deal presentation', () => {
         tableReadyForRitual: true
       })
     ).toBe(true);
+    expect(
+      suecaPresentationPlayReady({
+        waitingForRoundStart: false,
+        postDealPhase: null,
+        tableReadyForRitual: true,
+        ritualDebugPlayReadyHold: true
+      })
+    ).toBe(false);
   });
 
   it('shouldMountSuecaDealRitual requires waiting + latched tableReady (deadlock regression)', () => {
@@ -268,5 +287,23 @@ describe('UX-SUECA-04/06 post-deal presentation', () => {
         isJoiner: true
       })
     ).toBe(false);
+    expect(
+      shouldMountSuecaDealRitual({
+        waitingForRoundStart: true,
+        tableReadyForRitual: true,
+        isGameOver: false,
+        isJoiner: false,
+        ritualDebugPreDealReleased: false
+      })
+    ).toBe(false);
+    expect(
+      shouldMountSuecaDealRitual({
+        waitingForRoundStart: true,
+        tableReadyForRitual: true,
+        isGameOver: false,
+        isJoiner: false,
+        ritualDebugPreDealReleased: true
+      })
+    ).toBe(true);
   });
 });

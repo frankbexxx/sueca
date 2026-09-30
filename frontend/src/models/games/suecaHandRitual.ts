@@ -19,10 +19,11 @@ export type SuecaRitualPhase =
   | 'dealer-decision'
   | 'dealer-decision-result';
 
-/** UX-SUECA-04 — post-Distribuir presentation phases (not engine SoT). */
+/** UX-SUECA-04/08 — post-Distribuir presentation phases (not engine SoT). */
 export type SuecaPostDealPhase =
   | 'deal-confirmed'
   | 'distributing'
+  | 'hands-reveal'
   | 'trump-reveal'
   | 'first-player';
 
@@ -180,19 +181,26 @@ export function postDealDurationMs(
 ): number {
   if (phase === 'deal-confirmed') return timings.dealConfirmedMs;
   if (phase === 'distributing') return timings.distributingMs;
+  if (phase === 'hands-reveal') return 0;
   if (phase === 'trump-reveal') return timings.trumpRevealMs;
   return timings.firstPlayerMs;
 }
 
 /**
- * UX-SUECA-06 — next phase after the current beat completes.
+ * UX-SUECA-06/08 — next phase after the current beat completes.
  * `null` = play-ready (clear ritual).
+ * `includeHandsReveal` is for ritualDebug inspection only — normal mode skips it
+ * so automatic cadence stays identical to pre-UX-SUECA-08.
  */
 export function nextSuecaPostDealPhase(
-  phase: SuecaPostDealPhase
+  phase: SuecaPostDealPhase,
+  opts?: { includeHandsReveal?: boolean }
 ): SuecaPostDealPhase | null {
   if (phase === 'deal-confirmed') return 'distributing';
-  if (phase === 'distributing') return 'trump-reveal';
+  if (phase === 'distributing') {
+    return opts?.includeHandsReveal ? 'hands-reveal' : 'trump-reveal';
+  }
+  if (phase === 'hands-reveal') return 'trump-reveal';
   if (phase === 'trump-reveal') return 'first-player';
   return null;
 }
@@ -274,6 +282,7 @@ export function postDealTrumpHudHidden(phase: SuecaPostDealPhase | null): boolea
   return (
     phase === 'deal-confirmed' ||
     phase === 'distributing' ||
+    phase === 'hands-reveal' ||
     phase === 'trump-reveal'
   );
 }
@@ -284,18 +293,21 @@ export function postDealPlayLocked(phase: SuecaPostDealPhase | null): boolean {
 }
 
 /**
- * UX-SUECA-04 — when AI/human trick play may begin (presentation gate only).
+ * UX-SUECA-04/08 — when AI/human trick play may begin (presentation gate only).
  * Engine may already have dealt; this does not change rules.
  */
 export function suecaPresentationPlayReady(opts: {
   waitingForRoundStart: boolean;
   postDealPhase: SuecaPostDealPhase | null;
   tableReadyForRitual: boolean;
+  /** UX-SUECA-08 — debug freeze after first-player before releasing play. */
+  ritualDebugPlayReadyHold?: boolean;
 }): boolean {
   return (
     !opts.waitingForRoundStart &&
     !postDealPlayLocked(opts.postDealPhase) &&
-    opts.tableReadyForRitual
+    opts.tableReadyForRitual &&
+    !opts.ritualDebugPlayReadyHold
   );
 }
 
@@ -305,11 +317,18 @@ export function shouldMountSuecaDealRitual(opts: {
   tableReadyForRitual: boolean;
   isGameOver: boolean;
   isJoiner: boolean;
+  /**
+   * UX-SUECA-08 — when ritualDebug holds on table-ready, keep ritual unmounted
+   * until Continuar releases (`ritualDebugPreDealReleased`).
+   * Omit / true outside debug.
+   */
+  ritualDebugPreDealReleased?: boolean;
 }): boolean {
   return (
     opts.waitingForRoundStart &&
     opts.tableReadyForRitual &&
     !opts.isGameOver &&
-    !opts.isJoiner
+    !opts.isJoiner &&
+    opts.ritualDebugPreDealReleased !== false
   );
 }

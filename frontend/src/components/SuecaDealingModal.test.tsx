@@ -197,3 +197,197 @@ describe('SuecaDealingModal ritual (UX-SUECA-03)', () => {
     expect(onConfirm).toHaveBeenCalledWith('opposite');
   });
 });
+
+describe('SuecaDealingModal ritualDebug (UX-SUECA-08)', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    vi.useRealTimers();
+  });
+
+  function renderDebug(opts: {
+    dealerIndex?: number;
+    playerTypes?: PlayerType[];
+    advanceNonce?: number;
+    onConfirm?: ReturnType<typeof vi.fn>;
+    onRitualDebugPhase?: ReturnType<typeof vi.fn>;
+    random?: () => number;
+  } = {}) {
+    const onConfirm = opts.onConfirm ?? vi.fn();
+    const onRitualDebugPhase = opts.onRitualDebugPhase ?? vi.fn();
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={opts.dealerIndex ?? 0}
+          players={players(opts.playerTypes ?? ['human', 'ai', 'ai', 'ai'])}
+          onConfirm={onConfirm}
+          random={opts.random ?? (() => 0)}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={opts.advanceNonce ?? 0}
+          onRitualDebugPhase={onRitualDebugPhase}
+        />
+      );
+    });
+    return { onConfirm, onRitualDebugPhase };
+  }
+
+  it('does not auto-advance on timers when ritualDebug is on', () => {
+    renderDebug();
+    expect(container.querySelector('[data-ritual-phase]')?.getAttribute('data-ritual-phase')).toBe(
+      'shuffle'
+    );
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(container.querySelector('[data-ritual-phase]')?.getAttribute('data-ritual-phase')).toBe(
+      'shuffle'
+    );
+  });
+
+  it('one advance nonce = one phase (shuffle → cut → dealer-decision)', () => {
+    const onRitualDebugPhase = vi.fn();
+    renderDebug({ advanceNonce: 0, onRitualDebugPhase });
+    expect(onRitualDebugPhase).toHaveBeenCalledWith('shuffle');
+
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={0}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={vi.fn()}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={1}
+          onRitualDebugPhase={onRitualDebugPhase}
+        />
+      );
+    });
+    expect(container.querySelector('[data-ritual-phase]')?.getAttribute('data-ritual-phase')).toBe(
+      'cut'
+    );
+    expect(onRitualDebugPhase).toHaveBeenCalledWith('cut');
+
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={0}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={vi.fn()}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={2}
+          onRitualDebugPhase={onRitualDebugPhase}
+        />
+      );
+    });
+    expect(container.querySelector('[data-ritual-phase]')?.getAttribute('data-ritual-phase')).toBe(
+      'dealer-decision'
+    );
+    expect(onRitualDebugPhase).toHaveBeenCalledWith('dealer-choice');
+  });
+
+  it('human dealer Continuar cannot bypass choice / Distribuir', () => {
+    const onConfirm = vi.fn();
+    renderDebug({ advanceNonce: 0, onConfirm });
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={0}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={onConfirm}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={2}
+        />
+      );
+    });
+    // Now at dealer-decision (human). Extra advances must not confirm.
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={0}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={onConfirm}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={5}
+        />
+      );
+    });
+    expect(container.querySelector('[data-physical-deal]')).not.toBeNull();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('AI dealer: Continuar steps deciding → result → confirm', () => {
+    const onConfirm = vi.fn();
+    const onRitualDebugPhase = vi.fn();
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={2}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={onConfirm}
+          random={() => 0.9}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={0}
+          onRitualDebugPhase={onRitualDebugPhase}
+        />
+      );
+    });
+    for (const nonce of [1, 2, 3]) {
+      act(() => {
+        root.render(
+          <SuecaDealingModal
+            playDirection="right"
+            dealerIndex={2}
+            players={players(['human', 'ai', 'ai', 'ai'])}
+            onConfirm={onConfirm}
+            random={() => 0.9}
+            timings={SUECA_RITUAL_TEST_TIMINGS}
+            ritualDebug
+            debugAdvanceNonce={nonce}
+            onRitualDebugPhase={onRitualDebugPhase}
+          />
+        );
+      });
+    }
+    expect(container.querySelector('[data-ritual-phase]')?.getAttribute('data-ritual-phase')).toBe(
+      'dealer-decision-result'
+    );
+    expect(onConfirm).not.toHaveBeenCalled();
+    act(() => {
+      root.render(
+        <SuecaDealingModal
+          playDirection="right"
+          dealerIndex={2}
+          players={players(['human', 'ai', 'ai', 'ai'])}
+          onConfirm={onConfirm}
+          random={() => 0.9}
+          timings={SUECA_RITUAL_TEST_TIMINGS}
+          ritualDebug
+          debugAdvanceNonce={4}
+          onRitualDebugPhase={onRitualDebugPhase}
+        />
+      );
+    });
+    expect(onConfirm).toHaveBeenCalledWith('opposite');
+  });
+});

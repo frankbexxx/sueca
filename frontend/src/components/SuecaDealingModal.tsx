@@ -13,6 +13,7 @@ import {
   type SuecaRitualFocus,
   type SuecaRitualPhase
 } from '../models/games/suecaHandRitual';
+import type { SuecaRitualDebugPhase } from '../dev/suecaRitualDebug';
 import './VariantModals.css';
 
 export interface SuecaDealingModalPlayer {
@@ -31,6 +32,21 @@ interface SuecaDealingModalProps {
   random?: () => number;
   /** Fixed phase durations (tests / deterministic). */
   timings?: Partial<SuecaRitualFixedTimings>;
+  /**
+   * UX-SUECA-08 — freeze timers; parent Continuar bumps `debugAdvanceNonce`.
+   */
+  ritualDebug?: boolean;
+  /** Increment to request exactly one phase advance (debug only). */
+  debugAdvanceNonce?: number;
+  onRitualDebugPhase?: (phase: SuecaRitualDebugPhase) => void;
+}
+
+function debugPhaseForRitual(
+  phase: SuecaRitualPhase,
+  dealerIsAi: boolean
+): SuecaRitualDebugPhase {
+  if (phase === 'dealer-decision' && !dealerIsAi) return 'dealer-choice';
+  return phase;
 }
 
 /** UX-SUECA-03 — compact premium table card + ritual focus callbacks. */
@@ -41,7 +57,10 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   onConfirm,
   onRitualFocusChange,
   random = Math.random,
-  timings: timingOverrides
+  timings: timingOverrides,
+  ritualDebug = false,
+  debugAdvanceNonce = 0,
+  onRitualDebugPhase
 }) => {
   const { t } = useLanguage();
   const seats = useMemo(() => ritualSeatsForDealer(dealerIndex), [dealerIndex]);
@@ -63,9 +82,12 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   onConfirmRef.current = onConfirm;
   const onFocusRef = useRef(onRitualFocusChange);
   onFocusRef.current = onRitualFocusChange;
+  const onDebugPhaseRef = useRef(onRitualDebugPhase);
+  onDebugPhaseRef.current = onRitualDebugPhase;
   const randomRef = useRef(random);
   randomRef.current = random;
   const confirmedRef = useRef(false);
+  const lastAdvanceNonceRef = useRef(debugAdvanceNonce);
 
   const resolvedTimings = useMemo(
     () => resolveRitualTimings(timingOverrides, random),
@@ -86,24 +108,70 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   }, [phase, dealerIndex]);
 
   useEffect(() => {
+    onDebugPhaseRef.current?.(debugPhaseForRitual(phase, dealerIsAi));
+  }, [phase, dealerIsAi]);
+
+  useEffect(() => {
     return () => {
       onFocusRef.current?.(null);
     };
   }, []);
 
+  /** UX-SUECA-08 — one Continuar click → one phase (no timers). */
   useEffect(() => {
+    if (!ritualDebug) return;
+    if (debugAdvanceNonce === lastAdvanceNonceRef.current) return;
+    lastAdvanceNonceRef.current = debugAdvanceNonce;
+    if (debugAdvanceNonce <= 0) return;
+
+    if (phase === 'shuffle') {
+      setPhase('cut');
+      return;
+    }
+    if (phase === 'cut') {
+      setPhase('dealer-decision');
+      return;
+    }
+    if (phase === 'dealer-decision') {
+      if (!dealerIsAi) {
+        // Human must choose + Distribuir — Continuar must not bypass.
+        return;
+      }
+      const physical = pickAiPhysicalDealDirection(randomRef.current);
+      setAiResult(physical);
+      setPhase('dealer-decision-result');
+      return;
+    }
+    if (phase === 'dealer-decision-result' && dealerIsAi && aiResult) {
+      if (confirmedRef.current) return;
+      confirmedRef.current = true;
+      onConfirmRef.current(alignmentFromPhysicalDealChoice(playDirection, aiResult));
+    }
+  }, [
+    ritualDebug,
+    debugAdvanceNonce,
+    phase,
+    dealerIsAi,
+    aiResult,
+    playDirection
+  ]);
+
+  useEffect(() => {
+    if (ritualDebug) return;
     if (phase !== 'shuffle') return;
     const id = window.setTimeout(() => setPhase('cut'), resolvedTimings.shuffleMs);
     return () => window.clearTimeout(id);
-  }, [phase, resolvedTimings.shuffleMs]);
+  }, [phase, resolvedTimings.shuffleMs, ritualDebug]);
 
   useEffect(() => {
+    if (ritualDebug) return;
     if (phase !== 'cut') return;
     const id = window.setTimeout(() => setPhase('dealer-decision'), resolvedTimings.cutMs);
     return () => window.clearTimeout(id);
-  }, [phase, resolvedTimings.cutMs]);
+  }, [phase, resolvedTimings.cutMs, ritualDebug]);
 
   useEffect(() => {
+    if (ritualDebug) return;
     if (phase !== 'dealer-decision' || !dealerIsAi) return;
     const id = window.setTimeout(() => {
       const physical = pickAiPhysicalDealDirection(randomRef.current);
@@ -111,9 +179,10 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
       setPhase('dealer-decision-result');
     }, resolvedTimings.aiDecisionMs);
     return () => window.clearTimeout(id);
-  }, [phase, dealerIsAi, resolvedTimings.aiDecisionMs]);
+  }, [phase, dealerIsAi, resolvedTimings.aiDecisionMs, ritualDebug]);
 
   useEffect(() => {
+    if (ritualDebug) return;
     if (phase !== 'dealer-decision-result' || !dealerIsAi || !aiResult) return;
     const id = window.setTimeout(() => {
       if (confirmedRef.current) return;
@@ -121,7 +190,14 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
       onConfirmRef.current(alignmentFromPhysicalDealChoice(playDirection, aiResult));
     }, resolvedTimings.decisionResultMs);
     return () => window.clearTimeout(id);
-  }, [phase, dealerIsAi, aiResult, playDirection, resolvedTimings.decisionResultMs]);
+  }, [
+    phase,
+    dealerIsAi,
+    aiResult,
+    playDirection,
+    resolvedTimings.decisionResultMs,
+    ritualDebug
+  ]);
 
   const handleConfirm = () => {
     if (!physicalChoice || confirmedRef.current) return;
@@ -149,6 +225,7 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
     <div
       className="variant-modal-overlay dealing-modal-overlay dealing-modal-overlay--table-ritual"
       data-testid="sueca-ritual-overlay"
+      data-ritual-debug={ritualDebug ? '1' : undefined}
     >
       <div
         className={`variant-modal dealing-modal dealing-modal--ritual dealing-modal--ritual-plaque dealing-modal--ritual-clearance dealing-modal--ritual-${density}`}

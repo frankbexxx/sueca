@@ -43,6 +43,9 @@ export const SuecaPostDealCard: React.FC<SuecaPostDealCardProps> = ({
         : t.modals.willDealLeft(dealerName);
   } else if (phase === 'distributing') {
     status = t.modals.distributing;
+  } else if (phase === 'hands-reveal') {
+    // UX-SUECA-08 — inspectable beat: hands visible, trump not yet; kicker only.
+    status = null;
   } else if (phase === 'trump-reveal') {
     kicker = t.modals.trumpRevealTitle;
   } else if (phase === 'first-player') {
