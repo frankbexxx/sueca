@@ -9,6 +9,7 @@ import { formatSpadesBidLabel } from '../../models/games/spades/spadesRules';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
 import { truncatePlayerName } from '../../utils/tableLayout';
 import { LayoutSnapshot } from '../../hooks/useLayoutSnapshot';
+import { ritualRoleChipLabel, ritualRoleLabelsFromModals } from '../../table/ritualRoleLabel';
 
 export interface PlayerInfoBoxProps {
   gameState: GameState;
@@ -75,16 +76,10 @@ export const PlayerInfoBox: React.FC<PlayerInfoBoxProps> = ({
   const hasRitualFocus = ritualRole != null;
   const showTurnCue = isActiveTurn && !hasRitualFocus && !compactSeats;
 
-  const ritualChipLabel =
-    ritualRole === 'shuffler'
-      ? t.modals.ritualRoleShuffler
-      : ritualRole === 'cutter'
-        ? t.modals.ritualRoleCutter
-        : ritualRole === 'dealer'
-          ? t.modals.ritualRoleDealer
-          : ritualRole === 'first-player'
-            ? t.modals.ritualRoleFirstPlayer
-            : null;
+  const ritualChipLabel = ritualRoleChipLabel(
+    ritualRole,
+    ritualRoleLabelsFromModals(t.modals)
+  );
 
   const renderSecondaryLine = () => {
     if (spadesBidPhase && spadesState) {

@@ -27,6 +27,11 @@ import {
   computeTableBannerPresentation,
   trumpSymbolForSuit
 } from './phaserTableBanner';
+import {
+  DEFAULT_RITUAL_ROLE_LABELS,
+  ritualRoleChipLabel,
+  type RitualRoleLabels
+} from '../../table/ritualRoleLabel';
 
 export { formatKingTableBanner, trumpSymbolForSuit } from './phaserTableBanner';
 export { computeSeatPresentation } from './phaserSeatPresentation';
@@ -188,6 +193,10 @@ export function mapTableModelToPhaserView(options: {
   getTeamName?: (team: 1 | 2) => string;
   /** Localized active-turn cue (GLOBAL-UI-03), e.g. A JOGAR. */
   activeTurnLabel?: string | null;
+  /**
+   * Localized Sueca ritual chips. Defaults to Portuguese, the same keys the DOM uses.
+   */
+  ritualRoleLabels?: RitualRoleLabels;
   /** Window/host size for aspect classification (sheet-safe). */
   orientationReference?: { width?: number; height?: number } | null;
 }): PhaserTableViewModel {
@@ -199,6 +208,7 @@ export function mapTableModelToPhaserView(options: {
     isLocalCardPlayable,
     getTeamName,
     activeTurnLabel = null,
+    ritualRoleLabels = DEFAULT_RITUAL_ROLE_LABELS,
     orientationReference = null
   } = options;
   const local = model.localPlayerIndex;
@@ -299,14 +309,7 @@ export function mapTableModelToPhaserView(options: {
     const ritualRole = showRitualHighlight ? model.ritualRole : null;
     let bidLabel: string | null = null;
     if (showRitualHighlight && ritualRole) {
-      bidLabel =
-        ritualRole === 'shuffler'
-          ? 'BARALHA'
-          : ritualRole === 'cutter'
-            ? 'CORTA'
-            : ritualRole === 'first-player'
-              ? 'COMEÇA'
-              : 'DEALER';
+      bidLabel = ritualRoleChipLabel(ritualRole, ritualRoleLabels);
     } else if (spadesUi && (spadesBidPhase || !spadesUi.waitingForBids)) {
       // During play, React score strip already shows team bids — keep seat bids
       // only while the auction is live to reduce duplicate chrome.

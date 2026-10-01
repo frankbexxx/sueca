@@ -38,7 +38,12 @@ import {
 } from './phaserHandInput';
 import { computeSeatPresentation } from './phaserSeatPresentation';
 import { computeTableBannerPresentation } from './phaserTableBanner';
-import type { TableRenderModel } from '../../table/tableRenderModel';
+import type { TableRenderModel, TableRitualRole } from '../../table/tableRenderModel';
+import { translations } from '../../i18n/translations';
+import {
+  ritualRoleChipLabel,
+  ritualRoleLabelsFromModals
+} from '../../table/ritualRoleLabel';
 import type { Card } from '../../types/game';
 import { resolveGameBoardFlow } from '../../utils/gameFlowOrchestrator';
 import { buildTableRenderModel } from '../../table/buildTableRenderModel';
@@ -943,6 +948,76 @@ describe('mapTableModelToPhaserView E2', () => {
     expect(focused.showActiveHighlight).toBe(false);
     expect(focused.turnCueLabel).toBeNull();
     expect(view.interactionEnabled).toBe(false);
+  });
+
+  it('localizes ritual chips from the same modals keys as the DOM seat', () => {
+    const expected = {
+      pt: {
+        shuffler: 'BARALHA',
+        cutter: 'CORTA',
+        dealer: 'DEALER',
+        'first-player': 'COMEÇA'
+      },
+      en: {
+        shuffler: 'SHUFFLE',
+        cutter: 'CUT',
+        dealer: 'DEALER',
+        'first-player': 'LEADS'
+      }
+    } as const;
+    const roles: TableRitualRole[] = ['shuffler', 'cutter', 'dealer', 'first-player'];
+    const seats = [3, 1, 0, 2];
+
+    for (const lang of ['pt', 'en'] as const) {
+      const labels = ritualRoleLabelsFromModals(translations[lang].modals);
+      expect(labels).toEqual({
+        shuffler: expected[lang].shuffler,
+        cutter: expected[lang].cutter,
+        dealer: expected[lang].dealer,
+        firstPlayer: expected[lang]['first-player']
+      });
+
+      roles.forEach((role, index) => {
+        const seat = seats[index];
+        const view = mapTableModelToPhaserView({
+          model: minimalModel({
+            ritualFocusSeat: seat,
+            ritualRole: role,
+            presentation: { hideHands: false, hideTrump: false, playLocked: true },
+            activeSeat: null,
+            dealerSeat: 1,
+            seats: minimalModel().seats.map((s) => ({ ...s, isActive: false }))
+          }),
+          width: 640,
+          height: 480,
+          activeTurnLabel: 'A JOGAR',
+          ritualRoleLabels: labels
+        });
+        const focused = view.seats.find((s) => s.seatIndex === seat)!;
+        const chip = ritualRoleChipLabel(role, labels);
+        expect(chip).toBe(expected[lang][role]);
+        expect(focused.bidLabel).toBe(chip);
+        expect(focused.showRitualHighlight).toBe(true);
+        expect(view.ritualFocusSeat).toBe(seat);
+        expect(view.dealerSeat).toBe(1);
+        expect(view.seats.find((s) => s.isDealer)?.seatIndex).toBe(1);
+        expect(focused.turnCueLabel).toBeNull();
+        expect(focused.showActiveHighlight).toBe(false);
+        expect(view.interactionEnabled).toBe(false);
+      });
+    }
+
+    const defaultPt = mapTableModelToPhaserView({
+      model: minimalModel({
+        ritualFocusSeat: 3,
+        ritualRole: 'shuffler',
+        activeSeat: null,
+        seats: minimalModel().seats.map((s) => ({ ...s, isActive: false }))
+      }),
+      width: 640,
+      height: 480
+    });
+    expect(defaultPt.seats.find((s) => s.seatIndex === 3)?.bidLabel).toBe('BARALHA');
   });
 
   it('UX-SUECA-04 Phaser seats keep identities across ritual phase focus moves', () => {

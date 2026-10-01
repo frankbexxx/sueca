@@ -38,6 +38,7 @@ import {
 import { resolveOrientationReference } from './phaserPremiumLayout';
 import { clampSeatChromePanelX, pointInDropZone } from './phaserTableLayout';
 import { PREMIUM_TABLE, premiumTrickDepth } from './phaserPremiumLayout';
+import type { RitualRoleLabels } from '../../table/ritualRoleLabel';
 
 export const SUECA_TABLE_SCENE_KEY = 'SuecaTableScene';
 
@@ -49,6 +50,8 @@ export interface SuecaTableSceneHost {
   getTeamName?: (team: 1 | 2) => string;
   /** Localized active-turn cue (GLOBAL-UI-03). */
   getActiveTurnLabel?: () => string;
+  /** Localized Sueca ritual chips (same keys as the DOM seat). */
+  getRitualRoleLabels?: () => RitualRoleLabels;
   isLocalCardPlayable?: (cardIndex: number) => boolean;
   getSelectedCardIndex?: () => number | null;
   /** UX-SUECA-04 — fires when felt/chrome exist (may precede React subscription). */
@@ -273,6 +276,7 @@ export class SuecaTableScene extends Phaser.Scene {
       isLocalCardPlayable: this.host.isLocalCardPlayable,
       getTeamName: this.host.getTeamName,
       activeTurnLabel: this.host.getActiveTurnLabel?.() ?? null,
+      ritualRoleLabels: this.host.getRitualRoleLabels?.(),
       orientationReference: resolveOrientationReference(
         this.scale.width,
         this.scale.height

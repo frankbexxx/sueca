@@ -11,6 +11,7 @@ import type {
   TableRendererEvents
 } from '../../table/tableRenderModel';
 import { useLanguage } from '../../i18n/useLanguage';
+import { ritualRoleLabelsFromModals } from '../../table/ritualRoleLabel';
 import { SuecaTableScene, SUECA_TABLE_SCENE_KEY } from './SuecaTableScene';
 import { resolvePhaserThemeFromDom } from './phaserTheme';
 import { createTableReadyLatch } from './tableReadyLatch';
@@ -52,6 +53,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   const getCardImageRef = useRef(getCardImage);
   const getTeamNameRef = useRef(getTeamName);
   const activeTurnLabelRef = useRef(t.gameBoard.nowPlaying);
+  const ritualRoleLabelsRef = useRef(ritualRoleLabelsFromModals(t.modals));
   const onInitErrorRef = useRef(onInitError);
   const onTableReadyRef = useRef(onTableReady);
   const seatsReadyRef = useRef(false);
@@ -67,6 +69,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   getCardImageRef.current = getCardImage;
   getTeamNameRef.current = getTeamName;
   activeTurnLabelRef.current = t.gameBoard.nowPlaying;
+  ritualRoleLabelsRef.current = ritualRoleLabelsFromModals(t.modals);
   onInitErrorRef.current = onInitError;
   onTableReadyRef.current = onTableReady;
 
@@ -85,6 +88,7 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     getCardImage: (card: Card) => getCardImageRef.current(card),
     getTeamName: (team: 1 | 2) => getTeamNameRef.current(team),
     getActiveTurnLabel: () => activeTurnLabelRef.current,
+    getRitualRoleLabels: () => ritualRoleLabelsRef.current,
     isLocalCardPlayable: (cardIndex: number) =>
       playableRef.current ? playableRef.current(cardIndex) : true,
     getSelectedCardIndex: () => selectedRef.current ?? null,
@@ -182,7 +186,17 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     // Read current readiness (not only a one-shot edge) — latch is idempotent.
     emitReadyIfPossible();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, selectedCardIndex, isLocalCardPlayable, getTeamName, t.gameBoard.nowPlaying]);
+  }, [
+    model,
+    selectedCardIndex,
+    isLocalCardPlayable,
+    getTeamName,
+    t.gameBoard.nowPlaying,
+    t.modals.ritualRoleShuffler,
+    t.modals.ritualRoleCutter,
+    t.modals.ritualRoleDealer,
+    t.modals.ritualRoleFirstPlayer
+  ]);
 
   return (
     <div className="sueca-phaser-root" data-testid="sueca-phaser-table">
