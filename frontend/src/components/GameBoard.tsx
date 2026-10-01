@@ -23,6 +23,7 @@ import {
   SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
+import { resolveAiPlayDelayMs } from '../models/games/suecaAiPacing';
 import { getDealDelayMs } from '../constants/dealAnimationPreferences';
 import { createGameOverExitController, shouldAutoExitAfterGameOver } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
@@ -1167,7 +1168,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    * Auto-play effect for AI players
    * Automatically triggers AI card play when it's an AI player's turn
    * Only runs if game is active, not paused, and not in a waiting state
-   * Includes 1.5s delay for better UX (allows player to see the turn change)
+   * Sueca: lead 1000 ms / follow 800 ms; other variants keep AI_PLAY_DELAY_MS.
    */
   useEffect(() => {
     // Only auto-play if game exists and is started
@@ -1193,12 +1194,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       !waitingForEarlyEnd &&
       suecaPlayReady
     ) {
+      const delayMs = resolveAiPlayDelayMs({
+        variant: gameVariant,
+        trickLength: gameState.currentTrick.length
+      });
       const timer = setTimeout(() => {
         playAICard();
-      }, AI_PLAY_DELAY_MS);
+      }, delayMs);
       return () => clearTimeout(timer);
     }
-  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd, suecaPlayReady]);
+  }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.currentTrick.length, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd, suecaPlayReady]);
 
   /**
    * Handles card click from human player
