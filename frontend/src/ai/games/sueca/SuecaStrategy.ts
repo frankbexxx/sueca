@@ -38,10 +38,21 @@ export function getPartnerSignal(state: GameState, playerIndex: number): string 
 export function sendPartnerSignal(state: GameState, playerIndex: number, signal: string): void {
   const partnerIndex = getPartnerIndex(state, playerIndex);
   if (partnerIndex === null) return;
+  const trick = state.round * 10 - (10 - (state.players[0]?.hand.length ?? 0));
+  const last = state.partnerSignals[state.partnerSignals.length - 1];
+  // Same decision replayed (effect restart) must not append a second copy.
+  if (
+    last &&
+    last.playerIndex === partnerIndex &&
+    last.signal === signal &&
+    last.trick === trick
+  ) {
+    return;
+  }
   state.partnerSignals.push({
     playerIndex: partnerIndex,
     signal,
-    trick: state.round * 10 - (10 - state.players[0].hand.length)
+    trick
   });
   if (state.partnerSignals.length > 5) state.partnerSignals.shift();
 }

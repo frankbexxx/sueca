@@ -344,8 +344,8 @@ export class Game {
   }
 
   /**
-   * AI strategy: delegates to SuecaStrategy.chooseSuecaCard.
-   * Private helpers stay here for now (moved in later refactor steps).
+   * AI strategy on this engine state. Hard partnerSignals are written here
+   * and stay until {@link startRound} clears them for the next hand.
    */
   chooseAICard(playerIndex: number): number {
     const ctx: SuecaStrategyContext = {

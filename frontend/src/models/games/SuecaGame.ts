@@ -1,8 +1,6 @@
 import { BaseGameAdapter, RestoreStateOptions } from './GameAdapter';
 import { Game } from '../Game';
 import { AIDifficulty, GameState } from '../../types/game';
-import { getLegalIndices } from '../../ai/core/LegalMoveFilter';
-import { SuecaStrategyContext, chooseSuecaCard } from '../../ai/games/sueca/SuecaStrategy';
 import { SuecaVariantFlow } from './variantFlowApi';
 import { migrateSuecaPersistedState } from './migrateSuecaPersistedState';
 
@@ -72,18 +70,14 @@ export class SuecaGame extends BaseGameAdapter {
     this.game?.startRound();
   }
 
-  chooseAICard(state: GameState, playerIndex: number): number {
+  /**
+   * Card choice runs on Game state, the same object playCard mutates.
+   * The snapshot argument is ignored so partnerSignals are not written
+   * onto a clone that getCurrentState() will never return.
+   */
+  chooseAICard(_state: GameState, playerIndex: number): number {
     if (!this.game) return -1;
-    const legalIndices = new Set(getLegalIndices(this, state, playerIndex));
-    const ctx: SuecaStrategyContext = {
-      getValidCards: (idx) => {
-        const p = state.players[idx];
-        return (p?.hand ?? [])
-          .map((card, i) => ({ card, index: i }))
-          .filter(({ index }) => legalIndices.has(index));
-      },
-    };
-    return chooseSuecaCard(state, playerIndex, ctx);
+    return this.game.chooseAICard(playerIndex);
   }
 
   pauseGame(_state: GameState): void {
