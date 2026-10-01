@@ -142,14 +142,8 @@ it('throws when HTTP status is not ok (500)', async () => {
   await expect(requestAiPlay(PAYLOAD)).rejects.toThrow('AI service error: 500');
 });
 
-it('throws when the AbortController fires (timeout)', async () => {
-  const { requestAiPlay } = await loadAiClient({
-    localOnly: false,
-    serviceUrl: EXPLICIT_URL,
-    nodeEnv: 'production',
-  });
-
-  global.fetch = vi.fn().mockImplementationOnce(
+function hangingFetch() {
+  global.fetch = vi.fn().mockImplementation(
     (_url: string, options: RequestInit) =>
       new Promise((_resolve, reject) => {
         (options.signal as AbortSignal).addEventListener('abort', () =>
@@ -157,10 +151,97 @@ it('throws when the AbortController fires (timeout)', async () => {
         );
       })
   ) as unknown as typeof fetch;
+}
 
+it('throws a timeout failure when the 3s AbortController fires', async () => {
+  const { requestAiPlay, isExternalAiCancellation } = await loadAiClient({
+    localOnly: false,
+    serviceUrl: EXPLICIT_URL,
+    nodeEnv: 'production',
+  });
+
+  hangingFetch();
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.useFakeTimers();
-  const promise = requestAiPlay(PAYLOAD);
-  vi.advanceTimersByTime(3001);
-  await expect(promise).rejects.toThrow();
-  vi.useRealTimers();
+  try {
+    const promise = requestAiPlay(PAYLOAD);
+    const assertion = promise.then(
+      () => {
+        throw new Error('expected timeout');
+      },
+      (err: unknown) => err
+    );
+    await vi.advanceTimersByTimeAsync(3001);
+    const err = await assertion;
+    expect(isExternalAiCancellation(err)).toBe(false);
+    expect(err).toMatchObject({ name: 'AiPlayRequestError', reason: 'timeout' });
+    expect(warn).not.toHaveBeenCalled();
+  } finally {
+    warn.mockRestore();
+    vi.useRealTimers();
+  }
+});
+
+it('caller abort is cancellation, not a timeout, and does not warn', async () => {
+  const { requestAiPlay, isExternalAiCancellation } = await loadAiClient({
+    localOnly: false,
+    serviceUrl: EXPLICIT_URL,
+    nodeEnv: 'production',
+  });
+  hangingFetch();
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const caller = new AbortController();
+  const promise = requestAiPlay(PAYLOAD, { signal: caller.signal });
+  caller.abort();
+  await expect(promise).rejects.toMatchObject({ reason: 'cancelled' });
+  await promise.catch((err: unknown) => {
+    expect(isExternalAiCancellation(err)).toBe(true);
+  });
+  expect(warn).not.toHaveBeenCalled();
+  warn.mockRestore();
+});
+
+it('does not fetch when the caller signal is already aborted', async () => {
+  const { requestAiPlay, isExternalAiCancellation } = await loadAiClient({
+    localOnly: false,
+    serviceUrl: EXPLICIT_URL,
+    nodeEnv: 'production',
+  });
+  global.fetch = vi.fn() as unknown as typeof fetch;
+  const caller = new AbortController();
+  caller.abort();
+  await expect(requestAiPlay(PAYLOAD, { signal: caller.signal })).rejects.toMatchObject({
+    reason: 'cancelled',
+  });
+  await requestAiPlay(PAYLOAD, { signal: caller.signal }).catch((err: unknown) => {
+    expect(isExternalAiCancellation(err)).toBe(true);
+  });
+  expect(global.fetch).not.toHaveBeenCalled();
+});
+
+it('gate close aborts an in-flight /play as cancellation, not timeout', async () => {
+  const { requestAiPlay, isExternalAiCancellation } = await loadAiClient({
+    localOnly: false,
+    serviceUrl: EXPLICIT_URL,
+    nodeEnv: 'production',
+  });
+  const { createAiTurnGate } = await import('./aiTurnGate');
+  hangingFetch();
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const gate = createAiTurnGate();
+  const scope = gate.open();
+  const promise = requestAiPlay(PAYLOAD, { signal: scope.signal });
+  gate.close();
+  expect(scope.isCurrent()).toBe(false);
+  expect(scope.signal.aborted).toBe(true);
+  const err = await promise.then(
+    () => {
+      throw new Error('expected cancellation');
+    },
+    (error: unknown) => error
+  );
+  expect(err).toMatchObject({ reason: 'cancelled' });
+  expect(isExternalAiCancellation(err)).toBe(true);
+  expect(warn).not.toHaveBeenCalled();
+  warn.mockRestore();
 });

@@ -10,7 +10,19 @@ import { ConfirmDialog } from './common/ConfirmDialog';
 import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
-import { isExternalAiAvailable, requestAiPlay } from '../services/aiClient';
+import {
+  AiPlayRequestError,
+  isExternalAiAvailable,
+  isExternalAiCancellation,
+  requestAiPlay,
+} from '../services/aiClient';
+import {
+  bindAiTurnScope,
+  createAiTurnGate,
+  isSameLiveAiTurn,
+  runGuardedAiPlay,
+  type AiTurnScope,
+} from '../services/aiTurnGate';
 import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
@@ -195,6 +207,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const [gameAdapter, setGameAdapter] = useState<GameAdapter | null>(null);
   const gameAdapterRef = useRef<GameAdapter | null>(null);
+  const aiTurnGateRef = useRef(createAiTurnGate());
   const latestRemoteStateRef = useRef<GameState | null>(null);
   const processedActionIdsRef = useRef<Set<string>>(new Set());
   const onExitRef = useRef(onExit);
@@ -1049,12 +1062,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   /**
-   * Handles AI player card selection and play
-   * Tries external AI service first, falls back to local AI strategy
-   * Includes fallback to first valid card if AI fails
+   * Handles AI player card selection and play for one live turn scope.
+   * External success commits only while that scope is still current.
+   * A real failure on the current turn falls back to local AI.
+   * A cancelled or stale scope does not play and does not fall back.
    */
-  const playAICard = useCallback(() => {
-    if (!gameAdapter) {
+  const playAICard = useCallback((scope: AiTurnScope) => {
+    if (!gameAdapter || !scope.isCurrent()) {
       return;
     }
     
@@ -1066,104 +1080,128 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       return;
     }
 
+    const adapterAtStart = gameAdapter;
+    const turnIdentity = {
+      playerIndex,
+      round: gameState.round,
+      trickLeader: gameState.trickLeader,
+      trickLength: gameState.currentTrick.length,
+    };
+    const liveScope = bindAiTurnScope(scope, () => {
+      if (gameAdapterRef.current !== adapterAtStart) return false;
+      const live = adapterAtStart.getCurrentState();
+      return isSameLiveAiTurn(turnIdentity, {
+        currentPlayerIndex: live.currentPlayerIndex,
+        round: live.round,
+        trickLeader: live.trickLeader,
+        trickLength: live.currentTrick.length,
+        isPaused: live.isPaused,
+        isGameOver: live.isGameOver,
+        waitingForTrickEnd: live.waitingForTrickEnd,
+        waitingForRoundStart: live.waitingForRoundStart,
+        waitingForRoundEnd: live.waitingForRoundEnd,
+        waitingForGameStart: live.waitingForGameStart,
+      });
+    });
+
+    const logOpts = {
+      gameConfigMode: config.rulesPresetId,
+      isMultiplayer: isMultiplayerActive,
+    };
+
     /**
-     * Attempts to get card play from external AI service.
-     * Only used for Sueca on hard difficulty; all other variants/difficulties use local AI.
-     * Returns card index if successful, -1 if skipped, unavailable, or timed out.
+     * External AI is only Sueca hard when a service URL is allowed.
+     * Returns a hand index, or -1 to use local AI on this same turn.
+     * Throws AiPlayRequestError('cancelled') when the scope died during the request.
      */
-    const tryExternal = async (): Promise<number> => {
+    const requestExternal = async (): Promise<number> => {
       if (
-        gameAdapter.variant !== 'sueca' ||
+        adapterAtStart.variant !== 'sueca' ||
         gameState.aiDifficulty !== 'hard'
       ) {
         return -1;
       }
-      // Prod without VITE_AI_SERVICE_URL: skip entirely (no localhost fetch / warn spam).
+      // Prod without VITE_AI_SERVICE_URL, local-only, and Android: no fetch.
       if (!isExternalAiAvailable()) {
         return -1;
       }
-      try {
-        const allPlayed = [
-          ...gameState.currentTrick,
-          ...(gameState.playedCards || []),
-        ].map(cardToCode);
-        const payload = {
-          hand: player.hand.map(cardToCode),
-          trick: gameState.currentTrick.map(cardToCode),
-          trump: gameState.trumpSuit ? cardToCode({ rank: 'A', suit: gameState.trumpSuit as Suit, id: 'tmp' }).slice(-1) : '',
-          played: allPlayed,
-        };
-        const play = await requestAiPlay(payload);
-        const idx = player.hand.findIndex((c) => cardToCode(c) === play);
-        if (idx === -1) {
-          console.warn(`[AI external] card "${play}" not found in hand (player ${playerIndex})`);
-          setAiSource('local');
-          return -1;
-        }
-        const currentStateForValidation = gameAdapter.getCurrentState();
-        if (!gameAdapter.canPlayCard(currentStateForValidation, playerIndex, idx)) {
-          console.warn(`[AI external] card "${play}" (idx ${idx}) is illegal for player ${playerIndex} — falling back to local AI`);
-          setAiSource('local');
-          return -1;
-        }
-        setAiSource('external');
-        return idx;
-      } catch (err) {
-        console.warn(`[AI external] request failed for player ${playerIndex}:`, err instanceof Error ? err.message : err);
+      if (!liveScope.isCurrent()) {
+        throw new AiPlayRequestError('cancelled');
+      }
+
+      const allPlayed = [
+        ...gameState.currentTrick,
+        ...(gameState.playedCards || []),
+      ].map(cardToCode);
+      const payload = {
+        hand: player.hand.map(cardToCode),
+        trick: gameState.currentTrick.map(cardToCode),
+        trump: gameState.trumpSuit ? cardToCode({ rank: 'A', suit: gameState.trumpSuit as Suit, id: 'tmp' }).slice(-1) : '',
+        played: allPlayed,
+      };
+      const play = await requestAiPlay(payload, { signal: liveScope.signal });
+      if (!liveScope.isCurrent()) {
+        throw new AiPlayRequestError('cancelled');
+      }
+      const idx = player.hand.findIndex((c) => cardToCode(c) === play);
+      if (idx === -1) {
+        console.warn(`[AI external] card "${play}" not found in hand (player ${playerIndex})`);
         setAiSource('local');
         return -1;
       }
+      const currentStateForValidation = adapterAtStart.getCurrentState();
+      if (!adapterAtStart.canPlayCard(currentStateForValidation, playerIndex, idx)) {
+        console.warn(`[AI external] card "${play}" (idx ${idx}) is illegal for player ${playerIndex} — falling back to local AI`);
+        setAiSource('local');
+        return -1;
+      }
+      setAiSource('external');
+      return idx;
     };
 
-    /**
-     * Main AI card selection logic
-     * 1. Try external AI service
-     * 2. Fallback to local AI strategy
-     * 3. Final fallback: play first valid card
-     */
-    const chooseAndPlay = async () => {
-      let cardIndex = await tryExternal();
-      const currentState = gameAdapter.getCurrentState();
-      if (cardIndex < 0) {
-        cardIndex = gameAdapter.chooseAICard(currentState, playerIndex);
-      }
-
-      const publishHostAiPlay = () => {
-        afterHostMutationRef.current();
-      };
-
-      const logOpts = {
-        gameConfigMode: config.rulesPresetId,
-        isMultiplayer: isMultiplayerActive,
-      };
-
-      if (cardIndex >= 0 && playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, logOpts)) {
-        playCardSound();
-        publishHostAiPlay();
-        return;
-      }
-      if (cardIndex >= 0) {
-        console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${gameAdapter.variant}) — trying playFirstLegal`);
-      }
-
-      const fallbackIdx = playFirstLegalAndLogDecision(gameAdapter, currentState, playerIndex, logOpts);
-      if (fallbackIdx >= 0) {
-        playCardSound();
-        publishHostAiPlay();
-      } else {
-          console.error(
-            `[AI fallback] playFirstLegal returned -1 — turn may be stuck`,
-            {
-              variant: gameAdapter.variant,
-              playerIndex,
-              hand: currentState.players[playerIndex]?.hand.map(cardToCode) ?? [],
-              trick: currentState.currentTrick.map(cardToCode),
-            }
-          );
+    void runGuardedAiPlay({
+      scope: liveScope,
+      requestExternal,
+      onExternalFailure: (err) => {
+        console.warn(`[AI external] request failed for player ${playerIndex}:`, err instanceof Error ? err.message : err);
+        setAiSource('local');
+      },
+      chooseLocal: () => adapterAtStart.chooseAICard(adapterAtStart.getCurrentState(), playerIndex),
+      play: (cardIndex) => {
+        const currentState = adapterAtStart.getCurrentState();
+        const played = playCardAndLogDecision(adapterAtStart, currentState, playerIndex, cardIndex, logOpts);
+        if (played) {
+          playCardSound();
+          afterHostMutationRef.current();
         }
-    };
-
-    void chooseAndPlay().catch((err) => {
+        return played;
+      },
+      onPlayRejected: (cardIndex) => {
+        console.warn(`[AI local] playCard rejected index ${cardIndex} for player ${playerIndex} (${adapterAtStart.variant}) — trying playFirstLegal`);
+      },
+      playFirstLegal: () => {
+        const currentState = adapterAtStart.getCurrentState();
+        const fallbackIdx = playFirstLegalAndLogDecision(adapterAtStart, currentState, playerIndex, logOpts);
+        if (fallbackIdx >= 0) {
+          playCardSound();
+          afterHostMutationRef.current();
+        }
+        return fallbackIdx;
+      },
+      onStuck: () => {
+        const currentState = adapterAtStart.getCurrentState();
+        console.error(
+          `[AI fallback] playFirstLegal returned -1 — turn may be stuck`,
+          {
+            variant: adapterAtStart.variant,
+            playerIndex,
+            hand: currentState.players[playerIndex]?.hand.map(cardToCode) ?? [],
+            trick: currentState.currentTrick.map(cardToCode),
+          }
+        );
+      },
+    }).catch((err) => {
+      if (isExternalAiCancellation(err) || !liveScope.isCurrent()) return;
       console.warn('[AI chooseAndPlay]', err instanceof Error ? err.message : err);
     });
   }, [gameAdapter, gameState, playCardSound, config.rulesPresetId, isMultiplayerActive]);
@@ -1175,17 +1213,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    * Sueca: lead 1000 ms / follow 800 ms; other variants keep AI_PLAY_DELAY_MS.
    */
   useEffect(() => {
-    // Only auto-play if game exists and is started
-    if (!gameAdapter || !gameStarted) return;
-    
-    // Auto-play for AI players (only if not waiting for round/game start and not paused)
+    const gate = aiTurnGateRef.current;
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const isRemoteTurn = isMultiplayer && currentPlayer?.type === 'remote';
     const isLocalHumanTurn = isMultiplayer
       ? gameState.currentPlayerIndex === multiplayerPlayerIndex
       : gameState.currentPlayerIndex === 0;
-
-    if (
+    const eligible =
+      !!gameAdapter &&
+      gameStarted &&
       !gameState.isGameOver &&
       !gameState.isPaused &&
       !gameState.waitingForTrickEnd &&
@@ -1196,17 +1232,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       !isLocalHumanTurn &&
       isHostOrSolo &&
       !waitingForEarlyEnd &&
-      suecaPlayReady
-    ) {
-      const delayMs = resolveAiPlayDelayMs({
-        variant: gameVariant,
-        trickLength: gameState.currentTrick.length
-      });
-      const timer = setTimeout(() => {
-        playAICard();
-      }, delayMs);
-      return () => clearTimeout(timer);
+      suecaPlayReady;
+
+    if (!eligible || !gameAdapter) {
+      gate.close();
+      return () => {
+        gate.close();
+      };
     }
+
+    const scope = gate.open();
+    const delayMs = resolveAiPlayDelayMs({
+      variant: gameVariant,
+      trickLength: gameState.currentTrick.length
+    });
+    const timer = setTimeout(() => {
+      if (!scope.isCurrent()) return;
+      playAICard(scope);
+    }, delayMs);
+    return () => {
+      clearTimeout(timer);
+      gate.close();
+    };
   }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.currentTrick.length, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd, suecaPlayReady]);
 
   /**

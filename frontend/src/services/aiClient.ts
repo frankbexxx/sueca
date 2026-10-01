@@ -40,13 +40,40 @@ export function isExternalAiAvailable(): boolean {
   return !USE_LOCAL_AI_ONLY && resolveExternalAiServiceUrl() !== null;
 }
 
+/** Why an in-flight /play was aborted. Timeout may fall back; cancellation must not. */
+export type AiPlayAbortReason = 'timeout' | 'cancelled';
+
+export class AiPlayRequestError extends Error {
+  readonly reason: AiPlayAbortReason;
+
+  constructor(reason: AiPlayAbortReason) {
+    super(reason === 'timeout' ? 'AI request timed out' : 'AI request cancelled');
+    this.name = 'AiPlayRequestError';
+    this.reason = reason;
+  }
+}
+
+/** True only for lifecycle/stale abort. Timeout and network errors are real failures. */
+export function isExternalAiCancellation(error: unknown): boolean {
+  return error instanceof AiPlayRequestError && error.reason === 'cancelled';
+}
+
+export interface RequestAiPlayOptions {
+  /** Aborted by the caller when the turn, board, or effect scope ends. */
+  signal?: AbortSignal;
+}
+
 /**
  * Requests a card play from external AI service.
  * Sends POST request to /play endpoint with game state.
  * Returns the card code (e.g., "AS") that AI wants to play.
- * Throws error if service is unavailable, times out (3s), or response is invalid.
+ * Throws if the service is unavailable, times out (3s), the caller aborts, or the response is invalid.
+ * Caller abort and the 3s timeout are different errors: only timeout is a failure of this turn.
  */
-export async function requestAiPlay(payload: AiPlayPayload): Promise<string> {
+export async function requestAiPlay(
+  payload: AiPlayPayload,
+  options?: RequestAiPlayOptions
+): Promise<string> {
   if (USE_LOCAL_AI_ONLY) {
     throw new Error('External AI disabled (local-only mode)');
   }
@@ -56,17 +83,30 @@ export async function requestAiPlay(payload: AiPlayPayload): Promise<string> {
     throw new Error('External AI unavailable (no service URL)');
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
+  if (options?.signal?.aborted) {
+    throw new AiPlayRequestError('cancelled');
+  }
+
+  const timeoutController = new AbortController();
+  const timeout = setTimeout(() => timeoutController.abort(), 3000);
+  const onCallerAbort = () => timeoutController.abort();
+  options?.signal?.addEventListener('abort', onCallerAbort);
 
   try {
+    if (options?.signal?.aborted) {
+      throw new AiPlayRequestError('cancelled');
+    }
+
     const res = await fetch(`${baseUrl}/play`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      signal: controller.signal,
+      signal: timeoutController.signal,
     });
-    clearTimeout(timeout);
+
+    if (options?.signal?.aborted) {
+      throw new AiPlayRequestError('cancelled');
+    }
 
     if (!res.ok) {
       throw new Error(`AI service error: ${res.status}`);
@@ -77,7 +117,16 @@ export async function requestAiPlay(payload: AiPlayPayload): Promise<string> {
     }
     return data.play;
   } catch (err) {
-    clearTimeout(timeout);
+    if (err instanceof AiPlayRequestError) throw err;
+    if (options?.signal?.aborted) {
+      throw new AiPlayRequestError('cancelled');
+    }
+    if (timeoutController.signal.aborted) {
+      throw new AiPlayRequestError('timeout');
+    }
     throw err;
+  } finally {
+    clearTimeout(timeout);
+    options?.signal?.removeEventListener('abort', onCallerAbort);
   }
 }
