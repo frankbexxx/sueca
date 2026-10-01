@@ -1,247 +1,150 @@
-# Sueca Portuguesa - Regras Canonicas (Fonte de Verdade)
+# Sueca portuguesa
 
-Preset id: `sueca-pt-normal`
+Preset: `sueca-pt-normal`
 
-Status: canonico de produto (ARCH-SUECA-02 Phase 0 freeze)
-Date: 2026-09-29
-Implementation: Phase 1 vocabulary/geometry in `frontend/src/models/games/suecaRules.ts`.
-Runtime engine/UI still wired to legacy RIGHT/ACW-only path until later phases.
+Regras em vigor no jogo. O sentido de jogo e o alinhamento da distribuição descritos aqui são o modelo actual. Método A/B e um sentido de jogo fixo só à direita já não se jogam.
 
-## 1) Visao geral
+## Visão geral
 
-- Jogo de vazas para 4 jogadores, em 2 equipas de 2.
-- Parceiros sentam-se frente a frente.
-- Objetivo da mao: fazer mais pontos em cartas (total disponivel: 120).
-- Objetivo da partida: acumular "vitorias de mao" ate ao limite acordado (neste projeto: primeiro a 4).
+- Quatro jogadores, duas equipas de dois. Os parceiros sentam-se frente a frente.
+- Cada mão vale pontos de cartas. O baralho soma 120.
+- A partida acaba quando uma equipa chega a 4 ou mais pontos de partida.
 
-## 2) Baralho, hierarquia e pontos
+## Baralho, hierarquia e pontos
 
-- Baralho: 40 cartas (retiram-se 8, 9, 10 e jokers).
-- Naipes: paus, ouros, copas, espadas.
-- Hierarquia (fraca -> forte):
-  - 2 < 3 < 4 < 5 < 6 < Dama < Valete < Rei < 7 < As
-- Pontuacao por carta:
-  - As = 11
-  - 7 = 10
-  - Rei = 4
-  - Valete = 3
-  - Dama = 2
-  - 6, 5, 4, 3, 2 = 0
-- Soma total do baralho = 120 pontos.
+Baralho de 40 cartas: retiram-se 8, 9, 10 e os jokers. Naipes: paus, ouros, copas, espadas.
 
-## 3) Formacao e lugares
+Cada jogador recebe 10 cartas.
 
-- Existem 4 lugares fixos: Norte, Este, Sul, Oeste.
-- Equipas sao formadas por jogadores opostos:
-  - Norte <-> Sul
-  - Este <-> Oeste
-- No modo single-player local deste projeto:
-  - Jogador humano em Sul
-  - Parceiro em Norte
-  - Oponentes em Este e Oeste
+| Carta | Força | Pontos |
+|-------|-------|--------|
+| Ás | mais forte | 11 |
+| 7 | | 10 |
+| Rei | | 4 |
+| Valete | | 3 |
+| Dama | | 2 |
+| 6, 5, 4, 3, 2 | 6 mais forte que 2 | 0 |
 
-## 4) Distribuicao e trunfo
+Ordem de força, da mais fraca para a mais forte: 2, 3, 4, 5, 6, Dama, Valete, Rei, 7, Ás.
 
-Geometria de lugares (motor / UX-SEAT-01): indice `0` Sul, `1` Oeste, `2` Norte, `3` Este.
-A **direita fisica** do dealer e `(dealer + 3) % 4` (ex.: Sul → Este).
-A **esquerda fisica** do dealer e `(dealer + 1) % 4` (ex.: Sul → Oeste).
+## Lugares e equipas
 
-### PlayDirection (sentido de JOGO) — sessao / partida aos 4 pontos
+Os lugares são fixos.
 
-Dois sentidos suportados; escolhido uma vez e fixo para a sessao:
+| Índice | Lugar | Equipa |
+|--------|-------|--------|
+| 0 | Sul | com Norte |
+| 1 | Oeste | com Este |
+| 2 | Norte | com Sul |
+| 3 | Este | com Oeste |
 
-| Valor | Significado fisico | Passo |
-|-------|--------------------|-------|
-| `right` (**padrao**) | Anti-horario / a direita | `(seat + 3) % 4` |
-| `left` | Horario / a esquerda | `(seat + 1) % 4` |
+No jogo a solo, o humano senta-se a Sul, o parceiro a Norte, e os adversários a Este e a Oeste.
 
-Controla: primeiro a jogar, ordem na vaza, vencedor → proximo lider, rotacao do dealer.
+A direita da mesa, a partir de um lugar, é o lugar anti-horário: Sul → Este → Norte → Oeste. A esquerda é o lugar horário: Sul → Oeste → Norte → Este. Estas duas voltas não mudam com o sentido de jogo nem com a distribuição.
 
-### DealAlignment (sentido de DISTRIBUICAO) — por mao
+## Sentido de jogo
 
-Relativo ao PlayDirection da sessao (nao e um segundo "left/right" absoluto na UX):
+Escolhe-se para a partida e fica fixo até ao fim. O valor predefinido é pela direita.
 
-| Alignment | Efeito |
-|-----------|--------|
-| `same` (**padrao**) | Distribuir no mesmo sentido do jogo |
-| `opposite` | Distribuir no sentido oposto ao jogo |
+| Sentido | Volta da mesa | Próximo lugar |
+|---------|---------------|---------------|
+| Pela direita | anti-horário | Este a seguir a Sul |
+| Pela esquerda | horário | Oeste a seguir a Sul |
 
-Alterar DealAlignment **nao** altera PlayDirection, primeiro jogador, nem ordem de vazas.
+O sentido de jogo decide:
 
-Distribuicao e **sempre em blocos** (nunca uma carta de cada vez na atribuicao do motor).
-Cada jogador recebe exactamente 10 cartas. A animacao pode mostrar cartas uma a uma.
+- quem abre a primeira vaza
+- a ordem das jogadas dentro da vaza
+- quem abre a vaza seguinte (o vencedor)
+- para que lado roda o dealer na mão seguinte
 
-### Forma normal (`same`)
+Não decide quem baralha nem quem corta.
 
-1. Tres blocos de 10 no sentido de distribuicao derivado (`same` → PlayDirection),
-   comecando no primeiro jogador nesse sentido e terminando no dealer.
-2. Dealer: 9 cartas + ultima carta virada.
-3. **Trunfo** = essa ultima carta (= 10.ª do dealer).
+## Distribuição
 
-Exemplo play=`right`, alignment=`same`, dealer Sul(0): ordem `[3,2,1,0]`;
-trunfo = ultima carta do bloco do dealer.
+O alinhamento escolhe-se em cada mão e é relativo ao sentido de jogo da partida. O valor predefinido é o mesmo sentido. Mudar o alinhamento não muda quem abre nem a ordem das vazas.
 
-### Forma alternativa (`opposite`)
+A distribuição é em blocos de 10. Cada jogador fica com 10 cartas. O trunfo fica fixo até ao fim da mão.
 
-1. Primeira carta virada = **trunfo** = 1.ª do dealer; dealer recebe +9.
-2. Tres blocos de 10 no sentido oposto ao jogo (sem incluir o dealer de novo).
-3. Quem abre e o sentido de jogo **nao mudam**.
+| Alinhamento | Sentido dos blocos | Quem recebe primeiro | Trunfo |
+|-------------|--------------------|-----------------------|--------|
+| Mesmo sentido | o sentido de jogo | o primeiro lugar nesse sentido, a seguir ao dealer | a última carta do dealer, virada |
+| Sentido oposto | o sentido contrário ao jogo | o dealer | a primeira carta do dealer, virada |
 
-Exemplo play=`right`, alignment=`opposite`, dealer 0: ordem `[0,1,2,3]`;
-trunfo = primeira carta.
+### Mesmo sentido
 
-### Embaralhar / cortar (independente de PlayDirection e DealAlignment)
+1. Três blocos de 10 no sentido de jogo, a começar no lugar a seguir ao dealer e a terminar antes dele.
+2. O dealer recebe 9 cartas e, por último, a carta virada.
+3. Essa carta virada é a 10.ª do dealer e define o trunfo.
 
-- **Embaralhador** = jogador a **direita fisica** do dealer.
-- **Cortador** = parceiro do embaralhador (= **esquerda fisica** do dealer).
+### Sentido oposto
 
-### Requisito canonico
+1. A primeira carta, virada, é do dealer e define o trunfo. O dealer recebe mais 9.
+2. Os outros três jogadores recebem um bloco de 10 cada, no sentido contrário ao jogo.
+3. Quem abre a mão e a ordem das vazas mantêm-se.
 
-- No inicio da mao, cada jogador tem exactamente 10 cartas.
-- O trunfo da mao fica fixo ate ao fim da mao.
+## Embaralhar e cortar
 
-### Estado de migracao (implementacao)
+Independente do sentido de jogo e do alinhamento.
 
-- Vocabulario/geometria canonicos: `suecaRules.ts` (Phase 1).
-- Runtime actual: ainda FIXED play RIGHT/ACW; deal via legado `DealingMethod` A/B +
-  `DealingDirection` left/right. A migracao para PlayDirection + DealAlignment e fases seguintes.
+- Quem baralha é o jogador à direita do dealer.
+- Quem corta é o parceiro de quem baralha, que é também o jogador à esquerda do dealer.
 
-## 5) Ordem de jogo da vaza
+Com o dealer a Sul: baralha Este, corta Oeste.
 
-- Cada vaza tem 4 jogadas (1 por jogador).
-- O jogador que abre (lidera) define o naipe da vaza.
-- Os restantes jogam em ordem de turno segundo **PlayDirection**.
+## Exemplo com o dealer a Sul
 
-### Sentido de jogo
+| Sentido de jogo | Alinhamento | Ordem dos blocos | Primeiro a jogar |
+|-----------------|-------------|------------------|------------------|
+| Pela direita | Mesmo | Este, Norte, Oeste, Sul | Este |
+| Pela direita | Oposto | Sul, Oeste, Norte, Este | Este |
+| Pela esquerda | Mesmo | Oeste, Norte, Este, Sul | Oeste |
+| Pela esquerda | Oposto | Sul, Este, Norte, Oeste | Oeste |
 
-- `right`: `(jogador + 3) % 4` (anti-horario / a direita).
-- `left`: `(jogador + 1) % 4` (horario / a esquerda).
-- Nao e alterado por DealAlignment.
+Nas duas linhas «mesmo», o trunfo é a última carta de Sul. Nas duas linhas «oposto», o trunfo é a primeira carta de Sul.
 
-### Quem abre
+Rotação do dealer a partir de Sul:
 
-- Primeira vaza: `firstLeader(dealer, playDirection)` —
-  play `right` → direita fisica; play `left` → esquerda fisica.
-- Vazas seguintes: quem venceu a vaza anterior abre a proxima.
+- Pela direita: Sul → Este → Norte → Oeste → Sul
+- Pela esquerda: Sul → Oeste → Norte → Este → Sul
 
-### Rotacao do dealer
+O primeiro a jogar da mão seguinte é sempre o lugar a seguir ao novo dealer, no sentido de jogo.
 
-- Entre maos: `nextDealer(dealer, playDirection)` (mesmo passo que o primeiro lider).
-- Exemplo a partir do Sul com play `right`: Sul → Este → Norte → Oeste → Sul.
+## A vaza
 
-## 6) Regra de seguir naipe (obrigatoria)
+Cada vaza tem quatro jogadas, uma por jogador, no sentido de jogo.
 
-- Se o jogador tiver carta do naipe liderado, tem de jogar esse naipe.
-- Se nao tiver, pode jogar qualquer carta (incluindo trunfo).
-- Nao existe obrigacao de "cortar" nem de "montar" no trunfo nesta baseline.
+- Quem abre pode jogar qualquer carta. O naipe dessa carta é o naipe da vaza.
+- Quem tem esse naipe tem de o jogar.
+- Quem não tem pode jogar qualquer carta, incluindo trunfo. Não é obrigatório cortar nem sobrepor um trunfo já jogado.
+- Se houver trunfo na vaza, ganha o trunfo mais alto.
+- Se não houver, ganha a carta mais alta do naipe de saída. Outros naipes não ganham.
+- Quem ganha a vaza abre a seguinte.
+- A mão tem dez vazas. Os pontos das quatro cartas ficam para a equipa do vencedor.
 
-## 7) Quem ganha a vaza
+Uma jogada que não segue o naipe quando o jogador o tem é recusada. Não entra na vaza.
 
-1. Se existir pelo menos um trunfo na vaza, ganha o trunfo mais alto.
-2. Se nao houver trunfo, ganha a carta mais alta do naipe liderado.
-3. Cartas de naipes diferentes do liderado (sem trunfo) nao podem ganhar.
+## Pontos da mão e da partida
 
-O vencedor recolhe as 4 cartas da vaza para a sua equipa (ou pilha de equipa).
+No fim das dez vazas, os pontos de carta das duas equipas somam 120.
 
-## 8) Contagem de pontos da mao
+| Pontos de carta da equipa | Pontos de partida |
+|---------------------------|-------------------|
+| 61–90 | 1 |
+| 91–119 | 2 |
+| 120 (capote) | 4 |
+| 60–60 | 0 nesta mão; ver abaixo |
 
-- Soma-se a pontuacao das cartas ganhas por cada equipa.
-- Invariante obrigatoria: `pontos_equipa1 + pontos_equipa2 = 120`.
+A partida acaba quando uma equipa chega a 4 ou mais. Um escalão de 2 ou de 4, ou um dobro, pode ultrapassar 4.
 
-## 9) Resultado da mao e valor em vitorias
+## 60–60
 
-Para este projeto, fixamos a seguinte regra (a alinhar por teste):
+Empate a 60 não dá pontos de partida a nenhuma equipa.
 
-- 61 a 90 pontos: 1 vitoria de mao
-- 91 a 119 pontos: 2 vitorias de mao
-- 120 pontos: 4 vitorias de mao ("capote/perfeita")
-- 60-60: empate de mao
+A mão seguinte que não seja outro 60–60 vale o dobro do escalão normal: 1 passa a 2, 2 passa a 4, e um capote passa a 8. Depois dessa mão, o dobro acaba.
 
-## Empate 60-60
+Um novo 60–60 antes disso não sobe o factor. Continua a ser dobro, não quádruplo, até haver uma mão com vencedor.
 
-- Convenio adotado no projeto: empate "transporta valor" para a mao seguinte.
-- Na implementacao atual existe intencao de "proxima mao vale dobro"; esta regra deve ser implementada explicitamente e testada end-to-end.
+## Legacy migration only
 
-## 10) Fim de partida
-
-- A partida termina quando uma equipa atinge ou ultrapassa 4 vitorias de mao.
-- Essa equipa e declarada vencedora da partida.
-
-## 11) Renuncia (caso-limite obrigatorio)
-
-Definicao:
-
-- Renuncia ocorre quando um jogador nao segue o naipe liderado tendo carta desse naipe.
-
-Politica para este projeto (canonica para engine):
-
-- A deteccao deve ser automatica (engine valida jogada).
-- Jogada ilegal por renuncia nao deve ser aceite em runtime normal.
-- Para modo "desafio de renuncia" (opcional futuro), deve existir mecanismo auditavel de historico e penalizacao configuravel.
-
-Enquanto nao existir modo de desafio formal, a regra minima obrigatoria e: **renuncia nao passa pela validacao de jogada**.
-
-## 12) Outros casos-limite obrigatorios para testes
-
-1. **10 cartas por jogador no inicio**  
-   Sempre verdadeiro apos distribuir.
-
-2. **120 pontos totais por mao**  
-   Sempre verdadeiro apos 10 vazas.
-
-3. **Trunfo fixo por mao**  
-   Nao pode mudar no meio da mao.
-
-4. **Primeira jogada de vaza**  
-   Qualquer carta da mao do lider e valida.
-
-5. **Obrigacao de seguir naipe**  
-   Se tem naipe liderado, jogar fora de naipe e invalido.
-
-6. **Sem naipe liderado**  
-   Qualquer carta e valida.
-
-7. **Determinacao de vencedor da vaza com trunfo**  
-   Trunfo mais alto vence, independentemente do naipe liderado.
-
-8. **Determinacao sem trunfo na vaza**  
-   Ganha a mais alta do naipe liderado.
-
-9. **Transicao de lider**  
-   Vencedor da vaza anterior abre a seguinte.
-
-10. **Fim da mao apos 10 vazas**  
-    Nao pode haver vaza 11.
-
-11. **Atribuicao de vitorias por escaloes (61/91/120)**  
-    Deve bater exatamente com tabela definida.
-
-12. **Empate 60-60**  
-    Comportamento de carry/valor acumulado testado explicitamente.
-
-## 13) Convenios de implementacao (para evitar ambiguidade)
-
-- O ruleset deve exportar funcoes puras:
-  - `deal`
-  - `validateMove`
-  - `applyMove`
-  - `isTrickComplete`
-  - `trickWinner`
-  - `scoreHand`
-  - `isGameEnd`
-- Sem dependencia de UI, sem side effects de DOM, sem `Math.random` nao-seeded.
-- Toda variacao regional deve ser modelada por configuracao de ruleset (nao por ifs espalhados na UI).
-
-## 14) Checkpoint funcional restante
-
-Produto (ARCH-SUECA-02) ja fixou PlayDirection / DealAlignment / blocos / trump shapes.
-Ainda abertos fora deste contrato de direccao:
-
-- Regra formal de empate 60-60 (dobra so a proxima mao ou acumula cadeia).
-- Terminologia de vitoria especial (capote/perfeita) na UI.
-- UX exacta: onde escolher PlayDirection (setup vs modal) e DealAlignment por mao.
-- Embaralhar/cortar ja definidos acima (direita fisica / parceiro); confirmar se algum
-  fluxo visual depende disso.
-
-Esta pagina e a referencia de produto para Sueca; testes de motor devem alinhar por fases.
-
+Partidas gravadas antes deste modelo podem ainda trazer Método A/B e um sentido absoluto de distribuição. Esses campos não se usam a jogar. Na leitura, convertem-se uma vez para sentido de jogo e alinhamento. Combinações antigas que não têm uma conversão clara não se jogam como um segundo regulamento: ou a mão é reposta no alinhamento «mesmo sentido», ou a gravação é recusada se a mão já ia a meio.
