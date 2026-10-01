@@ -1,4 +1,4 @@
-import { GameState, Card, Suit, AIDifficulty, CARD_HIERARCHY } from '../../../types/game';
+import { GameState, Card, Suit, Rank, AIDifficulty, CARD_HIERARCHY } from '../../../types/game';
 import { getDifficultyProfile } from '../../core/DifficultyProfile';
 import {
   cardWouldWinTrickSueca,
@@ -61,18 +61,44 @@ export function sendPartnerSignal(state: GameState, playerIndex: number, signal:
 // Card-tracking helpers (operate on GameState directly)
 // ---------------------------------------------------------------------------
 
-function getPlayedCardsCount(state: GameState, suit: Suit): number {
-  return state.playedCards.filter((c) => c.suit === suit).length;
+/**
+ * Ranks in the 40-card Sueca deck. Strength is {@link CARD_HIERARCHY},
+ * not this array's order and not the raw hierarchy number (8/9/10 are absent).
+ */
+const SUECA_DECK_RANKS: readonly Rank[] = ['2', '3', '4', '5', '6', 'Q', 'J', 'K', '7', 'A'];
+
+function seenCardKey(card: Card): string {
+  return `${card.suit}:${card.rank}`;
 }
 
-function getPlayedTrumpsCount(state: GameState): number {
-  if (!state.trumpSuit) return 0;
-  return getPlayedCardsCount(state, state.trumpSuit);
+/**
+ * Cards already known to be out.
+ * Engine `playCard` appends the same card to `playedCards` and `currentTrick`,
+ * so a trick card must be counted once.
+ */
+function knownPlayedCards(state: GameState): Card[] {
+  const byKey = new Map<string, Card>();
+  for (const card of state.playedCards ?? []) {
+    byKey.set(seenCardKey(card), card);
+  }
+  for (const card of state.currentTrick ?? []) {
+    const key = seenCardKey(card);
+    if (!byKey.has(key)) byKey.set(key, card);
+  }
+  return [...byKey.values()];
+}
+
+function higherSuecaRanks(rank: Rank): Rank[] {
+  const value = CARD_HIERARCHY[rank];
+  return SUECA_DECK_RANKS.filter((other) => CARD_HIERARCHY[other] > value);
 }
 
 /**
  * Probability [0,1] that `card` will win, given cards already played.
  * Used by hard difficulty only.
+ *
+ * Non-trumps are treated as beaten when a trump is already in the current trick.
+ * Otherwise the value is 1 minus the share of the remaining suit that outranks the card.
  */
 export function calculateWinProbability(
   state: GameState,
@@ -80,50 +106,23 @@ export function calculateWinProbability(
   suit: Suit,
   trumpSuit: Suit
 ): number {
-  const cardValue = CARD_HIERARCHY[card.rank];
+  const known = knownPlayedCards(state);
   const isTrump = card.suit === trumpSuit;
-  const totalCards = 40;
-  const cardsRemaining =
-    totalCards - state.playedCards.length - state.currentTrick.length;
-
-  if (cardsRemaining <= 0) return 0.5;
-
-  if (isTrump) {
-    const higherTrumpsPlayed = state.playedCards.filter(
-      (c) => c.suit === trumpSuit && CARD_HIERARCHY[c.rank] > cardValue
-    ).length;
-    const higherTrumpsInTrick = state.currentTrick.filter(
-      (c) => c.suit === trumpSuit && CARD_HIERARCHY[c.rank] > cardValue
-    ).length;
-    const totalTrumps = 10;
-    const trumpsPlayed = getPlayedTrumpsCount(state);
-    const trumpsInTrick = state.currentTrick.filter((c) => c.suit === trumpSuit).length;
-    const trumpsRemaining = totalTrumps - trumpsPlayed - trumpsInTrick;
-    const higherTrumpsRemaining = Math.max(
-      0,
-      totalTrumps - cardValue - higherTrumpsPlayed - higherTrumpsInTrick
-    );
-    return Math.max(0, Math.min(1, 1 - higherTrumpsRemaining / Math.max(1, trumpsRemaining)));
+  if (!isTrump && state.currentTrick.some((c) => c.suit === trumpSuit)) {
+    return 0;
   }
 
-  const trumpsInTrick = state.currentTrick.filter((c) => c.suit === trumpSuit).length;
-  if (trumpsInTrick > 0) return 0;
-
-  const higherCardsPlayed = state.playedCards.filter(
-    (c) => c.suit === suit && CARD_HIERARCHY[c.rank] > cardValue
-  ).length;
-  const higherCardsInTrick = state.currentTrick.filter(
-    (c) => c.suit === suit && CARD_HIERARCHY[c.rank] > cardValue
-  ).length;
-  const totalSuitCards = 10;
-  const suitCardsPlayed = getPlayedCardsCount(state, suit);
-  const suitCardsInTrick = state.currentTrick.filter((c) => c.suit === suit).length;
-  const suitCardsRemaining = totalSuitCards - suitCardsPlayed - suitCardsInTrick;
-  const higherCardsRemaining = Math.max(
-    0,
-    totalSuitCards - cardValue - higherCardsPlayed - higherCardsInTrick
+  const relevantSuit = isTrump ? trumpSuit : suit;
+  const seenRanks = new Set(
+    known.filter((c) => c.suit === relevantSuit).map((c) => c.rank)
   );
-  return Math.max(0, Math.min(1, 1 - higherCardsRemaining / Math.max(1, suitCardsRemaining)));
+  const higherRemaining = higherSuecaRanks(card.rank).filter((rank) => !seenRanks.has(rank)).length;
+  const suitRemaining = SUECA_DECK_RANKS.length - seenRanks.size;
+  if (suitRemaining <= 0) {
+    return higherRemaining === 0 ? 1 : 0;
+  }
+  const probability = 1 - higherRemaining / suitRemaining;
+  return Math.max(0, Math.min(1, probability));
 }
 
 function pickCheapestWinner(
