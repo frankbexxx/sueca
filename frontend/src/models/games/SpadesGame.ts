@@ -437,16 +437,27 @@ export class SpadesGame extends BaseGameAdapter {
     s.gameScore.team1 += t1.round;
     s.gameScore.team2 += t2.round;
 
-    if (s.gameScore.team1 >= WINNING_SCORE) {
+    const team1Reached = s.gameScore.team1 >= WINNING_SCORE;
+    const team2Reached = s.gameScore.team2 >= WINNING_SCORE;
+
+    if (team1Reached || team2Reached) {
+      if (team1Reached && team2Reached && s.gameScore.team1 === s.gameScore.team2) {
+        s.isGameOver = false;
+        s.winner = null;
+        s.waitingForGameStart = false;
+        s.waitingForRoundEnd = true;
+        return;
+      }
+      const winner: 1 | 2 =
+        team1Reached && !team2Reached
+          ? 1
+          : team2Reached && !team1Reached
+            ? 2
+            : s.gameScore.team1 > s.gameScore.team2
+              ? 1
+              : 2;
       s.isGameOver = true;
-      s.winner = 1;
-      s.waitingForGameStart = true;
-      s.waitingForRoundEnd = false;
-      return;
-    }
-    if (s.gameScore.team2 >= WINNING_SCORE) {
-      s.isGameOver = true;
-      s.winner = 2;
+      s.winner = winner;
       s.waitingForGameStart = true;
       s.waitingForRoundEnd = false;
       return;

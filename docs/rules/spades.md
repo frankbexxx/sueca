@@ -10,7 +10,7 @@ Presets: `spades-pt-normal`, `spades-pt-nil`
 - **Bids individuais sequenciais** (0–13) somados por equipa antes de cada ronda
 - 1.º bidder por sorteio na 1.ª ronda; rotação horária do líder de bids em cada ronda seguinte
 - Bids visíveis nos assentos à medida que avançam
-- Pontuação US clássica; corrida a **500**
+- Pontuação US clássica; corrida a **500** (ver fim da partida)
 - Bags: cada overtrick conta; a cada 10 bags → **−100**
 
 ## Modo normal (`spades-pt-normal`)
@@ -24,6 +24,14 @@ Presets: `spades-pt-normal`, `spades-pt-nil`
 - Inclui tudo do modo normal
 - **Nil**: 0 vazas → +100; falha → −100 (não conta no contrato de equipa)
 - **Blind nil**: 0 vazas → +200; falha → −200 (não conta no contrato de equipa)
+
+## Fim da partida
+
+A partida é avaliada no fim de cada mão, sobre a pontuação acumulada.
+
+- Só uma equipa tem **500** ou mais: essa equipa ganha.
+- Ambas têm **500** ou mais e as pontuações são diferentes: ganha a pontuação mais alta.
+- Ambas têm **500** ou mais e as pontuações são iguais: a partida não acaba e não há vencedor. Joga-se outra mão. Se a mão seguinte voltar a empatar, continua-se até o empate se desfazer.
 
 ## Fora destes modos (variantes futuras)
 

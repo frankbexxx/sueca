@@ -29,6 +29,14 @@ describe('rulesPresets', () => {
     expect(RULES_PRESETS).not.toHaveProperty('king-simplified');
   });
 
+  it('states the Spades 500 tie rule in both languages', () => {
+    for (const id of ['spades-pt-normal', 'spades-pt-nil'] as const) {
+      const preset = RULES_PRESETS[id];
+      expect(preset.bullets.join(' ')).toContain('exact tie plays another hand');
+      expect(preset.bulletsPt.join(' ')).toContain('empate exato joga outra mão');
+    }
+  });
+
   it('every preset has bullets in both languages', () => {
     Object.values(RULES_PRESETS).forEach((preset) => {
       expect(preset.bullets.length).toBeGreaterThan(0);

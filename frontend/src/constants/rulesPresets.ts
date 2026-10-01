@@ -65,13 +65,13 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
       '4 players, 2 teams. Spades always trump; follow suit.',
       'Sequential individual bids (0–13); first bidder drawn at random, then rotates.',
       'Made bid: 10×bid + overtricks (bags). Miss: −10×bid.',
-      'Every 10 bags → −100. First team to 500 wins.'
+      'Every 10 bags → −100. First team to 500 wins. If both reach 500 on the same hand, the higher score wins; an exact tie plays another hand.'
     ],
     bulletsPt: [
       '4 jogadores, 2 equipas. Espadas trunfo; seguir naipe.',
       'Bids individuais sequenciais (0–13); 1.º por sorteio, rotação a cada ronda.',
       'Contrato cumprido: 10×bid + overtricks (bags). Falha: −10×bid.',
-      'A cada 10 bags → −100. Primeira equipa a 500 ganha.'
+      'A cada 10 bags → −100. Primeira equipa a 500 ganha. Se ambas atingem 500 na mesma mão, ganha a maior pontuação; um empate exato joga outra mão.'
     ]
   },
   'spades-pt-nil': {
@@ -86,13 +86,13 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
       'Same as normal mode plus nil (+100/−100) and blind nil (+200/−200).',
       'Sequential bidding; first bidder drawn at random, then rotates each round.',
       'Nil bids add 0 to team contract; bonus scored individually per player.',
-      'Made bid: 10×bid + bags. Every 10 bags → −100. First team to 500 wins.'
+      'Made bid: 10×bid + bags. Every 10 bags → −100. First team to 500 wins. If both reach 500 on the same hand, the higher score wins; an exact tie plays another hand.'
     ],
     bulletsPt: [
       'Igual ao modo normal mais nil (+100/−100) e blind nil (+200/−200).',
       'Bids sequenciais; 1.º bidder por sorteio, rotação a cada ronda.',
       'Nil conta 0 no contrato de equipa; bónus individual por jogador.',
-      'Contrato: 10×bid + bags. A cada 10 bags → −100. Primeira equipa a 500 ganha.'
+      'Contrato: 10×bid + bags. A cada 10 bags → −100. Primeira equipa a 500 ganha. Se ambas atingem 500 na mesma mão, ganha a maior pontuação; um empate exato joga outra mão.'
     ]
   },
   'hearts-us-normal': {

@@ -1,6 +1,7 @@
 import { SpadesGame, SpadesVariantState } from './SpadesGame';
 import { trickWinnerIndex } from './trickUtils';
 import { Card } from '../../types/game';
+import { resolveHumanGameAudioResult } from '../../utils/roundGameCues';
 
 const names = ['A', 'B', 'C', 'D'];
 
@@ -264,6 +265,132 @@ describe('SpadesGame', () => {
     spades.playerTricks = [0, 2, 2, 5];
     internal.endRound(s);
     expect(s.scores.team1).toBeGreaterThanOrEqual(100);
+  });
+
+  describe('match end at 500', () => {
+    function finishHand(
+      start: { team1: number; team2: number },
+      hand: { team1Bid: number; team1Tricks: number; team2Bid: number; team2Tricks: number }
+    ) {
+      const game = new SpadesGame();
+      game.initialize(names, {});
+      const internal = game as unknown as {
+        state: ReturnType<SpadesGame['getCurrentState']>;
+        endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+      };
+      internal.state.gameScore = { ...start };
+      const spades = getSpades(internal.state);
+      spades.team1Bid = hand.team1Bid;
+      spades.team2Bid = hand.team2Bid;
+      spades.team1Tricks = hand.team1Tricks;
+      spades.team2Tricks = hand.team2Tricks;
+      internal.endRound(internal.state);
+      return { game, state: internal.state };
+    }
+
+    it('team 1 wins when only team 1 reaches 500', () => {
+      const { state } = finishHand(
+        { team1: 490, team2: 400 },
+        { team1Bid: 1, team1Tricks: 1, team2Bid: 1, team2Tricks: 1 }
+      );
+      expect(state.gameScore).toEqual({ team1: 500, team2: 410 });
+      expect(state.scores).toEqual({ team1: 10, team2: 10 });
+      expect(state.isGameOver).toBe(true);
+      expect(state.winner).toBe(1);
+    });
+
+    it('team 2 wins when only team 2 reaches 500', () => {
+      const { state } = finishHand(
+        { team1: 400, team2: 490 },
+        { team1Bid: 1, team1Tricks: 1, team2Bid: 1, team2Tricks: 1 }
+      );
+      expect(state.gameScore).toEqual({ team1: 410, team2: 500 });
+      expect(state.isGameOver).toBe(true);
+      expect(state.winner).toBe(2);
+    });
+
+    it('team 1 wins when both reach 500 and team 1 is higher', () => {
+      const { state } = finishHand(
+        { team1: 490, team2: 480 },
+        { team1Bid: 2, team1Tricks: 2, team2Bid: 2, team2Tricks: 2 }
+      );
+      expect(state.gameScore).toEqual({ team1: 510, team2: 500 });
+      expect(state.isGameOver).toBe(true);
+      expect(state.winner).toBe(1);
+    });
+
+    it('team 2 wins when both reach 500 and team 2 is higher', () => {
+      const { state } = finishHand(
+        { team1: 490, team2: 480 },
+        { team1Bid: 2, team1Tricks: 2, team2Bid: 5, team2Tricks: 5 }
+      );
+      expect(state.gameScore).toEqual({ team1: 510, team2: 530 });
+      expect(state.isGameOver).toBe(true);
+      expect(state.winner).toBe(2);
+      expect(state.waitingForRoundEnd).toBe(false);
+      expect(
+        resolveHumanGameAudioResult({
+          variant: 'spades',
+          winner: state.winner,
+          localPlayerIndex: 1,
+          players: state.players
+        })
+      ).toBe('win');
+      expect(
+        resolveHumanGameAudioResult({
+          variant: 'spades',
+          winner: state.winner,
+          localPlayerIndex: 0,
+          players: state.players
+        })
+      ).toBe('lose');
+    });
+
+    it('an exact tie at 500 does not end the match, including a second tied hand', () => {
+      const first = finishHand(
+        { team1: 490, team2: 490 },
+        { team1Bid: 2, team1Tricks: 2, team2Bid: 2, team2Tricks: 2 }
+      );
+      expect(first.state.gameScore).toEqual({ team1: 510, team2: 510 });
+      expect(first.state.isGameOver).toBe(false);
+      expect(first.state.winner).toBeNull();
+      expect(first.state.waitingForRoundEnd).toBe(true);
+
+      first.game.continueToNextRound(first.state);
+      const next = first.game.getCurrentState();
+      expect(next.isGameOver).toBe(false);
+      expect(next.winner).toBeNull();
+      expect(next.gameScore).toEqual({ team1: 510, team2: 510 });
+      expect(getSpades(next).waitingForBids).toBe(true);
+
+      const internal = first.game as unknown as {
+        state: ReturnType<SpadesGame['getCurrentState']>;
+        endRound: (s: ReturnType<SpadesGame['getCurrentState']>) => void;
+      };
+      getSpades(internal.state).team1Bid = 3;
+      getSpades(internal.state).team2Bid = 3;
+      getSpades(internal.state).team1Tricks = 3;
+      getSpades(internal.state).team2Tricks = 3;
+      internal.endRound(internal.state);
+      expect(internal.state.gameScore).toEqual({ team1: 540, team2: 540 });
+      expect(internal.state.isGameOver).toBe(false);
+      expect(internal.state.winner).toBeNull();
+      expect(internal.state.waitingForRoundEnd).toBe(true);
+      first.game.continueToNextRound(internal.state);
+      expect(getSpades(first.game.getCurrentState()).waitingForBids).toBe(true);
+    });
+
+    it('a hand still under 500 continues with the contract points unchanged', () => {
+      const { state } = finishHand(
+        { team1: 100, team2: 100 },
+        { team1Bid: 4, team1Tricks: 4, team2Bid: 3, team2Tricks: 3 }
+      );
+      expect(state.scores).toEqual({ team1: 40, team2: 30 });
+      expect(state.gameScore).toEqual({ team1: 140, team2: 130 });
+      expect(state.isGameOver).toBe(false);
+      expect(state.winner).toBeNull();
+      expect(state.waitingForRoundEnd).toBe(true);
+    });
   });
 
   it('tickBidAi submits for current AI bidder', () => {
