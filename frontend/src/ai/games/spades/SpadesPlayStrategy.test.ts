@@ -230,6 +230,97 @@ describe('SpadesPlayStrategy', () => {
     );
   });
 
+  describe('partner nil — take the trick away when partner is winning', () => {
+    const partnerSeat = 2;
+    const leader = partnerSeat;
+
+    function bidsWith(seat: number, bidType: 'normal' | 'nil' | 'blindNil'): SpadesVariantState {
+      const spades = makeSpades(3, 0);
+      const playerBidTypes = [...spades.playerBidTypes];
+      playerBidTypes[seat] = bidType;
+      return { ...spades, playerBidTypes };
+    }
+
+    it.each(['medium', 'hard'] as const)(
+      '%s overtakes a nil partner who is winning',
+      (difficulty) => {
+        const hand = [makeCard('A', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('K', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, bidsWith(partnerSeat, 'nil'), difficulty);
+        expect(hand[idx].rank).toBe('A');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe((leader + 1) % 4);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s still ducks when the winning partner bid is normal',
+      (difficulty) => {
+        const hand = [makeCard('A', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('K', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, bidsWith(partnerSeat, 'normal'), difficulty);
+        expect(hand[idx].rank).toBe('2');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(partnerSeat);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s overtakes a blind-nil partner the same way',
+      (difficulty) => {
+        const hand = [makeCard('A', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('K', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(
+          makeAdapter(),
+          state,
+          0,
+          bidsWith(partnerSeat, 'blindNil'),
+          difficulty
+        );
+        expect(hand[idx].rank).toBe('A');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe((leader + 1) % 4);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s plays a legal loser when it cannot take the trick from a nil partner',
+      (difficulty) => {
+        const hand = [makeCard('K', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('A', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, bidsWith(partnerSeat, 'nil'), difficulty);
+        expect(idx).toBeGreaterThanOrEqual(0);
+        expect(idx).toBeLessThan(hand.length);
+        expect(hand[idx].rank).toBe('2');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(partnerSeat);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s does not cover an opponent nil while the partner bid is normal',
+      (difficulty) => {
+        const hand = [makeCard('A', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('K', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, bidsWith(1, 'nil'), difficulty);
+        expect(hand[idx].rank).toBe('2');
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s covers a nil partner with the cheapest card that actually wins',
+      (difficulty) => {
+        const hand = [makeCard('A', 'hearts'), makeCard('Q', 'hearts'), makeCard('2', 'hearts')];
+        const trick = [makeCard('J', 'hearts')];
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, bidsWith(partnerSeat, 'nil'), difficulty);
+        expect(hand[idx].rank).toBe('Q');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe((leader + 1) % 4);
+      }
+    );
+  });
+
   describe('T10 — medium/hard always return legal index', () => {
     it.each(['medium', 'hard'] as const)('%s picks from valid indices', (difficulty) => {
       const hand = [

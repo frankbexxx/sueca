@@ -10,6 +10,7 @@ import {
   lowestCardIndex,
   partnerIsWinning,
   pickLowestWinningSpadeIndex,
+  pickMinimumWinningIndex,
   playAvoidWinning,
   playWhenPartnerWinning,
   spadesTrickLeader,
@@ -20,6 +21,25 @@ import {
  */
 function playEasy(valid: number[]): number {
   return valid[Math.floor(Math.random() * valid.length)];
+}
+
+/** Nil and blind nil are both zero-trick bids in the current engine. */
+function partnerHasNilFamilyBid(playerIndex: number, spades: SpadesVariantState): boolean {
+  const partner = (playerIndex + 2) % 4;
+  const bidType = spades.playerBidTypes[partner];
+  return bidType === 'nil' || bidType === 'blindNil';
+}
+
+/**
+ * Partner is winning a nil. Take the trick with the cheapest legal winner.
+ * Returns null when no legal card can overtake, so the caller keeps its usual play.
+ */
+function coverPartnerNil(
+  valid: number[],
+  hand: GameState['players'][number]['hand'],
+  state: GameState
+): number | null {
+  return pickMinimumWinningIndex(valid, hand, state.currentTrick, spadesTrickLeader(state));
 }
 
 function teamNeedTricks(
@@ -55,6 +75,10 @@ function playMedium(
   }
 
   if (partnerIsWinning(playerIndex, state)) {
+    if (partnerHasNilFamilyBid(playerIndex, spades)) {
+      const cover = coverPartnerNil(valid, hand, state);
+      if (cover !== null) return cover;
+    }
     return playWhenPartnerWinning(valid, hand, state);
   }
 
@@ -113,6 +137,10 @@ function playHard(
   }
 
   if (partnerIsWinning(playerIndex, state)) {
+    if (partnerHasNilFamilyBid(playerIndex, spades)) {
+      const cover = coverPartnerNil(valid, hand, state);
+      if (cover !== null) return cover;
+    }
     return playWhenPartnerWinning(valid, hand, state);
   }
 
