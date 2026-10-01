@@ -104,6 +104,29 @@ describe('kingTrickHelpers', () => {
       const leader = leaderForPlayer0(1);
       expect(cardWouldWinTrickKing(makeCard('7', 'spades'), trick, leader, 0)).toBe(false);
     });
+
+    it('K♦ does not beat a trump already on a diamond trick', () => {
+      const trick = [makeCard('Q', 'diamonds'), makeCard('3', 'spades')];
+      const leader = leaderForPlayer0(2);
+      expect(cardWouldWinTrickKing(makeCard('K', 'diamonds'), trick, leader, 0, 'spades')).toBe(false);
+      expect(cardWouldWinTrickKing(makeCard('4', 'diamonds'), trick, leader, 0, 'spades')).toBe(false);
+    });
+
+    it('higher trump beats a lower trump, and a lower trump does not beat a higher one', () => {
+      const lowTrump = [makeCard('2', 'diamonds'), makeCard('4', 'spades')];
+      const leader = leaderForPlayer0(2);
+      expect(cardWouldWinTrickKing(makeCard('K', 'spades'), lowTrump, leader, 0, 'spades')).toBe(true);
+      expect(cardWouldWinTrickKing(makeCard('3', 'spades'), lowTrump, leader, 0, 'spades')).toBe(false);
+      const highTrump = [makeCard('2', 'diamonds'), makeCard('A', 'spades')];
+      expect(cardWouldWinTrickKing(makeCard('K', 'spades'), highTrump, leader, 0, 'spades')).toBe(false);
+    });
+
+    it('keeps no-trump comparison when no trump argument is passed', () => {
+      const trick = [makeCard('5', 'diamonds')];
+      const leader = leaderForPlayer0(1);
+      expect(cardWouldWinTrickKing(makeCard('K', 'diamonds'), trick, leader, 0)).toBe(true);
+      expect(cardWouldWinTrickKing(makeCard('4', 'diamonds'), trick, leader, 0)).toBe(false);
+    });
   });
 
   describe('playToUnloadWhileLosing', () => {

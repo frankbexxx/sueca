@@ -150,6 +150,77 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
     });
   });
 
+  describe('positive festa — trump already on the trick', () => {
+    function positiveKing(): KingPtVariantState {
+      return { ...makeKing(6, null), festaMode: 'positive', phase: 'positive' };
+    }
+
+    function withTrump(state: GameState, trumpSuit: Card['suit']): GameState {
+      return { ...state, trumpSuit };
+    }
+
+    it.each(['medium', 'hard'] as const)(
+      '%s does not spend K♦ after 3♠ has trumped the diamond lead',
+      (difficulty) => {
+        const hand = [makeCard('K', 'diamonds'), makeCard('4', 'diamonds')];
+        const trick = [makeCard('Q', 'diamonds'), makeCard('3', 'spades')];
+        const leader = leaderForPlayer0(trick.length);
+        const state = withTrump(makeState(hand, trick, leader), 'spades');
+        const idx = chooseKingPtCard(makeAdapter(), state, 0, positiveKing(), difficulty);
+        expect(hand[idx].rank).toBe('4');
+        expect(hand[idx].suit).toBe('diamonds');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(
+          trickWinnerIndex(trick, leader, 'spades')
+        );
+        expect(trickWinnerIndex([...trick, makeCard('K', 'diamonds')], leader, 'spades')).not.toBe(0);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s wins a trump lead with the cheapest higher trump',
+      (difficulty) => {
+        const hand = [makeCard('K', 'spades'), makeCard('9', 'spades')];
+        const trick = [makeCard('4', 'spades')];
+        const leader = leaderForPlayer0(trick.length);
+        const state = withTrump(makeState(hand, trick, leader), 'spades');
+        const idx = chooseKingPtCard(makeAdapter(), state, 0, positiveKing(), difficulty);
+        expect(hand[idx].rank).toBe('9');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(0);
+      }
+    );
+
+    it('medium does not play a trump that loses to a higher trump', () => {
+      const hand = [makeCard('K', 'spades'), makeCard('4', 'spades')];
+      const trick = [makeCard('A', 'spades')];
+      const leader = leaderForPlayer0(trick.length);
+      const state = withTrump(makeState(hand, trick, leader), 'spades');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, positiveKing(), 'medium');
+      expect(hand[idx].rank).toBe('4');
+      expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(
+        trickWinnerIndex(trick, leader, 'spades')
+      );
+    });
+
+    it('hard still plays the first in-suit card when nothing wins and no trump is on the table', () => {
+      const hand = [makeCard('K', 'diamonds'), makeCard('2', 'diamonds')];
+      const trick = [makeCard('A', 'diamonds')];
+      const leader = leaderForPlayer0(trick.length);
+      const state = withTrump(makeState(hand, trick, leader), 'spades');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, positiveKing(), 'hard');
+      expect(hand[idx].rank).toBe('K');
+    });
+
+    it('K♦ still wins a diamond lead when no trump has been played', () => {
+      const hand = [makeCard('K', 'diamonds'), makeCard('4', 'diamonds')];
+      const trick = [makeCard('5', 'diamonds')];
+      const leader = leaderForPlayer0(trick.length);
+      const state = withTrump(makeState(hand, trick, leader), 'spades');
+      const idx = chooseKingPtCard(makeAdapter(), state, 0, positiveKing(), 'hard');
+      expect(hand[idx].rank).toBe('K');
+      expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(0);
+    });
+  });
+
   describe('T8 — K09 positive hard min winner regression', () => {
     it('wins trick with lowest winning card', () => {
       const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];

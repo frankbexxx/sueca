@@ -5,6 +5,7 @@ import { SpadesVariantState } from '../../../models/games/SpadesGame';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
 import {
+  cardWouldWinTrickSpades,
   highestCardIndex,
   lowestCardIndex,
   partnerIsWinning,
@@ -123,12 +124,9 @@ function playHard(
   const inSuit = valid.filter((i) => hand[i].suit === ledSuit);
 
   if (inSuit.length > 0) {
-    const currentHigh = Math.max(
-      ...state.currentTrick
-        .filter((c) => c.suit === ledSuit)
-        .map((c) => standard52RankValue(c.rank))
+    const winners = inSuit.filter((i) =>
+      cardWouldWinTrickSpades(hand[i], state.currentTrick, leader)
     );
-    const winners = inSuit.filter((i) => standard52RankValue(hand[i].rank) > currentHigh);
     if (winners.length > 0) {
       return lowestCardIndex(winners, hand);
     }

@@ -40,15 +40,20 @@ export function pickHighestRankIndex(indices: number[], hand: Card[]): number {
   );
 }
 
-/** King PT negative — no trump. */
+/**
+ * Would `card` win if played now?
+ * Trump defaults to null so negative contracts stay no-trump.
+ * Positive festa passes the current trump suit.
+ */
 export function cardWouldWinTrickKing(
   card: Card,
   trickBefore: Card[],
   trickLeader: number,
-  playerIndex: number
+  playerIndex: number,
+  trump: Suit | null = null
 ): boolean {
   const trick = [...trickBefore, card];
-  const winner = trickWinnerIndex(trick, trickLeader, null);
+  const winner = trickWinnerIndex(trick, trickLeader, trump);
   return winner === playerIndex;
 }
 

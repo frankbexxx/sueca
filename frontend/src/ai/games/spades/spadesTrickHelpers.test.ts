@@ -27,6 +27,26 @@ describe('spadesTrickHelpers', () => {
       expect(cardWouldWinTrickSpades(makeCard('7', 'spades'), trick, 0)).toBe(true);
       expect(cardWouldWinTrickSpades(makeCard('2', 'hearts'), trick, 0)).toBe(false);
     });
+
+    it('A♣ does not beat a spade already on a club trick', () => {
+      const trick = [makeCard('5', 'clubs'), makeCard('4', 'spades')];
+      expect(cardWouldWinTrickSpades(makeCard('A', 'clubs'), trick, 0)).toBe(false);
+      expect(trickWinnerIndex([...trick, makeCard('A', 'clubs')], 0, 'spades')).toBe(1);
+    });
+
+    it('higher spade beats a lower spade, and a lower spade does not beat a higher one', () => {
+      const lowTrump = [makeCard('A', 'hearts'), makeCard('4', 'spades')];
+      expect(cardWouldWinTrickSpades(makeCard('9', 'spades'), lowTrump, 0)).toBe(true);
+      expect(cardWouldWinTrickSpades(makeCard('2', 'spades'), lowTrump, 0)).toBe(false);
+      const highTrump = [makeCard('A', 'hearts'), makeCard('A', 'spades')];
+      expect(cardWouldWinTrickSpades(makeCard('K', 'spades'), highTrump, 0)).toBe(false);
+    });
+
+    it('higher led suit still wins when no spade is on the trick', () => {
+      const trick = [makeCard('5', 'clubs')];
+      expect(cardWouldWinTrickSpades(makeCard('A', 'clubs'), trick, 0)).toBe(true);
+      expect(trickWinnerIndex([...trick, makeCard('A', 'clubs')], 0, 'spades')).toBe(1);
+    });
   });
 
   describe('pickLowestWinningSpadeIndex', () => {

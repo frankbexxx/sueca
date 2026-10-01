@@ -1,11 +1,12 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
-import { AIDifficulty, GameState } from '../../../types/game';
+import { AIDifficulty, Card, GameState, Suit } from '../../../types/game';
 import { standard52RankValue } from '../../../models/games/trickUtils';
 import { KingPtVariantState, isSyntheticAllNegatives } from '../../../models/games/KingPtGame';
 import { KING_NEGATIVE_GAMES } from '../../../models/games/king/kingContracts';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
 import {
+  cardWouldWinTrickKing,
   pickLowestRankIndex,
   playKingPtNegativeFollow,
   playKingPtNegativeLead,
@@ -13,6 +14,45 @@ import {
   playNoTricksNegative,
   tryPlayK02,
 } from './kingTrickHelpers';
+
+/** Trump the King motor uses: positive festa with a trump suit only. */
+function positiveTrumpSuit(state: GameState, king: KingPtVariantState): Suit | null {
+  if (king.festaMode !== 'positive' || !state.trumpSuit) return null;
+  return state.trumpSuit;
+}
+
+/**
+ * Positive follow. A card wins only if the King trick motor says it wins.
+ * Medium spends the lowest card when nothing wins. Hard keeps its first-card
+ * fallback, except when trump is already beating a non-trump lead: then the
+ * lowest of the led suit, so a high card is not spent as a false winner.
+ */
+function positiveFollowChoice(
+  valid: number[],
+  hand: Card[],
+  state: GameState,
+  playerIndex: number,
+  trump: Suit | null,
+  whenLosing: 'lowest' | 'first'
+): number {
+  const ledSuit = state.currentTrick[0].suit;
+  const inSuit = valid.filter((i) => hand[i].suit === ledSuit);
+  if (inSuit.length > 0) {
+    const leader = state.trickLeader ?? 0;
+    const winners = inSuit.filter((i) =>
+      cardWouldWinTrickKing(hand[i], state.currentTrick, leader, playerIndex, trump)
+    );
+    if (winners.length > 0) return pickLowestRankIndex(winners, hand);
+
+    const trumpOnTrick = trump != null && state.currentTrick.some((c) => c.suit === trump);
+    if (whenLosing === 'lowest' || (trumpOnTrick && ledSuit !== trump)) {
+      return pickLowestRankIndex(inSuit, hand);
+    }
+    return inSuit[0];
+  }
+  if (whenLosing === 'lowest') return pickLowestRankIndex(valid, hand);
+  return valid[0];
+}
 
 // ---------------------------------------------------------------------------
 // King PT
@@ -44,23 +84,8 @@ function chooseKingPtHard(
     );
   }
 
-  const ledSuit = state.currentTrick[0].suit;
-  const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
-  if (inSuit.length) {
-    const currentHigh = Math.max(
-      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => standard52RankValue(c.rank))
-    );
-    const winners = inSuit.filter((i) => standard52RankValue(player.hand[i].rank) > currentHigh);
-    if (winners.length > 0) {
-      return winners.reduce(
-        (best, i) =>
-          standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
-        winners[0]
-      );
-    }
-    return inSuit[0];
-  }
-  return valid[0];
+  const trump = positiveTrumpSuit(state, king);
+  return positiveFollowChoice(valid, player.hand, state, playerIndex, trump, 'first');
 }
 
 /**
@@ -83,33 +108,11 @@ function mediumPositiveLead(
 function mediumPositiveFollow(
   valid: number[],
   player: GameState['players'][number],
-  state: GameState
+  state: GameState,
+  playerIndex: number,
+  trump: Suit | null
 ): number {
-  const ledSuit = state.currentTrick[0].suit;
-  const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
-  if (inSuit.length > 0) {
-    const currentHigh = Math.max(
-      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => standard52RankValue(c.rank))
-    );
-    const winners = inSuit.filter((i) => standard52RankValue(player.hand[i].rank) > currentHigh);
-    if (winners.length > 0) {
-      return winners.reduce(
-        (best, i) =>
-          standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
-        winners[0]
-      );
-    }
-    return inSuit.reduce(
-      (best, i) =>
-        standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
-      inSuit[0]
-    );
-  }
-  return valid.reduce(
-    (best, i) =>
-      standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
-    valid[0]
-  );
+  return positiveFollowChoice(valid, player.hand, state, playerIndex, trump, 'lowest');
 }
 
 /**
@@ -203,7 +206,13 @@ export function chooseKingPtCard(
     if (state.currentTrick.length === 0) {
       return mediumPositiveLead(valid, player);
     }
-    return mediumPositiveFollow(valid, player, state);
+    return mediumPositiveFollow(
+      valid,
+      player,
+      state,
+      playerIndex,
+      positiveTrumpSuit(state, king)
+    );
   }
 
   return mediumNegativeDump(valid, player, state, king, playerIndex);

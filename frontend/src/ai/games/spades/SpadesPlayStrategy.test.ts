@@ -2,6 +2,7 @@ import { chooseSpadesCard } from './SpadesPlayStrategy';
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { Card, GameState } from '../../../types/game';
 import { SpadesVariantState } from '../../../models/games/SpadesGame';
+import { trickWinnerIndex } from '../../../models/games/trickUtils';
 
 function makeCard(rank: string, suit: string): Card {
   return { rank, suit } as Card;
@@ -185,6 +186,48 @@ describe('SpadesPlayStrategy', () => {
       const idx = chooseSpadesCard(makeAdapter(), state, 0, spades, difficulty);
       expect(hand[idx].rank).toBe('7');
     });
+  });
+
+  describe('trump already on the trick', () => {
+    it.each(['medium', 'hard'] as const)(
+      '%s does not spend A♣ after 4♠ has trumped the club lead',
+      (difficulty) => {
+        const hand = [makeCard('A', 'clubs'), makeCard('2', 'clubs')];
+        const trick = [makeCard('5', 'clubs'), makeCard('4', 'spades')];
+        const leader = 0;
+        const state = makeState(hand, trick, 1, leader);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, makeSpades(3, 0), difficulty);
+        expect(hand[idx].rank).toBe('2');
+        expect(hand[idx].suit).toBe('clubs');
+        expect(trickWinnerIndex([...trick, hand[idx]], leader, 'spades')).toBe(1);
+        expect(trickWinnerIndex([...trick, makeCard('A', 'clubs')], leader, 'spades')).toBe(1);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s cuts with the lowest spade that beats the spade already played',
+      (difficulty) => {
+        const hand = [makeCard('K', 'spades'), makeCard('9', 'spades')];
+        const trick = [makeCard('A', 'hearts'), makeCard('4', 'spades')];
+        const state = makeState(hand, trick, 1, 0);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, makeSpades(3, 0), difficulty);
+        expect(hand[idx].rank).toBe('9');
+        expect(trickWinnerIndex([...trick, hand[idx]], 0, 'spades')).toBe(2);
+      }
+    );
+
+    it.each(['medium', 'hard'] as const)(
+      '%s does not play a spade that loses to a higher spade',
+      (difficulty) => {
+        const hand = [makeCard('4', 'spades'), makeCard('2', 'clubs')];
+        const trick = [makeCard('A', 'hearts'), makeCard('K', 'spades')];
+        const state = makeState(hand, trick, 1, 0);
+        const idx = chooseSpadesCard(makeAdapter(), state, 0, makeSpades(3, 0), difficulty);
+        expect(hand[idx].rank).toBe('2');
+        expect(hand[idx].suit).toBe('clubs');
+        expect(trickWinnerIndex([...trick, hand[idx]], 0, 'spades')).toBe(1);
+      }
+    );
   });
 
   describe('T10 — medium/hard always return legal index', () => {
