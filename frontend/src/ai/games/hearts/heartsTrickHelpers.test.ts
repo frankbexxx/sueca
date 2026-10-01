@@ -99,6 +99,12 @@ describe('heartsTrickHelpers', () => {
     it('pickLowestRankIndex', () => {
       expect(pickLowestRankIndex([0, 1], hand)).toBe(1);
     });
+    it('7♠ is lower than Q♠, and J♠ is lower than Q♠', () => {
+      const sevenQueen = [makeCard('Q', 'spades'), makeCard('7', 'spades')];
+      const jackQueen = [makeCard('Q', 'spades'), makeCard('J', 'spades')];
+      expect(pickLowestRankIndex([0, 1], sevenQueen)).toBe(1);
+      expect(pickLowestRankIndex([0, 1], jackQueen)).toBe(1);
+    });
     it('pickHighestPenaltyIndex', () => {
       const h = [makeCard('2', 'clubs'), makeCard('Q', 'spades')];
       expect(pickHighestPenaltyIndex([0, 1], h)).toBe(1);

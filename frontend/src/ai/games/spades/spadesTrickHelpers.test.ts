@@ -8,6 +8,7 @@ import {
   playWhenPartnerWinning,
 } from './spadesTrickHelpers';
 import { Card } from '../../../types/game';
+import { standard52RankValue, trickWinnerIndex } from '../../../models/games/trickUtils';
 
 function makeCard(rank: string, suit: string): Card {
   return { rank, suit } as Card;
@@ -93,6 +94,17 @@ describe('spadesTrickHelpers', () => {
     it('returns lowest rank index', () => {
       const hand = [makeCard('K', 'clubs'), makeCard('2', 'clubs')];
       expect(lowestCardIndex([0, 1], hand)).toBe(1);
+    });
+
+    it('treats 7 as lower than Q, matching the motor', () => {
+      const hand = [makeCard('Q', 'hearts'), makeCard('7', 'hearts')];
+      expect(standard52RankValue('K')).toBeGreaterThan(standard52RankValue('7'));
+      expect(standard52RankValue('Q')).toBeGreaterThan(standard52RankValue('J'));
+      expect(standard52RankValue('A')).toBeGreaterThan(standard52RankValue('K'));
+      expect(standard52RankValue('2')).toBeLessThan(standard52RankValue('3'));
+      expect(lowestCardIndex([0, 1], hand)).toBe(1);
+      const trick = [makeCard('7', 'hearts'), makeCard('K', 'hearts')];
+      expect(trickWinnerIndex(trick, 0, null)).toBe(1);
     });
   });
 });

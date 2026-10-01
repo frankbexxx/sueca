@@ -1,5 +1,5 @@
-import { CARD_HIERARCHY, Card, GameState } from '../../../types/game';
-import { trickWinnerIndex } from '../../../models/games/trickUtils';
+import { Card, GameState } from '../../../types/game';
+import { standard52RankValue, trickWinnerIndex } from '../../../models/games/trickUtils';
 
 export function penaltyScore(card: Card): number {
   return (card.suit === 'hearts' ? 10 : 0) + (card.rank === 'Q' && card.suit === 'spades' ? 20 : 0);
@@ -50,7 +50,7 @@ export function pickHighestPenaltyIndex(indices: number[], hand: Card[]): number
 export function pickLowestRankIndex(indices: number[], hand: Card[]): number {
   return indices.reduce(
     (best, i) =>
-      CARD_HIERARCHY[hand[i].rank] < CARD_HIERARCHY[hand[best].rank] ? i : best,
+      standard52RankValue(hand[i].rank) < standard52RankValue(hand[best].rank) ? i : best,
     indices[0]
   );
 }

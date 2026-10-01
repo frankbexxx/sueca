@@ -88,6 +88,25 @@ function strongNullHand(): Card[] {
 describe('kingAuctionHandEval (AI-KING-AUCTION-01)', () => {
   const order = auctionBidderOrder(0);
 
+  it('a queen is a stronger control than a seven', () => {
+    const spots = ['2', '3', '4', '5', '6', '8', '9', '10'] as const;
+    const around = (honor: '7' | 'Q'): Card[] => [
+      c(honor, 'spades', 's1'),
+      c('6', 'spades', 's2'),
+      c('5', 'spades', 's3'),
+      c('4', 'spades', 's4'),
+      c('3', 'spades', 's5'),
+      c('2', 'spades', 's6'),
+      c(honor, 'hearts', 'h1'),
+      c(honor, 'clubs', 'c1'),
+      c(honor, 'diamonds', 'd1'),
+      ...spots.slice(0, 4).map((rank, i) => c(rank, 'hearts', `f${i}`))
+    ];
+    const sevens = estimatePositiveBidCeiling(around('7'), 'medium');
+    const queens = estimatePositiveBidCeiling(around('Q'), 'medium');
+    expect(queens).toBeGreaterThan(sevens);
+  });
+
   it('weak hand: low ceiling and passes when opening', () => {
     const hand = weakPositiveHand();
     expect(estimatePositiveBidCeiling(hand, 'medium')).toBeLessThan(4);

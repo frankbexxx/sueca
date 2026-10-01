@@ -1,9 +1,7 @@
 import { Card, GameState, Suit } from '../../../types/game';
 import { KingPtVariantState, isMen, mustPlayKingOfHearts } from '../../../models/games/KingPtGame';
 import { KingNegativeContract } from '../../../models/games/king/kingContracts';
-import { trickWinnerIndex } from '../../../models/games/trickUtils';
-
-const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+import { standard52RankValue, trickWinnerIndex } from '../../../models/games/trickUtils';
 
 export function isKingHearts(card: Card): boolean {
   return card.rank === 'K' && card.suit === 'hearts';
@@ -29,7 +27,7 @@ export function kingTrickLeader(state: GameState): number {
 export function pickLowestRankIndex(indices: number[], hand: Card[]): number {
   return indices.reduce(
     (best, i) =>
-      RANK_ORDER.indexOf(hand[i].rank) < RANK_ORDER.indexOf(hand[best].rank) ? i : best,
+      standard52RankValue(hand[i].rank) < standard52RankValue(hand[best].rank) ? i : best,
     indices[0]
   );
 }
@@ -37,7 +35,7 @@ export function pickLowestRankIndex(indices: number[], hand: Card[]): number {
 export function pickHighestRankIndex(indices: number[], hand: Card[]): number {
   return indices.reduce(
     (best, i) =>
-      RANK_ORDER.indexOf(hand[i].rank) > RANK_ORDER.indexOf(hand[best].rank) ? i : best,
+      standard52RankValue(hand[i].rank) > standard52RankValue(hand[best].rank) ? i : best,
     indices[0]
   );
 }

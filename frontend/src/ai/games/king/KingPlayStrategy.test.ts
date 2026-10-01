@@ -2,6 +2,7 @@ import { chooseKingPtCard } from './KingPlayStrategy';
 import { GameAdapter } from '../../../models/games/GameAdapter';
 import { Card, GameState } from '../../../types/game';
 import { KingPtVariantState } from '../../../models/games/KingPtGame';
+import { trickWinnerIndex } from '../../../models/games/trickUtils';
 
 function makeCard(rank: string, suit: string): Card {
   return { rank, suit } as Card;
@@ -121,6 +122,31 @@ describe('KingPlayStrategy — chooseKingPtCard', () => {
       const king = makeKing(0, 'no_tricks');
       const idx = chooseKingPtCard(makeAdapter(), state, 0, king, 'medium');
       expect(hand[idx].rank).toBe('7');
+    });
+  });
+
+  describe('positive rank agrees with the King motor', () => {
+    it('medium leads K over 7 and Q over J', () => {
+      const king = makeKing(6, null);
+      const kingSeven = [makeCard('7', 'hearts'), makeCard('K', 'hearts')];
+      const queenJack = [makeCard('J', 'clubs'), makeCard('Q', 'clubs')];
+      expect(kingSeven[chooseKingPtCard(makeAdapter(), makeState(kingSeven), 0, king, 'medium')].rank).toBe('K');
+      expect(queenJack[chooseKingPtCard(makeAdapter(), makeState(queenJack), 0, king, 'medium')].rank).toBe('Q');
+    });
+
+    it('hard wins a led 7 with K, which is the motor winner', () => {
+      const hand = [makeCard('2', 'hearts'), makeCard('K', 'hearts')];
+      const trick = [makeCard('7', 'hearts')];
+      const king = makeKing(6, null);
+      const idx = chooseKingPtCard(
+        makeAdapter(),
+        makeState(hand, trick, leaderForPlayer0(1)),
+        0,
+        king,
+        'hard'
+      );
+      expect(hand[idx].rank).toBe('K');
+      expect(trickWinnerIndex([...trick, hand[idx]], leaderForPlayer0(1), null)).toBe(0);
     });
   });
 

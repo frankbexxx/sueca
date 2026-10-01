@@ -77,6 +77,30 @@ describe('SpadesPlayStrategy', () => {
     });
   });
 
+  describe('rank agreement with the Spades motor', () => {
+    it('K beats a led 7, and Q beats a led J', () => {
+      const kingOverSeven = [makeCard('2', 'hearts'), makeCard('K', 'hearts')];
+      const queenOverJack = [makeCard('2', 'clubs'), makeCard('Q', 'clubs')];
+      const needTricks = makeSpades(3, 0);
+      const kingIdx = chooseSpadesCard(
+        makeAdapter(),
+        makeState(kingOverSeven, [makeCard('7', 'hearts')], 1, 1),
+        0,
+        needTricks,
+        'hard'
+      );
+      const queenIdx = chooseSpadesCard(
+        makeAdapter(),
+        makeState(queenOverJack, [makeCard('J', 'clubs')], 1, 1),
+        0,
+        needTricks,
+        'hard'
+      );
+      expect(kingOverSeven[kingIdx].rank).toBe('K');
+      expect(queenOverJack[queenIdx].rank).toBe('Q');
+    });
+  });
+
   describe('T6 — hard following in-suit: minimum winning card', () => {
     it('picks the lowest card that beats current trick', () => {
       const hand = [makeCard('7', 'spades'), makeCard('A', 'spades')];

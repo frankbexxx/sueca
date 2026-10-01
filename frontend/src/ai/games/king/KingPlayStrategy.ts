@@ -1,5 +1,6 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
-import { AIDifficulty, GameState, CARD_HIERARCHY } from '../../../types/game';
+import { AIDifficulty, GameState } from '../../../types/game';
+import { standard52RankValue } from '../../../models/games/trickUtils';
 import { KingPtVariantState, isSyntheticAllNegatives } from '../../../models/games/KingPtGame';
 import { KING_NEGATIVE_GAMES } from '../../../models/games/king/kingContracts';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
@@ -38,7 +39,7 @@ function chooseKingPtHard(
   if (state.currentTrick.length === 0) {
     return valid.reduce(
       (best, i) =>
-        CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+        standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
       valid[0]
     );
   }
@@ -47,13 +48,13 @@ function chooseKingPtHard(
   const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
   if (inSuit.length) {
     const currentHigh = Math.max(
-      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => CARD_HIERARCHY[c.rank])
+      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => standard52RankValue(c.rank))
     );
-    const winners = inSuit.filter((i) => CARD_HIERARCHY[player.hand[i].rank] > currentHigh);
+    const winners = inSuit.filter((i) => standard52RankValue(player.hand[i].rank) > currentHigh);
     if (winners.length > 0) {
       return winners.reduce(
         (best, i) =>
-          CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+          standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
         winners[0]
       );
     }
@@ -71,7 +72,7 @@ function mediumPositiveLead(
 ): number {
   return valid.reduce(
     (best, i) =>
-      CARD_HIERARCHY[player.hand[i].rank] > CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+      standard52RankValue(player.hand[i].rank) > standard52RankValue(player.hand[best].rank) ? i : best,
     valid[0]
   );
 }
@@ -88,25 +89,25 @@ function mediumPositiveFollow(
   const inSuit = valid.filter((i) => player.hand[i].suit === ledSuit);
   if (inSuit.length > 0) {
     const currentHigh = Math.max(
-      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => CARD_HIERARCHY[c.rank])
+      ...state.currentTrick.filter((c) => c.suit === ledSuit).map((c) => standard52RankValue(c.rank))
     );
-    const winners = inSuit.filter((i) => CARD_HIERARCHY[player.hand[i].rank] > currentHigh);
+    const winners = inSuit.filter((i) => standard52RankValue(player.hand[i].rank) > currentHigh);
     if (winners.length > 0) {
       return winners.reduce(
         (best, i) =>
-          CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+          standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
         winners[0]
       );
     }
     return inSuit.reduce(
       (best, i) =>
-        CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+        standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
       inSuit[0]
     );
   }
   return valid.reduce(
     (best, i) =>
-      CARD_HIERARCHY[player.hand[i].rank] < CARD_HIERARCHY[player.hand[best].rank] ? i : best,
+      standard52RankValue(player.hand[i].rank) < standard52RankValue(player.hand[best].rank) ? i : best,
     valid[0]
   );
 }

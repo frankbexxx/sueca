@@ -97,7 +97,8 @@ export interface GameState {
   variantState?: Record<string, unknown>;
 }
 
-// Sueca trick-taking order: A > 7 > K > J > Q > 6 > 5 > 4 > 3 > 2
+// Sueca only. A > 7 > K > J > Q > 6 > 5 > 4 > 3 > 2.
+// Spades, Hearts, and King must use standard52RankValue, not this table.
 // (8, 9, 10 are not in the 40-card Sueca deck — values are inert)
 export const CARD_HIERARCHY: Record<Rank, number> = {
   '2': 1,

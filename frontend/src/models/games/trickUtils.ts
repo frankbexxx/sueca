@@ -1,9 +1,18 @@
 import { Card, Suit } from '../../types/game';
 
-const STANDARD_HIERARCHY: Record<string, number> = {
+/**
+ * Standard 52-card rank. Spades, Hearts, and King trick motors use this.
+ * Sueca does not — it keeps CARD_HIERARCHY (A > 7 > K > J > Q).
+ */
+export const STANDARD_52_RANK_ORDER: Record<string, number> = {
   '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8,
   '10': 9, 'J': 10, 'Q': 11, 'K': 12, 'A': 13
 };
+
+/** Rank strength for a 52-card game. Unknown ranks compare as 0, never as Sueca. */
+export function standard52RankValue(rank: string): number {
+  return STANDARD_52_RANK_ORDER[rank] ?? 0;
+}
 
 export function compareTrickCards(
   card1: Card,
@@ -18,7 +27,7 @@ export function compareTrickCards(
   if (card1.suit !== card2.suit) {
     return card1.suit === ledSuit ? 1 : -1;
   }
-  return (STANDARD_HIERARCHY[card1.rank] || 0) - (STANDARD_HIERARCHY[card2.rank] || 0);
+  return standard52RankValue(card1.rank) - standard52RankValue(card2.rank);
 }
 
 export function trickWinnerIndex(trick: Card[], trickLeader: number, trump: Suit | null): number {

@@ -1,5 +1,5 @@
 import type { AIDifficulty, Card, Suit } from '../../../types/game';
-import { CARD_HIERARCHY } from '../../../types/game';
+import { standard52RankValue } from '../../../models/games/trickUtils';
 import type { KingBid, KingBidType } from '../../../models/games/king/kingContracts';
 import {
   bidEquivalentPositive,
@@ -11,9 +11,9 @@ import {
 
 const SUITS: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
 
-/** High-trick ranks in Portuguese hierarchy (A, 7, K, J). */
+/** Standard 52-card honors. A 7 is not a control; Q outranks J. */
 function isStrongRank(rank: Card['rank']): boolean {
-  return rank === 'A' || rank === '7' || rank === 'K' || rank === 'J';
+  return rank === 'A' || rank === 'K' || rank === 'Q' || rank === 'J';
 }
 
 function suitLength(hand: Card[], suit: Suit): number {
@@ -52,15 +52,13 @@ export function estimatePositiveBidCeiling(
     0
   );
   const aceCount = hand.filter((c) => c.rank === 'A').length;
-  const sevenCount = hand.filter((c) => c.rank === '7').length;
 
-  // Length beyond 4 + control cards → rough trick ceiling (deterministic).
+  // Length beyond 4 + standard honors → rough trick ceiling (deterministic).
   let raw =
     Math.max(0, bestLen - 4) * 0.85 +
     trumpHigh * 0.7 +
     sideHigh * 0.35 +
-    aceCount * 0.25 +
-    sevenCount * 0.2;
+    aceCount * 0.25;
 
   if (difficulty === 'easy') raw -= 1.0;
   if (difficulty === 'hard') raw += 0.7;
@@ -83,7 +81,8 @@ export function estimateNullBidCeiling(
   const voids = lengths.filter((n) => n === 0).length;
   const singles = lengths.filter((n) => n === 1).length;
   const strong = hand.filter((c) => isStrongRank(c.rank)).length;
-  const lowOnly = hand.filter((c) => CARD_HIERARCHY[c.rank] <= CARD_HIERARCHY['Q']).length;
+  const jack = standard52RankValue('J');
+  const lowOnly = hand.filter((c) => standard52RankValue(c.rank) < jack).length;
 
   let raw = voids * 1.35 + singles * 0.65 + lowOnly * 0.06 - strong * 0.7;
   if (difficulty === 'easy') raw -= 0.6;

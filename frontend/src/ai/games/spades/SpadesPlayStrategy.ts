@@ -1,5 +1,6 @@
 import { GameAdapter } from '../../../models/games/GameAdapter';
-import { AIDifficulty, CARD_HIERARCHY, GameState } from '../../../types/game';
+import { AIDifficulty, GameState } from '../../../types/game';
+import { standard52RankValue } from '../../../models/games/trickUtils';
 import { SpadesVariantState } from '../../../models/games/SpadesGame';
 import { getLegalIndices } from '../../core/LegalMoveFilter';
 import { shouldPlayRandom } from '../../core/DifficultyProfile';
@@ -76,9 +77,9 @@ function playMedium(
     const currentHigh = Math.max(
       ...state.currentTrick
         .filter((c) => c.suit === ledSuit)
-        .map((c) => CARD_HIERARCHY[c.rank])
+        .map((c) => standard52RankValue(c.rank))
     );
-    const winners = inSuit.filter((i) => CARD_HIERARCHY[hand[i].rank] > currentHigh);
+    const winners = inSuit.filter((i) => standard52RankValue(hand[i].rank) > currentHigh);
     if (winners.length > 0) return winners[0];
     return lowestCardIndex(inSuit, hand);
   }
@@ -125,9 +126,9 @@ function playHard(
     const currentHigh = Math.max(
       ...state.currentTrick
         .filter((c) => c.suit === ledSuit)
-        .map((c) => CARD_HIERARCHY[c.rank])
+        .map((c) => standard52RankValue(c.rank))
     );
-    const winners = inSuit.filter((i) => CARD_HIERARCHY[hand[i].rank] > currentHigh);
+    const winners = inSuit.filter((i) => standard52RankValue(hand[i].rank) > currentHigh);
     if (winners.length > 0) {
       return lowestCardIndex(winners, hand);
     }

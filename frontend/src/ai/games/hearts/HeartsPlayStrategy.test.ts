@@ -85,6 +85,14 @@ describe('HeartsPlayStrategy', () => {
       const idx = chooseHeartsCard(makeAdapter(), state, 0, difficulty);
       expect(hand[idx].rank).toBe('2');
     });
+
+    it.each(['medium', 'hard'] as const)('%s plays 7♠ not Q♠, and J♠ not Q♠', (difficulty) => {
+      const seven = [makeCard('Q', 'spades'), makeCard('7', 'spades')];
+      const jack = [makeCard('Q', 'spades'), makeCard('J', 'spades')];
+      const trick = [makeCard('A', 'spades')];
+      expect(seven[chooseHeartsCard(makeAdapter(), makeState(seven, trick, 1), 0, difficulty)].rank).toBe('7');
+      expect(jack[chooseHeartsCard(makeAdapter(), makeState(jack, trick, 1), 0, difficulty)].rank).toBe('J');
+    });
   });
 
   describe('T4 — H02 dump Q♠ off-suit on club lead (regression)', () => {
