@@ -10,7 +10,7 @@ import { ConfirmDialog } from './common/ConfirmDialog';
 import { useSound } from '../hooks/useSound';
 import { useLanguage } from '../i18n/useLanguage';
 import './GameBoard.css';
-import { requestAiPlay } from '../services/aiClient';
+import { isExternalAiAvailable, requestAiPlay } from '../services/aiClient';
 import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
@@ -1076,6 +1076,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         gameAdapter.variant !== 'sueca' ||
         gameState.aiDifficulty !== 'hard'
       ) {
+        return -1;
+      }
+      // Prod without VITE_AI_SERVICE_URL: skip entirely (no localhost fetch / warn spam).
+      if (!isExternalAiAvailable()) {
         return -1;
       }
       try {

@@ -151,6 +151,27 @@ describe('SuecaStrategy', () => {
       expect(idx).toBeGreaterThanOrEqual(0);
     });
 
+    it('Hard local fallback still returns a legal move (follow suit)', () => {
+      // Production without VITE_AI_SERVICE_URL skips external; Hard uses local strategy.
+      const hand = [
+        makeCard('K', 'spades'),
+        makeCard('5', 'hearts'),
+        makeCard('9', 'hearts'),
+      ];
+      const trick = [makeCard('2', 'hearts')];
+      const legal = [1, 2]; // must follow hearts
+      const state = makeState({
+        hand,
+        trick,
+        trickLeader: 1,
+        trumpSuit: 'clubs',
+        aiDifficulty: 'hard',
+      });
+      const idx = chooseSuecaCard(state, 0, makeCtx(hand, legal));
+      expect(legal).toContain(idx);
+      expect(cardAt(hand, idx).suit).toBe('hearts');
+    });
+
     it('T9: returns -1 when no legal moves', () => {
       const hand = [makeCard('2', 'clubs')];
       const state = makeState({ hand });
