@@ -137,6 +137,7 @@ import { useMultiplayer } from '../hooks/useMultiplayer';
 import { fetchSessionState, subscribeToActions } from '../services/multiplayerClient';
 import { applyHostAction } from '../multiplayer/applyHostAction';
 import { normalizeGameState } from '../multiplayer/normalizeGameState';
+import { resumeSpadesOrClearSession } from '../services/spadesResumeQuarantine';
 import { mpLog, mpWarn } from '../utils/mpDebug';
 import {
   saveGameSession,
@@ -519,8 +520,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           !freshStartRef.current &&
           resumeSession?.state &&
           resumeSession.config.gameVariant === config.gameVariant;
-        if (shouldResume) {
-          initialState = adapter.restoreState(normalizeGameState(resumeSession.state));
+        if (shouldResume && resumeSession) {
+          const savedState = resumeSession.state;
+          initialState =
+            config.gameVariant === 'spades'
+              ? resumeSpadesOrClearSession(() =>
+                  adapter.restoreState(normalizeGameState(savedState))
+                )
+              : adapter.restoreState(normalizeGameState(savedState));
         } else {
           const initOptions = {
             playDirection: config.playDirection === 'left' ? 'left' : 'right',
