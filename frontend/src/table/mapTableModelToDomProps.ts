@@ -23,6 +23,10 @@ export interface DomTableSurfacePropsFromModel {
   ritualRole: TableRenderModel['ritualRole'];
   hideHands: boolean;
   playLocked: boolean;
+  /** Model `seats[].isActive`, engine-index order. */
+  seatActive: boolean[];
+  /** Model pause. The turn cue stays off while this is true. */
+  turnCuePaused: boolean;
 }
 
 export interface DomLocalDockPropsFromModel {
@@ -40,6 +44,10 @@ export interface DomLocalDockPropsFromModel {
   ritualFocusSeat: number | null;
   ritualRole: TableRenderModel['ritualRole'];
   playLocked: boolean;
+  /** Model `seats[].isActive`, engine-index order. */
+  seatActive: boolean[];
+  /** Model pause. The turn cue stays off while this is true. */
+  turnCuePaused: boolean;
 }
 
 export interface DomPlayerHandPropsFromModel {
@@ -71,7 +79,9 @@ export function mapTableModelToDomSurfaceProps(
     ritualFocusSeat: model.ritualFocusSeat,
     ritualRole: model.ritualRole,
     hideHands: model.presentation.hideHands,
-    playLocked: model.presentation.playLocked
+    playLocked: model.presentation.playLocked,
+    seatActive: model.seats.map((seat) => seat.isActive),
+    turnCuePaused: model.status.isPaused
   };
 }
 
@@ -94,7 +104,9 @@ export function mapTableModelToDomDockProps(
     auctionLocale: model.chrome.auctionLocale,
     ritualFocusSeat: model.ritualFocusSeat,
     ritualRole: model.ritualRole,
-    playLocked: model.presentation.playLocked
+    playLocked: model.presentation.playLocked,
+    seatActive: model.seats.map((seat) => seat.isActive),
+    turnCuePaused: model.status.isPaused
   };
 }
 

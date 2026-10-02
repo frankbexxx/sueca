@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState, GameVariant } from '../../types/game';
-import { getPlayerSeatTeamClass, isActiveTurnSeat } from '../../utils/playerSeatHelpers';
+import { getPlayerSeatTeamClass } from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { PlayerInfoBox } from './PlayerInfoBox';
@@ -20,7 +20,12 @@ export interface LocalPlayerDockProps {
   auctionLocale?: 'pt' | 'en';
   ritualFocusSeat?: number | null;
   ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
+  /** Presentation lock is already folded into seatActive by the table model. */
   playLocked?: boolean;
+  /** Shared-model active flags, one per engine seat. */
+  seatActive?: boolean[];
+  /** Shared-model pause. Hides the turn cue without changing who is active. */
+  turnCuePaused?: boolean;
 }
 
 export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
@@ -38,22 +43,18 @@ export const LocalPlayerDock: React.FC<LocalPlayerDockProps> = ({
   auctionLocale = 'pt',
   ritualFocusSeat = null,
   ritualRole = null,
-  playLocked = false
+  seatActive = [],
+  turnCuePaused = false
 }) => {
   const player = gameState.players[localPlayerIndex];
   if (!player) return null;
 
   const hasRitualFocus = ritualFocusSeat === localPlayerIndex;
-  const isActive =
-    !hasRitualFocus &&
-    !playLocked &&
-    isActiveTurnSeat(gameState, localPlayerIndex, {
-      spadesBidPhase,
-      currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-      suppress: compactSeats || ritualFocusSeat != null || playLocked
-    });
+  const isActive = !turnCuePaused && Boolean(seatActive[localPlayerIndex]);
   const isBidding =
-    spadesBidPhase && spadesState?.currentBidderIndex === localPlayerIndex;
+    !turnCuePaused &&
+    spadesBidPhase &&
+    spadesState?.currentBidderIndex === localPlayerIndex;
 
   return (
     <div

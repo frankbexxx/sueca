@@ -25,6 +25,8 @@ export interface TableSurfaceProps {
   ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
   hideHands?: boolean;
   playLocked?: boolean;
+  seatActive?: boolean[];
+  turnCuePaused?: boolean;
 }
 
 export const TableSurface: React.FC<TableSurfaceProps> = ({
@@ -45,7 +47,9 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
   ritualFocusSeat = null,
   ritualRole = null,
   hideHands = false,
-  playLocked = false
+  playLocked = false,
+  seatActive = [],
+  turnCuePaused = false
 }) => {
   return (
     <div className="table-layout">
@@ -74,6 +78,8 @@ export const TableSurface: React.FC<TableSurfaceProps> = ({
           ritualRole={ritualRole}
           hideHands={hideHands}
           playLocked={playLocked}
+          seatActive={seatActive}
+          turnCuePaused={turnCuePaused}
         />
       </div>
     </div>

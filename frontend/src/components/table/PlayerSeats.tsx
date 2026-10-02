@@ -1,9 +1,6 @@
 import React from 'react';
 import { GameState, GameVariant } from '../../types/game';
-import {
-  getPlayerSeatTeamClass,
-  isActiveTurnSeat
-} from '../../utils/playerSeatHelpers';
+import { getPlayerSeatTeamClass } from '../../utils/playerSeatHelpers';
 import { KingBid } from '../../models/games/king/kingContracts';
 import { SpadesVariantState } from '../../models/games/SpadesGame';
 import { getTablePositionForPlayer } from '../../utils/tableLayout';
@@ -29,8 +26,12 @@ export interface PlayerSeatsProps {
   ritualRole?: 'shuffler' | 'cutter' | 'dealer' | 'first-player' | null;
   /** UX-SUECA-04 — hide opponent backs until post-deal reveal. */
   hideHands?: boolean;
-  /** UX-SUECA-04 — suppress A JOGAR while presentation gate locks play. */
+  /** Presentation lock is already folded into seatActive by the table model. */
   playLocked?: boolean;
+  /** Shared-model active flags, one per engine seat. */
+  seatActive?: boolean[];
+  /** Shared-model pause. Hides the turn cue without changing who is active. */
+  turnCuePaused?: boolean;
 }
 
 export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
@@ -50,7 +51,8 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
   ritualFocusSeat = null,
   ritualRole = null,
   hideHands = false,
-  playLocked = false
+  seatActive = [],
+  turnCuePaused = false
 }) => {
   return (
     <div className="seats-layer">
@@ -75,16 +77,11 @@ export const PlayerSeats: React.FC<PlayerSeatsProps> = ({
         };
 
         const hasRitualFocus = ritualFocusSeat === index;
-        const isActive =
-          !hasRitualFocus &&
-          !playLocked &&
-          isActiveTurnSeat(gameState, index, {
-            spadesBidPhase,
-            currentBidderIndex: spadesState?.currentBidderIndex ?? null,
-            suppress: compactSeats || ritualFocusSeat != null || playLocked
-          });
+        const isActive = !turnCuePaused && Boolean(seatActive[index]);
         const isBidding =
-          spadesBidPhase && spadesState?.currentBidderIndex === index;
+          !turnCuePaused &&
+          spadesBidPhase &&
+          spadesState?.currentBidderIndex === index;
 
         return (
           <div
