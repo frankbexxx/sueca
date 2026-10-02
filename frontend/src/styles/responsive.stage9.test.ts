@@ -75,7 +75,7 @@ describe('Stage 9 responsive theme hardening', () => {
     expect(credits).toMatch(/max-height:\s*90dvh/);
     expect(gameBoard).toMatch(/max-height:\s*82dvh/);
     expect(variantModals).toMatch(/max-height:\s*85dvh/);
-    expect(variantModals).toMatch(/\.variant-modal--hearts-pass[\s\S]*?16dvh/);
+    expect(variantModals).toMatch(/\.variant-modal--hearts-pass[\s\S]*?22dvh/);
     expect(variantModals).toMatch(/\.variant-modal--spades-bid[\s\S]*?16dvh/);
   });
 

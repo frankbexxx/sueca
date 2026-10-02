@@ -1,11 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../i18n/useLanguage';
-import {
-  passDirectionLabel,
-  passSourceIndex,
-  passTargetIndex,
-  PassDirection
-} from './HeartsRulesHelper';
+import { passTargetIndex, PassDirection } from './HeartsRulesHelper';
 import './VariantModals.css';
 
 interface HeartsPassModalProps {
@@ -23,45 +18,57 @@ export const HeartsPassModal: React.FC<HeartsPassModalProps> = ({
   selectedCount,
   onConfirm
 }) => {
-  const { language, t } = useLanguage();
-  const locale = language === 'pt' ? 'pt' : 'en';
+  const { t } = useLanguage();
   const direction = passDirection as PassDirection;
-  const ready = direction === 'hold' ? true : selectedCount === 3;
+  if (direction === 'hold') return null;
+
+  const directionLine =
+    direction === 'right'
+      ? t.heartsPass.directionRight
+      : direction === 'across'
+        ? t.heartsPass.directionAcross
+        : t.heartsPass.directionLeft;
   const targetIndex = passTargetIndex(localPlayerIndex, direction);
-  const sourceIndex = passSourceIndex(localPlayerIndex, direction);
-  const targetName = playerNames[targetIndex] ?? `Player ${targetIndex + 1}`;
-  const sourceName = playerNames[sourceIndex] ?? `Player ${sourceIndex + 1}`;
+  const targetName = playerNames[targetIndex] ?? '';
+  const ready = selectedCount === 3;
 
   return (
     <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet variant-modal-overlay--hearts-pass">
-      <div className="variant-modal variant-modal--bottom-sheet variant-modal--hearts-pass shell-panel">
+      <div
+        className="variant-modal variant-modal--bottom-sheet variant-modal--hearts-pass shell-panel"
+        data-testid="hearts-pass-surface"
+        role="region"
+        aria-label={t.heartsPass.title}
+      >
         <h2 className="hearts-pass-title">{t.heartsPass.title}</h2>
-        {direction === 'hold' ? (
-          <p className="hearts-pass-hint">{t.heartsPass.holdRound}</p>
-        ) : (
-          <>
-            <p className="hearts-pass-hint hearts-pass-hint--primary">
-              {t.heartsPass.passToPlayer(
-                targetName,
-                passDirectionLabel(direction, locale)
-              )}
-            </p>
-            <p className="hearts-pass-hint">
-              {t.heartsPass.receiveFromPlayer(sourceName)} · {t.heartsPass.selectOnHand}
-            </p>
-          </>
-        )}
+        <p className="hearts-pass-direction">
+          {targetName ? t.heartsPass.directionTo(directionLine, targetName) : directionLine}
+        </p>
+        <p className="hearts-pass-count" aria-live="polite">
+          {t.heartsPass.selectedCount(selectedCount)}
+        </p>
         <button
           type="button"
-          className="sueca-btn sueca-btn--primary sueca-btn--block sueca-btn--compact"
+          className="sueca-btn sueca-btn--primary sueca-btn--block sueca-btn--compact hearts-pass-confirm"
           disabled={!ready}
+          aria-disabled={!ready}
           onClick={onConfirm}
         >
-          {direction === 'hold'
-            ? t.heartsPass.confirmHold
-            : t.heartsPass.confirm(selectedCount)}
+          {t.heartsPass.confirm}
         </button>
       </div>
+    </div>
+  );
+};
+
+/** Shown only while the existing pass-exchange beat is locked. */
+export const HeartsPassReceipt: React.FC = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet variant-modal-overlay--hearts-pass">
+      <p className="hearts-pass-receipt shell-panel" role="status" data-testid="hearts-pass-receipt">
+        {t.heartsPass.received}
+      </p>
     </div>
   );
 };

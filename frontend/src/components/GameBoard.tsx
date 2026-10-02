@@ -87,7 +87,7 @@ import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { isBlindNilDecisionPending } from '../models/games/SpadesGame';
-import { HeartsPassModal } from './HeartsPassModal';
+import { HeartsPassModal, HeartsPassReceipt } from './HeartsPassModal';
 import { SuecaDealingModal } from './SuecaDealingModal';
 import { SuecaPostDealCard } from './SuecaPostDealCard';
 import { SuecaRitualDebugControl } from './SuecaRitualDebugControl';
@@ -2161,6 +2161,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             }}
           />
         )}
+
+      {gameVariant === 'hearts' &&
+        heartsState &&
+        !heartsPassActive &&
+        isHeartsPassExchangeLocked(heartsState) && <HeartsPassReceipt />}
 
       {!isJoiner &&
         kingCtrl &&

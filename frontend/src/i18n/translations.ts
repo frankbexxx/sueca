@@ -129,13 +129,14 @@ export interface Translations {
 
   heartsPass: {
     title: string;
-    passTo: string;
-    passToPlayer: (name: string, direction: string) => string;
-    receiveFromPlayer: (name: string) => string;
+    directionLeft: string;
+    directionRight: string;
+    directionAcross: string;
+    directionTo: (direction: string, name: string) => string;
+    selectedCount: (count: number) => string;
+    confirm: string;
+    received: string;
     holdRound: string;
-    confirmHold: string;
-    selectOnHand: string;
-    confirm: (count: number) => string;
   };
 
   spadesBid: {
@@ -824,14 +825,15 @@ export const translations: Record<Language, Translations> = {
       trumpAria: (suitLabel) => `Trunfo: ${suitLabel}`
     },
     heartsPass: {
-      title: 'Copas — passar 3 cartas',
-      passTo: 'Passar para:',
-      passToPlayer: (name, direction) => `Passas 3 cartas para ${name} (${direction})`,
-      receiveFromPlayer: (name) => `Recebes 3 cartas de ${name}`,
-      holdRound: 'Esta ronda não se passam cartas.',
-      confirmHold: 'Continuar',
-      selectOnHand: 'Selecciona 3 cartas na tua mão (cartas coloridas).',
-      confirm: (count) => `Passar cartas (${count}/3)`
+      title: 'Passar cartas',
+      directionLeft: 'Passa 3 cartas à esquerda',
+      directionRight: 'Passa 3 cartas à direita',
+      directionAcross: 'Passa 3 cartas em frente',
+      directionTo: (direction, name) => `${direction} · ${name}`,
+      selectedCount: (count) => `${count} de 3 selecionadas`,
+      confirm: 'Passar 3 cartas',
+      received: 'Cartas recebidas',
+      holdRound: 'Esta ronda não se passam cartas.'
     },
     spadesBid: {
       title: 'Spades — bids',
@@ -1295,14 +1297,15 @@ export const translations: Record<Language, Translations> = {
       trumpAria: (suitLabel) => `Trump: ${suitLabel}`
     },
     heartsPass: {
-      title: 'Hearts — pass 3 cards',
-      passTo: 'Pass to:',
-      passToPlayer: (name, direction) => `Pass 3 cards to ${name} (${direction})`,
-      receiveFromPlayer: (name) => `Receive 3 cards from ${name}`,
-      holdRound: 'No passing this round.',
-      confirmHold: 'Continue',
-      selectOnHand: 'Select 3 cards from your hand below.',
-      confirm: (count) => `Pass cards (${count}/3)`
+      title: 'Pass cards',
+      directionLeft: 'Pass 3 cards to the left',
+      directionRight: 'Pass 3 cards to the right',
+      directionAcross: 'Pass 3 cards across',
+      directionTo: (direction, name) => `${direction} · ${name}`,
+      selectedCount: (count) => `${count} of 3 selected`,
+      confirm: 'Pass 3 cards',
+      received: 'Cards received',
+      holdRound: 'No passing this round.'
     },
     spadesBid: {
       title: 'Spades — bids',

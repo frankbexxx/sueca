@@ -107,6 +107,8 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               role={readOnly ? 'presentation' : 'button'}
               tabIndex={readOnly ? -1 : isPlayable ? 0 : -1}
               aria-disabled={readOnly || !isPlayable}
+              aria-pressed={selectedPassIndices ? isPassSelected : undefined}
+              data-pass-selected={isPassSelected ? 'true' : undefined}
               onKeyDown={
                 readOnly
                   ? undefined

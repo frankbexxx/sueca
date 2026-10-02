@@ -171,12 +171,10 @@
     align-items: flex-end;
   }
 
-  .hearts-pass-title {
-    font-size: 0.55rem;
-  }
-
-  .hearts-pass-hint {
-    font-size: 0.5rem;
+  .hearts-pass-title,
+  .hearts-pass-direction,
+  .hearts-pass-count {
+    font-size: 14px;
   }
 }
 
@@ -1402,6 +1400,20 @@
   outline: 2px solid rgba(var(--sc-accent-rgb), 0.85);
   outline-offset: 1px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card-hand--pass-selected::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--sc-accent);
+  background: var(--sc-surface-modal, #f4efe6);
+  box-shadow: inset 0 0 0 3px var(--sc-accent);
+  pointer-events: none;
 }
 
 /* Legal cards — full clarity + interactive cue */
