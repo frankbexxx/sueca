@@ -7,7 +7,7 @@
 ## Old behaviour
 
 - Phaser: continuous expose curve (`0.33 @ 13` → `0.72 @ 2`) with **~2°** fan and noticeable arc
-- DOM: fixed `CARD_SPACING` (18px) / scroll above 8 cards; selected card had outline only (pass used −8px lift)
+- DOM: fixed 18px card spacing / scroll above 8 cards; selected card had outline only (pass used −8px lift)
 - Two unrelated algorithms; opponents already separate
 
 ## New adaptive rule

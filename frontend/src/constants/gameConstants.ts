@@ -9,22 +9,8 @@ export const AI_PLAY_DELAY_MS = 1500;
 export const SPADES_AI_BID_DELAY_MS = 1500;
 /** Hearts receipt beat after a real pass. Not the Sueca follow delay. */
 export const HEARTS_PASS_EXCHANGE_MS = 800;
-/** Observable King festa auction — one AI bid/pass per tick. */
-export const FESTA_AUCTION_AI_DELAY_MS = 1000;
-/** Pause after last auction action before negotiation / fallback. */
-export const FESTA_AUCTION_RESULT_DELAY_MS = 1200;
 /** Non-auction festa AI steps (negotiation, fallback, setup). */
 export const FESTA_AI_STEP_DELAY_MS = 350;
-
-// Card layout
-export const CARD_SPACING = 18; // Spacing between cards in hand (70% of 26px)
-export const MAX_CARDS_IN_HAND = 10; // Maximum cards a player can hold
-export const SELECTED_CARD_Z_INDEX = 1000; // Z-index for selected card
-
-// Modal z-indexes
-export const MODAL_Z_INDEX_ROUND_END = 2000;
-export const MODAL_Z_INDEX_GAME_START = 1000;
-export const MODAL_Z_INDEX_GAME_OVER = 1001;
 
 // Game delays
 export const GAME_OVER_DELAY_MS = 3000; // Delay before showing start menu after game over (3s)
@@ -49,9 +35,6 @@ export const ROUND_START_SFX_DELAY_MS = 1000;
  * before opening the King score sheet (800–1200 ms band).
  */
 export const SYNTHETIC_ROUND_COMPLETE_HOLD_MS = 1000;
-
-// Card layout thresholds
-export const HAND_SCROLL_THRESHOLD = 8;
 
 export const TRICK_AUTO_CONTINUE_SECONDS = 5;
 

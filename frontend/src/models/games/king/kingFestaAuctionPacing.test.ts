@@ -1,10 +1,6 @@
 import { KingPtGame, getKingPtState } from '../KingPtGame';
 import { auctionBidderOrder } from './kingAuction';
 import { resolveKingFestaUiView } from './kingFestaActionAvailability';
-import {
-  FESTA_AUCTION_AI_DELAY_MS,
-  FESTA_AUCTION_RESULT_DELAY_MS
-} from '../../../constants/gameConstants';
 
 const NAMES = ['P1', 'P2', 'P3', 'P4'];
 
@@ -43,11 +39,6 @@ function enterAuction(
 }
 
 describe('King festa auction pacing (manual Continuar)', () => {
-  it('keeps delay constants documented (unused for auction auto-advance)', () => {
-    expect(FESTA_AUCTION_AI_DELAY_MS).toBe(1000);
-    expect(FESTA_AUCTION_RESULT_DELAY_MS).toBe(1200);
-  });
-
   it('runs only one AI auction action per tickFestaAi then waits', () => {
     const game = new KingPtGame();
     enterAuction(game);
