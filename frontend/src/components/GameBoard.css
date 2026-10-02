@@ -108,8 +108,8 @@
 }
 
 .game-board--spades-bid .spades-bid-dock {
-  margin: 0 auto max(2px, env(safe-area-inset-bottom, 0px));
-  width: min(100%, 380px);
+  margin: 0 auto max(10px, env(safe-area-inset-bottom, 0px));
+  width: min(100%, 420px);
   max-width: calc(100% - 12px);
 }
 

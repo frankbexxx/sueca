@@ -280,7 +280,6 @@ describe('Spades blind nil information boundary', () => {
           <SpadesBidMinibox
             currentBidderName="A"
             nilEnabled
-            blindNilEnabled={false}
             blindDecisionPending={pending}
             onDeclineBlindNil={() => undefined}
             onConfirm={() => undefined}

@@ -81,7 +81,8 @@ describe('Stage 8 game DOM semantic theming', () => {
   it('King KOH mini-table and Spades/King controls use semantic paint', () => {
     expect(variantModals).toMatch(/king-koh-table[\s\S]*?--sc-felt/);
     expect(variantModals).toMatch(/king-koh-table[\s\S]*?--sc-rail/);
-    expect(variantModals).toMatch(/\.spades-bid-select\s*\{[\s\S]*?--sc-text/);
+    expect(variantModals).toMatch(/\.spades-bid-dock \.spades-bid-option\s*\{[\s\S]*?--sc-text/);
+    expect(variantModals).not.toMatch(/\.spades-bid-select/);
     expect(variantModals).toMatch(/\.king-auction-toolbar__select\s*\{[\s\S]*?--sc-text/);
   });
 

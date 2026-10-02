@@ -2083,7 +2083,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         <SpadesBidMinibox
           currentBidderName={gameState.players[localPlayerIndex]?.name ?? 'Player'}
           nilEnabled={spadesState.nilEnabled}
-          blindNilEnabled={false}
           blindDecisionPending={isBlindNilDecisionPending(spadesState, localPlayerIndex)}
           onDeclineBlindNil={() => {
             if (!spadesCtrl) return;

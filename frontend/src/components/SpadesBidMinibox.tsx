@@ -6,17 +6,17 @@ import './VariantModals.css';
 interface SpadesBidMiniboxProps {
   currentBidderName: string;
   nilEnabled: boolean;
-  blindNilEnabled: boolean;
   /** Pre-view decision. Blind Nil is not offered again after this is false. */
   blindDecisionPending?: boolean;
   onDeclineBlindNil?: () => void;
   onConfirm: (bid: number, bidType: SpadesBidType) => void;
 }
 
+const NUMERIC_BIDS = Array.from({ length: 14 }, (_, value) => value);
+
 export const SpadesBidMinibox: React.FC<SpadesBidMiniboxProps> = ({
   currentBidderName,
   nilEnabled,
-  blindNilEnabled,
   blindDecisionPending = false,
   onDeclineBlindNil,
   onConfirm
@@ -35,21 +35,22 @@ export const SpadesBidMinibox: React.FC<SpadesBidMiniboxProps> = ({
     setBid(0);
   };
 
-  const handleBlindNil = () => {
-    setBidType('blindNil');
-    setBid(0);
-  };
-
   const handleConfirm = () => {
-    if (bidType === 'nil' || bidType === 'blindNil') {
-      onConfirm(0, bidType);
+    if (bidType === 'nil') {
+      onConfirm(0, 'nil');
       return;
     }
     onConfirm(bid, 'normal');
   };
 
+  const selectedLabel = bidType === 'nil' ? t.spadesBid.nilSelected : String(bid);
+
   return (
-    <div className="spades-bid-dock shell-panel">
+    <div
+      className="spades-bid-dock shell-panel"
+      data-testid="spades-bid-surface"
+      data-surface={blindDecisionPending ? 'preview' : 'normal'}
+    >
       <div className="spades-bid-dock__header">
         <span className="spades-bid-title">{t.spadesBid.title}</span>
         <span className="spades-bid-hint spades-bid-hint--primary">
@@ -75,70 +76,50 @@ export const SpadesBidMinibox: React.FC<SpadesBidMiniboxProps> = ({
         </div>
       ) : (
         <>
-          <div className="spades-bid-dock__row">
-            {bidType === 'normal' && (
-              <label className="spades-bid-control">
-                <span className="spades-bid-control__label">{t.spadesBid.selectBid}</span>
-                <select
-                  className="spades-bid-select"
-                  value={bid}
-                  onChange={(e) => handleNormalBidChange(Number(e.target.value))}
+          <p className="spades-bid-readout" aria-live="polite">
+            {selectedLabel}
+          </p>
+          <div
+            className="spades-bid-options"
+            role="group"
+            aria-label={t.spadesBid.selectBid}
+          >
+            {NUMERIC_BIDS.map((value) => {
+              const selected = bidType === 'normal' && bid === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  className={`sueca-btn sueca-btn--compact spades-bid-option${
+                    selected ? ' sueca-btn--toggle-on spades-bid-option--selected' : ''
+                  }`}
+                  aria-pressed={selected}
+                  onClick={() => handleNormalBidChange(value)}
                 >
-                  {Array.from({ length: 14 }, (_, value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  {value}
+                </button>
+              );
+            })}
+            {nilEnabled && (
+              <button
+                type="button"
+                className={`sueca-btn sueca-btn--compact spades-bid-option spades-bid-option--nil${
+                  bidType === 'nil' ? ' sueca-btn--toggle-on spades-bid-option--selected' : ''
+                }`}
+                aria-pressed={bidType === 'nil'}
+                onClick={handleNil}
+              >
+                {t.spadesBid.nil}
+              </button>
             )}
-            {(bidType === 'nil' || bidType === 'blindNil') && (
-              <span className="spades-bid-hint">
-                {bidType === 'nil' ? t.spadesBid.nilSelected : t.spadesBid.blindNilSelected}
-              </span>
-            )}
-            <button
-              type="button"
-              className="sueca-btn sueca-btn--primary sueca-btn--compact spades-bid-dock__confirm"
-              onClick={handleConfirm}
-            >
-              {t.spadesBid.confirm}
-            </button>
           </div>
-          {(nilEnabled || blindNilEnabled) && (
-            <div className="spades-bid-special">
-              {nilEnabled && (
-                <button
-                  type="button"
-                  className={`sueca-btn sueca-btn--compact${bidType === 'nil' ? ' sueca-btn--primary' : ''}`}
-                  onClick={handleNil}
-                >
-                  {t.spadesBid.nil}
-                </button>
-              )}
-              {blindNilEnabled && (
-                <button
-                  type="button"
-                  className={`sueca-btn sueca-btn--compact${bidType === 'blindNil' ? ' sueca-btn--primary' : ''}`}
-                  onClick={handleBlindNil}
-                >
-                  {t.spadesBid.blindNil}
-                </button>
-              )}
-              {bidType !== 'normal' && (
-                <button
-                  type="button"
-                  className="sueca-btn sueca-btn--compact"
-                  onClick={() => {
-                    setBidType('normal');
-                    setBid(4);
-                  }}
-                >
-                  {t.spadesBid.normalBid}
-                </button>
-              )}
-            </div>
-          )}
+          <button
+            type="button"
+            className="sueca-btn sueca-btn--primary sueca-btn--compact spades-bid-dock__confirm"
+            onClick={handleConfirm}
+          >
+            {t.spadesBid.confirm}
+          </button>
         </>
       )}
     </div>

@@ -64,7 +64,8 @@ describe('Stage 9 responsive theme hardening', () => {
   it('key mobile form controls use ≥16px font-size (iOS zoom guard)', () => {
     expect(more).toMatch(/\.more-select,\s*\n\.more-name-input\s*\{[\s\S]*?font-size:\s*1rem/);
     expect(playSetup).toMatch(/\.form-input,\s*\n\.form-select\s*\{[\s\S]*?font-size:\s*1rem/);
-    expect(variantModals).toMatch(/\.spades-bid-select\s*\{[\s\S]*?font-size:\s*1rem/);
+    expect(variantModals).toMatch(/\.spades-bid-dock \.spades-bid-option\s*\{[\s\S]*?font-size:\s*16px/);
+    expect(variantModals).not.toMatch(/\.spades-bid-select/);
     expect(variantModals).toMatch(/\.king-auction-toolbar__select\s*\{[\s\S]*?font-size:\s*1rem/);
     expect(variantModals).toMatch(/\.king-festa-setup-select\s*\{[\s\S]*?font-size:\s*1rem/);
   });
