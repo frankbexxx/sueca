@@ -73,6 +73,200 @@ export function getHeartsState(state: GameState): HeartsVariantState {
   return vs ? { ...defaults, ...vs } : defaults;
 }
 
+const PASS_DIRECTIONS: readonly PassDirection[] = ['left', 'right', 'across', 'hold'];
+
+export type HeartsResumeRejection =
+  | 'missing_variant_state'
+  | 'malformed_variant_state'
+  | 'invalid_pass_direction'
+  | 'invalid_pass_indices'
+  | 'invalid_scores'
+  | 'invalid_round_points'
+  | 'invalid_hands'
+  | 'impossible_pass_phase'
+  | 'impossible_leader'
+  | 'incomplete_variant_state';
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isSeat(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 3;
+}
+
+function isNonNegativeInt(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
+function isScoreRow(value: unknown): value is number[] {
+  return Array.isArray(value) && value.length === 4 && value.every(isNonNegativeInt);
+}
+
+function isCardShape(value: unknown): value is Card {
+  if (!value || typeof value !== 'object') return false;
+  const card = value as Card;
+  return typeof card.id === 'string' && card.id.length > 0
+    && typeof card.rank === 'string'
+    && typeof card.suit === 'string';
+}
+
+function optionalBool(value: unknown, fallback: boolean): boolean | null {
+  if (value === undefined) return fallback;
+  return typeof value === 'boolean' ? value : null;
+}
+
+function optionalScoreRow(value: unknown, fallback: number[]): number[] | null {
+  if (value === undefined) return [...fallback];
+  if (!isScoreRow(value) || value.some((score) => score > 26)) return null;
+  return [...value];
+}
+
+/**
+ * Recognizable Hearts resume payload.
+ * Copies and checks the saved object. Fills only optional fields that older
+ * complete saves may omit. Never invents a pass, scores, or a leader.
+ */
+export function assessHeartsResume(
+  raw: unknown,
+  game: GameState
+): { ok: true; hearts: HeartsVariantState } | { ok: false; reason: HeartsResumeRejection } {
+  if (raw == null) return { ok: false, reason: 'missing_variant_state' };
+  if (!isPlainObject(raw)) return { ok: false, reason: 'malformed_variant_state' };
+
+  if (!PASS_DIRECTIONS.includes(raw.passDirection as PassDirection)) {
+    return { ok: false, reason: 'invalid_pass_direction' };
+  }
+  if (typeof raw.waitingForPass !== 'boolean') {
+    return { ok: false, reason: 'incomplete_variant_state' };
+  }
+  if (typeof raw.heartsBroken !== 'boolean') {
+    return { ok: false, reason: 'incomplete_variant_state' };
+  }
+  if (!isScoreRow(raw.playerScores)) return { ok: false, reason: 'invalid_scores' };
+  if (!isScoreRow(raw.roundPoints) || raw.roundPoints.some((points) => points > 26)) {
+    return { ok: false, reason: 'invalid_round_points' };
+  }
+  if (raw.roundPoints.reduce((sum, points) => sum + points, 0) > 26) {
+    return { ok: false, reason: 'invalid_round_points' };
+  }
+
+  const handsIssue = heartsHandsIssue(game);
+  if (handsIssue) return { ok: false, reason: handsIssue };
+
+  const localSeat = isSeat(game.localPlayerIndex) ? game.localPlayerIndex : 0;
+  if (passIndicesIssue(raw.humanPassIndices, game.players[localSeat].hand.length)) {
+    return { ok: false, reason: 'invalid_pass_indices' };
+  }
+
+  if (raw.waitingForPass) {
+    const trickEmpty = Array.isArray(game.currentTrick) && game.currentTrick.length === 0;
+    const dealt = game.players.every((player) => player.hand.length === 13);
+    if (!trickEmpty || !dealt || game.waitingForRoundEnd || game.isGameOver) {
+      return { ok: false, reason: 'impossible_pass_phase' };
+    }
+  } else if (openingLeaderImpossible(game)) {
+    return { ok: false, reason: 'impossible_leader' };
+  }
+
+  const lastRoundDeltas = optionalScoreRow(raw.lastRoundDeltas, [0, 0, 0, 0]);
+  const heartsTakenCount = raw.heartsTakenCount === undefined
+    ? 0
+    : isNonNegativeInt(raw.heartsTakenCount) && raw.heartsTakenCount <= 13
+      ? raw.heartsTakenCount
+      : null;
+  const queenSpadesTaken = optionalBool(raw.queenSpadesTaken, false);
+  const penaltyCardsTaken = optionalPenaltyCards(raw.penaltyCardsTaken);
+  const waitingForEarlyEnd = optionalBool(raw.waitingForEarlyEnd, false);
+  const scoringFrozen = optionalBool(raw.scoringFrozen, false);
+  const earlyEndOffered = optionalBool(raw.earlyEndOffered, false);
+  if (
+    !lastRoundDeltas ||
+    heartsTakenCount == null ||
+    queenSpadesTaken == null ||
+    !penaltyCardsTaken ||
+    waitingForEarlyEnd == null ||
+    scoringFrozen == null ||
+    earlyEndOffered == null
+  ) {
+    return { ok: false, reason: 'incomplete_variant_state' };
+  }
+
+  return {
+    ok: true,
+    hearts: {
+      heartsBroken: raw.heartsBroken,
+      playerScores: [...raw.playerScores],
+      roundPoints: [...raw.roundPoints],
+      lastRoundDeltas,
+      waitingForPass: raw.waitingForPass,
+      passDirection: raw.passDirection as PassDirection,
+      humanPassIndices: [...(raw.humanPassIndices as number[])],
+      passExchangeUntilMs: null,
+      heartsTakenCount,
+      queenSpadesTaken,
+      penaltyCardsTaken,
+      waitingForEarlyEnd,
+      scoringFrozen,
+      earlyEndOffered
+    }
+  };
+}
+
+function heartsHandsIssue(game: GameState): HeartsResumeRejection | null {
+  if (!Array.isArray(game.players) || game.players.length !== 4) return 'invalid_hands';
+  if (!Array.isArray(game.currentTrick) || game.currentTrick.length > 4) return 'invalid_hands';
+  const seen = new Set<string>();
+  let count = 0;
+  for (const player of game.players) {
+    if (!player || !Array.isArray(player.hand) || player.hand.length > 13) return 'invalid_hands';
+    for (const card of player.hand) {
+      if (!isCardShape(card) || seen.has(card.id)) return 'invalid_hands';
+      seen.add(card.id);
+      count += 1;
+    }
+  }
+  for (const card of game.currentTrick) {
+    if (!isCardShape(card) || seen.has(card.id)) return 'invalid_hands';
+    seen.add(card.id);
+    count += 1;
+  }
+  return count > 52 ? 'invalid_hands' : null;
+}
+
+function passIndicesIssue(indices: unknown, handLength: number): boolean {
+  if (!Array.isArray(indices) || indices.length > 3) return true;
+  const seen = new Set<number>();
+  for (const index of indices) {
+    if (!Number.isInteger(index) || (index as number) < 0 || (index as number) >= handLength) return true;
+    if (seen.has(index as number)) return true;
+    seen.add(index as number);
+  }
+  return false;
+}
+
+function openingLeaderImpossible(game: GameState): boolean {
+  if (game.isFirstTrick !== true) return false;
+  if (game.waitingForRoundStart || game.waitingForRoundEnd || game.waitingForTrickEnd || game.isGameOver) {
+    return false;
+  }
+  if (!Array.isArray(game.currentTrick) || game.currentTrick.length !== 0) return false;
+  if (!isSeat(game.currentPlayerIndex)) return true;
+  const hand = game.players[game.currentPlayerIndex]?.hand ?? [];
+  return !hand.some((card) => card.rank === '2' && card.suit === 'clubs');
+}
+
+function optionalPenaltyCards(value: unknown): Card[][] | null {
+  if (value === undefined) return emptyPenaltyCardsTaken();
+  if (!Array.isArray(value) || value.length !== 4) return null;
+  const taken: Card[][] = [];
+  for (const pile of value) {
+    if (!Array.isArray(pile) || !pile.every(isCardShape)) return null;
+    taken.push([...pile]);
+  }
+  return taken;
+}
+
 export function isHeartsPassExchangeLocked(
   hearts: { passExchangeUntilMs?: number | null },
   now = Date.now()
@@ -545,10 +739,12 @@ export class HeartsGame extends BaseGameAdapter {
 
   restoreState(state: GameState): GameState {
     const restored = JSON.parse(JSON.stringify(state)) as GameState;
+    const assessed = assessHeartsResume(restored.variantState?.hearts, restored);
+    if (!assessed.ok) {
+      throw new Error(`Hearts restoreState rejected: ${assessed.reason}`);
+    }
+    restored.variantState = { ...restored.variantState, hearts: assessed.hearts };
     this.state = restored;
-    const hearts = getHeartsState(restored);
-    hearts.passExchangeUntilMs = null;
-    restored.variantState = { ...restored.variantState, hearts };
     return this.getCurrentState();
   }
 
