@@ -1,11 +1,12 @@
 import type { GameVariant } from '../types/game';
+import { getGamePacingPolicy } from '../models/games/gamePacingPolicy';
 
 /**
  * UX-KING-FINAL-01 — King keeps the final score sheet until an explicit CTA.
  * Other variants still use the delayed Home exit.
  */
 export function shouldAutoExitAfterGameOver(variant: GameVariant): boolean {
-  return variant !== 'king';
+  return getGamePacingPolicy(variant).finalResultHoldMs !== null;
 }
 
 /**

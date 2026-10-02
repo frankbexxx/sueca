@@ -1,33 +1,26 @@
 /**
  * Sueca mid-trick AI pacing (presentation delay only).
- * Does not change AI decision logic, ritual timings, or other games.
+ * Cross-game resolution lives in gamePacingPolicy. Ritual timings stay in suecaHandRitual.
  */
 
 import type { GameVariant } from '../../types/game';
-import { AI_PLAY_DELAY_MS } from '../../constants/gameConstants';
+import { cardPlayDelayMs, getGamePacingPolicy } from './gamePacingPolicy';
 
 /** Empty trick — AI leads. */
-export const SUECA_AI_LEAD_DELAY_MS = 1000;
+export const SUECA_AI_LEAD_DELAY_MS = getGamePacingPolicy('sueca').cardPlay.aiLeadMs;
 
 /** Trick already has card(s) — AI follows. */
-export const SUECA_AI_FOLLOW_DELAY_MS = 800;
+export const SUECA_AI_FOLLOW_DELAY_MS = getGamePacingPolicy('sueca').cardPlay.aiFollowMs;
 
 /** Lead when trick is empty; follow otherwise. */
 export function suecaAiPlayDelayMs(trickLength: number): number {
-  const len = Number.isFinite(trickLength) ? Math.max(0, Math.floor(trickLength)) : 0;
-  return len === 0 ? SUECA_AI_LEAD_DELAY_MS : SUECA_AI_FOLLOW_DELAY_MS;
+  return cardPlayDelayMs('sueca', trickLength);
 }
 
-/**
- * Resolve auto-play delay for the current variant.
- * Sueca uses lead/follow pacing; all other variants keep AI_PLAY_DELAY_MS.
- */
+/** Resolve auto-play delay from that variant's pacing policy. */
 export function resolveAiPlayDelayMs(opts: {
   variant: GameVariant;
   trickLength: number;
 }): number {
-  if (opts.variant === 'sueca') {
-    return suecaAiPlayDelayMs(opts.trickLength);
-  }
-  return AI_PLAY_DELAY_MS;
+  return cardPlayDelayMs(opts.variant, opts.trickLength);
 }

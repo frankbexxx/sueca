@@ -28,14 +28,16 @@ import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMap
 import { getCardImagePath } from '../constants/cardAssets';
 import { isDevMode, publicUrl } from '../config/runtimeEnv';
 import {
-  AI_PLAY_DELAY_MS,
-  FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
   ROUND_START_SFX_DELAY_MS,
-  SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_COLLECT_DELAY_MS
 } from '../constants/gameConstants';
 import { resolveAiPlayDelayMs } from '../models/games/suecaAiPacing';
+import {
+  kingFestaTickDelayMs,
+  kingSyntheticScoreHoldMs,
+  spadesAiBidDelayMs
+} from '../models/games/gamePacingPolicy';
 import { getDealDelayMs } from '../constants/dealAnimationPreferences';
 import { createGameOverExitController, shouldAutoExitAfterGameOver } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
@@ -1044,7 +1046,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const timer = window.setTimeout(() => {
       kingCtrl.promoteSyntheticRoundComplete();
       setGameState(gameAdapter.getCurrentState());
-    }, SYNTHETIC_ROUND_COMPLETE_HOLD_MS);
+    }, kingSyntheticScoreHoldMs());
 
     return () => window.clearTimeout(timer);
   }, [
@@ -1212,7 +1214,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
    * Auto-play effect for AI players
    * Automatically triggers AI card play when it's an AI player's turn
    * Only runs if game is active, not paused, and not in a waiting state
-   * Sueca: lead 1000 ms / follow 800 ms; other variants keep AI_PLAY_DELAY_MS.
+   * Card-play delay comes from that variant's pacing policy.
    */
   useEffect(() => {
     const gate = aiTurnGateRef.current;
@@ -1572,9 +1574,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!kingCtrl.shouldTickFestaAi(gameState, rulesPresetId)) return;
 
     const festaPhase = kingCtrl.readPtState(gameState).festaPhase;
-    // Auction voices are manual (Continuar). Only non-auction festa AI keeps a short delay.
-    const delayMs =
-      festaPhase === 'auction' ? 0 : FESTA_AI_STEP_DELAY_MS;
+    const delayMs = kingFestaTickDelayMs(festaPhase);
 
     const timer = window.setTimeout(() => {
       const before = kingCtrl.readPtState(gameState);
@@ -1624,7 +1624,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const timer = window.setTimeout(() => {
       spadesCtrl.tickBidAi();
       setGameState(gameAdapter.getCurrentState());
-    }, AI_PLAY_DELAY_MS);
+    }, spadesAiBidDelayMs());
     return () => window.clearTimeout(timer);
   }, [
     gameAdapter,

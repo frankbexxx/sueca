@@ -3,7 +3,10 @@
  */
 
 // AI and timing
-export const AI_PLAY_DELAY_MS = 1500; // Delay before AI plays a card (1.5s)
+/** Card-play delay for Spades, Hearts, and King. Not the Spades bid delay. */
+export const AI_PLAY_DELAY_MS = 1500;
+/** Spades AI bid pause. Same duration as card play today; a separate beat. */
+export const SPADES_AI_BID_DELAY_MS = 1500;
 /** Observable King festa auction — one AI bid/pass per tick. */
 export const FESTA_AUCTION_AI_DELAY_MS = 1000;
 /** Pause after last auction action before negotiation / fallback. */
