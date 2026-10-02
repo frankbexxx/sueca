@@ -18,6 +18,7 @@ import type {
   PlayDirection
 } from '../../types/game';
 import { asSeat, firstLeader, oppositeDirection, seatAtOffset } from './suecaRules';
+import { isMatchResult } from '../matchResult';
 import { cloneGameState } from './cloneGameState';
 
 /** Canonical Sueca GameState schema version (Phase 6). */
@@ -189,6 +190,7 @@ function baseFromPartial(raw: Partial<GameState>): GameState {
     round: typeof raw.round === 'number' && raw.round >= 1 ? raw.round : 1,
     isGameOver: raw.isGameOver ?? false,
     winner: raw.winner ?? null,
+    ...(isMatchResult(raw.matchResult) ? { matchResult: raw.matchResult } : {}),
     lastTrickWinner: raw.lastTrickWinner ?? null,
     waitingForTrickEnd: raw.waitingForTrickEnd ?? false,
     nextTrickLeader: raw.nextTrickLeader ?? null,

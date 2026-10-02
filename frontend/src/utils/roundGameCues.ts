@@ -1,6 +1,7 @@
-import type { GameVariant } from '../types/game';
+import type { MatchResult } from '../types/matchResult';
+import { audioCueFromMatchResult, type HumanAudioCue } from '../models/matchResult';
 
-export type HumanGameAudioResult = 'win' | 'lose' | 'draw';
+export type HumanGameAudioResult = HumanAudioCue;
 
 /**
  * Whether an intermediate round-end cue should fire.
@@ -18,38 +19,15 @@ export function shouldPlayRoundEndCue(args: {
 
 /**
  * Human win/lose/draw for final game-result SFX.
- * Hearts: lowest score wins. King: highest score wins.
- * Sueca/Spades: local team vs engine `winner` (1|2).
- * Tied best scores → draw (no win/lose cue).
+ * Reads the engine match result. Does not inspect scores.
  */
 export function resolveHumanGameAudioResult(args: {
-  variant: GameVariant;
-  winner: 1 | 2 | null;
+  matchResult: MatchResult | null | undefined;
   localPlayerIndex: number;
-  players: Array<{ team?: 1 | 2 }>;
-  individualScores?: number[] | null;
+  localTeam: 1 | 2 | null;
 }): HumanGameAudioResult | null {
-  const { variant, winner, localPlayerIndex, players, individualScores } = args;
-
-  if (variant === 'hearts') {
-    if (!individualScores || individualScores.length < 4) return null;
-    const best = Math.min(...individualScores);
-    const tied = individualScores.filter((s) => s === best).length > 1;
-    if (tied) return 'draw';
-    return individualScores.indexOf(best) === localPlayerIndex ? 'win' : 'lose';
-  }
-
-  if (variant === 'king') {
-    if (!individualScores || individualScores.length < 4) return null;
-    const best = Math.max(...individualScores);
-    const tied = individualScores.filter((s) => s === best).length > 1;
-    if (tied) return 'draw';
-    return individualScores.indexOf(best) === localPlayerIndex ? 'win' : 'lose';
-  }
-
-  if (variant !== 'sueca' && variant !== 'spades') return null;
-  if (winner == null) return null;
-  const us = players[localPlayerIndex]?.team;
-  if (us == null) return null;
-  return us === winner ? 'win' : 'lose';
+  return audioCueFromMatchResult(args.matchResult, {
+    playerIndex: args.localPlayerIndex,
+    team: args.localTeam
+  });
 }

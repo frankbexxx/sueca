@@ -7,6 +7,7 @@ import {
   PlayDirection,
 } from '../types/game';
 import { mpWarn } from '../utils/mpDebug';
+import { isMatchResult } from '../models/matchResult';
 import {
   migrateSuecaPersistedState,
   stampSuecaSchemaV2,
@@ -115,6 +116,7 @@ export function normalizeGameState(
     round: source.round ?? 1,
     isGameOver: source.isGameOver ?? false,
     winner: source.winner ?? null,
+    ...(isMatchResult(source.matchResult) ? { matchResult: source.matchResult } : {}),
     lastTrickWinner: source.lastTrickWinner ?? null,
     waitingForTrickEnd: source.waitingForTrickEnd ?? false,
     nextTrickLeader: source.nextTrickLeader ?? null,

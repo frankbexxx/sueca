@@ -44,6 +44,7 @@ import {
   resolveHumanGameAudioResult,
   shouldPlayRoundEndCue
 } from '../utils/roundGameCues';
+import { historyFieldsFromMatchResult } from '../models/matchResult';
 import { createVariantFlowControllers } from '../flow/createVariantFlowControllers';
 import { buildTableRenderModel } from '../table/buildTableRenderModel';
 import {
@@ -1404,10 +1405,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       matchHistoryIdRef.current = null;
       return;
     }
-    if (!gameAdapter || !gameState.winner) return;
+    if (!gameAdapter || !gameState.matchResult) return;
     if (gameOverStatsRecordedRef.current) return;
     gameOverStatsRecordedRef.current = true;
 
+    const result = gameState.matchResult;
     const finishedAt = Date.now();
     const playerSnapshots = snapshotPlayersFromGame(gameState.players);
     const namesKey = playerSnapshots.map((p) => p.name).join(',');
@@ -1420,151 +1422,77 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     recordGameFinished();
     void showInterstitialIfDue();
     const localIdx = isMultiplayer ? multiplayerPlayerIndex : 0;
+    const localTeam = gameState.players[localIdx]?.team ?? null;
+    const fields = historyFieldsFromMatchResult(result, localTeam, localIdx);
+    const playerWon = fields.playerWon;
 
-    if (heartsCtrl) {
-      const scores = heartsCtrl.readState(gameState).playerScores;
-      const winnerIndex = scores.indexOf(Math.min(...scores));
-      const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
-      const playerWon = winnerIndex === localIdx;
-      const summary = `${winnerName} · ${scores.join('/')}`;
-      const matchId = bindMatchId(
-        `hearts|${rulesPresetId}|${scores.join('/')}|${namesKey}|${winnerIndex}`
-      );
-      recordGameResult(gameVariant, playerWon);
-      recordMatchHistory({
-        id: matchId,
-        idempotencyKey: matchId,
-        completedAt: finishedAt,
-        gameVariant,
-        rulesPresetId,
-        difficulty: aiDifficulty,
-        players: playerSnapshots,
-        localPlayerIndex: localIdx,
-        playerWon,
-        resultKind: 'individual',
-        winner: winnerIndex,
-        finalScores: { players: [...scores] },
-        summary
-      });
-      recordFinishedGame({
-        variant: gameVariant,
-        finishedAt,
-        playerWon,
-        summary
-      });
-      void completeDiagnosticMatch({
-        playerWon,
-        winner: winnerIndex,
-        finalScores: { players: [...scores] },
-        summary
-      });
-      const audioResult = resolveHumanGameAudioResult({
-        variant: 'hearts',
-        winner: gameState.winner,
-        localPlayerIndex: localIdx,
-        players: gameState.players,
-        individualScores: scores
-      });
-      if (audioResult === 'win') playGameWinSound();
-      else if (audioResult === 'lose') playGameLoseSound();
-    } else if (kingCtrl) {
-      const scores = kingCtrl.readPlayerScores(gameState);
-      const winnerIndex = scores.indexOf(Math.max(...scores));
-      const winnerName = gameState.players[winnerIndex]?.name ?? 'Player';
-      const playerWon = winnerIndex === localIdx;
-      const summary = `${winnerName} · ${scores.join('/')}`;
-      const matchId = bindMatchId(
-        `king|${rulesPresetId}|${scores.join('/')}|${namesKey}|${winnerIndex}`
-      );
-      recordGameResult(gameVariant, playerWon);
-      recordMatchHistory({
-        id: matchId,
-        idempotencyKey: matchId,
-        completedAt: finishedAt,
-        gameVariant,
-        rulesPresetId,
-        difficulty: aiDifficulty,
-        players: playerSnapshots,
-        localPlayerIndex: localIdx,
-        playerWon,
-        resultKind: 'individual',
-        winner: winnerIndex,
-        finalScores: { players: [...scores] },
-        summary
-      });
-      recordFinishedGame({
-        variant: gameVariant,
-        finishedAt,
-        playerWon,
-        summary
-      });
-      void completeDiagnosticMatch({
-        playerWon,
-        winner: winnerIndex,
-        finalScores: { players: [...scores] },
-        summary
-      });
-      const audioResult = resolveHumanGameAudioResult({
-        variant: 'king',
-        winner: gameState.winner,
-        localPlayerIndex: localIdx,
-        players: gameState.players,
-        individualScores: scores
-      });
-      if (audioResult === 'win') playGameWinSound();
-      else if (audioResult === 'lose') playGameLoseSound();
+    let summary: string;
+    let finalScores: { team1?: number; team2?: number; players?: number[] };
+    let identity: string;
+
+    if (result.kind === 'individual') {
+      const scores = heartsCtrl
+        ? heartsCtrl.readState(gameState).playerScores
+        : kingCtrl
+          ? kingCtrl.readPlayerScores(gameState)
+          : [];
+      identity = result.draw
+        ? `tie:${result.winnerSeats.join(',')}`
+        : `seat:${result.winnerSeats[0] ?? ''}`;
+      summary = result.draw
+        ? `${t.modals.resultTie} · ${scores.join('/')}`
+        : `${gameState.players[result.winnerSeats[0] ?? 0]?.name ?? 'Player'} · ${scores.join('/')}`;
+      finalScores = { players: [...scores] };
     } else {
-      const us = gameState.players[localIdx]?.team;
-      const playerWon = us === gameState.winner;
-      const winnerLabel = gameState.winner === us ? t.gameBoard.us : t.gameBoard.them;
+      const winnerLabel = result.winnerTeam === localTeam ? t.gameBoard.us : t.gameBoard.them;
       const scoreSummary = `${gameState.gameScore.team1}-${gameState.gameScore.team2}`;
-      const summary = `${winnerLabel} · ${scoreSummary}`;
-      const matchId = bindMatchId(
-        `${gameVariant}|${rulesPresetId}|${scoreSummary}|${namesKey}|${gameState.winner}`
-      );
-      recordGameResult(gameVariant, playerWon);
-      recordMatchHistory({
-        id: matchId,
-        idempotencyKey: matchId,
-        completedAt: finishedAt,
-        gameVariant,
-        rulesPresetId,
-        difficulty: aiDifficulty,
-        players: playerSnapshots,
-        localPlayerIndex: localIdx,
-        playerWon,
-        resultKind: 'team',
-        winner: gameState.winner,
-        finalScores: {
-          team1: gameState.gameScore.team1,
-          team2: gameState.gameScore.team2
-        },
-        summary
-      });
-      recordFinishedGame({
-        variant: gameVariant,
-        finishedAt,
-        playerWon,
-        summary
-      });
-      void completeDiagnosticMatch({
-        playerWon,
-        winner: gameState.winner,
-        finalScores: {
-          team1: gameState.gameScore.team1,
-          team2: gameState.gameScore.team2
-        },
-        summary
-      });
-      const audioResult = resolveHumanGameAudioResult({
-        variant: gameVariant,
-        winner: gameState.winner,
-        localPlayerIndex: localIdx,
-        players: gameState.players
-      });
-      if (audioResult === 'win') playGameWinSound();
-      else if (audioResult === 'lose') playGameLoseSound();
+      identity = `team:${result.winnerTeam ?? ''}`;
+      summary = `${winnerLabel} · ${scoreSummary}`;
+      finalScores = {
+        team1: gameState.gameScore.team1,
+        team2: gameState.gameScore.team2
+      };
     }
+
+    const matchId = bindMatchId(
+      `${gameVariant}|${rulesPresetId}|${summary}|${namesKey}|${identity}`
+    );
+    recordGameResult(gameVariant, playerWon);
+    recordMatchHistory({
+      id: matchId,
+      idempotencyKey: matchId,
+      completedAt: finishedAt,
+      gameVariant,
+      rulesPresetId,
+      difficulty: aiDifficulty,
+      players: playerSnapshots,
+      localPlayerIndex: localIdx,
+      playerWon,
+      resultKind: fields.resultKind,
+      winner: fields.winner,
+      ...(fields.tiedSeats ? { tiedSeats: fields.tiedSeats } : {}),
+      finalScores,
+      summary
+    });
+    recordFinishedGame({
+      variant: gameVariant,
+      finishedAt,
+      playerWon,
+      summary
+    });
+    void completeDiagnosticMatch({
+      playerWon,
+      winner: fields.winner,
+      finalScores,
+      summary
+    });
+    const audioResult = resolveHumanGameAudioResult({
+      matchResult: result,
+      localPlayerIndex: localIdx,
+      localTeam
+    });
+    if (audioResult === 'win') playGameWinSound();
+    else if (audioResult === 'lose') playGameLoseSound();
 
     clearGameSession(gameVariant);
     // UX-KING-FINAL-01 — King final score sheet must stay until explicit CTA.
@@ -1577,7 +1505,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     kingCtrl,
     gameState,
     gameState.isGameOver,
-    gameState.winner,
+    gameState.matchResult,
     gameState.players,
     gameState.gameScore,
     gameState.variantState,
@@ -1589,7 +1517,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     playGameLoseSound,
     playGameWinSound,
     t.gameBoard.them,
-    t.gameBoard.us
+    t.gameBoard.us,
+    t.modals.resultTie
   ]);
 
   useEffect(() => {

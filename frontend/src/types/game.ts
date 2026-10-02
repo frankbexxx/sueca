@@ -1,3 +1,5 @@
+import type { MatchResult } from './matchResult';
+
 export type Suit = 'clubs' | 'diamonds' | 'hearts' | 'spades';
 export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'Q' | 'J' | 'K' | 'A';
 
@@ -49,7 +51,14 @@ export interface GameState {
   completedPentes: Array<{ team1: number; team2: number }>; // Array of completed pentes (stand alone pentes from 120 points)
   round: number;
   isGameOver: boolean;
+  /**
+   * Compatibility-only team id.
+   * Sueca and Spades store the winning team. Hearts and King still write the
+   * previous team-style value. Match outcome is `matchResult`.
+   */
   winner: 1 | 2 | null;
+  /** Set by the variant engine when the match has a final result. Absent while play continues. */
+  matchResult?: MatchResult | null;
   lastTrickWinner: number | null;
   waitingForTrickEnd: boolean;
   nextTrickLeader: number | null;

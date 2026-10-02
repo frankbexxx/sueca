@@ -13,6 +13,7 @@ import {
 import { settleHeartsRoundDeltas } from './heartsRoundDisplay';
 import { HeartsVariantFlow } from './variantFlowApi';
 import { recordHeartsPass } from '../../diagnostics/session';
+import { individualMatchResult } from '../matchResult';
 
 const TARGET_SCORE = 100;
 
@@ -470,11 +471,17 @@ export class HeartsGame extends BaseGameAdapter {
     const max = Math.max(...hearts.playerScores);
     if (max >= TARGET_SCORE) {
       s.isGameOver = true;
+      const best = Math.min(...hearts.playerScores);
+      const winnerSeats = hearts.playerScores.flatMap((score, seat) =>
+        score === best ? [seat] : []
+      );
+      s.matchResult = individualMatchResult(winnerSeats);
       const loser = hearts.playerScores.indexOf(max);
       s.winner = loser < 2 ? 2 : 1;
       s.waitingForGameStart = true;
       return;
     }
+    s.matchResult = null;
     s.waitingForRoundEnd = true;
     s.scores = {
       team1: hearts.playerScores[0] + hearts.playerScores[2],

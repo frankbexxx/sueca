@@ -3,6 +3,7 @@ import { GameState, Player, Suit, AIDifficulty, Card } from '../../types/game';
 import { chooseKingPtCard } from '../../ai/games/king/KingPlayStrategy';
 import { runOneAiFestaStep, KingAuctionController } from '../../ai/games/king/KingAuctionStrategy';
 import { Deck } from '../Deck';
+import { individualMatchResult } from '../matchResult';
 import { trickWinnerIndex } from './trickUtils';
 import {
   auctionBidderOrder,
@@ -1467,11 +1468,16 @@ export class KingPtGame extends BaseGameAdapter {
     if (king.gameIndex + 1 >= KING_TOTAL_GAMES) {
       const max = Math.max(...king.playerScores);
       const idx = king.playerScores.indexOf(max);
+      const winnerSeats = king.playerScores.flatMap((score, seat) =>
+        score === max ? [seat] : []
+      );
       this.state!.isGameOver = true;
+      this.state!.matchResult = individualMatchResult(winnerSeats);
       this.state!.winner = idx < 2 ? 1 : 2;
       this.state!.waitingForGameStart = true;
       king.phase = 'game_over';
     } else {
+      this.state!.matchResult = null;
       this.state!.waitingForRoundEnd = true;
     }
     this.syncKing(king);

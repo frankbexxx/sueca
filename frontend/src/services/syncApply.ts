@@ -63,6 +63,7 @@ export function applyRemoteHistoryWires(wires: SyncHistoryRecordWire[]): boolean
         playerWon: w.payload.playerWon as boolean | undefined,
         resultKind: (w.payload.resultKind as MatchHistoryRecord['resultKind']) || 'unknown',
         winner: (w.payload.winner as number | null | undefined) ?? null,
+        ...(Array.isArray(w.payload.tiedSeats) ? { tiedSeats: w.payload.tiedSeats as number[] } : {}),
         finalScores:
           w.payload.finalScores && typeof w.payload.finalScores === 'object'
             ? (w.payload.finalScores as MatchHistoryRecord['finalScores'])

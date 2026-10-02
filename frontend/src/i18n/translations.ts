@@ -99,6 +99,7 @@ export interface Translations {
     heartsGameOverTitle: string;
     heartsWinner: (name: string) => string;
     heartsLoser: (name: string) => string;
+    resultTie: string;
     heartsFinalScores: string;
   };
 
@@ -908,6 +909,7 @@ export const translations: Record<Language, Translations> = {
       heartsGameOverTitle: 'Fim do jogo',
       heartsWinner: (name) => `${name} venceu (menos pontos)`,
       heartsLoser: (name) => `${name} perdeu (100+ pontos)`,
+      resultTie: 'Empate',
       heartsFinalScores: 'Pontuação final'
     },
     gameMenu: {
@@ -1378,6 +1380,7 @@ export const translations: Record<Language, Translations> = {
       heartsGameOverTitle: 'Game over',
       heartsWinner: (name) => `${name} wins (lowest score)`,
       heartsLoser: (name) => `${name} lost (100+ points)`,
+      resultTie: 'Tie',
       heartsFinalScores: 'Final scores'
     },
     gameMenu: {

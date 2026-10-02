@@ -68,8 +68,10 @@ export interface MatchHistoryRecord {
   localPlayerIndex?: number;
   playerWon?: boolean;
   resultKind: MatchResultKind;
-  /** Winning team (1|2) or winning player index for individual games. */
+  /** Winning team (1|2) or the unique winning seat. Null on an individual tie. */
   winner?: number | null;
+  /** Seats that share the winning score. Omitted when there is a single winner. */
+  tiedSeats?: number[];
   finalScores: MatchFinalScores;
   /** Compact display line (legacy finished summary compatible). */
   summary: string;
@@ -97,6 +99,7 @@ export interface RecordMatchHistoryInput {
   playerWon?: boolean;
   resultKind?: MatchResultKind;
   winner?: number | null;
+  tiedSeats?: number[];
   finalScores: MatchFinalScores;
   summary: string;
 }
@@ -185,7 +188,9 @@ export function isMatchHistoryRecord(value: unknown): value is MatchHistoryRecor
     r.players.every(isPlayerSnapshot) &&
     isFinalScores(r.finalScores) &&
     typeof r.summary === 'string' &&
-    typeof r.schemaVersion === 'number'
+    typeof r.schemaVersion === 'number' &&
+    (r.tiedSeats === undefined ||
+      (Array.isArray(r.tiedSeats) && r.tiedSeats.every((n) => typeof n === 'number' && Number.isInteger(n))))
   );
 }
 
@@ -385,6 +390,7 @@ export function recordMatchHistory(
       playerWon: input.playerWon,
       resultKind: input.resultKind ?? 'unknown',
       winner: input.winner ?? null,
+      ...(input.tiedSeats && input.tiedSeats.length > 0 ? { tiedSeats: [...input.tiedSeats] } : {}),
       finalScores: { ...input.finalScores },
       summary: input.summary,
       buildVersion: getDurableBuildVersion(),

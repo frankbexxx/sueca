@@ -12,6 +12,7 @@ import {
 } from './spades/spadesRules';
 import { SpadesVariantFlow } from './variantFlowApi';
 import { recordSpadesBid } from '../../diagnostics/session';
+import { teamMatchResult } from '../matchResult';
 
 const WINNING_SCORE = 500;
 const BAG_PENALTY_EVERY = 10;
@@ -762,6 +763,7 @@ export class SpadesGame extends BaseGameAdapter {
       if (team1Reached && team2Reached && s.gameScore.team1 === s.gameScore.team2) {
         s.isGameOver = false;
         s.winner = null;
+        s.matchResult = null;
         s.waitingForGameStart = false;
         s.waitingForRoundEnd = true;
         return;
@@ -776,11 +778,13 @@ export class SpadesGame extends BaseGameAdapter {
               : 2;
       s.isGameOver = true;
       s.winner = winner;
+      s.matchResult = teamMatchResult(winner);
       s.waitingForGameStart = true;
       s.waitingForRoundEnd = false;
       return;
     }
 
+    s.matchResult = null;
     s.waitingForRoundEnd = true;
   }
 

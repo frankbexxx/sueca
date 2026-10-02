@@ -1,4 +1,5 @@
 import { resolveHumanGameAudioResult, shouldPlayRoundEndCue } from './roundGameCues';
+import { individualMatchResult, teamMatchResult } from '../models/matchResult';
 
 describe('shouldPlayRoundEndCue', () => {
   it('plays once on rising edge when not game over', () => {
@@ -50,65 +51,50 @@ describe('shouldPlayRoundEndCue', () => {
 });
 
 describe('resolveHumanGameAudioResult', () => {
-  const players = [{ team: 1 as const }, { team: 2 as const }, { team: 1 as const }, { team: 2 as const }];
-
-  it('sueca/spades win and lose from team winner', () => {
+  it('sueca/spades win and lose from the team result', () => {
     expect(
       resolveHumanGameAudioResult({
-        variant: 'sueca',
-        winner: 1,
+        matchResult: teamMatchResult(1),
         localPlayerIndex: 0,
-        players
+        localTeam: 1
       })
     ).toBe('win');
     expect(
       resolveHumanGameAudioResult({
-        variant: 'spades',
-        winner: 2,
+        matchResult: teamMatchResult(2),
         localPlayerIndex: 0,
-        players
+        localTeam: 1
       })
     ).toBe('lose');
   });
 
-  it('hearts: lowest score wins; tied best is draw', () => {
+  it('hearts and king: unique seat wins; any shared winning score is a draw', () => {
     expect(
       resolveHumanGameAudioResult({
-        variant: 'hearts',
-        winner: 1,
+        matchResult: individualMatchResult([0]),
         localPlayerIndex: 0,
-        players,
-        individualScores: [50, 80, 90, 100]
+        localTeam: 1
       })
     ).toBe('win');
     expect(
       resolveHumanGameAudioResult({
-        variant: 'hearts',
-        winner: 1,
+        matchResult: individualMatchResult([0, 1]),
         localPlayerIndex: 0,
-        players,
-        individualScores: [50, 50, 90, 100]
+        localTeam: 1
       })
     ).toBe('draw');
-  });
-
-  it('king: highest score wins; tied best is draw', () => {
     expect(
       resolveHumanGameAudioResult({
-        variant: 'king',
-        winner: 1,
+        matchResult: individualMatchResult([1]),
         localPlayerIndex: 1,
-        players,
-        individualScores: [10, 40, 20, 5]
+        localTeam: 2
       })
     ).toBe('win');
     expect(
       resolveHumanGameAudioResult({
-        variant: 'king',
-        winner: 1,
+        matchResult: individualMatchResult([1, 2]),
         localPlayerIndex: 0,
-        players,
-        individualScores: [40, 40, 10, 5]
+        localTeam: 1
       })
     ).toBe('draw');
   });

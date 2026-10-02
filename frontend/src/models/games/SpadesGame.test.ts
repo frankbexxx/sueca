@@ -298,6 +298,7 @@ describe('SpadesGame', () => {
       expect(state.scores).toEqual({ team1: 10, team2: 10 });
       expect(state.isGameOver).toBe(true);
       expect(state.winner).toBe(1);
+      expect(state.matchResult).toEqual({ kind: 'team', winnerTeam: 1, draw: false });
     });
 
     it('team 2 wins when only team 2 reaches 500', () => {
@@ -308,6 +309,7 @@ describe('SpadesGame', () => {
       expect(state.gameScore).toEqual({ team1: 410, team2: 500 });
       expect(state.isGameOver).toBe(true);
       expect(state.winner).toBe(2);
+      expect(state.matchResult).toEqual({ kind: 'team', winnerTeam: 2, draw: false });
     });
 
     it('team 1 wins when both reach 500 and team 1 is higher', () => {
@@ -318,6 +320,7 @@ describe('SpadesGame', () => {
       expect(state.gameScore).toEqual({ team1: 510, team2: 500 });
       expect(state.isGameOver).toBe(true);
       expect(state.winner).toBe(1);
+      expect(state.matchResult).toEqual({ kind: 'team', winnerTeam: 1, draw: false });
     });
 
     it('team 2 wins when both reach 500 and team 2 is higher', () => {
@@ -328,21 +331,20 @@ describe('SpadesGame', () => {
       expect(state.gameScore).toEqual({ team1: 510, team2: 530 });
       expect(state.isGameOver).toBe(true);
       expect(state.winner).toBe(2);
+      expect(state.matchResult).toEqual({ kind: 'team', winnerTeam: 2, draw: false });
       expect(state.waitingForRoundEnd).toBe(false);
       expect(
         resolveHumanGameAudioResult({
-          variant: 'spades',
-          winner: state.winner,
+          matchResult: state.matchResult,
           localPlayerIndex: 1,
-          players: state.players
+          localTeam: state.players[1]?.team ?? null
         })
       ).toBe('win');
       expect(
         resolveHumanGameAudioResult({
-          variant: 'spades',
-          winner: state.winner,
+          matchResult: state.matchResult,
           localPlayerIndex: 0,
-          players: state.players
+          localTeam: state.players[0]?.team ?? null
         })
       ).toBe('lose');
     });
@@ -355,6 +357,7 @@ describe('SpadesGame', () => {
       expect(first.state.gameScore).toEqual({ team1: 510, team2: 510 });
       expect(first.state.isGameOver).toBe(false);
       expect(first.state.winner).toBeNull();
+      expect(first.state.matchResult).toBeNull();
       expect(first.state.waitingForRoundEnd).toBe(true);
 
       first.game.continueToNextRound(first.state);
@@ -376,6 +379,7 @@ describe('SpadesGame', () => {
       expect(internal.state.gameScore).toEqual({ team1: 540, team2: 540 });
       expect(internal.state.isGameOver).toBe(false);
       expect(internal.state.winner).toBeNull();
+      expect(internal.state.matchResult).toBeNull();
       expect(internal.state.waitingForRoundEnd).toBe(true);
       first.game.continueToNextRound(internal.state);
       expect(getSpades(first.game.getCurrentState()).waitingForBids).toBe(true);

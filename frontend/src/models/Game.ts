@@ -12,6 +12,7 @@ import {
 } from './games/suecaRules';
 import { cloneGameState } from './games/cloneGameState';
 import { chooseSuecaCard, SuecaStrategyContext } from '../ai/games/sueca/SuecaStrategy';
+import { teamMatchResult } from './matchResult';
 
 export class Game {
   private state: GameState;
@@ -500,11 +501,13 @@ export class Game {
     if (this.state.gameScore.team1 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 1;
+      this.state.matchResult = teamMatchResult(1);
       this.state.waitingForGameStart = true; // Pause before allowing new game
       this.state.waitingForRoundEnd = false;
     } else if (this.state.gameScore.team2 >= 4) {
       this.state.isGameOver = true;
       this.state.winner = 2;
+      this.state.matchResult = teamMatchResult(2);
       this.state.waitingForGameStart = true; // Pause before allowing new game
       this.state.waitingForRoundEnd = false;
     } else {
