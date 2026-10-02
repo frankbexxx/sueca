@@ -41,6 +41,7 @@ export function createSpadesFlowController(flow: SpadesVariantFlow): SpadesFlowC
     },
 
     shouldTickBidAi({ bidActive, state, localPlayerIndex, spadesState }) {
+      if (state.isPaused) return false;
       if (!bidActive) return false;
       const vs = spadesState ?? flow.readState(state);
       const bidderIndex = vs.currentBidderIndex;

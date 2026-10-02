@@ -46,6 +46,7 @@ import {
 import { getDealDelayMs } from '../constants/dealAnimationPreferences';
 import { createGameOverExitController, shouldAutoExitAfterGameOver } from '../utils/gameOverExitTimer';
 import { isHandPlayActionAllowed } from '../utils/handCardVisual';
+import { schedulePauseGatedAction } from '../utils/pauseGatedTimer';
 import { resolveGameBoardFlow } from '../utils/gameFlowOrchestrator';
 import {
   resolveHumanGameAudioResult,
@@ -1283,12 +1284,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   useEffect(() => {
     if (!heartsCtrl || !gameAdapter || passExchangeUntilMs == null || !isHostOrSolo) return;
     const remaining = Math.max(0, passExchangeUntilMs - Date.now());
-    const id = window.setTimeout(() => {
-      heartsCtrl.releasePassExchange();
-      afterHostMutationRef.current();
-    }, remaining);
-    return () => window.clearTimeout(id);
-  }, [heartsCtrl, gameAdapter, passExchangeUntilMs, isHostOrSolo]);
+    return schedulePauseGatedAction(
+      gameState.isPaused,
+      remaining,
+      () => !gameAdapter.getCurrentState().isPaused,
+      () => {
+        heartsCtrl.releasePassExchange();
+        afterHostMutationRef.current();
+      }
+    );
+  }, [heartsCtrl, gameAdapter, passExchangeUntilMs, isHostOrSolo, gameState.isPaused]);
 
   /**
    * Handles card click from human player
@@ -1606,31 +1611,38 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const festaPhase = kingCtrl.readPtState(gameState).festaPhase;
     const delayMs = kingFestaTickDelayMs(festaPhase);
 
-    const timer = window.setTimeout(() => {
-      const before = kingCtrl.readPtState(gameState);
-      const acted = kingCtrl.tickFestaAi();
-      if (acted) {
-        try {
-          const after = kingCtrl.readPtState(gameAdapter.getCurrentState());
-          recordFestaDecision({
-            action: 'festa_ai_tick',
-            details: {
-              phaseBefore: before.festaPhase,
-              phaseAfter: after.festaPhase,
-              standingBid: after.standingBid,
-              bestBid: after.bestBid
-            }
-          });
-        } catch {
-          /* ignore */
+    return schedulePauseGatedAction(
+      gameState.isPaused,
+      delayMs,
+      () => {
+        const live = gameAdapter.getCurrentState();
+        return !live.isPaused && kingCtrl.shouldTickFestaAi(live, rulesPresetId);
+      },
+      () => {
+        const before = kingCtrl.readPtState(gameAdapter.getCurrentState());
+        const acted = kingCtrl.tickFestaAi();
+        if (acted) {
+          try {
+            const after = kingCtrl.readPtState(gameAdapter.getCurrentState());
+            recordFestaDecision({
+              action: 'festa_ai_tick',
+              details: {
+                phaseBefore: before.festaPhase,
+                phaseAfter: after.festaPhase,
+                standingBid: after.standingBid,
+                bestBid: after.bestBid
+              }
+            });
+          } catch {
+            /* ignore */
+          }
+          setGameState(gameAdapter.getCurrentState());
         }
-        setGameState(gameAdapter.getCurrentState());
       }
-    }, delayMs);
-    return () => window.clearTimeout(timer);
+    );
     // kingPtFestaKey tracks festa state; full gameState would retrigger on unrelated clones
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameAdapter, kingCtrl, rulesPresetId, gameState.waitingForRoundStart, kingPtFestaKey]);
+  }, [gameAdapter, kingCtrl, rulesPresetId, gameState.waitingForRoundStart, gameState.isPaused, kingPtFestaKey]);
 
   const spadesState = spadesCtrl ? spadesCtrl.readState(gameState) : undefined;
   const heartsState = heartsCtrl ? heartsCtrl.readState(gameState) : undefined;
@@ -1641,6 +1653,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   useEffect(() => {
     if (!gameAdapter || !gameStarted || !spadesCtrl || !spadesState) return;
     if (
+      gameState.isPaused ||
       !spadesCtrl.shouldTickBidAi({
         bidActive: spadesBidActive,
         state: gameState,
@@ -1651,11 +1664,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      spadesCtrl.tickBidAi();
-      setGameState(gameAdapter.getCurrentState());
-    }, spadesAiBidDelayMs());
-    return () => window.clearTimeout(timer);
+    return schedulePauseGatedAction(
+      false,
+      spadesAiBidDelayMs(),
+      () => {
+        const live = gameAdapter.getCurrentState();
+        return spadesCtrl.shouldTickBidAi({
+          bidActive: spadesBidActive,
+          state: live,
+          localPlayerIndex,
+          spadesState: spadesCtrl.readState(live)
+        });
+      },
+      () => {
+        spadesCtrl.tickBidAi();
+        setGameState(gameAdapter.getCurrentState());
+      }
+    );
   }, [
     gameAdapter,
     spadesCtrl,

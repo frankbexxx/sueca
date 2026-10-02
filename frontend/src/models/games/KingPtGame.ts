@@ -779,6 +779,7 @@ export class KingPtGame extends BaseGameAdapter {
    */
   private runAiFestaSteps(): boolean {
     if (!this.state) return false;
+    if (this.state.isPaused) return false;
     const king = getKingPtState(this.state);
     if (king.pauseFestaAiForDev) return false;
     if (king.festaPhase === 'auction' || king.festaPhase === 'auction_result') {
@@ -801,6 +802,7 @@ export class KingPtGame extends BaseGameAdapter {
    */
   tickFestaAi(): boolean {
     if (!this.state) return false;
+    if (this.state.isPaused) return false;
     const king = getKingPtState(this.state);
     if (king.pauseFestaAiForDev) return false;
     if (king.waitingForAuctionContinue) return false;

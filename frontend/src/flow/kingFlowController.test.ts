@@ -105,6 +105,10 @@ describe('kingFlowController', () => {
         })
       ).shouldTickFestaAi(state, 'king-pt-normal')
     ).toBe(false);
+
+    expect(
+      ctrl.shouldTickFestaAi({ ...state, isPaused: true } as GameState, 'king-pt-normal')
+    ).toBe(false);
   });
 
   it('resolvePtOverlay prioritises KOH then festa then score', () => {

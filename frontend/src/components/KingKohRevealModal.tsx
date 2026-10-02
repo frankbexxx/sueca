@@ -55,10 +55,13 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
   }
 
   useEffect(() => {
-    if (!reveal || !dealing || isLast) return;
-    const timer = window.setTimeout(() => onNext(), KOH_DEAL_MS);
+    if (!reveal || !dealing || isLast || gameState.isPaused) return;
+    const timer = window.setTimeout(() => {
+      if (gameState.isPaused) return;
+      onNext();
+    }, KOH_DEAL_MS);
     return () => window.clearTimeout(timer);
-  }, [reveal, dealing, isLast, onNext]);
+  }, [reveal, dealing, isLast, onNext, gameState.isPaused]);
 
   if (!reveal) return null;
 

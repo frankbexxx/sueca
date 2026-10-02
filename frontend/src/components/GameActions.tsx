@@ -34,7 +34,7 @@ export const GameActions: React.FC<GameActionsProps> = ({
   const currentTrickLength = gameState.currentTrick?.length ?? 0;
 
   useEffect(() => {
-    if (!showContinueCta || autoPause) {
+    if (!showContinueCta || autoPause || gameState.isPaused) {
       setCountdown(TRICK_AUTO_CONTINUE_SECONDS);
       return;
     }
@@ -52,7 +52,7 @@ export const GameActions: React.FC<GameActionsProps> = ({
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [showContinueCta, autoPause, variant, currentTrickLength]);
+  }, [showContinueCta, autoPause, variant, currentTrickLength, gameState.isPaused]);
 
   const toggleAutoPause = useCallback(() => {
     setAutoPause((prev) => {

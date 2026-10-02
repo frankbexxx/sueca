@@ -486,6 +486,7 @@ export class SpadesGame extends BaseGameAdapter {
 
   tickBidAi(): void {
     if (!this.state) return;
+    if (this.state.isPaused) return;
     const spades = this.recognizedSpades();
     if (!spades?.waitingForBids) return;
 

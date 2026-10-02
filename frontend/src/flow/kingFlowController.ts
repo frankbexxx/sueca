@@ -101,6 +101,7 @@ export function createKingFlowController(flow: KingVariantFlow): KingFlowControl
     buildFestaSyncKey: buildKingFestaSyncKey,
 
     shouldTickFestaAi(state, rulesPresetId) {
+      if (state.isPaused) return false;
       if (!flow.isPtNormal(rulesPresetId)) return false;
       if (!state.waitingForRoundStart) return false;
       const king = flow.readPtState(state);

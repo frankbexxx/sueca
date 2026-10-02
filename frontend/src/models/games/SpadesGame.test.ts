@@ -408,4 +408,20 @@ describe('SpadesGame', () => {
     game.tickBidAi();
     expect(getSpades(game.getCurrentState()).playerBids[1]).not.toBeNull();
   });
+
+  it('tickBidAi does not submit while paused, then submits once after resume', () => {
+    const game = new SpadesGame();
+    game.initialize(names, {});
+    const internal = game as unknown as { state: ReturnType<SpadesGame['getCurrentState']> };
+    const spades = getSpades(internal.state);
+    spades.currentBidderIndex = 1;
+    internal.state.players[1].type = 'ai';
+    internal.state.isPaused = true;
+    game.tickBidAi();
+    expect(getSpades(game.getCurrentState()).playerBids[1]).toBeNull();
+    internal.state.isPaused = false;
+    game.tickBidAi();
+    const bids = getSpades(game.getCurrentState()).playerBids;
+    expect(bids.filter((bid) => bid !== null)).toHaveLength(1);
+  });
 });

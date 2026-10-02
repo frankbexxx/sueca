@@ -88,5 +88,14 @@ describe('spadesFlowController', () => {
         spadesState: vs
       })
     ).toBe(false);
+
+    expect(
+      ctrl.shouldTickBidAi({
+        bidActive: true,
+        state: { ...state, isPaused: true },
+        localPlayerIndex: 0,
+        spadesState: vs
+      })
+    ).toBe(false);
   });
 });

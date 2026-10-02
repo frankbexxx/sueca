@@ -228,6 +228,7 @@ export class HeartsGame extends BaseGameAdapter {
   /** Ends the receipt beat. Does not move cards. */
   releasePassExchange(): void {
     if (!this.state) return;
+    if (this.state.isPaused) return;
     const hearts = getHeartsState(this.state);
     if (hearts.passExchangeUntilMs == null) return;
     hearts.passExchangeUntilMs = null;
