@@ -66,8 +66,10 @@ describe('Stage 9 responsive theme hardening', () => {
     expect(playSetup).toMatch(/\.form-input,\s*\n\.form-select\s*\{[\s\S]*?font-size:\s*1rem/);
     expect(variantModals).toMatch(/\.spades-bid-dock \.spades-bid-option\s*\{[\s\S]*?font-size:\s*16px/);
     expect(variantModals).not.toMatch(/\.spades-bid-select/);
-    expect(variantModals).toMatch(/\.king-auction-toolbar__select\s*\{[\s\S]*?font-size:\s*1rem/);
-    expect(variantModals).toMatch(/\.king-festa-setup-select\s*\{[\s\S]*?font-size:\s*1rem/);
+    expect(variantModals).toMatch(/\.king-auction-type \.king-festa-choice-btn\s*\{[\s\S]*?font-size:\s*1rem/);
+    expect(variantModals).toMatch(/\.king-festa-choice-btn\s*\{[\s\S]*?font-size:\s*1rem/);
+    expect(variantModals).not.toMatch(/\.king-auction-toolbar__select/);
+    expect(variantModals).not.toMatch(/\.king-festa-setup-select/);
   });
 
   it('modal max-heights prefer dvh fallbacks for short viewports', () => {

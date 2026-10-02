@@ -83,7 +83,8 @@ describe('Stage 8 game DOM semantic theming', () => {
     expect(variantModals).toMatch(/king-koh-table[\s\S]*?--sc-rail/);
     expect(variantModals).toMatch(/\.spades-bid-dock \.spades-bid-option\s*\{[\s\S]*?--sc-text/);
     expect(variantModals).not.toMatch(/\.spades-bid-select/);
-    expect(variantModals).toMatch(/\.king-auction-toolbar__select\s*\{[\s\S]*?--sc-text/);
+    expect(variantModals).toMatch(/\.king-auction-type \.king-festa-choice-btn\s*\{[\s\S]*?--sc-text/);
+    expect(variantModals).not.toMatch(/\.king-auction-toolbar__select/);
   });
 
   it('InGameBar consumes semantic text/surface (not sueca-color-text)', () => {
