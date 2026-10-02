@@ -4,6 +4,7 @@ import { getKingPtState } from '../models/games/KingPtGame';
 import { getTablePositionForPlayer } from '../utils/tableLayout';
 import { handleCardImageError } from '../utils/cardImageError';
 import { isKingSyntheticSession } from '../models/games/king/kingSyntheticMode';
+import { useLanguage } from '../i18n/useLanguage';
 import {
   kingHudMatchProgress,
   kingSyntheticHudSubtitle,
@@ -29,16 +30,18 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
   onConfirm,
   localPlayerIndex = 0
 }) => {
+  const { t, language } = useLanguage();
+  const locale = language === 'en' ? 'en' : 'pt';
   const king = getKingPtState(gameState);
   const reveal = king.kohReveal;
   const [dealing, setDealing] = useState(false);
   const syntheticSession = isKingSyntheticSession(gameState);
   const syntheticHeadline = syntheticSession
-    ? `${kingSyntheticProductName('pt')} — ${kingHudMatchProgress(0, 'pt', {
+    ? `${kingSyntheticProductName(locale)} — ${kingHudMatchProgress(0, locale, {
         syntheticSession: true
       })}`
     : null;
-  const syntheticSub = syntheticSession ? kingSyntheticHudSubtitle('pt') : null;
+  const syntheticSub = syntheticSession ? kingSyntheticHudSubtitle(locale) : null;
 
   const current = reveal?.sequence[reveal.step];
   const isLast = reveal ? reveal.step >= reveal.sequence.length - 1 : false;
@@ -92,39 +95,38 @@ export const KingKohRevealModal: React.FC<KingKohRevealModalProps> = ({
       </div>
 
       <div className="king-koh-controls">
-        <h2>{syntheticHeadline ?? 'Viragem do Rei de Copas'}</h2>
+        <h2>{syntheticHeadline ?? t.kingKoh.title}</h2>
         {syntheticSub ? (
           <p className="variant-modal-hint">{syntheticSub}</p>
         ) : null}
         {!syntheticSession && !dealing && !isLast && (
           <p className="variant-modal-hint">
-            Primeiro jogador: {gameState.players[reveal.startPlayerIndex]?.name}. Viragem automática até sair o K♥.
+            {t.kingKoh.firstPlayerAuto(gameState.players[reveal.startPlayerIndex]?.name ?? '')}
           </p>
         )}
         {syntheticSession && !dealing && !isLast && (
           <p className="variant-modal-hint">
-            Viragem do Rei de Copas — primeiro jogador:{' '}
-            {gameState.players[reveal.startPlayerIndex]?.name}.
+            {t.kingKoh.syntheticFirstPlayer(gameState.players[reveal.startPlayerIndex]?.name ?? '')}
           </p>
         )}
         {dealing && !isLast && current && (
           <p className="variant-modal-hint king-koh-dealing">
-            {gameState.players[current.playerIndex]?.name} recebe uma carta…
+            {t.kingKoh.receivingCard(gameState.players[current.playerIndex]?.name ?? '')}
           </p>
         )}
         {isLast && (
           <p className="variant-modal-hint king-koh-winner">
-            {winner?.name} tirou o Rei de Copas — dono da 1.ª festa.
+            {t.kingKoh.winnerFesta(winner?.name ?? '')}
           </p>
         )}
         {!dealing && !isLast && (
           <button type="button" className="sueca-btn sueca-btn--primary" onClick={() => setDealing(true)}>
-            Iniciar viragem
+            {t.kingKoh.startDraw}
           </button>
         )}
         {isLast && (
           <button type="button" className="sueca-btn sueca-btn--primary" onClick={onConfirm}>
-            {syntheticSession ? 'Começar mão' : 'Começar partida'}
+            {syntheticSession ? t.kingKoh.startHand : t.kingKoh.startMatch}
           </button>
         )}
       </div>

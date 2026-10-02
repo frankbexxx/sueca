@@ -400,6 +400,60 @@ describe('King festa decision surfaces', () => {
     expect(container.querySelector('select')).toBeNull();
   });
 
+  it('shows Passo on the Portuguese voice echo and still submits pass', () => {
+    let passes = 0;
+    const game = new KingPtGame();
+    const base = game.applyDevFestaFixture(
+      ['Ana', 'Bruno', 'Carla', 'Diogo'],
+      { festaGameNumber: 7, festaPhase: 'auction' },
+      { localPlayerIndex: 1 }
+    ) as GameState;
+    const king = { ...getKingPtState(base) };
+    king.festaPhase = 'auction';
+    king.festaOwnerIndex = 0;
+    king.auctionOrder = [1, 2, 3];
+    king.auctionTurnIndex = 0;
+    king.currentBidder = 1;
+    king.auctionHistory = [];
+    const bidding: GameState = {
+      ...base,
+      variantState: { ...base.variantState, kingPt: king }
+    };
+    act(() => {
+      ReactDOM.render(
+        <KingFestaFlowModal
+          gameState={bidding}
+          localPlayerIndex={1}
+          {...festaHandlers}
+          onAuctionPass={() => {
+            passes += 1;
+          }}
+        />,
+        container
+      );
+    });
+    const pass = Array.from(container.querySelectorAll('button')).find(
+      (btn) => btn.textContent === 'Passar'
+    ) as HTMLButtonElement;
+    act(() => pass.click());
+    expect(passes).toBe(1);
+
+    king.waitingForAuctionContinue = true;
+    king.auctionHistory = [{ sequence: 1, seat: 1, action: 'pass' }];
+    const echoed: GameState = {
+      ...bidding,
+      variantState: { ...bidding.variantState, kingPt: king }
+    };
+    act(() => {
+      ReactDOM.render(
+        <KingFestaFlowModal gameState={echoed} localPlayerIndex={1} {...festaHandlers} />,
+        container
+      );
+    });
+    expect(container.querySelector('.king-auction-current-bid')?.textContent).toContain('Passo');
+    expect(container.querySelector('.king-auction-current-bid')?.textContent).not.toContain('PASS');
+  });
+
   it('keeps Continuar as the acknowledge beat between auction voices', () => {
     renderKing((king) => {
       king.festaPhase = 'auction';

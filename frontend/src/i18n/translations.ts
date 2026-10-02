@@ -340,6 +340,30 @@ export interface Translations {
     subtitle: string;
     subtitleVariant: (game: string) => string;
     rulesPreset: string;
+    kicker: string;
+    back: string;
+    players: string;
+    youBadge: string;
+    aiBadge: string;
+    seatName: (index: number) => string;
+    difficulty: string;
+    rules: string;
+    start: string;
+    suecaDealSummary: string;
+    selectedMode: string;
+    kingSyntheticMode: string;
+    kingNormalMode: string;
+  };
+
+  kingKoh: {
+    title: string;
+    firstPlayerAuto: (name: string) => string;
+    syntheticFirstPlayer: (name: string) => string;
+    receivingCard: (name: string) => string;
+    winnerFesta: (name: string) => string;
+    startDraw: string;
+    startHand: string;
+    startMatch: string;
   };
 
   onlineScreen: {
@@ -680,7 +704,33 @@ export const translations: Record<Language, Translations> = {
       title: 'Nova partida',
       subtitle: 'Escolhe o jogo e os adversários',
       subtitleVariant: (game) => `Configurar ${game}`,
-      rulesPreset: 'Modo de regras'
+      rulesPreset: 'Modo de regras',
+      kicker: 'Preparar a mesa',
+      back: 'Voltar',
+      players: 'Jogadores',
+      youBadge: 'TU',
+      aiBadge: 'IA',
+      seatName: (index) => `Nome do jogador ${index + 1}`,
+      difficulty: 'Dificuldade',
+      rules: 'Regras',
+      start: 'Começar',
+      suecaDealSummary:
+        '10 cartas por jogador, distribuídas em blocos. O sentido do jogo mantém-se durante a partida; em cada mão, o distribuidor pode dar no mesmo sentido ou no sentido oposto.',
+      selectedMode: 'Modo seleccionado',
+      kingSyntheticMode: 'Todos os negativos + 4 Festas',
+      kingNormalMode: '6 negativos + 4 Festas'
+    },
+    kingKoh: {
+      title: 'Viragem do Rei de Copas',
+      firstPlayerAuto: (name) =>
+        `Primeiro jogador: ${name}. Viragem automática até sair o K♥.`,
+      syntheticFirstPlayer: (name) =>
+        `Viragem do Rei de Copas — primeiro jogador: ${name}.`,
+      receivingCard: (name) => `${name} recebe uma carta…`,
+      winnerFesta: (name) => `${name} tirou o Rei de Copas — dono da 1.ª festa.`,
+      startDraw: 'Iniciar viragem',
+      startHand: 'Começar mão',
+      startMatch: 'Começar partida'
     },
     onlineScreen: {
       title: 'Online',
@@ -855,7 +905,7 @@ export const translations: Record<Language, Translations> = {
       bagsWord: 'bags',
       bagsLine: (bags) => `${bags} bags`,
       tricksBidAria: (tricks, bid) => `Vazas ${tricks} / Bid ${bid}`,
-      scoreShort: 'Score',
+      scoreShort: 'Pontos',
       spadesClosed: '♠ Fechadas',
       spadesBroken: '♠ Quebradas'
     },
@@ -1153,7 +1203,32 @@ export const translations: Record<Language, Translations> = {
       title: 'New game',
       subtitle: 'Pick a game and opponents',
       subtitleVariant: (game) => `Configure ${game}`,
-      rulesPreset: 'Rules mode'
+      rulesPreset: 'Rules mode',
+      kicker: 'Set the table',
+      back: 'Back',
+      players: 'Players',
+      youBadge: 'YOU',
+      aiBadge: 'AI',
+      seatName: (index) => `Player ${index + 1} name`,
+      difficulty: 'Difficulty',
+      rules: 'Rules',
+      start: 'Start',
+      suecaDealSummary:
+        '10 cards per player, dealt in blocks. Play direction stays fixed for the match; each hand, the distributor may deal the same way or the opposite way.',
+      selectedMode: 'Selected mode',
+      kingSyntheticMode: 'All negatives + 4 festas',
+      kingNormalMode: '6 negatives + 4 festas'
+    },
+    kingKoh: {
+      title: 'King of Hearts draw',
+      firstPlayerAuto: (name) =>
+        `First player: ${name}. Cards turn automatically until the K♥ appears.`,
+      syntheticFirstPlayer: (name) => `King of Hearts draw — first player: ${name}.`,
+      receivingCard: (name) => `${name} receives a card…`,
+      winnerFesta: (name) => `${name} drew the King of Hearts — owner of the 1st festa.`,
+      startDraw: 'Start the draw',
+      startHand: 'Start hand',
+      startMatch: 'Start match'
     },
     onlineScreen: {
       title: 'Online',

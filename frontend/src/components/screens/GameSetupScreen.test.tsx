@@ -28,7 +28,21 @@ vi.mock('../../i18n/useLanguage', () => ({
         title: 'Nova partida',
         subtitle: 'Escolhe o jogo',
         subtitleVariant: (g: string) => `Configurar ${g}`,
-        rulesPreset: 'Modo de regras'
+        rulesPreset: 'Modo de regras',
+        kicker: 'Preparar a mesa',
+        back: 'Voltar',
+        players: 'Jogadores',
+        youBadge: 'TU',
+        aiBadge: 'IA',
+        seatName: (index: number) => `Nome do jogador ${index + 1}`,
+        difficulty: 'Dificuldade',
+        rules: 'Regras',
+        start: 'Começar',
+        suecaDealSummary:
+          '10 cartas por jogador, distribuídas em blocos. O sentido do jogo mantém-se durante a partida; em cada mão, o distribuidor pode dar no mesmo sentido ou no sentido oposto.',
+        selectedMode: 'Modo seleccionado',
+        kingSyntheticMode: 'Todos os negativos + 4 Festas',
+        kingNormalMode: '6 negativos + 4 Festas'
       },
       moreScreen: { playerName: 'Nome' }
     }

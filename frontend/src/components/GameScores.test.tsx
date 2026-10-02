@@ -13,7 +13,7 @@ vi.mock('../i18n/useLanguage', () => ({
       spadesStatus: {
         bagsLine: (bags: number) => `${bags} bags`,
         tricksBidAria: (tricks: number, bid: number) => `Vazas ${tricks} / Bid ${bid}`,
-        scoreShort: 'Score'
+        scoreShort: 'Pontos'
       }
     }
   })
@@ -92,7 +92,7 @@ describe('TeamScoreBlock Spades HUD', () => {
     );
     expect(screen.getByText('Nós')).toBeInTheDocument();
     expect(screen.getByLabelText('Vazas 4 / Bid 6')).toHaveTextContent('4/6');
-    expect(screen.getByText(/Score 120/)).toBeInTheDocument();
+    expect(screen.getByText(/Pontos 120/)).toBeInTheDocument();
     expect(screen.getByLabelText('1 bags')).toBeInTheDocument();
 
     rerender(
@@ -106,7 +106,7 @@ describe('TeamScoreBlock Spades HUD', () => {
     );
     expect(screen.getByText('Eles')).toBeInTheDocument();
     expect(screen.getByLabelText('Vazas 3 / Bid 5')).toHaveTextContent('3/5');
-    expect(screen.getByText(/Score 80/)).toBeInTheDocument();
+    expect(screen.getByText(/Pontos 80/)).toBeInTheDocument();
     expect(screen.getByLabelText('2 bags')).toBeInTheDocument();
   });
 

@@ -48,20 +48,18 @@ const PLAY_DIRECTION_OPTIONS: {
   }
 ];
 
-function kingModeSummary(presetId: RulesPresetId): { chip: string; sub: string } | null {
-  if (presetId === 'king-pt-synthetic') {
-    return {
-      chip: getPreset('king-pt-synthetic').namePt,
-      sub: 'Todos os negativos + 4 Festas'
-    };
-  }
-  if (presetId === 'king-pt-normal') {
-    return {
-      chip: getPreset('king-pt-normal').namePt,
-      sub: '6 negativos + 4 Festas'
-    };
-  }
-  return null;
+function kingModeSummary(
+  presetId: RulesPresetId,
+  isPt: boolean,
+  labels: { synthetic: string; normal: string }
+): { chip: string; sub: string } | null {
+  if (presetId !== 'king-pt-synthetic' && presetId !== 'king-pt-normal') return null;
+  const preset = getPreset(presetId);
+  const chip = isPt ? preset.namePt : preset.name;
+  return {
+    chip,
+    sub: presetId === 'king-pt-synthetic' ? labels.synthetic : labels.normal
+  };
 }
 
 export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
@@ -80,7 +78,12 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
   const isPt = language !== 'en';
   const gameName = getGameMetadata(setup.gameVariant).name;
   const kingSummary =
-    setup.gameVariant === 'king' ? kingModeSummary(setup.rulesPresetId) : null;
+    setup.gameVariant === 'king'
+      ? kingModeSummary(setup.rulesPresetId, isPt, {
+          synthetic: t.playSetup.kingSyntheticMode,
+          normal: t.playSetup.kingNormalMode
+        })
+      : null;
   const showSpadesRules = setup.gameVariant === 'spades';
   const showSuecaRules = setup.gameVariant === 'sueca';
   const showRules = showSpadesRules || showSuecaRules;
@@ -135,16 +138,16 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
             type="button"
             className="setup-back"
             onClick={onBack}
-            aria-label="Voltar"
+            aria-label={t.playSetup.back}
           >
             ←
           </button>
         )}
         <div className="setup-header-copy">
-          <p className="setup-kicker">Preparar a mesa</p>
+          <p className="setup-kicker">{t.playSetup.kicker}</p>
           <h1 className="setup-game-title">{gameName}</h1>
           {kingSummary && (
-            <div className="setup-mode" aria-label="Modo seleccionado">
+            <div className="setup-mode" aria-label={t.playSetup.selectedMode}>
               <span className="setup-mode-chip">{kingSummary.chip}</span>
               <p className="setup-mode-sub">{kingSummary.sub}</p>
             </div>
@@ -158,7 +161,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
       <div className="setup-scroll">
         <section className="setup-section" aria-labelledby="setup-players-heading">
           <h2 id="setup-players-heading" className="setup-section-label">
-            Jogadores
+            {t.playSetup.players}
           </h2>
           <div className="setup-seats">
             {[0, 1, 2, 3].map((index) => {
@@ -168,7 +171,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
               const name = isYou
                 ? setup.playerNames[0]?.trim() || 'Player 1'
                 : setup.playerNames[index]?.trim() || `Player ${index + 1}`;
-              const roleBadge = isYou ? 'TU' : 'IA';
+              const roleBadge = isYou ? t.playSetup.youBadge : t.playSetup.aiBadge;
               return (
                 <div
                   key={index}
@@ -187,7 +190,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
                         aria-label={
                           isYou
                             ? t.moreScreen?.playerName ?? 'O teu nome'
-                            : `Nome do jogador ${index + 1}`
+                            : t.playSetup.seatName(index)
                         }
                         onChange={(e) => updateSeatName(index, e.target.value)}
                         onBlur={() => commitSeatEdit(index)}
@@ -229,7 +232,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
 
         <section className="setup-section" aria-labelledby="setup-diff-heading">
           <h2 id="setup-diff-heading" className="setup-section-label">
-            Dificuldade
+            {t.playSetup.difficulty}
           </h2>
           <div
             className="setup-segment"
@@ -256,7 +259,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
         {showRules && (
           <section className="setup-section" aria-labelledby="setup-rules-heading">
             <h2 id="setup-rules-heading" className="setup-section-label">
-              Regras
+              {t.playSetup.rules}
             </h2>
 
             {showSpadesRules && (
@@ -279,7 +282,9 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
                       onClick={() => setup.setRulesPresetId(preset.id)}
                     >
                       <span className="setup-deal-option__copy">
-                        <span className="setup-deal-title">{preset.namePt}</span>
+                        <span className="setup-deal-title">
+                          {isPt ? preset.namePt : preset.name}
+                        </span>
                         <span className="setup-deal-hint">
                           {isPt ? preset.descriptionPt : preset.description}
                         </span>
@@ -302,11 +307,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
 
             {showSuecaRules && (
               <>
-                <p className="setup-rules-intro">
-                  {isPt
-                    ? '10 cartas por jogador, em blocos. O sentido do jogo fica fixo nesta partida; em cada mão o dealer pode distribuir no mesmo sentido ou no oposto.'
-                    : '10 cards each, in blocks. Play direction is fixed for this match; each hand the dealer may deal the same way or the opposite way.'}
-                </p>
+                <p className="setup-rules-intro">{t.playSetup.suecaDealSummary}</p>
                 <p className="setup-rules-intro">{t.startMenu.playDirection}</p>
                 <div
                   className="setup-dealing"
@@ -364,7 +365,7 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({
           onClick={handleStart}
           disabled={!canStart}
         >
-          Começar
+          {t.playSetup.start}
         </button>
       </div>
     </div>

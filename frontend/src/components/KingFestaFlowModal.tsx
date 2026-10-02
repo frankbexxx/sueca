@@ -380,7 +380,9 @@ export const KingFestaFlowModal: React.FC<KingFestaFlowModalProps> = ({
       last == null
         ? ''
         : last.action === 'pass'
-          ? 'PASS'
+          ? en
+            ? 'PASS'
+            : 'Passo'
           : formatBid({
               bidderIndex: last.seat,
               bidType: last.bidType ?? 'positive',
