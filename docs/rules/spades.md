@@ -22,8 +22,8 @@ Presets: `spades-pt-normal`, `spades-pt-nil`
 ## Modo nil (`spades-pt-nil`)
 
 - Inclui tudo do modo normal
-- **Nil**: 0 vazas → +100; falha → −100 (não conta no contrato de equipa)
-- **Blind nil**: 0 vazas → +200; falha → −200 (não conta no contrato de equipa)
+- **Nil**: 0 vazas → +100; falha → −100 (não conta no contrato de equipa). Escolhe-se depois de ver a mão.
+- **Blind nil**: declara-se antes de ver a mão. 0 vazas → +200; falha → −200 (não conta no contrato de equipa). Se não for escolhido, a mão é revelada e o jogador faz a bid normal, onde Nil continua disponível. Blind nil deixa de poder ser escolhido depois da mão revelada.
 
 ## Fim da partida
 

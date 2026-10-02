@@ -1,6 +1,6 @@
 import { BaseGameAdapter } from './GameAdapter';
 import { GameState, Player, AIDifficulty } from '../../types/game';
-import { chooseSpadesBid } from '../../ai/games/spades/SpadesBidEstimator';
+import { chooseBlindNilPreView, chooseSpadesBid } from '../../ai/games/spades/SpadesBidEstimator';
 import { chooseSpadesCard } from '../../ai/games/spades/SpadesPlayStrategy';
 import { Deck } from '../Deck';
 import { trickWinnerIndex } from './trickUtils';
@@ -33,6 +33,11 @@ export interface SpadesVariantState {
   spadesBroken: boolean;
   nilEnabled: boolean;
   blindNilEnabled: boolean;
+  /**
+   * Per seat. False while that bidder still owes a pre-view Blind Nil decision.
+   * Absent on older saves: treated as already resolved so hands are not hidden.
+   */
+  blindNilResolved?: boolean[];
 }
 
 function emptyBidTypes(): SpadesBidType[] {
@@ -57,9 +62,18 @@ export function getSpadesState(state: GameState): SpadesVariantState {
       waitingForBids: true,
       spadesBroken: false,
       nilEnabled: false,
-      blindNilEnabled: false
+      blindNilEnabled: false,
+      blindNilResolved: [true, true, true, true]
     }
   );
+}
+
+/** True only for the bidder who has not yet accepted or declined Blind Nil. */
+export function isBlindNilDecisionPending(spades: SpadesVariantState, seat: number): boolean {
+  if (!spades.waitingForBids || !spades.blindNilEnabled) return false;
+  const resolved = spades.blindNilResolved;
+  if (!resolved || resolved.length !== 4) return false;
+  return resolved[seat] !== true;
 }
 
 function teamBidsFromPlayerBids(
@@ -92,6 +106,7 @@ export class SpadesGame extends BaseGameAdapter {
       kind: 'spades',
       readState: getSpadesState,
       submitBid: (playerIndex, bid, bidType) => this.submitBid(playerIndex, bid, bidType),
+      declineBlindNil: (playerIndex) => this.declineBlindNil(playerIndex),
       tickBidAi: () => this.tickBidAi()
     };
   }
@@ -124,6 +139,7 @@ export class SpadesGame extends BaseGameAdapter {
     const leader = spades.bidLeaderIndex;
     for (let step = 0; step < 4; step++) {
       const playerIndex = (leader + step) % 4;
+      this.declineBlindNil(playerIndex);
       this.submitBid(playerIndex, playerBids[playerIndex] ?? 0, 'normal');
     }
   }
@@ -134,6 +150,9 @@ export class SpadesGame extends BaseGameAdapter {
     if (!spades.waitingForBids) return false;
     if (playerIndex !== spades.currentBidderIndex) return false;
 
+    const blindPending = isBlindNilDecisionPending(spades, playerIndex);
+    if (blindPending && bidType !== 'blindNil') return false;
+
     let normalizedBid = Math.max(0, Math.min(13, Math.floor(bid)));
     let normalizedType: SpadesBidType = bidType;
 
@@ -141,7 +160,7 @@ export class SpadesGame extends BaseGameAdapter {
       if (!spades.nilEnabled) return false;
       normalizedBid = 0;
     } else if (normalizedType === 'blindNil') {
-      if (!spades.blindNilEnabled) return false;
+      if (!blindPending) return false;
       normalizedBid = 0;
     } else {
       normalizedType = 'normal';
@@ -149,6 +168,7 @@ export class SpadesGame extends BaseGameAdapter {
 
     spades.playerBids[playerIndex] = normalizedBid;
     spades.playerBidTypes[playerIndex] = normalizedType;
+    this.markBlindNilResolved(spades, playerIndex);
 
     const bidsComplete = spades.playerBids.every((value) => value !== null);
     if (bidsComplete) {
@@ -180,11 +200,25 @@ export class SpadesGame extends BaseGameAdapter {
     return true;
   }
 
+  /**
+   * Decline pre-view Blind Nil. The hand may then be shown and a normal bid,
+   * including Nil, can be submitted. Blind Nil itself is no longer legal.
+   */
+  declineBlindNil(playerIndex: number): boolean {
+    if (!this.state) return false;
+    const spades = getSpadesState(this.state);
+    if (playerIndex !== spades.currentBidderIndex) return false;
+    if (!isBlindNilDecisionPending(spades, playerIndex)) return false;
+    this.markBlindNilResolved(spades, playerIndex);
+    this.state.variantState = { ...this.state.variantState, spades };
+    return true;
+  }
+
   chooseAIBid(playerIndex: number): { bid: number; bidType: SpadesBidType } {
     const s = this.state!;
     const spades = getSpadesState(s);
     const hand = s.players[playerIndex]?.hand ?? [];
-    return chooseSpadesBid(hand, spades.nilEnabled, spades.blindNilEnabled, s.aiDifficulty);
+    return chooseSpadesBid(hand, spades.nilEnabled, false, s.aiDifficulty);
   }
 
   tickBidAi(): void {
@@ -196,8 +230,24 @@ export class SpadesGame extends BaseGameAdapter {
     const player = this.state.players[playerIndex];
     if (!player || player.type === 'human') return;
 
+    if (isBlindNilDecisionPending(spades, playerIndex)) {
+      if (this.state.isPaused) return;
+      const takeBlind = chooseBlindNilPreView(this.state.aiDifficulty);
+      if (takeBlind) {
+        this.submitBid(playerIndex, 0, 'blindNil');
+        return;
+      }
+      this.declineBlindNil(playerIndex);
+    }
+
     const { bid, bidType } = this.chooseAIBid(playerIndex);
     this.submitBid(playerIndex, bid, bidType);
+  }
+
+  private markBlindNilResolved(spades: SpadesVariantState, seat: number): void {
+    const resolved = spades.blindNilResolved ? [...spades.blindNilResolved] : [true, true, true, true];
+    resolved[seat] = true;
+    spades.blindNilResolved = resolved;
   }
 
   private finalizeBidding(spades: SpadesVariantState): void {
@@ -321,7 +371,10 @@ export class SpadesGame extends BaseGameAdapter {
           waitingForBids,
           spadesBroken: false,
           nilEnabled: presetOptions.nilEnabled,
-          blindNilEnabled: presetOptions.blindNilEnabled
+          blindNilEnabled: presetOptions.blindNilEnabled,
+          blindNilResolved: presetOptions.blindNilEnabled
+            ? [false, false, false, false]
+            : [true, true, true, true]
         },
         rulesPresetId: presetId
       }

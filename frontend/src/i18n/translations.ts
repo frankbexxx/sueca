@@ -144,6 +144,7 @@ export interface Translations {
     selectBid: string;
     nil: string;
     blindNil: string;
+    seeHand: string;
     normalBid: string;
     nilSelected: string;
     blindNilSelected: string;
@@ -838,6 +839,7 @@ export const translations: Record<Language, Translations> = {
       selectBid: 'Bid (0–13)',
       nil: 'Nil',
       blindNil: 'Blind nil',
+      seeHand: 'Ver mão',
       normalBid: 'Bid normal',
       nilSelected: 'Nil (0 vazas)',
       blindNilSelected: 'Blind nil (0 vazas)',
@@ -1307,6 +1309,7 @@ export const translations: Record<Language, Translations> = {
       selectBid: 'Bid (0–13)',
       nil: 'Nil',
       blindNil: 'Blind nil',
+      seeHand: 'See hand',
       normalBid: 'Normal bid',
       nilSelected: 'Nil (0 tricks)',
       blindNilSelected: 'Blind nil (0 tricks)',

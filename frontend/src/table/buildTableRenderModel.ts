@@ -6,7 +6,7 @@ import type { GameState, GameVariant, PlayDirection } from '../types/game';
 import type { GameBoardFlowView } from '../utils/gameFlowOrchestrator';
 import { isActiveTurnSeat } from '../utils/playerSeatHelpers';
 import type { KingPtVariantState } from '../models/games/KingPtGame';
-import type { SpadesVariantState } from '../models/games/SpadesGame';
+import { isBlindNilDecisionPending, type SpadesVariantState } from '../models/games/SpadesGame';
 import type { HeartsVariantState } from '../models/games/HeartsGame';
 import { resolveFestaSheetChromeDensity } from '../models/games/king/kingFestaActionAvailability';
 import { clockwiseSeatAtTrickOffset } from '../models/games/suecaDeal';
@@ -126,8 +126,10 @@ export function buildTableRenderModel(input: BuildTableRenderModelInput): TableR
   );
 
   const localPlayer = gameState.players[localPlayerIndex];
-  const localHand =
-    presentation.hideHands || !localPlayer ? [] : [...localPlayer.hand];
+  const hideLocalFaces =
+    presentation.hideHands ||
+    (spadesState != null && isBlindNilDecisionPending(spadesState, localPlayerIndex));
+  const localHand = hideLocalFaces || !localPlayer ? [] : [...localPlayer.hand];
 
   const festaSheetChrome =
     festaSheetActive && kingPt

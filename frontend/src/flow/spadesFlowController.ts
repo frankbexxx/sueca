@@ -26,6 +26,7 @@ export interface SpadesFlowController {
   /** True when an AI bidder should receive tickBidAi. */
   shouldTickBidAi(input: SpadesBidAiGateInput): boolean;
   submitHumanBid(playerIndex: number, bid: number, bidType: SpadesBidType): boolean;
+  declineBlindNil(playerIndex: number): boolean;
   tickBidAi(): void;
 }
 
@@ -52,6 +53,10 @@ export function createSpadesFlowController(flow: SpadesVariantFlow): SpadesFlowC
 
     submitHumanBid(playerIndex, bid, bidType) {
       return flow.submitBid(playerIndex, bid, bidType);
+    },
+
+    declineBlindNil(playerIndex) {
+      return flow.declineBlindNil(playerIndex);
     },
 
     tickBidAi() {

@@ -26,7 +26,8 @@ export type GameAction =
       bidType: SpadesBidType;
       clientId: string;
       at: number;
-    };
+    }
+  | { type: 'declineBlindNil'; playerIndex: number; clientId: string; at: number };
 
 export function createClientId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {

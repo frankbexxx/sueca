@@ -1,4 +1,4 @@
-import { chooseSpadesBid, estimateHandBid } from './SpadesBidEstimator';
+import { chooseBlindNilPreView, chooseSpadesBid, estimateHandBid } from './SpadesBidEstimator';
 import { Card } from '../../../types/game';
 
 function makeCard(rank: string, suit: string): Card {
@@ -47,6 +47,27 @@ describe('SpadesBidEstimator', () => {
       const mediumBid = estimateHandBid(hand);
       const { bid: hardBid } = chooseSpadesBid(hand, false, false, 'hard');
       expect(hardBid).toBeGreaterThanOrEqual(Math.max(1, mediumBid));
+    });
+  });
+
+  describe('blind nil is not chosen from the hand', () => {
+    it('pre-view decision ignores difficulty paths that are not medium', () => {
+      expect(chooseBlindNilPreView('easy', () => 0)).toBe(false);
+      expect(chooseBlindNilPreView('hard', () => 0)).toBe(false);
+      expect(chooseBlindNilPreView('medium', () => 0)).toBe(true);
+      expect(chooseBlindNilPreView('medium', () => 0.5)).toBe(false);
+    });
+
+    it('normal bidding never returns blind nil', () => {
+      const empty = [makeCard('2', 'clubs'), makeCard('3', 'hearts'), makeCard('4', 'diamonds')];
+      const rich = [makeCard('A', 'spades'), makeCard('K', 'spades'), makeCard('A', 'hearts')];
+      for (const hand of [empty, rich]) {
+        for (let i = 0; i < 30; i++) {
+          expect(chooseSpadesBid(hand, true, true, 'medium').bidType).not.toBe('blindNil');
+          expect(chooseSpadesBid(hand, true, true, 'hard').bidType).not.toBe('blindNil');
+          expect(chooseSpadesBid(hand, true, true, 'easy').bidType).not.toBe('blindNil');
+        }
+      }
     });
   });
 

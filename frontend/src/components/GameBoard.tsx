@@ -78,6 +78,7 @@ import { TableSurface } from './table/TableSurface';
 import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
+import { isBlindNilDecisionPending } from '../models/games/SpadesGame';
 import { HeartsPassModal } from './HeartsPassModal';
 import { SuecaDealingModal } from './SuecaDealingModal';
 import { SuecaPostDealCard } from './SuecaPostDealCard';
@@ -1971,7 +1972,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {gameAdapter && gameState.players[localPlayerIndex] && (
         <>
           <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
-          {!suecaPresentationGate.hideHands ? (
+          {!suecaPresentationGate.hideHands &&
+          !(spadesState && isBlindNilDecisionPending(spadesState, localPlayerIndex)) ? (
             <PlayerHand
               gameState={gameState}
               localPlayerIndex={localPlayerIndex}
@@ -2122,7 +2124,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         <SpadesBidMinibox
           currentBidderName={gameState.players[localPlayerIndex]?.name ?? 'Player'}
           nilEnabled={spadesState.nilEnabled}
-          blindNilEnabled={spadesState.blindNilEnabled}
+          blindNilEnabled={false}
+          blindDecisionPending={isBlindNilDecisionPending(spadesState, localPlayerIndex)}
+          onDeclineBlindNil={() => {
+            if (!spadesCtrl) return;
+            if (isJoiner) {
+              submitAction({ type: 'declineBlindNil', playerIndex: localPlayerIndex });
+              return;
+            }
+            spadesCtrl.declineBlindNil(localPlayerIndex);
+            afterHostMutation();
+          }}
           onConfirm={(bid, bidType) => {
             if (!gameAdapter || !spadesCtrl) return;
             if (isJoiner) {

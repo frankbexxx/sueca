@@ -71,6 +71,9 @@ export function applyHostAction(
       (adapter as SpadesGame).submitBid(action.playerIndex, action.bid, action.bidType);
       return true;
     }
+    case 'declineBlindNil': {
+      return (adapter as SpadesGame).declineBlindNil(action.playerIndex);
+    }
     default:
       return false;
   }

@@ -83,13 +83,13 @@ export const RULES_PRESETS: Record<RulesPresetId, RulesPreset> = {
     descriptionPt: 'Spades clássico com nil e blind nil, corrida a 500.',
     isDefault: false,
     bullets: [
-      'Same as normal mode plus nil (+100/−100) and blind nil (+200/−200).',
+      'Same as normal mode plus nil (+100/−100) after seeing the hand, and blind nil (+200/−200) only before the hand is revealed.',
       'Sequential bidding; first bidder drawn at random, then rotates each round.',
       'Nil bids add 0 to team contract; bonus scored individually per player.',
       'Made bid: 10×bid + bags. Every 10 bags → −100. First team to 500 wins. If both reach 500 on the same hand, the higher score wins; an exact tie plays another hand.'
     ],
     bulletsPt: [
-      'Igual ao modo normal mais nil (+100/−100) e blind nil (+200/−200).',
+      'Igual ao modo normal mais nil (+100/−100) depois de ver a mão, e blind nil (+200/−200) só antes de a mão ser revelada.',
       'Bids sequenciais; 1.º bidder por sorteio, rotação a cada ronda.',
       'Nil conta 0 no contrato de equipa; bónus individual por jogador.',
       'Contrato: 10×bid + bags. A cada 10 bags → −100. Primeira equipa a 500 ganha. Se ambas atingem 500 na mesma mão, ganha a maior pontuação; um empate exato joga outra mão.'

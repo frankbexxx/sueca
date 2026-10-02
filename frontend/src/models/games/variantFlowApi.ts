@@ -34,6 +34,7 @@ export interface SpadesVariantFlow {
   kind: 'spades';
   readState(state: GameState): SpadesVariantState;
   submitBid(playerIndex: number, bid: number, bidType: SpadesBidType): boolean;
+  declineBlindNil(playerIndex: number): boolean;
   tickBidAi(): void;
 }
 

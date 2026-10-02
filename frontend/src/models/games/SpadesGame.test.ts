@@ -18,6 +18,7 @@ function submitAllBidsInOrder(
   for (let step = 0; step < 4; step++) {
     const playerIndex = (leader + step) % 4;
     const entry = bids[playerIndex];
+    game.declineBlindNil(playerIndex);
     game.submitBid(playerIndex, entry.bid, entry.bidType ?? 'normal');
   }
 }

@@ -33,7 +33,20 @@ function estimateHandBidHard(hand: Card[]): number {
 }
 
 /**
- * Chooses an AI bid for Spades, adapting to difficulty level.
+ * Pre-view Blind Nil. Must not receive or read the dealt hand.
+ * Medium: 5% independent of cards. Easy and Hard never take it.
+ */
+export function chooseBlindNilPreView(
+  difficulty: AIDifficulty,
+  random: () => number = Math.random
+): boolean {
+  if (difficulty !== 'medium') return false;
+  return random() < 0.05;
+}
+
+/**
+ * Chooses an AI bid for Spades after Blind Nil has been declined or is unavailable.
+ * Never returns blindNil — that decision is chooseBlindNilPreView only.
  *
  * Easy: random bid between 1 and 4.
  * Medium: estimate-based (original behaviour).
@@ -42,7 +55,7 @@ function estimateHandBidHard(hand: Card[]): number {
 export function chooseSpadesBid(
   hand: Card[],
   nilEnabled: boolean,
-  blindNilEnabled: boolean,
+  _blindNilEnabled: boolean,
   difficulty: AIDifficulty = 'medium'
 ): { bid: number; bidType: SpadesBidType } {
   if (difficulty === 'easy') {
@@ -61,9 +74,6 @@ export function chooseSpadesBid(
   const estimate = estimateHandBid(hand);
   if (nilEnabled && estimate <= 1 && Math.random() < 0.15) {
     return { bid: 0, bidType: 'nil' };
-  }
-  if (blindNilEnabled && estimate === 0 && Math.random() < 0.05) {
-    return { bid: 0, bidType: 'blindNil' };
   }
   return { bid: Math.max(1, estimate), bidType: 'normal' };
 }

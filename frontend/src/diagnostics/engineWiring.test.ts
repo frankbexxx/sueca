@@ -81,6 +81,7 @@ describe('REL-REPLAY-01 engine diagnostic wiring', () => {
     const spades = getSpadesState(game.getCurrentState());
     expect(spades.waitingForBids).toBe(true);
     const first = spades.currentBidderIndex;
+    expect(game.declineBlindNil(first)).toBe(true);
     expect(game.submitBid(first, 0, 'nil')).toBe(true);
     const log = getActiveDiagnosticLog();
     const bids = log?.events.filter((e) => e.type === 'SPADES_BID') ?? [];

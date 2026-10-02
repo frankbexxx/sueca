@@ -41,6 +41,7 @@ describe('spadesFlowController', () => {
       kind: 'spades',
       readState: () => spadesState(),
       submitBid,
+      declineBlindNil: jest.fn(() => true),
       tickBidAi: jest.fn()
     };
     createSpadesFlowController(flow).submitHumanBid(0, 3, 'nil');
@@ -53,6 +54,7 @@ describe('spadesFlowController', () => {
       kind: 'spades',
       readState: () => vs,
       submitBid: jest.fn(() => true),
+      declineBlindNil: jest.fn(() => true),
       tickBidAi: jest.fn()
     };
     const ctrl = createSpadesFlowController(flow);
