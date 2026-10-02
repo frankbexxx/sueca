@@ -143,6 +143,31 @@ describe('HeartsGame', () => {
     }
   });
 
+  it('keeps a heart lead illegal while hearts are closed and Q♠ is available', () => {
+    const game = new HeartsGame();
+    game.initialize(['A', 'B', 'C', 'D'], {});
+    const internal = game as unknown as { state: ReturnType<HeartsGame['getCurrentState']> };
+    const s = internal.state;
+    s.isFirstTrick = false;
+    s.waitingForRoundStart = false;
+    s.currentTrick = [];
+    s.trickLeader = 0;
+    s.currentPlayerIndex = 0;
+    const hearts = getHeartsState(s);
+    hearts.waitingForPass = false;
+    hearts.heartsBroken = false;
+    s.variantState = { ...s.variantState, hearts };
+    s.players[0].hand = [c('Q', 'spades', 'qs'), c('2', 'hearts', 'h2')];
+
+    expect(game.canPlayCard(s, 0, 0)).toBe(true);
+    expect(game.canPlayCard(s, 0, 1)).toBe(false);
+
+    hearts.heartsBroken = true;
+    s.variantState = { ...s.variantState, hearts };
+    expect(game.canPlayCard(s, 0, 0)).toBe(true);
+    expect(game.canPlayCard(s, 0, 1)).toBe(true);
+  });
+
   it('escape play of heart sets heartsBroken', () => {
     const { game, state } = setupFirstTrickFollow([
       c('3', 'hearts', 'h3'),

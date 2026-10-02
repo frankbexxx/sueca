@@ -121,6 +121,34 @@ describe('HeartsPlayStrategy', () => {
       const idx = chooseHeartsCard(makeAdapter(), state, 0, 'hard');
       expect(hand[idx].suit).toBe('clubs');
     });
+
+    it('still leads a safe non-heart when Q♠ and a heart are also legal', () => {
+      const hand = [makeCard('Q', 'spades'), makeCard('3', 'hearts'), makeCard('2', 'clubs')];
+      const idx = chooseHeartsCard(makeAdapter(), makeState(hand, []), 0, 'hard');
+      expect(hand[idx]).toEqual(makeCard('2', 'clubs'));
+    });
+  });
+
+  describe('broken hearts — Q♠ must not beat a heart on lead', () => {
+    const hand = [makeCard('Q', 'spades'), makeCard('2', 'hearts')];
+
+    it('medium leads the heart', () => {
+      const idx = chooseHeartsCard(makeAdapter(), makeState(hand, []), 0, 'medium');
+      expect(hand[idx].suit).toBe('hearts');
+    });
+
+    it('hard leads the heart instead of Q♠', () => {
+      const idx = chooseHeartsCard(makeAdapter(), makeState(hand, []), 0, 'hard');
+      expect(hand[idx].suit).toBe('hearts');
+    });
+
+    it('hard still leads Q♠ when the heart is not a legal lead', () => {
+      const adapter = {
+        canPlayCard: (_state: GameState, _playerIndex: number, cardIndex: number) => cardIndex === 0
+      } as unknown as GameAdapter;
+      const idx = chooseHeartsCard(adapter, makeState(hand, []), 0, 'hard');
+      expect(hand[idx]).toEqual(makeCard('Q', 'spades'));
+    });
   });
 
   describe('T9 — returns -1 when no legal moves', () => {

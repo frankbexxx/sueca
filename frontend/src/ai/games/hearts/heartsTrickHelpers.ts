@@ -111,9 +111,20 @@ export function playFollow(
 }
 
 export function playLead(valid: number[], hand: Card[], hard: boolean): number {
-  const pool =
-    hard && valid.some((i) => hand[i].suit !== 'hearts')
-      ? valid.filter((i) => hand[i].suit !== 'hearts')
-      : valid;
-  return pickLowestPenaltyIndex(pool, hand);
+  if (!hard) return pickLowestPenaltyIndex(valid, hand);
+
+  const nonHearts = valid.filter((i) => hand[i].suit !== 'hearts');
+  const hearts = valid.filter((i) => hand[i].suit === 'hearts');
+  if (nonHearts.length === 0 || hearts.length === 0) {
+    return pickLowestPenaltyIndex(valid, hand);
+  }
+
+  // Keep a non-heart lead only when it is no more expensive than a heart.
+  // Q♠ is 20 and a heart is 10, so the queen must not win just by being the only non-heart.
+  const nonHeartPick = pickLowestPenaltyIndex(nonHearts, hand);
+  const heartPick = pickLowestPenaltyIndex(hearts, hand);
+  if (penaltyScore(hand[nonHeartPick]) <= penaltyScore(hand[heartPick])) {
+    return nonHeartPick;
+  }
+  return pickLowestPenaltyIndex(valid, hand);
 }
