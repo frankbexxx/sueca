@@ -17,6 +17,7 @@ export interface HeartsFlowController {
     localPlayerIndex: number
   ): boolean;
   confirmPass(localPlayerIndex: number): boolean;
+  releasePassExchange(): void;
   resolveEarlyEnd(accept: boolean): void;
 }
 
@@ -38,6 +39,10 @@ export function createHeartsFlowController(flow: HeartsVariantFlow): HeartsFlowC
 
     confirmPass(localPlayerIndex) {
       return flow.confirmPass(localPlayerIndex);
+    },
+
+    releasePassExchange() {
+      flow.releasePassExchange();
     },
 
     resolveEarlyEnd(accept) {

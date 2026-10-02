@@ -34,6 +34,11 @@ import {
 } from '../constants/gameConstants';
 import { resolveAiPlayDelayMs } from '../models/games/suecaAiPacing';
 import {
+  getHeartsState,
+  heartsCardPlayArmDelayMs,
+  isHeartsPassExchangeLocked
+} from '../models/games/HeartsGame';
+import {
   kingFestaTickDelayMs,
   kingSyntheticScoreHoldMs,
   spadesAiBidDelayMs
@@ -1238,7 +1243,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       !waitingForEarlyEnd &&
       suecaPlayReady;
 
-    if (!eligible || !gameAdapter) {
+    const passBeatLocksPlay =
+      gameVariant === 'hearts' && isHeartsPassExchangeLocked(getHeartsState(gameState));
+
+    if (!eligible || !gameAdapter || passBeatLocksPlay) {
       gate.close();
       return () => {
         gate.close();
@@ -1246,10 +1254,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
 
     const scope = gate.open();
-    const delayMs = resolveAiPlayDelayMs({
-      variant: gameVariant,
-      trickLength: gameState.currentTrick.length
-    });
+    const delayMs =
+      gameVariant === 'hearts'
+        ? heartsCardPlayArmDelayMs(gameState)
+        : resolveAiPlayDelayMs({
+            variant: gameVariant,
+            trickLength: gameState.currentTrick.length
+          });
+    if (delayMs == null) {
+      gate.close();
+      return () => {
+        gate.close();
+      };
+    }
     const timer = setTimeout(() => {
       if (!scope.isCurrent()) return;
       playAICard(scope);
@@ -1259,6 +1276,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       gate.close();
     };
   }, [gameAdapter, gameStarted, gameState.currentPlayerIndex, gameState.isGameOver, gameState.isPaused, gameState.waitingForTrickEnd, gameState.waitingForRoundStart, gameState.waitingForRoundEnd, gameState.waitingForGameStart, gameState.players, gameState.currentTrick.length, gameState.variantState, gameVariant, playAICard, isMultiplayer, multiplayerPlayerIndex, isHostOrSolo, waitingForEarlyEnd, suecaPlayReady]);
+
+  const passExchangeUntilMs =
+    gameVariant === 'hearts' ? getHeartsState(gameState).passExchangeUntilMs : null;
+
+  useEffect(() => {
+    if (!heartsCtrl || !gameAdapter || passExchangeUntilMs == null || !isHostOrSolo) return;
+    const remaining = Math.max(0, passExchangeUntilMs - Date.now());
+    const id = window.setTimeout(() => {
+      heartsCtrl.releasePassExchange();
+      afterHostMutationRef.current();
+    }, remaining);
+    return () => window.clearTimeout(id);
+  }, [heartsCtrl, gameAdapter, passExchangeUntilMs, isHostOrSolo]);
 
   /**
    * Handles card click from human player

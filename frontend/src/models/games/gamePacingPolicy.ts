@@ -9,6 +9,7 @@ import {
   AI_PLAY_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
+  HEARTS_PASS_EXCHANGE_MS,
   SPADES_AI_BID_DELAY_MS,
   SYNTHETIC_ROUND_COMPLETE_HOLD_MS,
   TRICK_AUTO_CONTINUE_SECONDS
@@ -47,8 +48,8 @@ export type SpadesPacingPolicy = SharedBeats & {
 
 export type HeartsPacingPolicy = SharedBeats & {
   variant: 'hearts';
-  /** No pass-exchange beat yet. null is absence, not an instant timer. */
-  passExchangeMs: AbsentBeat;
+  /** Receipt beat after cards change hands. Not a card-play or bid timer. */
+  passExchangeMs: number;
 };
 
 export type KingPacingPolicy = SharedBeats & {
@@ -90,7 +91,7 @@ const HEARTS_POLICY: HeartsPacingPolicy = {
   cardPlay: { aiLeadMs: AI_PLAY_DELAY_MS, aiFollowMs: AI_PLAY_DELAY_MS },
   trickHoldMs: TRICK_HOLD_MS,
   finalResultHoldMs: GAME_OVER_DELAY_MS,
-  passExchangeMs: null
+  passExchangeMs: HEARTS_PASS_EXCHANGE_MS
 };
 
 const KING_POLICY: KingPacingPolicy = {
@@ -137,7 +138,7 @@ export function spadesAiBidDelayMs(): number {
   return getGamePacingPolicy('spades').aiBidMs;
 }
 
-export function heartsPassExchangeMs(): null {
+export function heartsPassExchangeMs(): number {
   return getGamePacingPolicy('hearts').passExchangeMs;
 }
 

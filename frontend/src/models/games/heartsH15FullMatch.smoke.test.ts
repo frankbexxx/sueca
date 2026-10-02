@@ -59,6 +59,9 @@ function autoConfirmPass(game: HeartsGame): boolean {
   expect(beforeIds.size).toBe(52);
   const ok = game.confirmPass(0);
   expect(ok).toBe(true);
+  if (hearts.passDirection !== 'hold') {
+    game.releasePassExchange();
+  }
   assertDeckIntegrity(game, true);
   return ok;
 }

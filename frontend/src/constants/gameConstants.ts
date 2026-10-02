@@ -7,6 +7,8 @@
 export const AI_PLAY_DELAY_MS = 1500;
 /** Spades AI bid pause. Same duration as card play today; a separate beat. */
 export const SPADES_AI_BID_DELAY_MS = 1500;
+/** Hearts receipt beat after a real pass. Not the Sueca follow delay. */
+export const HEARTS_PASS_EXCHANGE_MS = 800;
 /** Observable King festa auction — one AI bid/pass per tick. */
 export const FESTA_AUCTION_AI_DELAY_MS = 1000;
 /** Pause after last auction action before negotiation / fallback. */

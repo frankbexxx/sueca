@@ -12,6 +12,7 @@ function heartsState(overrides: Partial<HeartsVariantState> = {}): HeartsVariant
     waitingForPass: false,
     passDirection: 'left',
     humanPassIndices: [],
+    passExchangeUntilMs: null,
     heartsTakenCount: 0,
     queenSpadesTaken: false,
     penaltyCardsTaken: [[], [], [], []],
@@ -31,6 +32,7 @@ describe('heartsFlowController', () => {
       readState: () => heartsState({ waitingForPass: waiting }),
       togglePassCard,
       confirmPass: jest.fn(() => true),
+      releasePassExchange: jest.fn(),
       acceptEarlyEnd: jest.fn(),
       declineEarlyEnd: jest.fn()
     };
@@ -52,6 +54,7 @@ describe('heartsFlowController', () => {
       readState: () => heartsState({ waitingForPass: true }),
       togglePassCard: jest.fn(),
       confirmPass,
+      releasePassExchange: jest.fn(),
       acceptEarlyEnd: jest.fn(),
       declineEarlyEnd: jest.fn()
     };
@@ -67,6 +70,7 @@ describe('heartsFlowController', () => {
       readState: () => heartsState({ waitingForEarlyEnd: true }),
       togglePassCard: jest.fn(),
       confirmPass: jest.fn(() => true),
+      releasePassExchange: jest.fn(),
       acceptEarlyEnd,
       declineEarlyEnd
     };

@@ -44,6 +44,7 @@ export interface HeartsVariantFlow {
   readState(state: GameState): HeartsVariantState;
   togglePassCard(cardIndex: number, localPlayerIndex: number): void;
   confirmPass(localPlayerIndex: number): boolean;
+  releasePassExchange(): void;
   acceptEarlyEnd(): void;
   declineEarlyEnd(): void;
 }

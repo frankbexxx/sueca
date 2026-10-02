@@ -3,6 +3,7 @@ import {
   AI_PLAY_DELAY_MS,
   FESTA_AI_STEP_DELAY_MS,
   GAME_OVER_DELAY_MS,
+  HEARTS_PASS_EXCHANGE_MS,
   SPADES_AI_BID_DELAY_MS,
   TRICK_AUTO_CONTINUE_SECONDS
 } from '../../constants/gameConstants';
@@ -61,12 +62,16 @@ describe('game pacing policies', () => {
     expect('aiBidMs' in getGamePacingPolicy('king')).toBe(false);
   });
 
-  it('records Hearts pass exchange as absent, not zero', () => {
+  it('gives Hearts an explicit pass-exchange beat, separate from other timers', () => {
     const hearts = getGamePacingPolicy('hearts');
     if (hearts.variant !== 'hearts') throw new Error('expected hearts');
-    expect(hearts.passExchangeMs).toBeNull();
-    expect(heartsPassExchangeMs()).toBeNull();
-    expect(hearts.passExchangeMs).not.toBe(0);
+    expect(hearts.passExchangeMs).toBe(800);
+    expect(hearts.passExchangeMs).toBe(HEARTS_PASS_EXCHANGE_MS);
+    expect(heartsPassExchangeMs()).toBe(800);
+    expect('passExchangeMs' in getGamePacingPolicy('sueca')).toBe(false);
+    expect('passExchangeMs' in getGamePacingPolicy('spades')).toBe(false);
+    expect('passExchangeMs' in getGamePacingPolicy('king')).toBe(false);
+    expect(hearts.cardPlay).toEqual({ aiLeadMs: 1500, aiFollowMs: 1500 });
   });
 
   it('keeps King festa at 350 ms and auction as a manual step', () => {

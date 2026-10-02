@@ -11,6 +11,7 @@ import {
   trickHasQueenSpades
 } from '../../utils/earlyRoundEnd';
 import { settleHeartsRoundDeltas } from './heartsRoundDisplay';
+import { heartsPassExchangeMs, cardPlayDelayMs } from './gamePacingPolicy';
 import { HeartsVariantFlow } from './variantFlowApi';
 import { recordHeartsPass } from '../../diagnostics/session';
 import { individualMatchResult } from '../matchResult';
@@ -28,6 +29,11 @@ export interface HeartsVariantState {
   waitingForPass: boolean;
   passDirection: PassDirection;
   humanPassIndices: number[];
+  /**
+   * Presentation lock after a real exchange. Null when play may proceed.
+   * Not a second pass. Restore clears it so a reload continues from the exchanged hands.
+   */
+  passExchangeUntilMs: number | null;
   heartsTakenCount: number;
   queenSpadesTaken: boolean;
   penaltyCardsTaken: Card[][];
@@ -56,6 +62,7 @@ export function getHeartsState(state: GameState): HeartsVariantState {
     waitingForPass: true,
     passDirection: 'left',
     humanPassIndices: [],
+    passExchangeUntilMs: null,
     heartsTakenCount: 0,
     queenSpadesTaken: false,
     penaltyCardsTaken: emptyPenaltyCardsTaken(),
@@ -64,6 +71,23 @@ export function getHeartsState(state: GameState): HeartsVariantState {
     earlyEndOffered: false
   };
   return vs ? { ...defaults, ...vs } : defaults;
+}
+
+export function isHeartsPassExchangeLocked(
+  hearts: { passExchangeUntilMs?: number | null },
+  now = Date.now()
+): boolean {
+  const until = hearts.passExchangeUntilMs;
+  return typeof until === 'number' && now < until;
+}
+
+/**
+ * Card-play arm for Hearts. Null while the pass-exchange beat is still running,
+ * so the lead delay starts only after that beat.
+ */
+export function heartsCardPlayArmDelayMs(state: GameState, now = Date.now()): number | null {
+  if (isHeartsPassExchangeLocked(getHeartsState(state), now)) return null;
+  return cardPlayDelayMs('hearts', state.currentTrick.length);
 }
 
 function passDirectionForRound(round: number): PassDirection {
@@ -90,6 +114,7 @@ export class HeartsGame extends BaseGameAdapter {
       togglePassCard: (cardIndex, localPlayerIndex) =>
         this.togglePassCard(cardIndex, localPlayerIndex),
       confirmPass: (localPlayerIndex) => this.confirmPass(localPlayerIndex),
+      releasePassExchange: () => this.releasePassExchange(),
       acceptEarlyEnd: () => this.acceptEarlyEnd(),
       declineEarlyEnd: () => this.declineEarlyEnd()
     };
@@ -192,11 +217,21 @@ export class HeartsGame extends BaseGameAdapter {
 
     hearts.waitingForPass = false;
     hearts.humanPassIndices = [];
+    hearts.passExchangeUntilMs = Date.now() + heartsPassExchangeMs();
     this.state.waitingForRoundStart = false;
     this.state.variantState = { ...this.state.variantState, hearts };
 
     this.setOpeningLeader();
     return true;
+  }
+
+  /** Ends the receipt beat. Does not move cards. */
+  releasePassExchange(): void {
+    if (!this.state) return;
+    const hearts = getHeartsState(this.state);
+    if (hearts.passExchangeUntilMs == null) return;
+    hearts.passExchangeUntilMs = null;
+    this.state.variantState = { ...this.state.variantState, hearts };
   }
 
   private setOpeningLeader(): void {
@@ -327,6 +362,7 @@ export class HeartsGame extends BaseGameAdapter {
     const s = this.state!;
     const hearts = getHeartsState(s);
     if (hearts.waitingForPass || s.waitingForRoundStart) return false;
+    if (isHeartsPassExchangeLocked(hearts)) return false;
     if (hearts.waitingForEarlyEnd) return false;
     const player = s.players[playerIndex];
     if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return false;
@@ -507,7 +543,11 @@ export class HeartsGame extends BaseGameAdapter {
   }
 
   restoreState(state: GameState): GameState {
-    this.state = JSON.parse(JSON.stringify(state));
+    const restored = JSON.parse(JSON.stringify(state)) as GameState;
+    this.state = restored;
+    const hearts = getHeartsState(restored);
+    hearts.passExchangeUntilMs = null;
+    restored.variantState = { ...restored.variantState, hearts };
     return this.getCurrentState();
   }
 
