@@ -674,7 +674,6 @@
   line-height: 1.2;
 }
 
-.game-status-panel__col--contract .king-history-panel,
 .game-status-panel__col--contract .king-score-peek {
   margin-top: 6px;
 }
@@ -1724,7 +1723,6 @@
   .game-status-panel__contract-rules,
   .game-status-panel__contract-hint,
   .game-status-panel__contract-sep,
-  .king-history-panel,
   .king-null-start-note {
     display: none;
   }

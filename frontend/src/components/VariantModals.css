@@ -1361,35 +1361,6 @@
   opacity: 0.9;
 }
 
-.king-history-panel {
-  margin-top: 0.35rem;
-}
-
-.king-history-toggle {
-  font-size: 0.62rem;
-  padding: 4px 8px;
-  min-height: 32px;
-  width: 100%;
-  max-width: 100%;
-}
-
-.king-history-list {
-  margin: 0.35rem 0 0;
-  padding-left: 0;
-  list-style: none;
-  font-size: 0.58rem;
-  max-height: 100px;
-  overflow-y: auto;
-}
-
-.king-history-list li {
-  margin-bottom: 0.35rem;
-}
-
-.king-history-delta {
-  margin-right: 0.35rem;
-}
-
 .king-null-start-note {
   font-size: 0.72rem;
   opacity: 0.85;

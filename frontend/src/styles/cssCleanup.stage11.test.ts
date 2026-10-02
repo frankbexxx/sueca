@@ -40,7 +40,6 @@ describe('Stage 11 dead / superseded CSS cleanup', () => {
       'components/common/ConfirmDialog.tsx',
       'components/EarlyRoundEndModal.tsx',
       'components/KingFestaFlowModal.tsx',
-      'components/KingScoreModal.tsx',
       'components/KingScoreSheetModal.tsx',
       'components/KingKohRevealModal.tsx',
       'components/SuecaDealingModal.tsx',
