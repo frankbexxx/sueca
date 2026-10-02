@@ -1556,12 +1556,7 @@ export class KingPtGame extends BaseGameAdapter {
   }
 
   restoreState(state: GameState): GameState {
-    const restored = JSON.parse(JSON.stringify(state)) as GameState;
-    this.state = restored;
-    const king = getKingPtState(restored);
-    if (restored.waitingForRoundStart && isFestaFlowBlocking(king)) {
-      this.runAiFestaSteps();
-    }
+    this.state = JSON.parse(JSON.stringify(state)) as GameState;
     return this.getCurrentState();
   }
 
