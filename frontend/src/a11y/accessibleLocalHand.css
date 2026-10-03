@@ -1,0 +1,34 @@
+/**
+ * Accessibility Step 1 — visually hidden semantic hand.
+ * Must not participate in measured scene layout or cover the Phaser canvas.
+ */
+.accessible-local-hand {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  /* Keep out of pointer hit-testing so Phaser canvas interaction is untouched. */
+  pointer-events: none;
+}
+
+.accessible-local-hand__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.accessible-local-hand__item {
+  margin: 0;
+  padding: 0;
+}
+
+.accessible-local-hand__card {
+  /* Keyboard focus/activation still works; pointer stays disabled via parent. */
+  font: inherit;
+}

@@ -84,3 +84,28 @@ describe('GameBoard Step 4 canonical card actions', () => {
     expect(boardTsx).toContain("buildCardActionContext('phaser')");
   });
 });
+
+describe('GameBoard Accessibility Step 1 semantic hand', () => {
+  it('mounts AccessibleLocalHand on Phaser path via DOM/keyboard canonical route', () => {
+    expect(boardTsx).toContain('AccessibleLocalHand');
+    expect(boardTsx).toContain("from '../a11y/AccessibleLocalHand'");
+    expect(boardTsx).toContain('onCardActivate={handleCardClick}');
+  });
+
+  it('does not mount AccessibleLocalHand in the visual DOM PlayerHand branch', () => {
+    const phaserBranch = boardTsx.slice(
+      boardTsx.indexOf('{usePhaserTable ? ('),
+      boardTsx.indexOf(') : (', boardTsx.indexOf('{usePhaserTable ? ('))
+    );
+    const domBranchStart = boardTsx.indexOf(') : (', boardTsx.indexOf('{usePhaserTable ? ('));
+    const domBranch = boardTsx.slice(domBranchStart, domBranchStart + 1200);
+    expect(phaserBranch).toContain('AccessibleLocalHand');
+    expect(domBranch).not.toContain('AccessibleLocalHand');
+    expect(domBranch).toContain('PlayerHand');
+  });
+
+  it('keeps semantic hand outside SuecaPhaserRenderer props (no geometry coupling)', () => {
+    expect(boardTsx).toContain('<AccessibleLocalHand');
+    expect(boardTsx).not.toMatch(/SuecaPhaserRenderer[\s\S]{0,400}AccessibleLocalHand/);
+  });
+});

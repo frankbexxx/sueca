@@ -86,6 +86,7 @@ import {
 import type { KingNegativeContract } from '../models/games/king/kingContracts';
 import { isKingPtEnginePreset } from '../models/games/king/kingSyntheticMode';
 import { PlayerHand } from './PlayerHand';
+import { AccessibleLocalHand } from '../a11y/AccessibleLocalHand';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
@@ -2050,24 +2051,44 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   fallback={domTableContent}
                   onFallback={handlePhaserFallback}
                 >
-                  <SuecaPhaserRenderer
-                    model={tableModel}
-                    sceneGeometry={sceneGeometry}
-                    getCardImage={getCardImage}
-                    getTeamName={getTeamName}
-                    selectedCardIndex={selectedCard}
-                    isLocalCardPlayable={isLocalCardPlayable}
-                    onInitError={handlePhaserFallback}
-                    onTableReady={markTableReadyForRitual}
-                    events={{
-                      onLocalCardClick: handlePhaserCardClick,
-                      onContinueTrick: () => {
-                        if (!gameAdapter || !gameState.waitingForTrickEnd) return;
-                        gameAdapter.finishTrick(gameAdapter.getCurrentState());
-                        afterHostMutation();
-                      }
-                    }}
-                  />
+                  <>
+                    <SuecaPhaserRenderer
+                      model={tableModel}
+                      sceneGeometry={sceneGeometry}
+                      getCardImage={getCardImage}
+                      getTeamName={getTeamName}
+                      selectedCardIndex={selectedCard}
+                      isLocalCardPlayable={isLocalCardPlayable}
+                      onInitError={handlePhaserFallback}
+                      onTableReady={markTableReadyForRitual}
+                      events={{
+                        onLocalCardClick: handlePhaserCardClick,
+                        onContinueTrick: () => {
+                          if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                          gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                          afterHostMutation();
+                        }
+                      }}
+                    />
+                    {/*
+                      Semantic hand: Phaser path only (omitted when ErrorBoundary
+                      swaps to domTableContent / visual PlayerHand). Visually hidden;
+                      pointer-events none — does not affect sceneGeometry or canvas hits.
+                    */}
+                    {gameAdapter &&
+                    gameState.players[localPlayerIndex] &&
+                    !suecaPresentationGate.hideHands &&
+                    !(spadesState && isBlindNilDecisionPending(spadesState, localPlayerIndex)) ? (
+                      <AccessibleLocalHand
+                        cards={gameState.players[localPlayerIndex].hand}
+                        selectedCard={selectedCard}
+                        selectedPassIndices={handProps.selectedPassIndices}
+                        readOnly={handProps.readOnly || !suecaPlayReady}
+                        canPlayCard={isLocalCardPlayable}
+                        onCardActivate={handleCardClick}
+                      />
+                    ) : null}
+                  </>
                 </PhaserTableErrorBoundary>
               </div>
             </React.Suspense>
