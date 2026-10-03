@@ -138,6 +138,15 @@ function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
     Math.min(sceneH - Math.max(0, handRect.y - padY), handRect.height + padY * 2)
   );
 
+  // Step 3C — largest full-width overlay strip between HUD and hand interaction.
+  const hudBottom = hudRect.y + hudRect.height;
+  const decisionSheetRect = rect(
+    0,
+    hudBottom,
+    sceneW,
+    Math.max(0, handInteractionRect.y - hudBottom)
+  );
+
   const seatZones = {
     north: northSeat,
     west: westSeat,
@@ -172,6 +181,7 @@ function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
     handInteractionRect,
     actionStatusRect,
     decisionRect,
+    decisionSheetRect,
     fullSceneModalRect: rect(0, 0, sceneW, sceneH),
     overlaySafeRect: feltRect,
     overlayExclusions: {
@@ -232,6 +242,11 @@ function invariantsHold(zones: ReturnType<typeof buildInternalZones>): boolean {
   if (!contains(zones.feltRect, zones.seatZones.west)) return false;
   if (!contains(zones.feltRect, zones.seatZones.east)) return false;
   if (!contains(scene, zones.seatZones.south)) return false;
+  if (!contains(scene, zones.decisionSheetRect)) return false;
+  if (zones.decisionSheetRect.height <= 0) return false;
+  // Step 3C hard rules — overlay may cover felt/seats; never HUD or hand interaction.
+  if (intersects(zones.decisionSheetRect, zones.hudRect)) return false;
+  if (intersects(zones.decisionSheetRect, zones.handInteractionRect)) return false;
   if (intersects(zones.decisionRect, zones.handRect)) return false;
   if (intersects(zones.decisionRect, zones.seatExclusionRects.north)) return false;
   if (intersects(zones.decisionRect, zones.seatExclusionRects.west)) return false;

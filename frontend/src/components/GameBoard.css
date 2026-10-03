@@ -106,16 +106,18 @@
 }
 
 /*
- * Spades bid dock was flow-below-host. With an absolute full sceneFrame host,
- * pin the existing dock to the shell bottom without changing host geometry.
+ * Step 3C — Spades bid uses CanonicalDecisionSurface + decisionSheetRect.
+ * Do not pin/dock relative to the shell bottom (obsolete 3A bridge).
  */
 .game-board--canonical-scene.game-board--spades-bid .spades-bid-dock {
-  position: absolute;
-  left: 50%;
-  bottom: max(8px, env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: 2100;
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
   margin: 0;
+  width: 100%;
+  max-width: 100%;
+  z-index: auto;
 }
 
 .scene-geometry-unsupported {

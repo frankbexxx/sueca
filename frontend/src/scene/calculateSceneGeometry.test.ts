@@ -565,6 +565,22 @@ describe('calculateSceneGeometry', () => {
         expect(rectContains(local, geometry.hudRect)).toBe(true);
         expect(rectContains(local, geometry.actionStatusRect)).toBe(true);
         expect(rectContains(geometry.feltRect, geometry.decisionRect)).toBe(true);
+        expect(rectContains(local, geometry.decisionSheetRect)).toBe(true);
+        expect(geometry.decisionSheetRect.x).toBe(0);
+        expect(geometry.decisionSheetRect.y).toBeCloseTo(
+          geometry.hudRect.y + geometry.hudRect.height,
+          5
+        );
+        expect(geometry.decisionSheetRect.width).toBeCloseTo(geometry.sceneFrame.width, 5);
+        expect(geometry.decisionSheetRect.height).toBeCloseTo(
+          geometry.handInteractionRect.y -
+            (geometry.hudRect.y + geometry.hudRect.height),
+          5
+        );
+        expect(rectsIntersect(geometry.decisionSheetRect, geometry.hudRect)).toBe(false);
+        expect(
+          rectsIntersect(geometry.decisionSheetRect, geometry.handInteractionRect)
+        ).toBe(false);
         expect(rectContains(local, geometry.seatZones.north)).toBe(true);
         expect(rectContains(local, geometry.seatZones.west)).toBe(true);
         expect(rectContains(local, geometry.seatZones.east)).toBe(true);

@@ -7,6 +7,9 @@ import type {
   SuecaPhysicalDealDirection,
   SuecaPostDealPhase
 } from '../models/games/suecaHandRitual';
+import { useSceneGeometrySnapshot } from '../hooks/SceneGeometryContext';
+import { resolveSuecaRitualCanonicalZone } from '../runtime/canonicalScenePlacement';
+import { CanonicalDecisionSurface } from './CanonicalDecisionSurface';
 import './VariantModals.css';
 
 export interface SuecaPostDealCardProps {
@@ -26,6 +29,12 @@ export const SuecaPostDealCard: React.FC<SuecaPostDealCardProps> = ({
   trumpCard
 }) => {
   const { t } = useLanguage();
+  const sceneGeometry = useSceneGeometrySnapshot();
+  const geometry = sceneGeometry?.supported === true ? sceneGeometry.geometry : null;
+  const ritualKind = phase === 'trump-reveal' ? 'decision' : 'status';
+  const canonicalZone = geometry
+    ? resolveSuecaRitualCanonicalZone(geometry, ritualKind)
+    : 'decisionSheetRect';
 
   const trumpSrc = (() => {
     if (!trumpCard) return '';
@@ -53,10 +62,11 @@ export const SuecaPostDealCard: React.FC<SuecaPostDealCardProps> = ({
   }
 
   return (
-    <div
-      className="variant-modal-overlay dealing-modal-overlay dealing-modal-overlay--table-ritual"
-      data-testid="sueca-post-deal-overlay"
-      data-post-deal-phase={phase}
+    <CanonicalDecisionSurface
+      zone={canonicalZone}
+      align="center"
+      testId="sueca-post-deal-overlay"
+      className="canonical-decision-surface--sueca-ritual"
     >
       <div
         className={`variant-modal dealing-modal dealing-modal--ritual dealing-modal--ritual-plaque dealing-modal--ritual-clearance dealing-modal--ritual-${
@@ -65,6 +75,8 @@ export const SuecaPostDealCard: React.FC<SuecaPostDealCardProps> = ({
         role="dialog"
         aria-modal="true"
         aria-live="polite"
+        data-post-deal-phase={phase}
+        data-canonical-zone={canonicalZone}
       >
         <p className="dealing-modal-kicker">{kicker}</p>
         {phase === 'trump-reveal' ? (
@@ -84,6 +96,6 @@ export const SuecaPostDealCard: React.FC<SuecaPostDealCardProps> = ({
           <p className="dealing-modal-status">{status}</p>
         ) : null}
       </div>
-    </div>
+    </CanonicalDecisionSurface>
   );
 };

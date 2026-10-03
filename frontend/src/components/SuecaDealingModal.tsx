@@ -14,6 +14,9 @@ import {
   type SuecaRitualPhase
 } from '../models/games/suecaHandRitual';
 import type { SuecaRitualDebugPhase } from '../dev/suecaRitualDebug';
+import { useSceneGeometrySnapshot } from '../hooks/SceneGeometryContext';
+import { resolveSuecaRitualCanonicalZone } from '../runtime/canonicalScenePlacement';
+import { CanonicalDecisionSurface } from './CanonicalDecisionSurface';
 import './VariantModals.css';
 
 export interface SuecaDealingModalPlayer {
@@ -63,6 +66,7 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   onRitualDebugPhase
 }) => {
   const { t } = useLanguage();
+  const sceneGeometry = useSceneGeometrySnapshot();
   const seats = useMemo(() => ritualSeatsForDealer(dealerIndex), [dealerIndex]);
   const dealer = players[seats.dealer];
   const shuffler = players[seats.shuffler];
@@ -208,6 +212,11 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   const showHumanDecision = phase === 'dealer-decision' && !dealerIsAi;
   const density =
     showHumanDecision ? 'human' : phase === 'shuffle' || phase === 'cut' ? 'status' : 'decision';
+  const ritualKind = density === 'human' ? 'human' : density === 'status' ? 'status' : 'decision';
+  const geometry = sceneGeometry?.supported === true ? sceneGeometry.geometry : null;
+  const canonicalZone = geometry
+    ? resolveSuecaRitualCanonicalZone(geometry, ritualKind)
+    : 'decisionSheetRect';
 
   let statusText: string | null = null;
   if (phase === 'shuffle') statusText = t.modals.shuffling(shufflerName);
@@ -222,10 +231,11 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
   }
 
   return (
-    <div
-      className="variant-modal-overlay dealing-modal-overlay dealing-modal-overlay--table-ritual"
-      data-testid="sueca-ritual-overlay"
-      data-ritual-debug={ritualDebug ? '1' : undefined}
+    <CanonicalDecisionSurface
+      zone={canonicalZone}
+      align="center"
+      testId="sueca-ritual-overlay"
+      className="canonical-decision-surface--sueca-ritual"
     >
       <div
         className={`variant-modal dealing-modal dealing-modal--ritual dealing-modal--ritual-plaque dealing-modal--ritual-clearance dealing-modal--ritual-${density}`}
@@ -234,6 +244,8 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
         aria-labelledby="dealing-modal-title"
         data-ritual-phase={phase}
         data-dealer-ai={dealerIsAi ? 'true' : 'false'}
+        data-ritual-debug={ritualDebug ? '1' : undefined}
+        data-canonical-zone={canonicalZone}
       >
         <p id="dealing-modal-title" className="dealing-modal-kicker">
           {t.modals.dealingTitle}
@@ -309,6 +321,6 @@ export const SuecaDealingModal: React.FC<SuecaDealingModalProps> = ({
           </>
         ) : null}
       </div>
-    </div>
+    </CanonicalDecisionSurface>
   );
 };

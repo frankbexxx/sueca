@@ -148,6 +148,13 @@ export interface SceneGeometry {
   readonly handInteractionRect: Rect;
   readonly actionStatusRect: Rect;
   readonly decisionRect: Rect;
+  /**
+   * Step 3C — canonical overlay envelope for large decision sheets
+   * (Hearts pass, Spades bid, King Festa, Sueca large ritual).
+   * Scene-local; may overlay felt/trick/seats when active; must not
+   * intersect hudRect or handInteractionRect.
+   */
+  readonly decisionSheetRect: Rect;
   readonly fullSceneModalRect: Rect;
   readonly overlaySafeRect: Rect;
   readonly overlayExclusions: OverlayExclusions;

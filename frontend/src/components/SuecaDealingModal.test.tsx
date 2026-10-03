@@ -91,11 +91,11 @@ describe('SuecaDealingModal ritual (UX-SUECA-03)', () => {
     });
   }
 
-  it('uses table-ritual overlay (no heavy dialog scrim class alone)', () => {
+  it('uses canonical ritual surface (no legacy table-ritual overlay)', () => {
     renderModal({ playDirection: 'right', dealerIndex: 0 });
-    expect(
-      container.querySelector('.dealing-modal-overlay--table-ritual')
-    ).not.toBeNull();
+    expect(container.querySelector('[data-testid="sueca-ritual-overlay"]')).not.toBeNull();
+    expect(container.querySelector('.dealing-modal-overlay--table-ritual')).toBeNull();
+    expect(container.querySelector('.dealing-modal--ritual-plaque')).not.toBeNull();
     expect(container.querySelector('.dealing-modal-kicker')?.textContent).toMatch(
       /Distribuição/i
     );

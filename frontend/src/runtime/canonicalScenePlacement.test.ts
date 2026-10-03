@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { computeAuthoritativeSceneGeometry } from './computeAuthoritativeSceneGeometry';
-import { hudRectShellStyle, sceneFrameHostStyle } from './canonicalScenePlacement';
+import {
+  decisionSheetRectShellStyle,
+  hudRectShellStyle,
+  resolveSuecaRitualCanonicalZone,
+  sceneFrameHostStyle,
+  SUECA_RITUAL_STATUS_CLEAN_MIN_HEIGHT_PX
+} from './canonicalScenePlacement';
 
 describe('canonicalScenePlacement', () => {
   it('maps supported sceneFrame to absolute host box', () => {
@@ -59,5 +65,39 @@ describe('canonicalScenePlacement', () => {
     expect(hudRectShellStyle(a.result.geometry)).toEqual(
       hudRectShellStyle(b.result.geometry)
     );
+    expect(decisionSheetRectShellStyle(a.result.geometry)).toEqual(
+      decisionSheetRectShellStyle(b.result.geometry)
+    );
+  });
+
+  it('maps decisionSheetRect into shell coordinates from SceneGeometry only', () => {
+    const computed = computeAuthoritativeSceneGeometry({
+      width: 390,
+      height: 844,
+      safeInsets: { top: 0, right: 0, bottom: 0, left: 0 }
+    });
+    expect(computed.ok).toBe(true);
+    if (!computed.ok || !computed.result.supported) return;
+    const g = computed.result.geometry;
+    const style = decisionSheetRectShellStyle(g);
+    expect(style.left).toBe(g.sceneFrame.x + g.decisionSheetRect.x);
+    expect(style.top).toBe(g.sceneFrame.y + g.decisionSheetRect.y);
+    expect(style.width).toBe(g.decisionSheetRect.width);
+    expect(style.height).toBe(g.decisionSheetRect.height);
+  });
+
+  it('routes Sueca status to decisionSheetRect when decisionRect is too short', () => {
+    const computed = computeAuthoritativeSceneGeometry({
+      width: 390,
+      height: 844,
+      safeInsets: { top: 0, right: 0, bottom: 0, left: 0 }
+    });
+    expect(computed.ok).toBe(true);
+    if (!computed.ok || !computed.result.supported) return;
+    const g = computed.result.geometry;
+    expect(g.decisionRect.height).toBeLessThan(SUECA_RITUAL_STATUS_CLEAN_MIN_HEIGHT_PX);
+    expect(resolveSuecaRitualCanonicalZone(g, 'status')).toBe('decisionSheetRect');
+    expect(resolveSuecaRitualCanonicalZone(g, 'decision')).toBe('decisionSheetRect');
+    expect(resolveSuecaRitualCanonicalZone(g, 'human')).toBe('decisionSheetRect');
   });
 });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../i18n/useLanguage';
 import { SpadesBidType } from '../models/games/spades/spadesRules';
+import { CanonicalDecisionSurface } from './CanonicalDecisionSurface';
 import './VariantModals.css';
 
 interface SpadesBidMiniboxProps {
@@ -46,6 +47,7 @@ export const SpadesBidMinibox: React.FC<SpadesBidMiniboxProps> = ({
   const selectedLabel = bidType === 'nil' ? t.spadesBid.nilSelected : String(bid);
 
   return (
+    <CanonicalDecisionSurface zone="decisionSheetRect" align="end">
     <div
       className="spades-bid-dock shell-panel"
       data-testid="spades-bid-surface"
@@ -123,5 +125,6 @@ export const SpadesBidMinibox: React.FC<SpadesBidMiniboxProps> = ({
         </>
       )}
     </div>
+    </CanonicalDecisionSurface>
   );
 };

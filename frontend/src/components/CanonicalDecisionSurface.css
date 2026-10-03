@@ -1,0 +1,55 @@
+/**
+ * Step 3C — shell for canonical decision / ritual surfaces.
+ * Position/size come from inline SceneGeometry styles; this file is layout only.
+ */
+
+.canonical-decision-surface {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  /* pointer-events none on shell; content re-enables */
+}
+
+.canonical-decision-surface--align-end {
+  align-items: flex-end;
+}
+
+.canonical-decision-surface--align-center {
+  align-items: center;
+}
+
+.canonical-decision-surface__content {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Plaques stay content-sized within the zone. */
+.canonical-decision-surface--align-center .canonical-decision-surface__content {
+  height: auto;
+  width: auto;
+  max-width: min(348px, 100%);
+}
+
+/* King Festa: sheet exterior fills the zone; body scrolls internally. */
+.canonical-decision-surface .king-festa-sheet {
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.canonical-decision-surface--decisionSheetRect.canonical-decision-surface--align-end
+  > .canonical-decision-surface__content:has(.king-festa-sheet) {
+  height: 100%;
+}

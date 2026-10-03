@@ -19,6 +19,7 @@ import {
 import { buildFestaSetupSummaryLines } from '../models/games/king/kingFestaSetupSummary';
 import { KingAuctionTimeline } from './KingAuctionTimeline';
 import { useLanguage } from '../i18n/useLanguage';
+import { CanonicalDecisionSurface } from './CanonicalDecisionSurface';
 import './VariantModals.css';
 
 function festaLocale(language: string): 'pt' | 'en' {
@@ -26,8 +27,8 @@ function festaLocale(language: string): 'pt' | 'en' {
 }
 
 /**
- * UX-FESTA-01 — shared Festa shell:
- * overlay (100dvh) → flex spacer (table) → sheet (header / scroll body / pinned footer).
+ * Step 3C — Festa shell in canonical decisionSheetRect.
+ * Height authority = SceneGeometry; body scrolls when content exceeds the zone.
  */
 const FestaSheet: React.FC<{
   header?: React.ReactNode;
@@ -36,7 +37,7 @@ const FestaSheet: React.FC<{
   compact?: boolean;
   setup?: boolean;
 }> = ({ header, children, footer, compact = false, setup = false }) => (
-  <div className="variant-modal-overlay variant-modal-overlay--bottom-sheet variant-modal-overlay--king-festa">
+  <CanonicalDecisionSurface zone="decisionSheetRect" align="end">
     <div
       className={`variant-modal variant-modal--bottom-sheet king-festa-sheet${
         compact ? ' variant-modal--festa-compact' : ''
@@ -57,7 +58,7 @@ const FestaSheet: React.FC<{
         </div>
       ) : null}
     </div>
-  </div>
+  </CanonicalDecisionSurface>
 );
 
 const SUITS: { id: Suit; label: string; short: string }[] = [
