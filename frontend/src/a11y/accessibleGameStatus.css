@@ -1,0 +1,27 @@
+/**
+ * Accessibility Step 2 — visually hidden semantic game status.
+ * Must not participate in measured scene layout or cover the Phaser canvas.
+ */
+.accessible-game-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
+
+.accessible-game-status__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.accessible-game-status__live {
+  margin: 0;
+}

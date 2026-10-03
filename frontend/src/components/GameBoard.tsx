@@ -87,6 +87,7 @@ import type { KingNegativeContract } from '../models/games/king/kingContracts';
 import { isKingPtEnginePreset } from '../models/games/king/kingSyntheticMode';
 import { PlayerHand } from './PlayerHand';
 import { AccessibleLocalHand } from '../a11y/AccessibleLocalHand';
+import { AccessibleGameStatus } from '../a11y/AccessibleGameStatus';
 import { GameActions } from './GameActions';
 import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
@@ -2075,6 +2076,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                       swaps to domTableContent / visual PlayerHand). Visually hidden;
                       pointer-events none — does not affect sceneGeometry or canvas hits.
                     */}
+                    <AccessibleGameStatus
+                      seats={tableModel.seats}
+                      localPlayerIndex={tableModel.localPlayerIndex}
+                      activeSeat={tableModel.activeSeat}
+                      currentTrick={tableModel.currentTrick}
+                      lastTrickWinner={tableModel.lastTrickWinner}
+                    />
                     {gameAdapter &&
                     gameState.players[localPlayerIndex] &&
                     !suecaPresentationGate.hideHands &&

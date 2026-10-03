@@ -109,3 +109,24 @@ describe('GameBoard Accessibility Step 1 semantic hand', () => {
     expect(boardTsx).not.toMatch(/SuecaPhaserRenderer[\s\S]{0,400}AccessibleLocalHand/);
   });
 });
+
+describe('GameBoard Accessibility Step 2 semantic status', () => {
+  it('mounts AccessibleGameStatus on Phaser path from tableModel fields', () => {
+    expect(boardTsx).toContain('AccessibleGameStatus');
+    expect(boardTsx).toContain("from '../a11y/AccessibleGameStatus'");
+    expect(boardTsx).toContain('seats={tableModel.seats}');
+    expect(boardTsx).toContain('currentTrick={tableModel.currentTrick}');
+    expect(boardTsx).toContain('lastTrickWinner={tableModel.lastTrickWinner}');
+  });
+
+  it('does not mount AccessibleGameStatus in the DOM PlayerHand branch', () => {
+    const phaserBranch = boardTsx.slice(
+      boardTsx.indexOf('{usePhaserTable ? ('),
+      boardTsx.indexOf(') : (', boardTsx.indexOf('{usePhaserTable ? ('))
+    );
+    const domBranchStart = boardTsx.indexOf(') : (', boardTsx.indexOf('{usePhaserTable ? ('));
+    const domBranch = boardTsx.slice(domBranchStart, domBranchStart + 1400);
+    expect(phaserBranch).toContain('AccessibleGameStatus');
+    expect(domBranch).not.toContain('AccessibleGameStatus');
+  });
+});
