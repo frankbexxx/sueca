@@ -89,6 +89,10 @@ import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SceneGeometryProvider } from '../hooks/SceneGeometryContext';
 import { useSceneGeometryAuthority } from '../hooks/useSceneGeometryAuthority';
 import { sceneGeometryResultKey } from '../scene/sceneGeometryEquality';
+import {
+  hudRectShellStyle,
+  sceneFrameHostStyle
+} from '../runtime/canonicalScenePlacement';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { isBlindNilDecisionPending } from '../models/games/SpadesGame';
 import { HeartsPassModal, HeartsPassReceipt } from './HeartsPassModal';
@@ -299,11 +303,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   /** Gameplay shell (HUD + table zone) — authoritative geometry measurement target. */
   const boardShellRef = useRef<HTMLDivElement | null>(null);
   const sceneGeometry = useSceneGeometryAuthority(boardShellRef);
+  const supportedSceneGeometry =
+    sceneGeometry?.supported === true ? sceneGeometry.geometry : null;
+  const sceneGeometryUnsupported =
+    sceneGeometry != null && sceneGeometry.supported === false;
   const sceneGeometryKeyAttr = sceneGeometry
     ? sceneGeometryResultKey(sceneGeometry)
     : undefined;
   const sceneGeometrySupportedAttr =
     sceneGeometry == null ? undefined : sceneGeometry.supported ? '1' : '0';
+  const hudShellStyle = supportedSceneGeometry
+    ? hudRectShellStyle(supportedSceneGeometry)
+    : undefined;
+  const sceneHostStyle = supportedSceneGeometry
+    ? sceneFrameHostStyle(supportedSceneGeometry)
+    : undefined;
 
   const applyRemoteState = useCallback((remoteState: GameState) => {
     const adapter = gameAdapterRef.current;
@@ -1830,7 +1844,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   const isTeamTableLayout = tableModel.chrome.isTeamTableLayout;
 
-  const boardClassName = ['game-board', ...tableModel.chrome.boardModifiers]
+  const boardClassName = [
+    'game-board',
+    supportedSceneGeometry ? 'game-board--canonical-scene' : null,
+    sceneGeometryUnsupported ? 'game-board--geometry-unsupported' : null,
+    ...tableModel.chrome.boardModifiers
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -2054,28 +2073,126 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           </span>
         </div>
       ) : null}
-      <div className="in-game-hud-chrome" data-testid="in-game-hud-chrome">
-        <div className="in-game-hud-chrome__scores">
-          <ScoreStrip
-            gameState={gameState}
-            variant={gameVariant}
-            usTeam={usTeam}
-            themTeam={themTeam}
-            rulesPresetId={rulesPresetId}
-            hideTrump={suecaPresentationGate.hideTrump}
-          />
+      {supportedSceneGeometry ? (
+        <>
+          <div
+            className="in-game-hud-chrome"
+            data-testid="in-game-hud-chrome"
+            data-hud-rect="canonical"
+            style={hudShellStyle}
+          >
+            <div className="in-game-hud-chrome__scores">
+              <ScoreStrip
+                gameState={gameState}
+                variant={gameVariant}
+                usTeam={usTeam}
+                themTeam={themTeam}
+                rulesPresetId={rulesPresetId}
+                hideTrump={suecaPresentationGate.hideTrump}
+              />
+            </div>
+            <InGameBar
+              isPaused={gameState.isPaused}
+              onPause={handlePause}
+              onResume={handleResume}
+              onNewGame={handleNewGame}
+              onPinGame={handlePinGame}
+              onExit={handleLeaveScreen}
+              onOpenRules={() => setRulesOpen(true)}
+              onOpenSettings={() => setSettingsOpen(true)}
+            />
+          </div>
+
+          {usePhaserTable ? (
+            <React.Suspense
+              fallback={
+                <div
+                  className="game-table-zone sueca-phaser-root"
+                  data-scene-frame="canonical"
+                  style={sceneHostStyle}
+                >
+                  A carregar mesa Phaser…
+                </div>
+              }
+            >
+              <div
+                className="game-table-zone"
+                data-scene-frame="canonical"
+                data-testid="canonical-scene-host"
+                style={sceneHostStyle}
+              >
+                <PhaserTableErrorBoundary
+                  fallback={domTableContent}
+                  onFallback={handlePhaserFallback}
+                >
+                  <SuecaPhaserRenderer
+                    model={tableModel}
+                    sceneGeometry={sceneGeometry}
+                    getCardImage={getCardImage}
+                    getTeamName={getTeamName}
+                    selectedCardIndex={selectedCard}
+                    isLocalCardPlayable={isLocalCardPlayable}
+                    onInitError={handlePhaserFallback}
+                    onTableReady={markTableReadyForRitual}
+                    events={{
+                      onLocalCardClick: handlePhaserCardClick,
+                      onContinueTrick: () => {
+                        if (!gameAdapter || !gameState.waitingForTrickEnd) return;
+                        gameAdapter.finishTrick(gameAdapter.getCurrentState());
+                        afterHostMutation();
+                      }
+                    }}
+                  />
+                </PhaserTableErrorBoundary>
+              </div>
+            </React.Suspense>
+          ) : (
+            <>
+              <div
+                className="game-table-zone"
+                data-scene-frame="canonical"
+                data-testid="canonical-scene-host"
+                style={sceneHostStyle}
+              >
+                {tableSurface}
+              </div>
+              {gameAdapter && gameState.players[localPlayerIndex] && (
+                <>
+                  <LocalPlayerDock {...dockProps} getTeamName={getTeamName} />
+                  {!suecaPresentationGate.hideHands &&
+                  !(spadesState && isBlindNilDecisionPending(spadesState, localPlayerIndex)) ? (
+                    <PlayerHand
+                      gameState={gameState}
+                      localPlayerIndex={localPlayerIndex}
+                      selectedCard={selectedCard}
+                      readOnly={handProps.readOnly || !suecaPlayReady}
+                      selectedPassIndices={handProps.selectedPassIndices}
+                      canPlayCard={isLocalCardPlayable}
+                      onCardClick={handleCardClick}
+                      getCardImage={getCardImage}
+                      layoutSnapshot={layoutSnapshot}
+                    />
+                  ) : null}
+                </>
+              )}
+            </>
+          )}
+        </>
+      ) : sceneGeometryUnsupported ? (
+        <div
+          className="scene-geometry-unsupported"
+          data-testid="scene-geometry-unsupported"
+          role="status"
+        >
+          Viewport too small for the game table.
         </div>
-        <InGameBar
-          isPaused={gameState.isPaused}
-          onPause={handlePause}
-          onResume={handleResume}
-          onNewGame={handleNewGame}
-          onPinGame={handlePinGame}
-          onExit={handleLeaveScreen}
-          onOpenRules={() => setRulesOpen(true)}
-          onOpenSettings={() => setSettingsOpen(true)}
+      ) : (
+        <div
+          className="scene-geometry-measuring"
+          data-testid="scene-geometry-measuring"
+          aria-hidden
         />
-      </div>
+      )}
 
       {rulesOpen ? (
         <RulesSheet
@@ -2088,44 +2205,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       {settingsOpen ? (
         <InGameSettingsOverlay onClose={() => setSettingsOpen(false)} />
       ) : null}
-
-      {usePhaserTable ? (
-        <React.Suspense
-          fallback={
-            <div className="game-table-zone sueca-phaser-root">
-              A carregar mesa Phaser…
-            </div>
-          }
-        >
-          <div className="game-table-zone">
-            <PhaserTableErrorBoundary
-              fallback={domTableContent}
-              onFallback={handlePhaserFallback}
-            >
-              <SuecaPhaserRenderer
-                model={tableModel}
-                sceneGeometry={sceneGeometry}
-                getCardImage={getCardImage}
-                getTeamName={getTeamName}
-                selectedCardIndex={selectedCard}
-                isLocalCardPlayable={isLocalCardPlayable}
-                onInitError={handlePhaserFallback}
-                onTableReady={markTableReadyForRitual}
-                events={{
-                  onLocalCardClick: handlePhaserCardClick,
-                  onContinueTrick: () => {
-                    if (!gameAdapter || !gameState.waitingForTrickEnd) return;
-                    gameAdapter.finishTrick(gameAdapter.getCurrentState());
-                    afterHostMutation();
-                  }
-                }}
-              />
-            </PhaserTableErrorBoundary>
-          </div>
-        </React.Suspense>
-      ) : (
-        domTableContent
-      )}
 
       {spadesLocalBidTurn && spadesState && (
         <SpadesBidMinibox

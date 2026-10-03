@@ -48,6 +48,95 @@
   overflow: hidden;
 }
 
+/*
+ * Step 3A — canonical scene layer.
+ * HUD + Phaser host are absolutely placed from SceneGeometry; they must not
+ * participate in flex height competition or sheet-driven host resizing.
+ */
+.game-board--canonical-scene {
+  position: relative;
+  overflow: hidden;
+}
+
+.game-board--canonical-scene .in-game-hud-chrome {
+  /* Safe-area is already applied via sceneFrame inside the shell safe rect. */
+  padding-top: 2px;
+  margin-bottom: 0;
+  max-width: none;
+  /* Floating … menu must escape the fixed hudRect band (not clip "Sair"). */
+  overflow: visible;
+}
+
+.game-board--canonical-scene .in-game-hud-chrome__scores {
+  /* Keep score/status content inside the band; popovers stay on chrome. */
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.game-board--canonical-scene .game-table-zone {
+  flex: none;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-board--canonical-scene .sueca-phaser-root {
+  flex: none;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Sheets must not resize/move the canonical Phaser host. */
+.game-board--canonical-scene.game-board--hearts-pass .sueca-phaser-root,
+.game-board--canonical-scene.game-board--festa-sheet .sueca-phaser-root,
+.game-board--canonical-scene.game-board--festa-sheet-compact .sueca-phaser-root,
+.game-board--canonical-scene.game-board--festa-sheet-standard .sueca-phaser-root,
+.game-board--canonical-scene.game-board--festa-sheet-tall .sueca-phaser-root,
+.game-board--canonical-scene.game-board--spades-bid .sueca-phaser-root {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+}
+
+/*
+ * Spades bid dock was flow-below-host. With an absolute full sceneFrame host,
+ * pin the existing dock to the shell bottom without changing host geometry.
+ */
+.game-board--canonical-scene.game-board--spades-bid .spades-bid-dock {
+  position: absolute;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 2100;
+  margin: 0;
+}
+
+.scene-geometry-unsupported {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--sc-text-muted, #9aa4a8);
+  font-size: 0.95rem;
+  z-index: 2;
+}
+
+.scene-geometry-measuring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .game-board--team-table .top-strip--teams {
   position: relative;
   z-index: 2;
@@ -118,6 +207,7 @@
    * Hearts pass: grow host so felt sits ~12–20px above the fixed pass sheet.
    * (Panel is fixed — host margin does not create that gap; height does.)
    * 14.25rem ≈ HUD + pass sheet + target breathing room.
+   * Step 3A: ignored under .game-board--canonical-scene (see overrides above).
    */
   .game-board--hearts-pass .sueca-phaser-root {
     height: calc(100dvh - 14.25rem);
@@ -125,7 +215,8 @@
   }
 
   /* UX-FESTA-01B — canvas height tracks Festa sheet density (not one band for all).
-     Override SuecaPhaserRenderer min-height:360 so tall sheets can shrink below that floor. */
+     Override SuecaPhaserRenderer min-height:360 so tall sheets can shrink below that floor.
+     Step 3A: ignored under .game-board--canonical-scene. */
   .game-board.game-board--festa-sheet .sueca-phaser-root,
   .game-board.game-board--festa-sheet-compact .sueca-phaser-root {
     min-height: 0;
@@ -149,6 +240,20 @@
     height: min(70vh, 620px);
     height: min(70dvh, 620px);
   }
+
+  /* Canonical host wins over sheet vh sizing. */
+  .game-board--canonical-scene.game-board--hearts-pass .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--festa-sheet .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--festa-sheet-compact .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--festa-sheet-standard .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--festa-sheet-tall .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--spades-bid .sueca-phaser-root {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
@@ -158,6 +263,16 @@
     /* Short viewport: prefer in-canvas chrome over large CSS margin. */
     margin-bottom: 4px;
     height: min(52vh, 260px);
+  }
+
+  .game-board--canonical-scene.game-board--hearts-pass .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--festa-sheet .sueca-phaser-root,
+  .game-board--canonical-scene.game-board--spades-bid .sueca-phaser-root {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
   }
 
   .variant-modal--hearts-pass {

@@ -1,0 +1,74 @@
+/**
+ * Step 3A — CSS/source contracts for canonical host + HUD placement.
+ * Does not mount the full GameBoard (heavy); placement math is covered in
+ * runtime/canonicalScenePlacement.test.ts.
+ */
+
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const boardCss = readFileSync(join(here, 'GameBoard.css'), 'utf8');
+const boardTsx = readFileSync(join(here, 'GameBoard.tsx'), 'utf8');
+const phaserTsx = readFileSync(
+  join(here, '../renderers/phaser/SuecaPhaserRenderer.tsx'),
+  'utf8'
+);
+const mapTs = readFileSync(
+  join(here, '../renderers/phaser/mapTableModelToPhaserView.ts'),
+  'utf8'
+);
+const sceneTs = readFileSync(
+  join(here, '../renderers/phaser/SuecaTableScene.ts'),
+  'utf8'
+);
+
+describe('GameBoard Step 3A canonical scene contracts', () => {
+  it('applies canonical HUD + sceneFrame host styles from supported geometry', () => {
+    expect(boardTsx).toContain('hudRectShellStyle');
+    expect(boardTsx).toContain('sceneFrameHostStyle');
+    expect(boardTsx).toContain('game-board--canonical-scene');
+    expect(boardTsx).toContain('data-hud-rect="canonical"');
+    expect(boardTsx).toContain('data-scene-frame="canonical"');
+    expect(boardTsx).toContain('scene-geometry-unsupported');
+  });
+
+  it('neutralizes sheet-driven Phaser host sizing under canonical scene', () => {
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene\.game-board--hearts-pass \.sueca-phaser-root/
+    );
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene\.game-board--festa-sheet \.sueca-phaser-root/
+    );
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene\.game-board--spades-bid \.sueca-phaser-root/
+    );
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene\.game-board--spades-bid \.spades-bid-dock[\s\S]*position:\s*absolute/
+    );
+  });
+
+  it('removes structural safe-area padding duplication on canonical HUD', () => {
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene \.in-game-hud-chrome[\s\S]*padding-top:\s*2px/
+    );
+  });
+
+  it('allows HUD floating menus to escape the fixed hudRect band', () => {
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene \.in-game-hud-chrome[\s\S]*overflow:\s*visible/
+    );
+    expect(boardCss).toMatch(
+      /\.game-board--canonical-scene \.in-game-hud-chrome__scores[\s\S]*overflow:\s*hidden/
+    );
+  });
+
+  it('does not migrate internal Phaser felt/seats/trick/hand away from legacy layout', () => {
+    expect(mapTs).toContain('buildPhaserTableLayout');
+    expect(mapTs).toContain('resolveBottomChromePx');
+    expect(sceneTs).toContain('mapTableModelToPhaserView');
+    expect(phaserTsx).toMatch(/Internal felt\/seats\/trick\/hand layout remains legacy/);
+  });
+});

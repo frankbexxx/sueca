@@ -22,9 +22,9 @@ import './SuecaPhaserRenderer.css';
 export interface SuecaPhaserRendererProps {
   model: TableRenderModel;
   /**
-   * Phase 1 / Step 2 — authoritative geometry snapshot (read-only).
-   * Host may observe sceneFrame / supported / key; MUST NOT drive CSS,
-   * Scale.RESIZE, canvas size, or internal Phaser layout in this step.
+   * Phase 1 / Step 3A — authoritative geometry snapshot.
+   * GameBoard places the host from sceneFrame; this root fills that host.
+   * Internal felt/seats/trick/hand layout remains legacy until Step 3B.
    */
   sceneGeometry?: SceneGeometryResult | null;
   events?: TableRendererEvents;
@@ -212,6 +212,22 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     sceneGeometry == null ? undefined : sceneGeometry.supported ? '1' : '0';
   const sceneFrame = sceneGeometry?.supported ? sceneGeometry.geometry.sceneFrame : null;
 
+  // Step 3A: fill the canonical sceneFrame host from GameBoard.
+  // Scale.RESIZE follows this box; it must not invent a second frame size.
+  // Internal felt/seats/trick/hand layout remains legacy until Step 3B.
+  const rootStyle =
+    sceneFrame != null
+      ? {
+          position: 'relative' as const,
+          width: '100%',
+          height: '100%',
+          minHeight: 0,
+          maxHeight: 'none',
+          margin: 0,
+          borderRadius: 0
+        }
+      : undefined;
+
   return (
     <div
       className="sueca-phaser-root"
@@ -220,11 +236,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
       data-scene-geometry-supported={geometrySupported}
       data-scene-frame-w={sceneFrame ? String(sceneFrame.width) : undefined}
       data-scene-frame-h={sceneFrame ? String(sceneFrame.height) : undefined}
+      style={rootStyle}
     >
-      {/*
-        Step 2: snapshot is observed via data-* only.
-        Canvas host sizing remains CSS + Phaser.Scale.RESIZE (legacy).
-      */}
       <div ref={containerRef} className="sueca-phaser-canvas-host" />
     </div>
   );

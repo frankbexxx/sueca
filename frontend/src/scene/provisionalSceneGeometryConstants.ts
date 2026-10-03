@@ -63,11 +63,11 @@ export const PROVISIONAL_GEOMETRY_MINIMUMS: GeometryMinimums = {
 
 /**
  * PROVISIONAL — portrait vertical bands as fractions of scene height.
- * Sum must equal 1.
+ * Sum must equal 1. HUD enlarged for Step 3A React hudRect fit (felt reduced).
  */
 export const PROVISIONAL_PORTRAIT_BANDS = {
-  hud: 0.08,
-  felt: 0.52,
+  hud: 0.14,
+  felt: 0.46,
   southSeat: 0.1,
   hand: 0.2,
   actionStatus: 0.1
@@ -75,14 +75,15 @@ export const PROVISIONAL_PORTRAIT_BANDS = {
 
 /**
  * PROVISIONAL — landscape vertical bands as fractions of scene height.
- * Sum must equal 1.
+ * Sum must equal 1. HUD enlarged for Step 3A React hudRect fit
+ * (felt/south/action redistributed; hand unchanged).
  */
 export const PROVISIONAL_LANDSCAPE_BANDS = {
-  hud: 0.1,
-  felt: 0.56,
-  southSeat: 0.08,
+  hud: 0.2,
+  felt: 0.555,
+  southSeat: 0.03,
   hand: 0.16,
-  actionStatus: 0.1
+  actionStatus: 0.055
 } as const;
 
 /** PROVISIONAL — seat / trick / decision fractions inside feltRect. */
