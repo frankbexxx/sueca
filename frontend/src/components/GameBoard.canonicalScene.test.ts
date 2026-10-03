@@ -45,8 +45,9 @@ describe('GameBoard Step 3A canonical scene contracts', () => {
     expect(boardCss).toMatch(
       /\.game-board--canonical-scene\.game-board--spades-bid \.sueca-phaser-root/
     );
+    // Step 3C: Spades dock is placed via decisionSheetRect, not shell bottom pin.
     expect(boardCss).toMatch(
-      /\.game-board--canonical-scene\.game-board--spades-bid \.spades-bid-dock[\s\S]*position:\s*absolute/
+      /\.game-board--canonical-scene\.game-board--spades-bid \.spades-bid-dock/
     );
   });
 
@@ -71,5 +72,15 @@ describe('GameBoard Step 3A canonical scene contracts', () => {
     expect(sceneTs).toContain('setSceneGeometry');
     expect(sceneTs).toContain('latestSceneGeometry');
     expect(phaserTsx).toContain('setSceneGeometry');
+  });
+});
+
+describe('GameBoard Step 4 canonical card actions', () => {
+  it('routes Phaser and DOM physical activations through canonicalCardActions', () => {
+    expect(boardTsx).toContain('handleDomCardPhysicalActivation');
+    expect(boardTsx).toContain('handlePhaserCardPhysicalActivation');
+    expect(boardTsx).toContain('canonicalCardActions');
+    expect(boardTsx).toContain("buildCardActionContext('dom')");
+    expect(boardTsx).toContain("buildCardActionContext('phaser')");
   });
 });

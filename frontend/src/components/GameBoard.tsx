@@ -24,6 +24,11 @@ import {
   type AiTurnScope,
 } from '../services/aiTurnGate';
 import { playCardAndLogDecision, playFirstLegalAndLogDecision } from '../cardIntelligence';
+import {
+  handleDomCardPhysicalActivation,
+  handlePhaserCardPhysicalActivation,
+  type CanonicalCardActionContext
+} from '../table/canonicalCardActions';
 import { SUIT_TO_CODE, SUIT_TO_NAME, RANK_TO_IMAGE_NAME } from '../utils/cardMappings';
 import { getCardImagePath } from '../constants/cardAssets';
 import { isDevMode, publicUrl } from '../config/runtimeEnv';
@@ -1328,131 +1333,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, [heartsCtrl, gameAdapter, passExchangeUntilMs, isHostOrSolo, gameState.isPaused]);
 
   /**
-   * Handles card click from human player
-   * Validates that:
-   * - It's the human player's turn (index 0)
-   * - Game is in a playable state (not paused, not waiting, not over)
-   * - Card is playable according to game rules
-   * Plays error sound if card cannot be played
-   */
-  const handleCardClick = (cardIndex: number) => {
-    // Only allow if game exists
-    if (!gameAdapter) return;
-
-    if (heartsCtrl?.togglePassCardIfPassing(gameState, cardIndex, localPlayerIndex)) {
-      setGameState(gameAdapter.getCurrentState());
-      return;
-    }
-
-    // Determine whether the current turn belongs to the local human player
-    const isLocalTurn = isMultiplayer
-      ? gameState.currentPlayerIndex === multiplayerPlayerIndex
-      : gameState.currentPlayerIndex === 0;
-
-    if (
-      isLocalTurn &&
-      !gameState.isGameOver &&
-      !gameState.isPaused &&
-      !gameState.waitingForTrickEnd &&
-      !gameState.waitingForRoundStart &&
-      !gameState.waitingForRoundEnd &&
-      !gameState.waitingForGameStart &&
-      suecaPlayReady
-    ) {
-      const playerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
-      const player = gameState.players[playerIndex];
-      if (!player || cardIndex < 0 || cardIndex >= player.hand.length) {
-        return;
-      }
-
-      const currentState = gameAdapter.getCurrentState();
-      const canPlay = gameAdapter.canPlayCard(currentState, playerIndex, cardIndex);
-      if (!canPlay) {
-        playErrorSound();
-        return;
-      }
-
-      if (selectedCard === cardIndex) {
-        if (isJoiner) {
-          submitAction({ type: 'playCard', playerIndex, cardIndex });
-          playCardSound();
-          setSelectedCard(null);
-          return;
-        }
-        if (playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, {
-          gameConfigMode: config.rulesPresetId,
-          isMultiplayer: isMultiplayerActive,
-        })) {
-          playCardSound();
-          setSelectedCard(null);
-          afterHostMutation();
-        } else {
-          playErrorSound();
-        }
-      } else {
-        setSelectedCard(cardIndex);
-      }
-    }
-  };
-
-  /**
-   * Phaser: single tap plays a legal card (engine still validates).
-   * During Hearts pass, tap toggles pass selection (same as DOM hand).
-   */
-  const handlePhaserCardClick = (cardIndex: number) => {
-    if (!gameAdapter) return;
-
-    if (heartsCtrl?.togglePassCardIfPassing(gameState, cardIndex, localPlayerIndex)) {
-      setGameState(gameAdapter.getCurrentState());
-      return;
-    }
-
-    const isLocalTurn = isMultiplayer
-      ? gameState.currentPlayerIndex === multiplayerPlayerIndex
-      : gameState.currentPlayerIndex === 0;
-    if (
-      !isLocalTurn ||
-      gameState.isGameOver ||
-      gameState.isPaused ||
-      gameState.waitingForTrickEnd ||
-      gameState.waitingForRoundStart ||
-      gameState.waitingForRoundEnd ||
-      gameState.waitingForGameStart ||
-      waitingForEarlyEnd ||
-      festaSheetActive
-    ) {
-      return;
-    }
-    const playerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
-    const player = gameState.players[playerIndex];
-    if (!player || cardIndex < 0 || cardIndex >= player.hand.length) return;
-
-    const currentState = gameAdapter.getCurrentState();
-    if (!gameAdapter.canPlayCard(currentState, playerIndex, cardIndex)) {
-      playErrorSound();
-      return;
-    }
-    if (isJoiner) {
-      submitAction({ type: 'playCard', playerIndex, cardIndex });
-      playCardSound();
-      setSelectedCard(null);
-      return;
-    }
-    if (
-      playCardAndLogDecision(gameAdapter, currentState, playerIndex, cardIndex, {
-        gameConfigMode: config.rulesPresetId,
-        isMultiplayer: isMultiplayerActive
-      })
-    ) {
-      playCardSound();
-      setSelectedCard(null);
-      afterHostMutation();
-    } else {
-      playErrorSound();
-    }
-  };
-
-  /**
    * Generates the image path for a card
    * Maps card rank/suit to asset filename
    * Handles special case for face cards (J, Q, K) which use "_2" suffix
@@ -1598,6 +1478,51 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, []);
 
   const localPlayerIndex = isMultiplayer ? multiplayerPlayerIndex : 0;
+
+  /** Shared deps for Step 4 canonical card-action contract. */
+  const buildCardActionContext = (
+    source: CanonicalCardActionContext['source']
+  ): CanonicalCardActionContext => ({
+    gameAdapter,
+    gameState,
+    heartsCtrl,
+    localPlayerIndex,
+    selectedCard,
+    setSelectedCard,
+    syncGameStateFromAdapter: () => {
+      if (gameAdapter) setGameState(gameAdapter.getCurrentState());
+    },
+    isMultiplayer,
+    isJoiner,
+    isMultiplayerActive,
+    multiplayerPlayerIndex,
+    suecaPlayReady,
+    waitingForEarlyEnd,
+    festaSheetActive,
+    rulesPresetId: config.rulesPresetId,
+    submitAction,
+    afterHostMutation,
+    playCardSound,
+    // Presentation only — DOM keeps error sound; Phaser scene often silences first.
+    onIllegalOrFailedPlay: playErrorSound,
+    source
+  });
+
+  /**
+   * DOM PlayerHand / keyboard — physical activation.
+   * Intent: selectCard | activateCard | togglePassSelection (canonical contract).
+   */
+  const handleCardClick = (cardIndex: number) => {
+    handleDomCardPhysicalActivation(cardIndex, buildCardActionContext('dom'));
+  };
+
+  /**
+   * Phaser tap/drop — physical activation.
+   * Intent: activateCard | togglePassSelection (no prior select required).
+   */
+  const handlePhaserCardClick = (cardIndex: number) => {
+    handlePhaserCardPhysicalActivation(cardIndex, buildCardActionContext('phaser'));
+  };
 
   const dispatchFestaLogged = useCallback(
     (action: { type: string; playerIndex?: number; [key: string]: unknown }) => {

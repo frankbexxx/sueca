@@ -185,10 +185,13 @@ export interface TableRenderModel {
 }
 
 /**
- * Input events a table renderer may emit.
- * Shell / GameBoard owns side effects; renderers stay dumb.
+ * Physical input hooks a table renderer may emit.
+ * Shell translates these into canonical card intents
+ * (`selectCard` / `activateCard` / `togglePassSelection` via
+ * `table/canonicalCardActions`) — renderers stay dumb.
  */
 export interface TableRendererEvents {
+  /** Phaser: tap/drop → shell maps to activateCard or togglePassSelection. */
   onLocalCardClick?: (cardIndex: number) => void;
   onContinueTrick?: () => void;
 }
