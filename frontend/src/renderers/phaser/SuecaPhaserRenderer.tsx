@@ -10,6 +10,8 @@ import type {
   TableRenderModel,
   TableRendererEvents
 } from '../../table/tableRenderModel';
+import type { SceneGeometryResult } from '../../scene/sceneGeometry';
+import { sceneGeometryResultKey } from '../../scene/sceneGeometryEquality';
 import { useLanguage } from '../../i18n/useLanguage';
 import { ritualRoleLabelsFromModals } from '../../table/ritualRoleLabel';
 import { SuecaTableScene, SUECA_TABLE_SCENE_KEY } from './SuecaTableScene';
@@ -19,6 +21,12 @@ import './SuecaPhaserRenderer.css';
 
 export interface SuecaPhaserRendererProps {
   model: TableRenderModel;
+  /**
+   * Phase 1 / Step 2 — authoritative geometry snapshot (read-only).
+   * Host may observe sceneFrame / supported / key; MUST NOT drive CSS,
+   * Scale.RESIZE, canvas size, or internal Phaser layout in this step.
+   */
+  sceneGeometry?: SceneGeometryResult | null;
   events?: TableRendererEvents;
   getCardImage: (card: Card) => string;
   getTeamName: (team: 1 | 2) => string;
@@ -35,6 +43,7 @@ export interface SuecaPhaserRendererProps {
 
 export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
   model,
+  sceneGeometry = null,
   events,
   getCardImage,
   getTeamName,
@@ -198,8 +207,24 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     t.modals.ritualRoleFirstPlayer
   ]);
 
+  const geometryKey = sceneGeometry ? sceneGeometryResultKey(sceneGeometry) : undefined;
+  const geometrySupported =
+    sceneGeometry == null ? undefined : sceneGeometry.supported ? '1' : '0';
+  const sceneFrame = sceneGeometry?.supported ? sceneGeometry.geometry.sceneFrame : null;
+
   return (
-    <div className="sueca-phaser-root" data-testid="sueca-phaser-table">
+    <div
+      className="sueca-phaser-root"
+      data-testid="sueca-phaser-table"
+      data-scene-geometry-key={geometryKey}
+      data-scene-geometry-supported={geometrySupported}
+      data-scene-frame-w={sceneFrame ? String(sceneFrame.width) : undefined}
+      data-scene-frame-h={sceneFrame ? String(sceneFrame.height) : undefined}
+    >
+      {/*
+        Step 2: snapshot is observed via data-* only.
+        Canvas host sizing remains CSS + Phaser.Scale.RESIZE (legacy).
+      */}
       <div ref={containerRef} className="sueca-phaser-canvas-host" />
     </div>
   );

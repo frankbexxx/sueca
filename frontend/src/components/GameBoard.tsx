@@ -86,6 +86,9 @@ import { ScoreStrip } from './table/ScoreStrip';
 import { TableSurface } from './table/TableSurface';
 import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
+import { SceneGeometryProvider } from '../hooks/SceneGeometryContext';
+import { useSceneGeometryAuthority } from '../hooks/useSceneGeometryAuthority';
+import { sceneGeometryResultKey } from '../scene/sceneGeometryEquality';
 import { SpadesBidMinibox } from './SpadesBidMinibox';
 import { isBlindNilDecisionPending } from '../models/games/SpadesGame';
 import { HeartsPassModal, HeartsPassReceipt } from './HeartsPassModal';
@@ -293,6 +296,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   playDealSoundRef.current = playDealSound;
   playRoundStartSoundRef.current = playRoundStartSound;
   const layoutSnapshot = useLayoutSnapshot();
+  /** Gameplay shell (HUD + table zone) — authoritative geometry measurement target. */
+  const boardShellRef = useRef<HTMLDivElement | null>(null);
+  const sceneGeometry = useSceneGeometryAuthority(boardShellRef);
+  const sceneGeometryKeyAttr = sceneGeometry
+    ? sceneGeometryResultKey(sceneGeometry)
+    : undefined;
+  const sceneGeometrySupportedAttr =
+    sceneGeometry == null ? undefined : sceneGeometry.supported ? '1' : '0';
 
   const applyRemoteState = useCallback((remoteState: GameState) => {
     const adapter = gameAdapterRef.current;
@@ -1997,7 +2008,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }, []);
 
   return (
+    <SceneGeometryProvider value={sceneGeometry}>
     <div
+      ref={boardShellRef}
       className={boardClassName}
       data-table-renderer={usePhaserTable ? 'phaser' : 'dom'}
       data-phaser-failed={phaserInitFailed ? '1' : '0'}
@@ -2008,6 +2021,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         gameVariant === 'sueca' ? postDealPhase ?? 'play-ready' : undefined
       }
       data-ai-source={isDevMode() ? aiSource : undefined}
+      data-scene-geometry-supported={sceneGeometrySupportedAttr}
+      data-scene-geometry-key={sceneGeometryKeyAttr}
     >
       {(devKingFestaJump || devKingNegContract) ? (
         <div
@@ -2089,6 +2104,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             >
               <SuecaPhaserRenderer
                 model={tableModel}
+                sceneGeometry={sceneGeometry}
                 getCardImage={getCardImage}
                 getTeamName={getTeamName}
                 selectedCardIndex={selectedCard}
@@ -2451,5 +2467,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         onCancel={() => setPinConfirmOpen(false)}
       />
     </div>
+    </SceneGeometryProvider>
   );
 };

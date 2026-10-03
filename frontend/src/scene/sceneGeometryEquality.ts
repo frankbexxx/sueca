@@ -3,7 +3,7 @@
  * Not tied to React render lifecycle.
  */
 
-import type { SceneGeometry, ViewportGeometryInput } from './sceneGeometry';
+import type { SceneGeometry, SceneGeometryResult, ViewportGeometryInput } from './sceneGeometry';
 
 /**
  * Lossless deterministic token for a finite number.
@@ -33,6 +33,12 @@ export function viewportGeometryKey(input: ViewportGeometryInput): string {
 
 export function sceneGeometryKey(geometry: SceneGeometry): string {
   return geometry.geometryKey;
+}
+
+/** Stable identity for a full SceneGeometryResult (supported or unsupported). */
+export function sceneGeometryResultKey(result: SceneGeometryResult): string {
+  if (result.supported) return result.geometry.geometryKey;
+  return `unsupported::${result.reason}::${viewportGeometryKey(result.input)}`;
 }
 
 export function areSceneGeometriesEqual(a: SceneGeometry, b: SceneGeometry): boolean {
