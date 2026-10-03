@@ -22,9 +22,9 @@ import './SuecaPhaserRenderer.css';
 export interface SuecaPhaserRendererProps {
   model: TableRenderModel;
   /**
-   * Phase 1 / Step 3A — authoritative geometry snapshot.
+   * Phase 1 / Step 3A–3B — authoritative geometry snapshot.
    * GameBoard places the host from sceneFrame; this root fills that host.
-   * Internal felt/seats/trick/hand layout remains legacy until Step 3B.
+   * Supported geometry also drives internal felt/seats/trick/hand (Step 3B).
    */
   sceneGeometry?: SceneGeometryResult | null;
   events?: TableRendererEvents;
@@ -191,12 +191,16 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     if (!scene) return;
     seatsReadyRef.current = model.seats.length === 4;
     scene.setHost(buildHost());
+    const supportedGeometry =
+      sceneGeometry?.supported === true ? sceneGeometry.geometry : null;
+    scene.setSceneGeometry(supportedGeometry);
     scene.applyModel(model);
     // Read current readiness (not only a one-shot edge) — latch is idempotent.
     emitReadyIfPossible();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     model,
+    sceneGeometry,
     selectedCardIndex,
     isLocalCardPlayable,
     getTeamName,
@@ -212,9 +216,8 @@ export const SuecaPhaserRenderer: React.FC<SuecaPhaserRendererProps> = ({
     sceneGeometry == null ? undefined : sceneGeometry.supported ? '1' : '0';
   const sceneFrame = sceneGeometry?.supported ? sceneGeometry.geometry.sceneFrame : null;
 
-  // Step 3A: fill the canonical sceneFrame host from GameBoard.
-  // Scale.RESIZE follows this box; it must not invent a second frame size.
-  // Internal felt/seats/trick/hand layout remains legacy until Step 3B.
+  // Step 3A/3B: fill the canonical sceneFrame host from GameBoard.
+  // Scale.RESIZE follows this box; internal layout uses the same SceneGeometry.
   const rootStyle =
     sceneFrame != null
       ? {

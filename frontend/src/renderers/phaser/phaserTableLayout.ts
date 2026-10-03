@@ -175,11 +175,16 @@ export function layoutLocalHandPositions(
 ): PhaserHandSlot[] {
   if (count <= 0) return [];
   const displayW = localHandDisplayWidth(layout);
+  const handZone = layout.zones?.hand;
+  const centerX = handZone?.cx ?? layout.width / 2;
+  const availableWidth = handZone
+    ? Math.min(layout.handSpreadMax, handZone.width * 0.96)
+    : layout.handSpreadMax;
   const { slots } = computeHumanHandLayout({
     cardCount: count,
     cardDisplayWidth: displayW,
-    availableWidth: layout.handSpreadMax,
-    centerX: layout.width / 2,
+    availableWidth,
+    centerX,
     baselineY: layout.handY,
     selectedIndex: null,
     selectedLift: 0,

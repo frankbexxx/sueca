@@ -8,6 +8,7 @@ import {
   PROVISIONAL_FELT_LAYOUT,
   PROVISIONAL_GEOMETRY_MINIMUMS,
   PROVISIONAL_LANDSCAPE_BANDS,
+  PROVISIONAL_LANDSCAPE_MIN_SHELL,
   PROVISIONAL_LOCAL_LAYOUT,
   PROVISIONAL_PORTRAIT_BANDS,
   PROVISIONAL_PROFILE_THRESHOLDS,
@@ -252,14 +253,24 @@ export function calculateSceneGeometry(input: ViewportGeometryInput): SceneGeome
 
   // Unsupported reason precedence:
   // 1) non-positive safe rect → viewport_too_small
-  // 2) sceneScale below floor → viewport_too_small
-  // 3) topology invariants fail → minimums_unsatisfied
-  // 4) zone / scene-size minimums fail → minimums_unsatisfied
+  // 2) landscape below tablet shell gate → viewport_too_small
+  // 3) sceneScale below floor → viewport_too_small
+  // 4) topology invariants fail → minimums_unsatisfied
+  // 5) zone / scene-size minimums fail → minimums_unsatisfied
   if (safeRect.width <= 0 || safeRect.height <= 0) {
     return { supported: false, reason: 'viewport_too_small', input };
   }
 
   // input.orientation must be derived from usable safe size (see normalizeViewport).
+  // Landscape tablet gate uses measured shell width/height (product: W≥1024 ∧ H≥600).
+  if (
+    input.orientation === 'landscape' &&
+    (input.width < PROVISIONAL_LANDSCAPE_MIN_SHELL.width ||
+      input.height < PROVISIONAL_LANDSCAPE_MIN_SHELL.height)
+  ) {
+    return { supported: false, reason: 'viewport_too_small', input };
+  }
+
   const profile = selectProfile(input.orientation, safeRect.width, safeRect.height);
   const designFrame = PROVISIONAL_DESIGN_FRAMES[profile];
   const sceneScale = Math.min(

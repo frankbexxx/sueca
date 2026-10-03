@@ -6,6 +6,8 @@
 import Phaser from 'phaser';
 import type { Card } from '../../types/game';
 import type { TableRenderModel } from '../../table/tableRenderModel';
+import type { SceneGeometry } from '../../scene/sceneGeometry';
+import { sceneGeometryKey } from '../../scene/sceneGeometryEquality';
 import { getCardBackPath, getPublicAssetPath } from '../../constants/cardAssets';
 import { DEFAULT_CARD_BACK_ID } from '../../constants/cardDeckRegistry';
 import {
@@ -61,6 +63,9 @@ export interface SuecaTableSceneHost {
 export class SuecaTableScene extends Phaser.Scene {
   private host: SuecaTableSceneHost;
   private latestModel: TableRenderModel | null = null;
+  /** Step 3B — supported canonical geometry for felt/seats/trick/hand. */
+  private latestSceneGeometry: SceneGeometry | null = null;
+  private latestGeometryKey: string | null = null;
   private view: PhaserTableViewModel | null = null;
   private theme: PhaserThemeView = { ...DEFAULT_THEME };
   private handSprites = new Map<string, Phaser.GameObjects.Image>();
@@ -126,6 +131,19 @@ export class SuecaTableScene extends Phaser.Scene {
     this.latestModel = model;
     if (!this.tableReady) return;
     this.syncFromModel(false);
+  }
+
+  /**
+   * Step 3B — authoritative SceneGeometry (supported only).
+   * Geometry-key changes force full layout reposition.
+   */
+  setSceneGeometry(geometry: SceneGeometry | null): void {
+    const nextKey = geometry ? sceneGeometryKey(geometry) : null;
+    const keyChanged = nextKey !== this.latestGeometryKey;
+    this.latestSceneGeometry = geometry;
+    this.latestGeometryKey = nextKey;
+    if (!this.tableReady || !this.latestModel) return;
+    this.syncFromModel(keyChanged);
   }
 
   preload(): void {
@@ -268,6 +286,7 @@ export class SuecaTableScene extends Phaser.Scene {
   private syncFromModel(forceLayout: boolean): void {
     if (!this.latestModel) return;
     const selected = this.host.getSelectedCardIndex?.() ?? null;
+    const canonical = this.latestSceneGeometry;
     const nextView = mapTableModelToPhaserView({
       model: this.latestModel,
       width: this.scale.width,
@@ -277,10 +296,11 @@ export class SuecaTableScene extends Phaser.Scene {
       getTeamName: this.host.getTeamName,
       activeTurnLabel: this.host.getActiveTurnLabel?.() ?? null,
       ritualRoleLabels: this.host.getRitualRoleLabels?.(),
-      orientationReference: resolveOrientationReference(
-        this.scale.width,
-        this.scale.height
-      )
+      // Legacy fallback only when canonical geometry is absent.
+      orientationReference: canonical
+        ? null
+        : resolveOrientationReference(this.scale.width, this.scale.height),
+      sceneGeometry: canonical
     });
 
     const prevTrickIds = new Set((this.view?.trick ?? []).map((t) => t.card.id));
@@ -305,7 +325,11 @@ export class SuecaTableScene extends Phaser.Scene {
       !prevLayout ||
       prevLayout.width !== nextView.layout.width ||
       prevLayout.height !== nextView.layout.height ||
-      prevLayout.aspect !== nextView.layout.aspect;
+      prevLayout.aspect !== nextView.layout.aspect ||
+      prevLayout.zones.felt.x !== nextView.layout.zones.felt.x ||
+      prevLayout.zones.felt.y !== nextView.layout.zones.felt.y ||
+      prevLayout.zones.felt.width !== nextView.layout.zones.felt.width ||
+      prevLayout.zones.felt.height !== nextView.layout.zones.felt.height;
 
     this.view = nextView;
     // UX-SUECA-04 — do NOT clear/redraw felt on every ritual-focus sync (causes seat flicker).

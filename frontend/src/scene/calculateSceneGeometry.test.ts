@@ -63,7 +63,7 @@ describe('calculateSceneGeometry', () => {
     });
 
     it('is stable across repeated calls', () => {
-      const viewport = input(844, 390);
+      const viewport = input(1024, 600);
       const keys = Array.from({ length: 5 }, () => {
         const result = calculateSceneGeometry(viewport);
         expect(result.supported).toBe(true);
@@ -86,16 +86,22 @@ describe('calculateSceneGeometry', () => {
       expect(compact.designFrame).toEqual(standard.designFrame);
     });
 
-    it('selects landscape standard / compact with shared provisional design frame', () => {
-      const standard = supported(844, 390);
+    it('selects landscape standard for tablet shells; phone-landscape is unsupported', () => {
+      const standard = supported(1024, 600);
       expect(standard.orientation).toBe('landscape');
       expect(standard.profile).toBe('landscapeStandard');
       expect(standard.designFrame).toEqual(PROVISIONAL_DESIGN_FRAMES.landscapeStandard);
 
-      const compact = supported(720, 400);
-      expect(compact.profile).toBe('landscapeCompact');
-      expect(compact.designFrame).toEqual(PROVISIONAL_DESIGN_FRAMES.landscapeCompact);
-      expect(compact.designFrame).toEqual(standard.designFrame);
+      // Tablet gate: W≥1024 ∧ H≥600 — compact phone-landscape cannot be supported.
+      const phone = calculateSceneGeometry(input(720, 400));
+      expect(phone.supported).toBe(false);
+      if (!phone.supported) {
+        expect(phone.reason).toBe('viewport_too_small');
+      }
+      // Design-frame identity for compact remains shared (profile label still defined).
+      expect(PROVISIONAL_DESIGN_FRAMES.landscapeCompact).toEqual(
+        PROVISIONAL_DESIGN_FRAMES.landscapeStandard
+      );
     });
 
     it('uses uniform scale with no independent X/Y stretch', () => {
@@ -166,24 +172,15 @@ describe('calculateSceneGeometry', () => {
       assertAdjacentContinuity({ width, height: h }, { width, height: h + 1 });
     });
 
-    it('bounds sceneFrame/scale across landscape compact max width ±1px', () => {
+    it('landscapeCompact profile is unreachable under tablet landscape gate', () => {
+      // Compact thresholds sit below PROVISIONAL_LANDSCAPE_MIN_SHELL (1024×600).
       const w = PROVISIONAL_PROFILE_THRESHOLDS.landscapeCompactMaxWidth;
-      const height = 390;
-      const below = supported(w, height);
-      const above = supported(w + 1, height);
-      expect(below.profile).toBe('landscapeCompact');
-      expect(above.profile).toBe('landscapeStandard');
-      assertAdjacentContinuity({ width: w, height }, { width: w + 1, height });
-    });
-
-    it('bounds sceneFrame/scale across landscape compact max height ±1px', () => {
       const h = PROVISIONAL_PROFILE_THRESHOLDS.landscapeCompactMaxHeight;
-      const width = 844;
-      const below = supported(width, h);
-      const above = supported(width, h + 1);
-      expect(below.profile).toBe('landscapeCompact');
-      expect(above.profile).toBe('landscapeStandard');
-      assertAdjacentContinuity({ width, height: h }, { width, height: h + 1 });
+      expect(calculateSceneGeometry(input(w, 600)).supported).toBe(false);
+      expect(calculateSceneGeometry(input(1024, h)).supported).toBe(false);
+      expect(supported(1024, 600).profile).toBe('landscapeStandard');
+      expect(supported(1280, 800).profile).toBe('landscapeStandard');
+      expect(supported(1366, 768).profile).toBe('landscapeStandard');
     });
   });
 
@@ -207,7 +204,7 @@ describe('calculateSceneGeometry', () => {
         input(390, 845),
         input(390, 844, { top: 1 }),
         input(390, 844, { left: 0.001 }),
-        input(844, 390)
+        input(1024, 600)
       ];
       const keys = new Set<string>();
       const frames: string[] = [];
@@ -264,7 +261,7 @@ describe('calculateSceneGeometry', () => {
     });
 
     it('satisfies every retained minimum on supported geometry', () => {
-      for (const geometry of [supported(390, 844), supported(844, 390), supported(360, 640)]) {
+      for (const geometry of [supported(390, 844), supported(1024, 600), supported(360, 640)]) {
         expect(geometry.sceneFrame.width).toBeGreaterThanOrEqual(limits.minSceneWidthPx);
         expect(geometry.sceneFrame.height).toBeGreaterThanOrEqual(limits.minSceneHeightPx);
         expect(geometry.sceneScale).toBeGreaterThanOrEqual(limits.minSceneScale);
@@ -375,19 +372,45 @@ describe('calculateSceneGeometry', () => {
       }
     });
 
-    it('minSceneHeightPx: landscape mid-scale isolates height floor → minimums_unsatisfied', () => {
-      const below = calculateSceneGeometry(input(844, 300));
-      expect(below.supported).toBe(false);
-      if (!below.supported) {
-        expect(below.reason).toBe('minimums_unsatisfied');
+    it('minSceneHeightPx: shadowed by minSceneScale / landscape tablet gate', () => {
+      // Portrait: sceneH = height when height-bound, but minSceneScale (0.45)
+      // requires height ≥ 0.45*844 ≈ 380 before sceneH can approach 320.
+      const belowScale = calculateSceneGeometry(input(390, limits.minSceneHeightPx));
+      expect(belowScale.supported).toBe(false);
+      if (!belowScale.supported) {
+        expect(belowScale.reason).toBe('viewport_too_small');
       }
 
-      // Exact height floor with landscape design (scale = 320/390).
-      const atFloor = calculateSceneGeometry(input(844, limits.minSceneHeightPx));
-      expect(atFloor.supported).toBe(true);
-      if (atFloor.supported) {
-        expect(atFloor.geometry.sceneFrame.height).toBeCloseTo(limits.minSceneHeightPx, 5);
+      // Landscape tablet gate forbids the old phone-landscape mid-scale path
+      // that previously isolated minSceneHeightPx at 844×320.
+      const phoneLandscapeFloor = calculateSceneGeometry(
+        input(844, limits.minSceneHeightPx)
+      );
+      expect(phoneLandscapeFloor.supported).toBe(false);
+      if (!phoneLandscapeFloor.supported) {
+        expect(phoneLandscapeFloor.reason).toBe('viewport_too_small');
       }
+
+      // Supported portrait still clears the height floor.
+      const ok = supported(390, 844);
+      expect(ok.sceneFrame.height).toBeGreaterThanOrEqual(limits.minSceneHeightPx);
+    });
+
+    it('landscape tablet gate: phone shells are viewport_too_small', () => {
+      for (const [w, h] of [
+        [844, 390],
+        [915, 412],
+        [700, 320],
+        [1024, 500],
+        [900, 600]
+      ] as const) {
+        const result = calculateSceneGeometry(input(w, h));
+        expect(result.supported).toBe(false);
+        if (!result.supported) {
+          expect(result.reason).toBe('viewport_too_small');
+        }
+      }
+      expect(calculateSceneGeometry(input(1024, 600)).supported).toBe(true);
     });
 
     it('minHandZoneHeightPx: raised threshold alone → minimums_unsatisfied', () => {
@@ -484,7 +507,7 @@ describe('calculateSceneGeometry', () => {
 
     it('minSceneHeightPx raised alone on a valid viewport → minimums_unsatisfied', () => {
       withRaisedSceneLimit('minSceneHeightPx', 10_000, () => {
-        const result = calculateSceneGeometry(input(844, 390));
+        const result = calculateSceneGeometry(input(1024, 600));
         expect(result.supported).toBe(false);
         if (!result.supported) {
           expect(result.reason).toBe('minimums_unsatisfied');
@@ -506,7 +529,7 @@ describe('calculateSceneGeometry', () => {
       expect(m.minHandZoneHeightPx).toBeLessThan(10_000);
       expect(limits.minSceneWidthPx).toBeLessThan(10_000);
       expect(calculateSceneGeometry(input(390, 844)).supported).toBe(true);
-      expect(calculateSceneGeometry(input(844, 390)).supported).toBe(true);
+      expect(calculateSceneGeometry(input(1024, 600)).supported).toBe(true);
     });
   });
 
@@ -527,7 +550,7 @@ describe('calculateSceneGeometry', () => {
 
   describe('bounds and invariants', () => {
     it('keeps fixed zones valid on portrait and landscape', () => {
-      for (const geometry of [supported(390, 844), supported(844, 390)]) {
+      for (const geometry of [supported(390, 844), supported(1024, 600)]) {
         const local = {
           x: 0,
           y: 0,

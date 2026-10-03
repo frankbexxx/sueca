@@ -308,7 +308,7 @@ describe('useSceneGeometryAuthority', () => {
       await assertSourceRemeasures(
         () => fire(windowListeners, 'orientationchange'),
         size,
-        { width: 700, height: 390 },
+        { width: 1024, height: 600 },
         ctx
       );
     });

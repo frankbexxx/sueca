@@ -6,8 +6,10 @@
 import type { Card } from '../../types/game';
 import type { KingBid } from '../../models/games/king/kingContracts';
 import { formatAuctionActionShort } from '../../models/games/king/kingAuction';
+import type { SceneGeometry } from '../../scene/sceneGeometry';
 import type { TableRenderModel } from '../../table/tableRenderModel';
 import { shouldShowTeamLabel } from '../../utils/playerSeatHelpers';
+import { buildCanonicalPhaserLayout } from './buildCanonicalPhaserLayout';
 import {
   buildPhaserTableLayout,
   layoutLocalHandPositions,
@@ -148,8 +150,22 @@ export function formatSpadesBidBadge(
 
 function seatLabelPosition(
   compass: PhaserCompass,
-  layout: PhaserTableLayout
+  layout: PhaserTableLayout,
+  geometry?: SceneGeometry | null
 ): PhaserPoint {
+  // Step 3B — canonical label regions when SceneGeometry is authoritative.
+  if (geometry) {
+    const label =
+      compass === 'north'
+        ? geometry.seatLabelRects.north
+        : compass === 'west'
+          ? geometry.seatLabelRects.west
+          : compass === 'east'
+            ? geometry.seatLabelRects.east
+            : geometry.seatLabelRects.south;
+    return { x: label.x + label.width / 2, y: label.y + label.height / 2 };
+  }
+
   const anchor = layout.seatAnchor[compass];
   if (compass === 'south') {
     return { x: anchor.x, y: anchor.y - layout.cardHeight * 0.55 };
@@ -197,8 +213,13 @@ export function mapTableModelToPhaserView(options: {
    * Localized Sueca ritual chips. Defaults to Portuguese, the same keys the DOM uses.
    */
   ritualRoleLabels?: RitualRoleLabels;
-  /** Window/host size for aspect classification (sheet-safe). */
+  /** Window/host size for aspect classification (sheet-safe). Legacy path only. */
   orientationReference?: { width?: number; height?: number } | null;
+  /**
+   * Step 3B — authoritative SceneGeometry. When provided, felt/seats/trick/hand
+   * come from canonical zones (no bottomChromePx / orientationReference).
+   */
+  sceneGeometry?: SceneGeometry | null;
 }): PhaserTableViewModel {
   const {
     model,
@@ -209,7 +230,8 @@ export function mapTableModelToPhaserView(options: {
     getTeamName,
     activeTurnLabel = null,
     ritualRoleLabels = DEFAULT_RITUAL_ROLE_LABELS,
-    orientationReference = null
+    orientationReference = null,
+    sceneGeometry = null
   } = options;
   const local = model.localPlayerIndex;
   const spadesUi = model.variantUi.spades;
@@ -218,18 +240,25 @@ export function mapTableModelToPhaserView(options: {
   const spadesBidPhase = model.status.spadesBidActive || model.chrome.spadesBidPhase;
   const heartsPassPhase = model.status.heartsPassActive;
   const kingFestaPhase = model.status.festaSheetActive;
-  const aspect = resolveAspectMode(width, height, orientationReference);
-  const bottomChromePx = resolveBottomChromePx(height, aspect, {
-    sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase,
-    // Spades bid: short overlay dock. Hearts pass: panel docks below host (no interior chrome).
-    compactSheet: spadesBidPhase,
-    dockedBelowHost: heartsPassPhase,
-    festaChrome: kingFestaPhase ? model.status.festaSheetChrome : null
-  });
-  const layout = buildPhaserTableLayout(width, height, {
-    bottomChromePx,
-    orientationReference
-  });
+
+  let layout: PhaserTableLayout;
+  if (sceneGeometry) {
+    // Canonical path: ignore phase chrome and orientationReference for geometry.
+    layout = buildCanonicalPhaserLayout(sceneGeometry);
+  } else {
+    const aspect = resolveAspectMode(width, height, orientationReference);
+    const bottomChromePx = resolveBottomChromePx(height, aspect, {
+      sheetActive: heartsPassPhase || spadesBidPhase || kingFestaPhase,
+      // Spades bid: short overlay dock. Hearts pass: panel docks below host (no interior chrome).
+      compactSheet: spadesBidPhase,
+      dockedBelowHost: heartsPassPhase,
+      festaChrome: kingFestaPhase ? model.status.festaSheetChrome : null
+    });
+    layout = buildPhaserTableLayout(width, height, {
+      bottomChromePx,
+      orientationReference
+    });
+  }
   const kingWaitingForChoice = Boolean(kingUi?.waitingForChoice);
   const spadesBroken = Boolean(spadesUi?.spadesBroken);
   const heartsBroken = Boolean(heartsUi?.heartsBroken);
@@ -378,7 +407,7 @@ export function mapTableModelToPhaserView(options: {
       ritualRole,
       turnCueLabel: presentation.turnCueLabel,
       backPositions,
-      labelPosition: seatLabelPosition(compass, layout),
+      labelPosition: seatLabelPosition(compass, layout, sceneGeometry),
       countBadgePosition
     };
   });

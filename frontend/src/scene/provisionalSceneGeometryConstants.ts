@@ -99,7 +99,7 @@ export const PROVISIONAL_FELT_LAYOUT = {
   /** Side seat height as a fraction of felt height. */
   sideSeatHeight: 0.36,
   /** Trick size as a fraction of the smaller felt side. */
-  trickSize: 0.34,
+  trickSize: 0.5,
   /** Decision width as a fraction of felt width. */
   decisionWidth: 0.56,
   /** Horizontal inset for side seats from felt edges. */
@@ -125,4 +125,33 @@ export const PROVISIONAL_UNSUPPORTED_LIMITS = {
   minSceneWidthPx: 280,
   minSceneHeightPx: 320,
   minSceneScale: 0.45
+} as const;
+
+/**
+ * PROVISIONAL — landscape shell gate (tablet / large-screen).
+ * Phone-landscape is intentionally unsupported; portrait is unchanged.
+ * Checked against measured shell width/height (ViewportGeometryInput).
+ */
+export const PROVISIONAL_LANDSCAPE_MIN_SHELL = {
+  width: 1024,
+  height: 600
+} as const;
+
+/**
+ * PROVISIONAL — nominal layout card width at sceneScale = 1 (portrait design frame).
+ * Height = round(width * CARD_ASPECT). Used by C2 card metrics.
+ */
+export const PROVISIONAL_CARD_METRICS = {
+  aspectHeightOverWidth: 1.4,
+  baseCardWidthAtScale1: 48,
+  handPresenceScale: 1.22,
+  trickScale: 1.11,
+  /**
+   * Selected-card vertical lift pad (px). Must match HUMAN_HAND_LAYOUT.selectedLift.
+   * Kept here so scene runtime does not import table/localHandLayout.
+   */
+  selectedLiftPad: 26,
+  /** premiumTrickOffset factors — cross span for 4 trick cards. */
+  trickOffsetXFactor: 0.8,
+  trickOffsetYFactor: 0.55
 } as const;

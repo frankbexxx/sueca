@@ -55,13 +55,15 @@ describe('computeAuthoritativeSceneGeometry', () => {
       safeInsets: { top: 0, right: 0, bottom: 0, left: 0 }
     });
     const landscape = computeAuthoritativeSceneGeometry({
-      width: 700,
-      height: 390,
+      width: 1024,
+      height: 600,
       safeInsets: { top: 0, right: 0, bottom: 0, left: 0 }
     });
     expect(portrait.ok && landscape.ok).toBe(true);
     if (!portrait.ok || !landscape.ok) return;
     expect(portrait.key).not.toBe(landscape.key);
+    expect(portrait.result.supported).toBe(true);
+    expect(landscape.result.supported).toBe(true);
     if (portrait.result.supported && landscape.result.supported) {
       expect(portrait.result.geometry.orientation).toBe('portrait');
       expect(landscape.result.geometry.orientation).toBe('landscape');

@@ -65,10 +65,11 @@ describe('GameBoard Step 3A canonical scene contracts', () => {
     );
   });
 
-  it('does not migrate internal Phaser felt/seats/trick/hand away from legacy layout', () => {
-    expect(mapTs).toContain('buildPhaserTableLayout');
-    expect(mapTs).toContain('resolveBottomChromePx');
-    expect(sceneTs).toContain('mapTableModelToPhaserView');
-    expect(phaserTsx).toMatch(/Internal felt\/seats\/trick\/hand layout remains legacy/);
+  it('Step 3B wires canonical SceneGeometry into Phaser layout mapping', () => {
+    expect(mapTs).toContain('buildCanonicalPhaserLayout');
+    expect(mapTs).toContain('sceneGeometry');
+    expect(sceneTs).toContain('setSceneGeometry');
+    expect(sceneTs).toContain('latestSceneGeometry');
+    expect(phaserTsx).toContain('setSceneGeometry');
   });
 });
