@@ -418,6 +418,7 @@ export function premiumToPhaserTableLayout(premium: PremiumTableLayout) {
     center: premium.center,
     seatAnchor: premium.seatAnchor,
     handY: premium.handY,
+    selectedLiftPad: 26,
     cardWidth: premium.cardWidth,
     cardHeight: premium.cardHeight,
     opponentCardWidth: premium.opponentCardWidth,

@@ -16,7 +16,8 @@ import {
   PhaserTableViewModel
 } from './mapTableModelToPhaserView';
 import {
-  getHandCardVisualPresentation
+  getHandCardVisualPresentation,
+  type HandCardVisualPresentation
 } from './phaserHandVisual';
 import { resolveHandHitAreaMode } from './phaserHandInput';
 import {
@@ -41,6 +42,22 @@ import { resolveOrientationReference } from './phaserPremiumLayout';
 import { clampSeatChromePanelX, pointInDropZone } from './phaserTableLayout';
 import { PREMIUM_TABLE, premiumTrickDepth } from './phaserPremiumLayout';
 import type { RitualRoleLabels } from '../../table/ritualRoleLabel';
+
+function handCardVisual(
+  entity: PhaserHandCardEntity,
+  view: PhaserTableViewModel,
+  hovered = false
+): HandCardVisualPresentation {
+  return getHandCardVisualPresentation({
+    visualState: entity.visualState,
+    selected: entity.selected,
+    canDrag: entity.canDrag,
+    passSelectionEnabled: view.passSelectionEnabled,
+    interactionEnabled: view.interactionEnabled,
+    hovered,
+    selectedLift: view.layout.selectedLiftPad
+  });
+}
 
 export const SUECA_TABLE_SCENE_KEY = 'SuecaTableScene';
 
@@ -729,14 +746,7 @@ export class SuecaTableScene extends Phaser.Scene {
       if (this.dragCardId) return;
       const entity = this.view?.localHand.find((h) => h.card.id === cardId);
       if (!entity || !this.view || entity.visualState !== 'legal') return;
-      const visual = getHandCardVisualPresentation({
-        visualState: entity.visualState,
-        selected: entity.selected,
-        canDrag: entity.canDrag,
-        passSelectionEnabled: this.view.passSelectionEnabled,
-        interactionEnabled: this.view.interactionEnabled,
-        hovered: true
-      });
+      const visual = handCardVisual(entity, this.view, true);
       const size = artSize(visual.scale);
       this.tweens.add({
         targets: sprite,
@@ -751,14 +761,7 @@ export class SuecaTableScene extends Phaser.Scene {
       if (this.dragCardId === cardId) return;
       const entity = this.view?.localHand.find((h) => h.card.id === cardId);
       if (!entity || !this.view) return;
-      const visual = getHandCardVisualPresentation({
-        visualState: entity.visualState,
-        selected: entity.selected,
-        canDrag: entity.canDrag,
-        passSelectionEnabled: this.view.passSelectionEnabled,
-        interactionEnabled: this.view.interactionEnabled,
-        hovered: false
-      });
+      const visual = handCardVisual(entity, this.view, false);
       const size = artSize(visual.scale);
       this.tweens.add({
         targets: sprite,
@@ -840,14 +843,7 @@ export class SuecaTableScene extends Phaser.Scene {
       return;
     }
 
-    const visual = getHandCardVisualPresentation({
-      visualState: entity.visualState,
-      selected: entity.selected,
-      canDrag: entity.canDrag,
-      passSelectionEnabled: this.view.passSelectionEnabled,
-      interactionEnabled: this.view.interactionEnabled,
-      hovered: false
-    });
+    const visual = handCardVisual(entity, this.view, false);
     const presence = PREMIUM_TABLE.handPresenceScale;
     const cw = this.view.layout.cardWidth;
     const ch = this.view.layout.cardHeight;
@@ -902,14 +898,7 @@ export class SuecaTableScene extends Phaser.Scene {
       const id = entity.card.id;
       keep.add(id);
       let sprite = this.handSprites.get(id);
-      const visual = getHandCardVisualPresentation({
-        visualState: entity.visualState,
-        selected: entity.selected,
-        canDrag: entity.canDrag,
-        passSelectionEnabled: view.passSelectionEnabled,
-        interactionEnabled: view.interactionEnabled,
-        hovered: false
-      });
+      const visual = handCardVisual(entity, view, false);
       const displayScale = visual.scale * presence;
       const frameW = cardWidth * displayScale;
       const frameH = cardHeight * displayScale;
@@ -1005,13 +994,7 @@ export class SuecaTableScene extends Phaser.Scene {
     sprite: Phaser.GameObjects.Image,
     entity: PhaserHandCardEntity,
     view: PhaserTableViewModel,
-    visual = getHandCardVisualPresentation({
-      visualState: entity.visualState,
-      selected: entity.selected,
-      canDrag: entity.canDrag,
-      passSelectionEnabled: view.passSelectionEnabled,
-      interactionEnabled: view.interactionEnabled
-    }),
+    visual = handCardVisual(entity, view),
     frameW?: number,
     frameH?: number,
     art?: { width: number; height: number }

@@ -50,6 +50,8 @@ export interface PhaserTableLayout {
   center: PhaserPoint;
   seatAnchor: Record<PhaserCompass, PhaserPoint>;
   handY: number;
+  /** Selected-card lift (px); from canonical card metrics. */
+  selectedLiftPad: number;
   cardWidth: number;
   cardHeight: number;
   opponentCardWidth: number;

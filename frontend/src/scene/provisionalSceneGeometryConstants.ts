@@ -155,3 +155,40 @@ export const PROVISIONAL_CARD_METRICS = {
   trickOffsetXFactor: 0.8,
   trickOffsetYFactor: 0.55
 } as const;
+
+/**
+ * Approved Sueca portrait V3 reference rects at design frame 390×844 (sceneScale = 1).
+ * Scaled uniformly by sceneScale in the shared calculator.
+ */
+export const SUECA_PORTRAIT_V3_REF = {
+  designWidth: 390,
+  designHeight: 844,
+  hud: { x: 0, y: 0, w: 390, h: 76 },
+  felt: { x: 12, y: 80, w: 366, h: 616 },
+  north: { x: 66, y: 94, w: 258, h: 72 },
+  west: { x: 20, y: 269, w: 68, h: 230 },
+  east: { x: 302, y: 269, w: 68, h: 230 },
+  south: { x: 115, y: 602, w: 160, h: 48 },
+  trick: { x: 108, y: 284, w: 174, h: 200 },
+  hand: { x: 8, y: 656, w: 374, h: 136 },
+  action: { x: 0, y: 792, w: 390, h: 52 },
+  statusPlaque: { x: 45, y: 328, w: 300, h: 112 },
+  decision: { x: 25, y: 274, w: 340, h: 220 },
+  sheet: { x: 25, y: 234, w: 340, h: 300 }
+} as const;
+
+/**
+ * Card metrics for Sueca portrait V3 (hand ≈ 62×87, trick ≈ 58×81, lift 18).
+ * handPresenceScale matches PREMIUM_TABLE / default so Phaser display multiply stays coherent.
+ */
+export const SUECA_PORTRAIT_V3_CARD_METRICS = {
+  aspectHeightOverWidth: 1.4,
+  /** → hand display ≈ 61.9×86.6 after presence 1.22 (target 62×87). */
+  baseCardWidthAtScale1: 50.81967213114754,
+  handPresenceScale: 1.22,
+  /** → trick ≈ 58 wide before envelope cap. */
+  trickScale: 1.141304347826087,
+  selectedLiftPad: 18,
+  trickOffsetXFactor: 0.8,
+  trickOffsetYFactor: 0.55
+} as const;

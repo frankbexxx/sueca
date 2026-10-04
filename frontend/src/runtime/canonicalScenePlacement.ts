@@ -83,6 +83,19 @@ export function decisionRectShellStyle(geometry: SceneGeometry): CSSProperties {
 }
 
 /**
+ * Sueca V3 status plaque envelope (statusPlaqueRect).
+ */
+export function statusPlaqueRectShellStyle(geometry: SceneGeometry): CSSProperties {
+  const plaque = geometry.statusPlaqueRect ?? geometry.decisionRect;
+  return {
+    ...sceneLocalRectShellStyle(geometry, plaque),
+    zIndex: 2100,
+    overflow: 'hidden',
+    pointerEvents: 'none'
+  };
+}
+
+/**
  * Sueca ritual-status CSS max-height (VariantModals). Used only to choose
  * between decisionRect and decisionSheetRect — never to resize geometry.
  */
@@ -90,16 +103,23 @@ export const SUECA_RITUAL_STATUS_CLEAN_MIN_HEIGHT_PX = 86;
 
 export type SuecaRitualSurfaceKind = 'status' | 'decision' | 'human';
 
+export type SuecaRitualCanonicalZone =
+  | 'decisionRect'
+  | 'decisionSheetRect'
+  | 'statusPlaqueRect';
+
 /**
  * Pick canonical zone for Sueca ritual plaques.
- * Status uses decisionRect only when it fits cleanly; otherwise decisionSheetRect.
+ * V3: status → statusPlaqueRect when present.
+ * DEFAULT: status uses decisionRect only when it fits cleanly; otherwise decisionSheetRect.
  * Decision / human / distribution always use decisionSheetRect.
  */
 export function resolveSuecaRitualCanonicalZone(
   geometry: SceneGeometry,
   kind: SuecaRitualSurfaceKind
-): 'decisionRect' | 'decisionSheetRect' {
+): SuecaRitualCanonicalZone {
   if (kind !== 'status') return 'decisionSheetRect';
+  if (geometry.statusPlaqueRect) return 'statusPlaqueRect';
   return geometry.decisionRect.height + 1e-6 >= SUECA_RITUAL_STATUS_CLEAN_MIN_HEIGHT_PX
     ? 'decisionRect'
     : 'decisionSheetRect';

@@ -4,20 +4,21 @@
  * Lifecycle:
  *   shell / visualViewport / orientation / resize event
  *   → measureGameplayShell
- *   → computeAuthoritativeSceneGeometry
+ *   → computeAuthoritativeSceneGeometry(layoutProfile)
  *   → publish only when result key changes
  *
- * Does not accept game phase / variant / HUD content as inputs.
+ * layoutProfile comes from renderer-selection authority (Sueca Phaser → V3).
  * Does not resize the Phaser host (Step 2 = snapshot plumbing only).
  */
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { SceneGeometryResult } from '../scene/sceneGeometry';
+import type { GeometryLayoutProfile, SceneGeometryResult } from '../scene/sceneGeometry';
 import { computeAuthoritativeSceneGeometry } from '../runtime/computeAuthoritativeSceneGeometry';
 import { measureGameplayShell } from '../runtime/measureGameplayShell';
 
 export function useSceneGeometryAuthority(
-  shellRef: RefObject<HTMLElement | null>
+  shellRef: RefObject<HTMLElement | null>,
+  layoutProfile: GeometryLayoutProfile = 'default'
 ): SceneGeometryResult | null {
   const [snapshot, setSnapshot] = useState<SceneGeometryResult | null>(null);
   const publishedKeyRef = useRef<string | null>(null);
@@ -32,7 +33,7 @@ export function useSceneGeometryAuthority(
     const publish = () => {
       if (cancelled) return;
       const measured = measureGameplayShell(shell);
-      const computed = computeAuthoritativeSceneGeometry(measured);
+      const computed = computeAuthoritativeSceneGeometry(measured, layoutProfile);
       if (!computed.ok) {
         // Invalid raw measure — keep last good snapshot; never crash.
         return;
@@ -75,7 +76,7 @@ export function useSceneGeometryAuthority(
       window.removeEventListener('resize', schedulePublish);
       window.removeEventListener('orientationchange', schedulePublish);
     };
-  }, [shellRef]);
+  }, [shellRef, layoutProfile]);
 
   return snapshot;
 }

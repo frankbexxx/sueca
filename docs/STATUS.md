@@ -1,6 +1,6 @@
 # SUECÂO — Estado actual
 
-**Última actualização:** Maio 2026 · Branch `v2-main`
+**Última actualização:** 2026-10-04 · Branch `v2-main`
 
 ## Prioridade
 
@@ -24,14 +24,35 @@
 - **UI DOBO:** menus e modais
 - **IA:** só local no 1.º AAB
 
+## Sueca portrait geometry (V3) — baseline actual
+
+| Item | Estado |
+|------|--------|
+| **Sueca portrait V3** canonical geometry | **Implementado** (Phaser / canonical path only) |
+| Runtime validation @ ~390×844 | **Concluída** — [sueca-table-audit/runtime-v3-validation/](sueca-table-audit/runtime-v3-validation/) |
+| Baseline | V3 aceite como geometria portrait actual da Sueca SOLO Phaser |
+| Multiplayer / DOM Sueca | Continua em geometria **DEFAULT** (sem V3) |
+| Landscape | **DEFAULT** / inalterado |
+| Outros jogos (Hearts / Spades / King) | **DEFAULT** (sem regressão de layout) |
+
+Audit packages: [sueca-table-audit/](sueca-table-audit/) (CURRENT diagrams + proposed-comparison V1/V2/V3 + runtime screenshots).
+
+### Bugs visuais conhecidos (adiados — pós-deploy smoke)
+
+Não corrigidos neste slice; smoke em produção depois:
+
+1. **Continue CTA** — aparece na zona visual errada / overlap com HUD em vez da action/status band.
+2. **HUD top-right crowding** — `ELES` + Pausa auto + pause/pin/ellipsis apertados.
+
 ## Próximos passos (ordem)
 
-1. Shell + dashboard + PlaySetup (sem scroll monolítico)
-2. Fechar regras + testes por jogo (Sueca → Hearts → Spades → King)
-3. Stats locais + continuar partida
-4. Smoke 360×800 — [MOBILE_AUDIT.md](MOBILE_AUDIT.md)
-5. `npm run release:android` + internal track
-6. P5 Render + multiplayer
+1. Deploy / smoke produção Sueca portrait (registar CTA + HUD crowding)
+2. Follow-up visual: Continue CTA placement + top-right HUD chrome
+3. Shell + dashboard + PlaySetup (sem scroll monolítico)
+4. Fechar regras + testes por jogo (Sueca → Hearts → Spades → King)
+5. Stats locais + continuar partida
+6. `npm run release:android` + internal track
+7. P5 Render + multiplayer
 
 ## Histórico
 

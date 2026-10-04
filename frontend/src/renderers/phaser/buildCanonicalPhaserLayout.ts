@@ -71,6 +71,7 @@ export function buildCanonicalPhaserLayout(geometry: SceneGeometry): PhaserTable
       south: { x: geometry.seatAnchors.south.x, y: geometry.seatAnchors.south.y }
     },
     handY,
+    selectedLiftPad: metrics.selectedLiftPad,
     cardWidth: metrics.cardWidth,
     cardHeight: metrics.cardHeight,
     opponentCardWidth: metrics.opponentCardWidth,

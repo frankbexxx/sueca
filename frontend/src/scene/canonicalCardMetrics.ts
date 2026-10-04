@@ -4,10 +4,19 @@
  * No game/phase/orientation breakpoints.
  */
 
-import { PROVISIONAL_CARD_METRICS } from './provisionalSceneGeometryConstants';
+import {
+  PROVISIONAL_CARD_METRICS,
+  SUECA_PORTRAIT_V3_CARD_METRICS
+} from './provisionalSceneGeometryConstants';
 import type { Rect, SceneGeometry } from './sceneGeometry';
 
 export const SELECTED_LIFT_PAD = PROVISIONAL_CARD_METRICS.selectedLiftPad;
+
+function cardMetricsConstants(geometry: SceneGeometry) {
+  return geometry.layoutProfile === 'suecaPortraitV3'
+    ? SUECA_PORTRAIT_V3_CARD_METRICS
+    : PROVISIONAL_CARD_METRICS;
+}
 
 export interface CanonicalCardMetrics {
   readonly sceneScale: number;
@@ -24,10 +33,13 @@ export interface CanonicalCardMetrics {
   readonly selectedLiftPad: number;
 }
 
-function maxTrickWidthForCross(trickRect: Rect): number {
-  const aspect = PROVISIONAL_CARD_METRICS.aspectHeightOverWidth;
-  const fx = PROVISIONAL_CARD_METRICS.trickOffsetXFactor;
-  const fy = PROVISIONAL_CARD_METRICS.trickOffsetYFactor;
+function maxTrickWidthForCross(
+  trickRect: Rect,
+  m: typeof PROVISIONAL_CARD_METRICS | typeof SUECA_PORTRAIT_V3_CARD_METRICS
+): number {
+  const aspect = m.aspectHeightOverWidth;
+  const fx = m.trickOffsetXFactor;
+  const fy = m.trickOffsetYFactor;
   let lo = 0;
   let hi = Math.min(trickRect.width, trickRect.height / aspect);
   for (let i = 0; i < 48; i++) {
@@ -69,13 +81,13 @@ export function resolveCanonicalHandY(
  * C2 card metrics for a supported SceneGeometry snapshot.
  */
 export function computeCanonicalCardMetrics(geometry: SceneGeometry): CanonicalCardMetrics {
-  const m = PROVISIONAL_CARD_METRICS;
+  const m = cardMetricsConstants(geometry);
   const sceneScale = geometry.sceneScale;
   const baseCardW = m.baseCardWidthAtScale1 * sceneScale;
   const baseCardH =
     Math.round(m.baseCardWidthAtScale1 * m.aspectHeightOverWidth) * sceneScale;
 
-  const selectedLiftPad = SELECTED_LIFT_PAD;
+  const selectedLiftPad = m.selectedLiftPad;
   const nominalHandDisplayH = baseCardH * m.handPresenceScale;
   const maxHandDisplayH = Math.max(
     0,
@@ -89,7 +101,10 @@ export function computeCanonicalCardMetrics(geometry: SceneGeometry): CanonicalC
   const cardHeight = handDisplayHeight / m.handPresenceScale;
 
   const nominalTrickW = baseCardW * m.trickScale;
-  const trickCardWidth = Math.min(nominalTrickW, maxTrickWidthForCross(geometry.trickRect));
+  const trickCardWidth = Math.min(
+    nominalTrickW,
+    maxTrickWidthForCross(geometry.trickRect, m)
+  );
   const trickCardHeight = trickCardWidth * m.aspectHeightOverWidth;
 
   // Single opponent scale (no landscape/portrait branch).

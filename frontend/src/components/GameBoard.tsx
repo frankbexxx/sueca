@@ -95,6 +95,7 @@ import { LocalPlayerDock } from './table/LocalPlayerDock';
 import { useLayoutSnapshot } from '../hooks/useLayoutSnapshot';
 import { SceneGeometryProvider } from '../hooks/SceneGeometryContext';
 import { useSceneGeometryAuthority } from '../hooks/useSceneGeometryAuthority';
+import { resolveGeometryLayoutProfile } from '../scene/geometryLayoutProfile';
 import { sceneGeometryResultKey } from '../scene/sceneGeometryEquality';
 import {
   hudRectShellStyle,
@@ -309,7 +310,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const layoutSnapshot = useLayoutSnapshot();
   /** Gameplay shell (HUD + table zone) — authoritative geometry measurement target. */
   const boardShellRef = useRef<HTMLDivElement | null>(null);
-  const sceneGeometry = useSceneGeometryAuthority(boardShellRef);
+  /** Same renderer authority as the table host (Phaser vs DOM), including MP → DOM. */
+  const usePhaserTableForGeometry =
+    resolveTableRendererForBrowser(gameVariant) === 'phaser' &&
+    !isMultiplayerActive &&
+    !phaserInitFailed;
+  const geometryLayoutProfile = resolveGeometryLayoutProfile({
+    variant: gameVariant,
+    tableRenderer: usePhaserTableForGeometry ? 'phaser' : 'dom'
+  });
+  const sceneGeometry = useSceneGeometryAuthority(boardShellRef, geometryLayoutProfile);
   const supportedSceneGeometry =
     sceneGeometry?.supported === true ? sceneGeometry.geometry : null;
   const sceneGeometryUnsupported =
@@ -1789,10 +1799,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const dockProps = mapTableModelToDomDockProps(tableModel, gameState, spadesState);
   const handProps = mapTableModelToDomHandProps(tableModel);
 
-  const usePhaserTable =
-    resolveTableRendererForBrowser(gameVariant) === 'phaser' &&
-    !isMultiplayerActive &&
-    !phaserInitFailed;
+  const usePhaserTable = usePhaserTableForGeometry;
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return;

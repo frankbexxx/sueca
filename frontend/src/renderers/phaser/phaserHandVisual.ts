@@ -36,6 +36,8 @@ export interface HandCardVisualInput {
   /** True when the table accepts trick play input. */
   interactionEnabled: boolean;
   hovered?: boolean;
+  /** Override selected lift (canonical metrics); defaults to HAND_VISUAL.selectedLift. */
+  selectedLift?: number;
 }
 
 export interface HandCardVisualPresentation {
@@ -53,8 +55,15 @@ export interface HandCardVisualPresentation {
 export function getHandCardVisualPresentation(
   input: HandCardVisualInput
 ): HandCardVisualPresentation {
-  const { visualState, selected, canDrag, passSelectionEnabled, interactionEnabled, hovered } =
-    input;
+  const {
+    visualState,
+    selected,
+    canDrag,
+    passSelectionEnabled,
+    interactionEnabled,
+    hovered,
+    selectedLift = HAND_VISUAL.selectedLift
+  } = input;
 
   let alpha: number = HAND_VISUAL.legalAlpha;
   let tint: number = HAND_VISUAL.legalTint;
@@ -66,9 +75,10 @@ export function getHandCardVisualPresentation(
     tint = HAND_VISUAL.inactiveTint;
   }
 
+  const selectedHoverLift = Math.max(HAND_VISUAL.selectedHoverLift, selectedLift + 4);
   let yOffset = 0;
-  if (selected && hovered) yOffset = -HAND_VISUAL.selectedHoverLift;
-  else if (selected) yOffset = -HAND_VISUAL.selectedLift;
+  if (selected && hovered) yOffset = -selectedHoverLift;
+  else if (selected) yOffset = -selectedLift;
   else if (hovered && visualState === 'legal') yOffset = -HAND_VISUAL.hoverLift;
 
   const scale = HAND_VISUAL.normalScale;

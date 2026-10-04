@@ -4,6 +4,7 @@
  */
 
 import { calculateSceneGeometry } from '../scene/calculateSceneGeometry';
+import type { GeometryLayoutProfile } from '../scene/sceneGeometry';
 import { normalizeViewport, type RawViewportGeometry } from '../scene/normalizeViewport';
 import type { SceneGeometryResult } from '../scene/sceneGeometry';
 import { sceneGeometryResultKey } from '../scene/sceneGeometryEquality';
@@ -18,13 +19,14 @@ export type AuthoritativeGeometryCompute =
  * (invalid numbers). supported:false from the calculator is still ok:true.
  */
 export function computeAuthoritativeSceneGeometry(
-  raw: RawViewportGeometry
+  raw: RawViewportGeometry,
+  layoutProfile: GeometryLayoutProfile = 'default'
 ): AuthoritativeGeometryCompute {
   const normalized = normalizeViewport(raw);
   if (!normalized.ok) {
     return { ok: false, reason: normalized.reason };
   }
-  const result = calculateSceneGeometry(normalized.input);
+  const result = calculateSceneGeometry(normalized.input, layoutProfile);
   return {
     ok: true,
     result,

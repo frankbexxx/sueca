@@ -16,6 +16,13 @@ export type SceneProfile =
   | 'landscapeStandard'
   | 'landscapeCompact';
 
+/**
+ * Zone-construction layout profile (not compact/standard SceneProfile).
+ * `suecaPortraitV3` applies only when requested and orientation is portrait;
+ * landscape always uses default zone construction.
+ */
+export type GeometryLayoutProfile = 'default' | 'suecaPortraitV3';
+
 export interface Point {
   readonly x: number;
   readonly y: number;
@@ -120,6 +127,8 @@ export interface SceneGeometry {
   readonly safeInsets: Insets;
   readonly orientation: Orientation;
   readonly profile: SceneProfile;
+  /** Effective zone layout used to build internal rects. */
+  readonly layoutProfile: GeometryLayoutProfile;
   readonly designFrame: DesignFrame;
   /** Scene placement in viewport coordinates (letterboxed into the safe usable area). */
   readonly sceneFrame: Rect;
@@ -155,6 +164,11 @@ export interface SceneGeometry {
    * intersect hudRect or handInteractionRect.
    */
   readonly decisionSheetRect: Rect;
+  /**
+   * Optional status plaque envelope (Sueca V3). Null on default layout —
+   * Sueca status then falls back to decisionRect / decisionSheetRect rules.
+   */
+  readonly statusPlaqueRect: Rect | null;
   readonly fullSceneModalRect: Rect;
   readonly overlaySafeRect: Rect;
   readonly overlayExclusions: OverlayExclusions;

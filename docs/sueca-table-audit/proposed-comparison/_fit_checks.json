@@ -1,0 +1,41 @@
+{
+  "proposed": {
+    "feltVsHandOverlap": 38,
+    "southVsHandGap": 6,
+    "southInsideFelt": true,
+    "westEastWidth": 48,
+    "trickFit": {
+      "needW": 150,
+      "needH": 171,
+      "haveW": 154,
+      "haveH": 178,
+      "okW": true,
+      "okH": true
+    },
+    "handFit": {
+      "span10": 313.1,
+      "avail": 374,
+      "fits": true,
+      "liftRoom": 16
+    },
+    "actionH": 44,
+    "hudH": 64,
+    "remainingBelowAction": 0
+  },
+  "current": {
+    "trickFit": {
+      "needW": 139.28,
+      "needH": 156.59,
+      "haveW": 194.12,
+      "haveH": 194.12,
+      "okW": true,
+      "okH": true
+    },
+    "handFit": {
+      "span10": 294.8695,
+      "avail": 390,
+      "fits": true,
+      "liftRoom": 61.06000000000002
+    }
+  }
+}

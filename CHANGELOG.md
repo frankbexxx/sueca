@@ -5,6 +5,14 @@ All notable changes to the Sueca Card Game project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Sueca portrait geometry V3
+- Adopt approved Sueca Phaser portrait V3 canonical geometry (`layoutProfile: suecaPortraitV3`).
+- DOM / multiplayer Sueca and all landscape / other-variant layouts remain on DEFAULT geometry.
+- Audit package + runtime validation screenshots under `docs/sueca-table-audit/`.
+- Deferred visual follow-ups: Continue CTA placement; top-right HUD/chrome crowding.
+
 ## [0.1.0-alpha] - 2025-12
 
 ### 🎮 Features Added

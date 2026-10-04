@@ -662,11 +662,13 @@ describe('calculateSceneGeometry', () => {
       }
     });
 
-    it('calculator signature accepts only ViewportGeometryInput', () => {
+    it('calculator signature accepts ViewportGeometryInput + optional layoutProfile', () => {
       const source = readFileSync(join(sceneDir, 'calculateSceneGeometry.ts'), 'utf8');
-      expect(source).toContain(
-        'export function calculateSceneGeometry(input: ViewportGeometryInput)'
+      expect(source).toMatch(
+        /export function calculateSceneGeometry\(\s*input: ViewportGeometryInput,\s*layoutProfile: GeometryLayoutProfile = 'default'\s*\)/
       );
+      // Still must not import gameVariant / engine modules.
+      expect(source).not.toMatch(/from\s+['"][^'"]*gameVariant[^'"]*['"]/);
     });
   });
 });

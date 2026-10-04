@@ -12,9 +12,11 @@ import {
   PROVISIONAL_LOCAL_LAYOUT,
   PROVISIONAL_PORTRAIT_BANDS,
   PROVISIONAL_PROFILE_THRESHOLDS,
-  PROVISIONAL_UNSUPPORTED_LIMITS
+  PROVISIONAL_UNSUPPORTED_LIMITS,
+  SUECA_PORTRAIT_V3_REF
 } from './provisionalSceneGeometryConstants';
 import type {
+  GeometryLayoutProfile,
   Point,
   Rect,
   SceneGeometry,
@@ -82,7 +84,116 @@ function labelRectForSeat(seat: Rect): Rect {
   return rect(seat.x + (seat.width - w) / 2, seat.y + (seat.height - h) / 2, w, h);
 }
 
-function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
+type SeatRectBag = {
+  north: Rect;
+  west: Rect;
+  east: Rect;
+  south: Rect;
+};
+
+type InternalZones = {
+  hudRect: Rect;
+  feltRect: Rect;
+  seatZones: SeatRectBag;
+  seatAnchors: {
+    north: Point;
+    west: Point;
+    east: Point;
+    south: Point;
+  };
+  seatLabelRects: SeatRectBag;
+  seatExclusionRects: SeatRectBag;
+  trickRect: Rect;
+  trickCenter: Point;
+  handRect: Rect;
+  handBaseline: number;
+  handInteractionRect: Rect;
+  actionStatusRect: Rect;
+  decisionRect: Rect;
+  decisionSheetRect: Rect;
+  statusPlaqueRect: Rect | null;
+  fullSceneModalRect: Rect;
+  overlaySafeRect: Rect;
+  overlayExclusions: {
+    northSeatLabel: Rect;
+    westSeatLabel: Rect;
+    eastSeatLabel: Rect;
+    hand: Rect;
+  };
+};
+
+function finishZones(
+  sceneW: number,
+  sceneH: number,
+  parts: {
+    hudRect: Rect;
+    feltRect: Rect;
+    northSeat: Rect;
+    westSeat: Rect;
+    eastSeat: Rect;
+    southSeat: Rect;
+    trickRect: Rect;
+    handRect: Rect;
+    handInteractionRect: Rect;
+    actionStatusRect: Rect;
+    decisionRect: Rect;
+    decisionSheetRect: Rect;
+    statusPlaqueRect: Rect | null;
+  }
+): InternalZones {
+  const seatZones = {
+    north: parts.northSeat,
+    west: parts.westSeat,
+    east: parts.eastSeat,
+    south: parts.southSeat
+  };
+  const seatLabelRects = {
+    north: labelRectForSeat(parts.northSeat),
+    west: labelRectForSeat(parts.westSeat),
+    east: labelRectForSeat(parts.eastSeat),
+    south: labelRectForSeat(parts.southSeat)
+  };
+  return {
+    hudRect: parts.hudRect,
+    feltRect: parts.feltRect,
+    seatZones,
+    seatAnchors: {
+      north: centerOf(parts.northSeat),
+      west: centerOf(parts.westSeat),
+      east: centerOf(parts.eastSeat),
+      south: centerOf(parts.southSeat)
+    },
+    seatLabelRects,
+    seatExclusionRects: { ...seatLabelRects },
+    trickRect: parts.trickRect,
+    trickCenter: centerOf(parts.trickRect),
+    handRect: parts.handRect,
+    handBaseline: parts.handRect.y + parts.handRect.height,
+    handInteractionRect: parts.handInteractionRect,
+    actionStatusRect: parts.actionStatusRect,
+    decisionRect: parts.decisionRect,
+    decisionSheetRect: parts.decisionSheetRect,
+    statusPlaqueRect: parts.statusPlaqueRect,
+    fullSceneModalRect: rect(0, 0, sceneW, sceneH),
+    overlaySafeRect: parts.feltRect,
+    overlayExclusions: {
+      northSeatLabel: seatLabelRects.north,
+      westSeatLabel: seatLabelRects.west,
+      eastSeatLabel: seatLabelRects.east,
+      hand: parts.handRect
+    }
+  };
+}
+
+function scaleRef(
+  r: { x: number; y: number; w: number; h: number },
+  sceneScale: number
+): Rect {
+  return rect(r.x * sceneScale, r.y * sceneScale, r.w * sceneScale, r.h * sceneScale);
+}
+
+/** DEFAULT zone construction — numerically identical to pre-layoutProfile bands. */
+function buildDefaultInternalZones(sceneW: number, sceneH: number, portrait: boolean): InternalZones {
   const bands = portrait ? PROVISIONAL_PORTRAIT_BANDS : PROVISIONAL_LANDSCAPE_BANDS;
   const hudH = sceneH * bands.hud;
   const feltH = sceneH * bands.felt;
@@ -138,7 +249,6 @@ function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
     Math.min(sceneH - Math.max(0, handRect.y - padY), handRect.height + padY * 2)
   );
 
-  // Step 3C — largest full-width overlay strip between HUD and hand interaction.
   const hudBottom = hudRect.y + hudRect.height;
   const decisionSheetRect = rect(
     0,
@@ -147,49 +257,60 @@ function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
     Math.max(0, handInteractionRect.y - hudBottom)
   );
 
-  const seatZones = {
-    north: northSeat,
-    west: westSeat,
-    east: eastSeat,
-    south: southSeat
-  };
-  const seatLabelRects = {
-    north: labelRectForSeat(northSeat),
-    west: labelRectForSeat(westSeat),
-    east: labelRectForSeat(eastSeat),
-    south: labelRectForSeat(southSeat)
-  };
-  const seatExclusionRects = { ...seatLabelRects };
-  const seatAnchors = {
-    north: centerOf(northSeat),
-    west: centerOf(westSeat),
-    east: centerOf(eastSeat),
-    south: centerOf(southSeat)
-  };
-
-  return {
+  return finishZones(sceneW, sceneH, {
     hudRect,
     feltRect,
-    seatZones,
-    seatAnchors,
-    seatLabelRects,
-    seatExclusionRects,
+    northSeat,
+    westSeat,
+    eastSeat,
+    southSeat,
     trickRect,
-    trickCenter: centerOf(trickRect),
     handRect,
-    handBaseline: handRect.y + handRect.height,
     handInteractionRect,
     actionStatusRect,
     decisionRect,
     decisionSheetRect,
-    fullSceneModalRect: rect(0, 0, sceneW, sceneH),
-    overlaySafeRect: feltRect,
-    overlayExclusions: {
-      northSeatLabel: seatLabelRects.north,
-      westSeatLabel: seatLabelRects.west,
-      eastSeatLabel: seatLabelRects.east,
-      hand: handRect
-    }
+    statusPlaqueRect: null
+  });
+}
+
+/** Approved Sueca portrait V3 zones from design-frame reference × sceneScale. */
+function buildSuecaPortraitV3Zones(sceneScale: number, sceneW: number, sceneH: number): InternalZones {
+  const ref = SUECA_PORTRAIT_V3_REF;
+  const handRect = scaleRef(ref.hand, sceneScale);
+  return finishZones(sceneW, sceneH, {
+    hudRect: scaleRef(ref.hud, sceneScale),
+    feltRect: scaleRef(ref.felt, sceneScale),
+    northSeat: scaleRef(ref.north, sceneScale),
+    westSeat: scaleRef(ref.west, sceneScale),
+    eastSeat: scaleRef(ref.east, sceneScale),
+    southSeat: scaleRef(ref.south, sceneScale),
+    trickRect: scaleRef(ref.trick, sceneScale),
+    handRect,
+    handInteractionRect: handRect,
+    actionStatusRect: scaleRef(ref.action, sceneScale),
+    decisionRect: scaleRef(ref.decision, sceneScale),
+    decisionSheetRect: scaleRef(ref.sheet, sceneScale),
+    statusPlaqueRect: scaleRef(ref.statusPlaque, sceneScale)
+  });
+}
+
+function buildInternalZones(
+  sceneW: number,
+  sceneH: number,
+  portrait: boolean,
+  layoutProfile: GeometryLayoutProfile,
+  sceneScale: number
+): { zones: InternalZones; effectiveLayout: GeometryLayoutProfile } {
+  if (layoutProfile === 'suecaPortraitV3' && portrait) {
+    return {
+      zones: buildSuecaPortraitV3Zones(sceneScale, sceneW, sceneH),
+      effectiveLayout: 'suecaPortraitV3'
+    };
+  }
+  return {
+    zones: buildDefaultInternalZones(sceneW, sceneH, portrait),
+    effectiveLayout: 'default'
   };
 }
 
@@ -201,7 +322,7 @@ function buildInternalZones(sceneW: number, sceneH: number, portrait: boolean) {
  * scene width → scene height → decision zone → hand zone →
  * N/W/E exclusion labels → decision-to-hand gap.
  */
-function minimumsSatisfied(sceneW: number, sceneH: number, zones: ReturnType<typeof buildInternalZones>): boolean {
+function minimumsSatisfied(sceneW: number, sceneH: number, zones: InternalZones): boolean {
   const m = PROVISIONAL_GEOMETRY_MINIMUMS;
   const limits = PROVISIONAL_UNSUPPORTED_LIMITS;
 
@@ -230,7 +351,7 @@ function minimumsSatisfied(sceneW: number, sceneH: number, zones: ReturnType<typ
   return true;
 }
 
-function invariantsHold(zones: ReturnType<typeof buildInternalZones>): boolean {
+function invariantsHold(zones: InternalZones, layoutProfile: GeometryLayoutProfile): boolean {
   const scene = zones.fullSceneModalRect;
   if (!contains(scene, zones.hudRect)) return false;
   if (!contains(scene, zones.feltRect)) return false;
@@ -248,17 +369,28 @@ function invariantsHold(zones: ReturnType<typeof buildInternalZones>): boolean {
   if (intersects(zones.decisionSheetRect, zones.hudRect)) return false;
   if (intersects(zones.decisionSheetRect, zones.handInteractionRect)) return false;
   if (intersects(zones.decisionRect, zones.handRect)) return false;
-  if (intersects(zones.decisionRect, zones.seatExclusionRects.north)) return false;
-  if (intersects(zones.decisionRect, zones.seatExclusionRects.west)) return false;
-  if (intersects(zones.decisionRect, zones.seatExclusionRects.east)) return false;
+  if (layoutProfile === 'default') {
+    // DEFAULT: decision plaque must not cover N/W/E exclusion labels.
+    if (intersects(zones.decisionRect, zones.seatExclusionRects.north)) return false;
+    if (intersects(zones.decisionRect, zones.seatExclusionRects.west)) return false;
+    if (intersects(zones.decisionRect, zones.seatExclusionRects.east)) return false;
+  }
+  // V3: overlays may intentionally cover seats/felt/trick; hand∩felt allowed.
+  if (zones.statusPlaqueRect) {
+    if (!contains(scene, zones.statusPlaqueRect)) return false;
+  }
   return true;
 }
 
 /**
  * Calculate immutable scene geometry from a normalized viewport input.
- * Game phase / variant / content must never be passed here.
+ * Optional layoutProfile selects zone construction (default preserves legacy bands).
+ * Does not accept game phase / HUD content.
  */
-export function calculateSceneGeometry(input: ViewportGeometryInput): SceneGeometryResult {
+export function calculateSceneGeometry(
+  input: ViewportGeometryInput,
+  layoutProfile: GeometryLayoutProfile = 'default'
+): SceneGeometryResult {
   const safeRect = rect(
     input.safeInsets.left,
     input.safeInsets.top,
@@ -314,20 +446,28 @@ export function calculateSceneGeometry(input: ViewportGeometryInput): SceneGeome
   };
 
   const portrait = input.orientation === 'portrait';
-  const zones = buildInternalZones(sceneW, sceneH, portrait);
+  const { zones, effectiveLayout } = buildInternalZones(
+    sceneW,
+    sceneH,
+    portrait,
+    layoutProfile,
+    sceneScale
+  );
 
-  if (!invariantsHold(zones)) {
+  if (!invariantsHold(zones, effectiveLayout)) {
     return { supported: false, reason: 'minimums_unsatisfied', input };
   }
   if (!minimumsSatisfied(sceneW, sceneH, zones)) {
     return { supported: false, reason: 'minimums_unsatisfied', input };
   }
 
+  // DEFAULT keys stay v1::…; V3 appends layout suffix only when effective.
   const geometryKey = [
     'v1',
     profile,
     viewportGeometryKey(input),
-    numberKey(sceneScale)
+    numberKey(sceneScale),
+    ...(effectiveLayout === 'default' ? [] : [effectiveLayout])
   ].join('::');
 
   const geometry: SceneGeometry = {
@@ -337,6 +477,7 @@ export function calculateSceneGeometry(input: ViewportGeometryInput): SceneGeome
     safeInsets: input.safeInsets,
     orientation: input.orientation,
     profile,
+    layoutProfile: effectiveLayout,
     designFrame,
     sceneFrame,
     sceneScale,

@@ -7,11 +7,15 @@ import React from 'react';
 import { useSceneGeometrySnapshot } from '../hooks/SceneGeometryContext';
 import {
   decisionRectShellStyle,
-  decisionSheetRectShellStyle
+  decisionSheetRectShellStyle,
+  statusPlaqueRectShellStyle
 } from '../runtime/canonicalScenePlacement';
 import './CanonicalDecisionSurface.css';
 
-export type CanonicalDecisionZone = 'decisionRect' | 'decisionSheetRect';
+export type CanonicalDecisionZone =
+  | 'decisionRect'
+  | 'decisionSheetRect'
+  | 'statusPlaqueRect';
 
 export interface CanonicalDecisionSurfaceProps {
   zone: CanonicalDecisionZone;
@@ -39,7 +43,9 @@ export const CanonicalDecisionSurface: React.FC<CanonicalDecisionSurfaceProps> =
   const shellStyle = geometry
     ? zone === 'decisionSheetRect'
       ? decisionSheetRectShellStyle(geometry)
-      : decisionRectShellStyle(geometry)
+      : zone === 'statusPlaqueRect'
+        ? statusPlaqueRectShellStyle(geometry)
+        : decisionRectShellStyle(geometry)
     : {
         // Measuring / unsupported: shell-local overlay without vh/dvh authority.
         position: 'absolute' as const,
