@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { publishState, subscribeToState, pushAction } from '../services/multiplayerClient';
+import { ensureAnonymousAuth } from '../services/firebaseAuth';
 import { GameState } from '../types/game';
 import { GameAction, createClientId, GameActionInput } from '../types/multiplayerActions';
 import { mpLog, mpWarn } from '../utils/mpDebug';
@@ -24,6 +25,11 @@ interface UseMultiplayerOptions {
   onRemoteState: (state: GameState) => void;
   /** Joiners should apply every remote snapshot. */
   applyAllRemoteUpdates?: boolean;
+  /**
+   * Server-bound seat for this client (from create/join).
+   * Attached to pushed actions as seatIndex (Step 1B identity).
+   */
+  boundSeatIndex?: number;
 }
 
 interface UseMultiplayerResult {
@@ -36,10 +42,13 @@ export function useMultiplayer({
   sessionCode,
   onRemoteState,
   applyAllRemoteUpdates = false,
+  boundSeatIndex,
 }: UseMultiplayerOptions): UseMultiplayerResult {
   const lastPublishedRef = useRef<string | null>(null);
   const lastAppliedRef = useRef<string | null>(null);
   const clientIdRef = useRef(createClientId());
+  const boundSeatRef = useRef(boundSeatIndex);
+  boundSeatRef.current = boundSeatIndex;
 
   useEffect(() => {
     if (!enabled || !sessionCode) {
@@ -99,15 +108,22 @@ export function useMultiplayer({
         mpWarn('[MP] action skipped', { enabled, sessionCode: sessionCode || '(empty)' });
         return;
       }
-      const payload = {
-        ...action,
-        clientId: clientIdRef.current,
-        at: Date.now(),
-      } as GameAction;
-      mpLog('[MP] action push', payload);
-      pushAction(sessionCode, payload).catch((err) => {
-        console.error('[Multiplayer] Failed to push action:', err);
-      });
+      const seatIndex = boundSeatRef.current;
+      void (async () => {
+        try {
+          const user = await ensureAnonymousAuth();
+          const payload = {
+            ...action,
+            clientId: clientIdRef.current,
+            at: Date.now(),
+            ...(typeof seatIndex === 'number' ? { seatIndex, uid: user.uid } : {})
+          } as GameAction;
+          mpLog('[MP] action push', payload);
+          await pushAction(sessionCode, payload);
+        } catch (err) {
+          console.error('[Multiplayer] Failed to push action:', err);
+        }
+      })();
     },
     [enabled, sessionCode]
   );

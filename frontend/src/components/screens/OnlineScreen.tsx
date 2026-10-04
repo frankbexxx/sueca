@@ -109,8 +109,8 @@ export const OnlineScreen: React.FC<OnlineScreenProps> = ({
       setSessionCode(code);
       setLiveSlots(cleanedSlots);
       setPhase('waiting-host');
-    } catch {
-      setError(o.errorCreate);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : o.errorCreate);
     } finally {
       setBusy(false);
     }

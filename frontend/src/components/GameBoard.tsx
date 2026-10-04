@@ -390,6 +390,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     sessionCode: multiplayerSessionCode,
     onRemoteState: handleRemoteState,
     applyAllRemoteUpdates: isJoiner,
+    boundSeatIndex: isMultiplayerActive ? multiplayerPlayerIndex : undefined,
   });
 
   const publishHostState = useCallback(
